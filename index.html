@@ -205,7 +205,7 @@
         }
 
         .date-weather-line {
-            display: none;
+            display: flex;
             align-items: baseline;
             gap: 15px;
             font-size: 32px;
@@ -4074,7 +4074,451 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Task Detail Modal -->
+    <div class="task-detail-modal" id="taskDetailModal" onclick="handleModalBackdropClick(event, 'taskDetailModal')">
+        <div class="task-detail-content" onclick="event.stopPropagation()">
+            <div class="task-detail-title" id="detailTaskTitle">Task Title</div>
+            
+            <div class="task-detail-actions">
+                <button class="task-detail-btn task-detail-edit" onclick="openEditPanelFromDetail()">
+                    ✏️ Edit
+                </button>
+                <button class="task-detail-btn task-detail-delete" onclick="deleteCurrentTask()">
+                    🗑️ Delete
+                </button>
+            </div>
+            
+            <div class="task-detail-info">
+                <div class="task-detail-row" id="detailTaskDate">
+                    <div class="task-detail-icon">📅</div>
+                    <span id="detailDateText">Tuesday, April 1, 8:00 PM</span>
+                </div>
+                
+                <div class="task-detail-row" id="detailTaskRepeat" style="display: none;">
+                    <div class="task-detail-icon">🔄</div>
+                    <span id="detailRepeatText">Weekly on Tue</span>
+                </div>
+                
+                <div class="task-detail-row">
+                    <div class="task-detail-icon">👥</div>
+                    <div class="task-detail-label">Assigned To</div>
+                </div>
+                
+                <div class="task-detail-assigned" id="detailAssignedTo">
+                    <!-- Assigned members will be populated here -->
+                </div>
+            </div>
+            
+            <button class="task-detail-complete-btn" id="detailCompleteBtn" onclick="toggleCurrentTask()">
+                Mark as Complete
+            </button>
+        </div>
+    </div>
+    
+    <!-- Edit Side Panel -->
+    <div class="edit-panel-overlay" id="editPanelOverlay" onclick="closeEditPanel()"></div>
+    <div class="edit-side-panel" id="editSidePanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeEditPanel()">←</button>
+            <div class="edit-panel-title">Edit Task</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Title</label>
+                <input type="text" class="edit-form-input" id="editTaskTitle" placeholder="Task title">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Emoji (Optional)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" class="edit-form-input" id="editTaskEmoji" placeholder="😊" readonly style="flex: 1;">
+                    <button class="task-dropdown-btn" onclick="toggleEditEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
+                </div>
+                <div class="emoji-picker-dropdown" id="editEmojiPickerDropdown" style="position: relative; margin-top: 10px;">
+                    <input type="text" class="emoji-search-input" id="editEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterEditEmojis()" onclick="event.stopPropagation()">
+                    <div class="emoji-picker-grid" id="editEmojiPickerGrid"></div>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Profiles</label>
+                <div class="edit-profile-grid" id="editProfileGrid">
+                    <!-- Profiles will be populated here -->
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <div class="edit-type-toggle">
+                    <button class="edit-type-btn active" id="editChoreTypeBtn" onclick="setEditTaskType('chore')">Chore</button>
+                    <button class="edit-type-btn" id="editRoutineTypeBtn" onclick="setEditTaskType('routine')">Routine</button>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <div class="edit-toggle-row">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">📅</span>
+                        <span>Date</span>
+                    </div>
+                    <label class="task-toggle">
+                        <input type="checkbox" id="editTaskDateToggle" checked onchange="updateEditDateVisibility()">
+                        <span class="task-toggle-slider"></span>
+                    </label>
+                </div>
+                <input type="date" class="edit-form-input" id="editTaskDate" style="margin-top: 10px;">
+            </div>
+            
+            <div class="edit-form-group">
+                <div class="edit-toggle-row">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">🕐</span>
+                        <span>Time</span>
+                    </div>
+                    <label class="task-toggle">
+                        <input type="checkbox" id="editTaskTimeToggle" onchange="updateEditTimeVisibility()">
+                        <span class="task-toggle-slider"></span>
+                    </label>
+                </div>
+                <input type="time" class="edit-form-input" id="editTaskTime" style="margin-top: 10px; display: none;">
+            </div>
+            
+            <div class="edit-form-group" id="editStarsSection">
+                <label class="edit-form-label">Stars</label>
+                <input type="number" class="edit-form-input" id="editTaskStars" value="5" min="0">
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditedTask()">Save</button>
+            <button class="edit-delete-btn" onclick="deleteCurrentTask()">
+                <span>🗑️</span>
+                <span>Delete Task</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Meal Selector Side Panel -->
+    <div class="edit-panel-overlay" id="mealSelectorOverlay" onclick="closeMealSelector()"></div>
+    <div class="edit-side-panel" id="mealSelectorPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeMealSelector()">←</button>
+            <div class="edit-panel-title" id="mealSelectorTitle">Select Meal</div>
+        </div>
+        
+        <div id="mealSelectorList" class="edit-panel-body" style="padding: 0;">
+            <!-- Recipe list will be populated here -->
+        </div>
+    </div>
+    
+    <!-- Add Recipe Side Panel -->
+    <div class="edit-panel-overlay" id="addRecipePanelOverlay" onclick="closeAddRecipePanel()"></div>
+    <div class="edit-side-panel" id="addRecipePanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeAddRecipePanel()">←</button>
+            <div class="edit-panel-title">Add Recipe</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Import from URL (Optional)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="url" class="edit-form-input" id="addRecipeURL" placeholder="Paste recipe URL..." style="flex: 1;">
+                    <button class="task-dropdown-btn" onclick="importRecipeFromURL()" style="padding: 15px; background: #4A90E2; color: white; border-radius: 8px; font-weight: 600;">Import</button>
+                </div>
+                <div id="importStatus" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
+            </div>
+            
+            <div style="text-align: center; margin: 15px 0; color: #999; font-size: 14px;">— OR —</div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Recipe Name</label>
+                <input type="text" class="edit-form-input" id="addRecipeName" placeholder="Enter recipe name">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Meal Type</label>
+                <select class="edit-form-input" id="addRecipeMealType">
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                    <option value="Snack">Snack</option>
+                </select>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Ingredients</label>
+                <textarea class="edit-form-input" id="addRecipeIngredients" rows="4" placeholder="List ingredients..."></textarea>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Instructions</label>
+                <textarea class="edit-form-input" id="addRecipeInstructions" rows="4" placeholder="Cooking instructions..."></textarea>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveNewRecipe()">Save Recipe</button>
+        </div>
+    </div>
+    
+    <!-- Add List Side Panel -->
+    <div class="edit-panel-overlay" id="addListPanelOverlay" onclick="closeAddListPanel()"></div>
+    <div class="edit-side-panel" id="addListPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeAddListPanel()">←</button>
+            <div class="edit-panel-title">Add List</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">List Name</label>
+                <input type="text" class="edit-form-input" id="addListName" placeholder="Enter list name">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Assigned To</label>
+                <select class="edit-form-input" id="addListAssignedTo">
+                </select>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveNewList()">Create List</button>
+        </div>
+    </div>
+    
+    <!-- Meal Detail Modal -->
+    <div class="meal-detail-modal" id="mealDetailModal" onclick="if(event.target === this) closeMealDetail()">
+        <div class="meal-detail-content" onclick="event.stopPropagation()">
+            <div class="meal-detail-header">
+                <div class="meal-detail-title" id="mealDetailTitle">Recipe Name</div>
+                <div class="meal-detail-actions">
+                    <button class="meal-detail-btn meal-detail-edit" onclick="editMealFromDetail()">
+                        ✏️ Edit
+                    </button>
+                    <button class="meal-detail-btn meal-detail-delete" onclick="deleteMealFromDetail()">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div class="meal-detail-info">
+                <div class="meal-detail-info-row">
+                    📅 <span id="mealDetailDate">Date</span>
+                </div>
+                <div class="meal-detail-info-row">
+                    <span id="mealDetailCategoryDot" style="width: 12px; height: 12px; border-radius: 50%; background: #999; display: inline-block;"></span>
+                    <span id="mealDetailCategory">Category</span>
+                </div>
+            </div>
+            
+            <div class="meal-detail-section">
+                <div class="meal-detail-section-title">INGREDIENTS:</div>
+                <div class="meal-detail-text" id="mealDetailIngredients">Ingredients will appear here</div>
+            </div>
+            
+            <div class="meal-detail-section">
+                <div class="meal-detail-section-title">INSTRUCTIONS:</div>
+                <div class="meal-detail-text" id="mealDetailInstructions">Instructions will appear here</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- List Item Detail Modal -->
+    <div class="task-detail-modal" id="listItemDetailModal" onclick="if(event.target === this) closeListItemDetail()">
+        <div class="task-detail-content" onclick="event.stopPropagation()">
+            <div class="task-detail-title" id="listItemDetailTitle">Item</div>
+            
+            <div class="task-detail-actions">
+                <button class="task-detail-btn task-detail-edit" onclick="editListItemFromDetail()">
+                    ✏️ Edit
+                </button>
+                <button class="task-detail-btn task-detail-delete" onclick="deleteListItemFromDetail()">
+                    🗑️ Delete
+                </button>
+            </div>
+            
+            <div class="task-detail-info">
+                <div class="task-detail-row">
+                    <div class="task-detail-icon">📋</div>
+                    <div class="task-detail-label">List:</div>
+                    <span id="listItemDetailListName">List Name</span>
+                </div>
+                
+                <div class="task-detail-row">
+                    <div class="task-detail-icon">👥</div>
+                    <div class="task-detail-label">Assigned To:</div>
+                    <div class="task-detail-assigned" id="listItemDetailAssignedTo">
+                        <!-- Assigned member will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Event Detail Side Panel -->
+    <div class="edit-panel-overlay" id="eventDetailPanelOverlay" onclick="closeEventDetailPanel()"></div>
+    <div class="edit-side-panel" id="eventDetailPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeEventDetailPanel()">←</button>
+            <div class="edit-panel-title">Event Details</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div style="margin-bottom: 30px;">
+                <div style="font-size: 24px; font-weight: 600; color: #000; margin-bottom: 20px;" id="eventDetailTitle">Event Title</div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;">
+                    <div class="task-detail-icon">📅</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Date & Time</div>
+                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailDateTime">Monday, January 20, 2026 at 3:00 PM</div>
+                    </div>
+                </div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailReminderRow">
+                    <div class="task-detail-icon">🔔</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Reminder</div>
+                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailReminder">15 minutes before</div>
+                    </div>
+                </div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailMemberRow">
+                    <div class="task-detail-icon">👤</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Assigned To</div>
+                        <div class="task-detail-assigned" id="eventDetailMember">
+                            <!-- Member will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailCalendarRow">
+                    <div class="task-detail-icon">📆</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Calendar</div>
+                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailCalendar">Google Calendar</div>
+                    </div>
+                </div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailInviteesRow">
+                    <div class="task-detail-icon">👥</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Invitees</div>
+                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailInvitees">None</div>
+                    </div>
+                </div>
+                
+                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailNotesRow">
+                    <div class="task-detail-icon">📝</div>
+                    <div style="flex: 1;">
+                        <div style="color: #666; font-size: 14px;">Notes</div>
+                        <div style="color: #666; font-size: 15px; line-height: 1.5; margin-top: 5px;" id="eventDetailNotes">No notes</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="edit-save-btn" onclick="editEventFromDetail()" id="eventDetailEditBtn">Edit Event</button>
+            <button class="edit-delete-btn" onclick="deleteEventFromDetail()" id="eventDetailDeleteBtn">
+                <span>🗑️</span>
+                <span>Delete Event</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Edit List Item Side Panel -->
+    <div class="edit-panel-overlay" id="editListItemPanelOverlay" onclick="closeEditListItemPanel()"></div>
+    <div class="edit-side-panel" id="editListItemPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeEditListItemPanel()">←</button>
+            <div class="edit-panel-title">Edit Item</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Item Text</label>
+                <input type="text" class="edit-form-input" id="editListItemText" placeholder="Item text">
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditedListItem()">Save</button>
+        </div>
+    </div>
+    
+    <!-- Edit Reward Side Panel -->
+    <div class="edit-panel-overlay" id="editRewardPanelOverlay" onclick="closeEditRewardPanel()"></div>
+    <div class="edit-side-panel" id="editRewardPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeEditRewardPanel()">←</button>
+            <div class="edit-panel-title">Edit Reward</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Title</label>
+                <input type="text" class="edit-form-input" id="editRewardTitle" placeholder="Reward title">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Emoji (Optional)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" class="edit-form-input" id="editRewardEmoji" placeholder="🎁" readonly style="flex: 1;">
+                    <button class="task-dropdown-btn" onclick="toggleEditRewardEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
+                </div>
+                <div class="emoji-picker-dropdown" id="editRewardEmojiPickerDropdown" style="position: relative; margin-top: 10px;">
+                    <input type="text" class="emoji-search-input" id="editRewardEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterEditRewardEmojis()" onclick="event.stopPropagation()">
+                    <div class="emoji-picker-grid" id="editRewardEmojiPickerGrid"></div>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Stars Required</label>
+                <input type="number" class="edit-form-input" id="editRewardStars" value="25" min="1">
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditedReward()">Save</button>
+            <button class="edit-delete-btn" onclick="deleteCurrentReward()">
+                <span>🗑️</span>
+                <span>Delete Reward</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div class="task-detail-modal" id="editProfileModal" onclick="if(event.target === this) closeEditProfileModal()">
+        <div class="task-detail-content" onclick="event.stopPropagation()">
+            <div class="task-detail-title">Edit Profile</div>
+            
+            <div class="edit-form-group" style="margin-top: 30px;">
+                <label class="edit-form-label">Name</label>
+                <input type="text" class="edit-form-input" id="editProfileName" placeholder="Profile name">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Color</label>
+                <div class="color-picker-container">
+                    <button class="color-picker-nav" onclick="scrollColorPicker(-1)">‹</button>
+                    <div class="color-picker-scroll" id="colorPickerScroll">
+                        <div class="color-picker-grid" id="colorPickerGrid">
+                            <!-- Colors will be populated here -->
+                        </div>
+                    </div>
+                    <button class="color-picker-nav" onclick="scrollColorPicker(1)">›</button>
+                </div>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditedProfile()">Save Changes</button>
+            <button class="task-detail-btn" style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #666;" onclick="closeEditProfileModal()">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Reward Redemption Modal -->
+    <div class="reward-redemption-modal" id="rewardRedemptionModal">
+        <div class="reward-redemption-overlay"></div>
+        <div class="reward-redemption-content">
+            <div class="reward-redemption-emoji" id="redemptionEmoji">🎁</div>
+            <div class="reward-redemption-title" id="redemptionTitle">Great work! Trip to the aquarium! redeemed</div>
+            <div class="reward-redemption-subtitle" id="redemptionSubtitle">By Willow for 50 stars on April 02, 2025.</div>
+            <button class="reward-redemption-done-btn" onclick="closeRewardRedemptionModal()">Done</button>
+            <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
+        </div>
+    </div>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         // Visual debugging
@@ -8944,450 +9388,5 @@ console.log('Script started loading...');
 
         init();
     </script>
-    
-    <!-- Task Detail Modal -->
-    <div class="task-detail-modal" id="taskDetailModal" onclick="handleModalBackdropClick(event, 'taskDetailModal')">
-        <div class="task-detail-content" onclick="event.stopPropagation()">
-            <div class="task-detail-title" id="detailTaskTitle">Task Title</div>
-            
-            <div class="task-detail-actions">
-                <button class="task-detail-btn task-detail-edit" onclick="openEditPanelFromDetail()">
-                    ✏️ Edit
-                </button>
-                <button class="task-detail-btn task-detail-delete" onclick="deleteCurrentTask()">
-                    🗑️ Delete
-                </button>
-            </div>
-            
-            <div class="task-detail-info">
-                <div class="task-detail-row" id="detailTaskDate">
-                    <div class="task-detail-icon">📅</div>
-                    <span id="detailDateText">Tuesday, April 1, 8:00 PM</span>
-                </div>
-                
-                <div class="task-detail-row" id="detailTaskRepeat" style="display: none;">
-                    <div class="task-detail-icon">🔄</div>
-                    <span id="detailRepeatText">Weekly on Tue</span>
-                </div>
-                
-                <div class="task-detail-row">
-                    <div class="task-detail-icon">👥</div>
-                    <div class="task-detail-label">Assigned To</div>
-                </div>
-                
-                <div class="task-detail-assigned" id="detailAssignedTo">
-                    <!-- Assigned members will be populated here -->
-                </div>
-            </div>
-            
-            <button class="task-detail-complete-btn" id="detailCompleteBtn" onclick="toggleCurrentTask()">
-                Mark as Complete
-            </button>
-        </div>
-    </div>
-    
-    <!-- Edit Side Panel -->
-    <div class="edit-panel-overlay" id="editPanelOverlay" onclick="closeEditPanel()"></div>
-    <div class="edit-side-panel" id="editSidePanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeEditPanel()">←</button>
-            <div class="edit-panel-title">Edit Task</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div class="edit-form-group">
-                <label class="edit-form-label">Title</label>
-                <input type="text" class="edit-form-input" id="editTaskTitle" placeholder="Task title">
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Emoji (Optional)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" class="edit-form-input" id="editTaskEmoji" placeholder="😊" readonly style="flex: 1;">
-                    <button class="task-dropdown-btn" onclick="toggleEditEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
-                </div>
-                <div class="emoji-picker-dropdown" id="editEmojiPickerDropdown" style="position: relative; margin-top: 10px;">
-                    <input type="text" class="emoji-search-input" id="editEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterEditEmojis()" onclick="event.stopPropagation()">
-                    <div class="emoji-picker-grid" id="editEmojiPickerGrid"></div>
-                </div>
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Profiles</label>
-                <div class="edit-profile-grid" id="editProfileGrid">
-                    <!-- Profiles will be populated here -->
-                </div>
-            </div>
-            
-            <div class="edit-form-group">
-                <div class="edit-type-toggle">
-                    <button class="edit-type-btn active" id="editChoreTypeBtn" onclick="setEditTaskType('chore')">Chore</button>
-                    <button class="edit-type-btn" id="editRoutineTypeBtn" onclick="setEditTaskType('routine')">Routine</button>
-                </div>
-            </div>
-            
-            <div class="edit-form-group">
-                <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">📅</span>
-                        <span>Date</span>
-                    </div>
-                    <label class="task-toggle">
-                        <input type="checkbox" id="editTaskDateToggle" checked onchange="updateEditDateVisibility()">
-                        <span class="task-toggle-slider"></span>
-                    </label>
-                </div>
-                <input type="date" class="edit-form-input" id="editTaskDate" style="margin-top: 10px;">
-            </div>
-            
-            <div class="edit-form-group">
-                <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">🕐</span>
-                        <span>Time</span>
-                    </div>
-                    <label class="task-toggle">
-                        <input type="checkbox" id="editTaskTimeToggle" onchange="updateEditTimeVisibility()">
-                        <span class="task-toggle-slider"></span>
-                    </label>
-                </div>
-                <input type="time" class="edit-form-input" id="editTaskTime" style="margin-top: 10px; display: none;">
-            </div>
-            
-            <div class="edit-form-group" id="editStarsSection">
-                <label class="edit-form-label">Stars</label>
-                <input type="number" class="edit-form-input" id="editTaskStars" value="5" min="0">
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveEditedTask()">Save</button>
-            <button class="edit-delete-btn" onclick="deleteCurrentTask()">
-                <span>🗑️</span>
-                <span>Delete Task</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Meal Selector Side Panel -->
-    <div class="edit-panel-overlay" id="mealSelectorOverlay" onclick="closeMealSelector()"></div>
-    <div class="edit-side-panel" id="mealSelectorPanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeMealSelector()">←</button>
-            <div class="edit-panel-title" id="mealSelectorTitle">Select Meal</div>
-        </div>
-        
-        <div id="mealSelectorList" class="edit-panel-body" style="padding: 0;">
-            <!-- Recipe list will be populated here -->
-        </div>
-    </div>
-    
-    <!-- Add Recipe Side Panel -->
-    <div class="edit-panel-overlay" id="addRecipePanelOverlay" onclick="closeAddRecipePanel()"></div>
-    <div class="edit-side-panel" id="addRecipePanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeAddRecipePanel()">←</button>
-            <div class="edit-panel-title">Add Recipe</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div class="edit-form-group">
-                <label class="edit-form-label">Import from URL (Optional)</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="url" class="edit-form-input" id="addRecipeURL" placeholder="Paste recipe URL..." style="flex: 1;">
-                    <button class="task-dropdown-btn" onclick="importRecipeFromURL()" style="padding: 15px; background: #4A90E2; color: white; border-radius: 8px; font-weight: 600;">Import</button>
-                </div>
-                <div id="importStatus" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
-            </div>
-            
-            <div style="text-align: center; margin: 15px 0; color: #999; font-size: 14px;">— OR —</div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Recipe Name</label>
-                <input type="text" class="edit-form-input" id="addRecipeName" placeholder="Enter recipe name">
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Meal Type</label>
-                <select class="edit-form-input" id="addRecipeMealType">
-                    <option value="Breakfast">Breakfast</option>
-                    <option value="Lunch">Lunch</option>
-                    <option value="Dinner">Dinner</option>
-                    <option value="Snack">Snack</option>
-                </select>
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Ingredients</label>
-                <textarea class="edit-form-input" id="addRecipeIngredients" rows="4" placeholder="List ingredients..."></textarea>
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Instructions</label>
-                <textarea class="edit-form-input" id="addRecipeInstructions" rows="4" placeholder="Cooking instructions..."></textarea>
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveNewRecipe()">Save Recipe</button>
-        </div>
-    </div>
-    
-    <!-- Add List Side Panel -->
-    <div class="edit-panel-overlay" id="addListPanelOverlay" onclick="closeAddListPanel()"></div>
-    <div class="edit-side-panel" id="addListPanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeAddListPanel()">←</button>
-            <div class="edit-panel-title">Add List</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div class="edit-form-group">
-                <label class="edit-form-label">List Name</label>
-                <input type="text" class="edit-form-input" id="addListName" placeholder="Enter list name">
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Assigned To</label>
-                <select class="edit-form-input" id="addListAssignedTo">
-                </select>
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveNewList()">Create List</button>
-        </div>
-    </div>
-    
-    <!-- Meal Detail Modal -->
-    <div class="meal-detail-modal" id="mealDetailModal" onclick="if(event.target === this) closeMealDetail()">
-        <div class="meal-detail-content" onclick="event.stopPropagation()">
-            <div class="meal-detail-header">
-                <div class="meal-detail-title" id="mealDetailTitle">Recipe Name</div>
-                <div class="meal-detail-actions">
-                    <button class="meal-detail-btn meal-detail-edit" onclick="editMealFromDetail()">
-                        ✏️ Edit
-                    </button>
-                    <button class="meal-detail-btn meal-detail-delete" onclick="deleteMealFromDetail()">
-                        🗑️ Delete
-                    </button>
-                </div>
-            </div>
-            
-            <div class="meal-detail-info">
-                <div class="meal-detail-info-row">
-                    📅 <span id="mealDetailDate">Date</span>
-                </div>
-                <div class="meal-detail-info-row">
-                    <span id="mealDetailCategoryDot" style="width: 12px; height: 12px; border-radius: 50%; background: #999; display: inline-block;"></span>
-                    <span id="mealDetailCategory">Category</span>
-                </div>
-            </div>
-            
-            <div class="meal-detail-section">
-                <div class="meal-detail-section-title">INGREDIENTS:</div>
-                <div class="meal-detail-text" id="mealDetailIngredients">Ingredients will appear here</div>
-            </div>
-            
-            <div class="meal-detail-section">
-                <div class="meal-detail-section-title">INSTRUCTIONS:</div>
-                <div class="meal-detail-text" id="mealDetailInstructions">Instructions will appear here</div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- List Item Detail Modal -->
-    <div class="task-detail-modal" id="listItemDetailModal" onclick="if(event.target === this) closeListItemDetail()">
-        <div class="task-detail-content" onclick="event.stopPropagation()">
-            <div class="task-detail-title" id="listItemDetailTitle">Item</div>
-            
-            <div class="task-detail-actions">
-                <button class="task-detail-btn task-detail-edit" onclick="editListItemFromDetail()">
-                    ✏️ Edit
-                </button>
-                <button class="task-detail-btn task-detail-delete" onclick="deleteListItemFromDetail()">
-                    🗑️ Delete
-                </button>
-            </div>
-            
-            <div class="task-detail-info">
-                <div class="task-detail-row">
-                    <div class="task-detail-icon">📋</div>
-                    <div class="task-detail-label">List:</div>
-                    <span id="listItemDetailListName">List Name</span>
-                </div>
-                
-                <div class="task-detail-row">
-                    <div class="task-detail-icon">👥</div>
-                    <div class="task-detail-label">Assigned To:</div>
-                    <div class="task-detail-assigned" id="listItemDetailAssignedTo">
-                        <!-- Assigned member will be populated here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Event Detail Side Panel -->
-    <div class="edit-panel-overlay" id="eventDetailPanelOverlay" onclick="closeEventDetailPanel()"></div>
-    <div class="edit-side-panel" id="eventDetailPanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeEventDetailPanel()">←</button>
-            <div class="edit-panel-title">Event Details</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div style="margin-bottom: 30px;">
-                <div style="font-size: 24px; font-weight: 600; color: #000; margin-bottom: 20px;" id="eventDetailTitle">Event Title</div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;">
-                    <div class="task-detail-icon">📅</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Date & Time</div>
-                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailDateTime">Monday, January 20, 2026 at 3:00 PM</div>
-                    </div>
-                </div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailReminderRow">
-                    <div class="task-detail-icon">🔔</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Reminder</div>
-                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailReminder">15 minutes before</div>
-                    </div>
-                </div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailMemberRow">
-                    <div class="task-detail-icon">👤</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Assigned To</div>
-                        <div class="task-detail-assigned" id="eventDetailMember">
-                            <!-- Member will be populated here -->
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailCalendarRow">
-                    <div class="task-detail-icon">📆</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Calendar</div>
-                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailCalendar">Google Calendar</div>
-                    </div>
-                </div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailInviteesRow">
-                    <div class="task-detail-icon">👥</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Invitees</div>
-                        <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailInvitees">None</div>
-                    </div>
-                </div>
-                
-                <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailNotesRow">
-                    <div class="task-detail-icon">📝</div>
-                    <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Notes</div>
-                        <div style="color: #666; font-size: 15px; line-height: 1.5; margin-top: 5px;" id="eventDetailNotes">No notes</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="edit-save-btn" onclick="editEventFromDetail()" id="eventDetailEditBtn">Edit Event</button>
-            <button class="edit-delete-btn" onclick="deleteEventFromDetail()" id="eventDetailDeleteBtn">
-                <span>🗑️</span>
-                <span>Delete Event</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Edit List Item Side Panel -->
-    <div class="edit-panel-overlay" id="editListItemPanelOverlay" onclick="closeEditListItemPanel()"></div>
-    <div class="edit-side-panel" id="editListItemPanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeEditListItemPanel()">←</button>
-            <div class="edit-panel-title">Edit Item</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div class="edit-form-group">
-                <label class="edit-form-label">Item Text</label>
-                <input type="text" class="edit-form-input" id="editListItemText" placeholder="Item text">
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveEditedListItem()">Save</button>
-        </div>
-    </div>
-    
-    <!-- Edit Reward Side Panel -->
-    <div class="edit-panel-overlay" id="editRewardPanelOverlay" onclick="closeEditRewardPanel()"></div>
-    <div class="edit-side-panel" id="editRewardPanel">
-        <div class="edit-panel-header">
-            <button class="edit-panel-back" onclick="closeEditRewardPanel()">←</button>
-            <div class="edit-panel-title">Edit Reward</div>
-        </div>
-        
-        <div class="edit-panel-body">
-            <div class="edit-form-group">
-                <label class="edit-form-label">Title</label>
-                <input type="text" class="edit-form-input" id="editRewardTitle" placeholder="Reward title">
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Emoji (Optional)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" class="edit-form-input" id="editRewardEmoji" placeholder="🎁" readonly style="flex: 1;">
-                    <button class="task-dropdown-btn" onclick="toggleEditRewardEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
-                </div>
-                <div class="emoji-picker-dropdown" id="editRewardEmojiPickerDropdown" style="position: relative; margin-top: 10px;">
-                    <input type="text" class="emoji-search-input" id="editRewardEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterEditRewardEmojis()" onclick="event.stopPropagation()">
-                    <div class="emoji-picker-grid" id="editRewardEmojiPickerGrid"></div>
-                </div>
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Stars Required</label>
-                <input type="number" class="edit-form-input" id="editRewardStars" value="25" min="1">
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveEditedReward()">Save</button>
-            <button class="edit-delete-btn" onclick="deleteCurrentReward()">
-                <span>🗑️</span>
-                <span>Delete Reward</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Edit Profile Modal -->
-    <div class="task-detail-modal" id="editProfileModal" onclick="if(event.target === this) closeEditProfileModal()">
-        <div class="task-detail-content" onclick="event.stopPropagation()">
-            <div class="task-detail-title">Edit Profile</div>
-            
-            <div class="edit-form-group" style="margin-top: 30px;">
-                <label class="edit-form-label">Name</label>
-                <input type="text" class="edit-form-input" id="editProfileName" placeholder="Profile name">
-            </div>
-            
-            <div class="edit-form-group">
-                <label class="edit-form-label">Color</label>
-                <div class="color-picker-container">
-                    <button class="color-picker-nav" onclick="scrollColorPicker(-1)">‹</button>
-                    <div class="color-picker-scroll" id="colorPickerScroll">
-                        <div class="color-picker-grid" id="colorPickerGrid">
-                            <!-- Colors will be populated here -->
-                        </div>
-                    </div>
-                    <button class="color-picker-nav" onclick="scrollColorPicker(1)">›</button>
-                </div>
-            </div>
-            
-            <button class="edit-save-btn" onclick="saveEditedProfile()">Save Changes</button>
-            <button class="task-detail-btn" style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #666;" onclick="closeEditProfileModal()">Cancel</button>
-        </div>
-    </div>
-    
-    <!-- Reward Redemption Modal -->
-    <div class="reward-redemption-modal" id="rewardRedemptionModal">
-        <div class="reward-redemption-overlay"></div>
-        <div class="reward-redemption-content">
-            <div class="reward-redemption-emoji" id="redemptionEmoji">🎁</div>
-            <div class="reward-redemption-title" id="redemptionTitle">Great work! Trip to the aquarium! redeemed</div>
-            <div class="reward-redemption-subtitle" id="redemptionSubtitle">By Willow for 50 stars on April 02, 2025.</div>
-            <button class="reward-redemption-done-btn" onclick="closeRewardRedemptionModal()">Done</button>
-            <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
-        </div>
-    </div>
 </body>
 </html>
