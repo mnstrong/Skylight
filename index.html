@@ -4570,10 +4570,9 @@ console.log('Script started loading...');
         // Lists data
         let lists = JSON.parse(localStorage.getItem('lists')) || [];
         let currentListId = null;
-        
+
         // Google Calendar API configuration
-        const CLIENT_ID = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : 'YOUR_CLIENT_ID_HERE';
-        const API_KEY = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_API_KEY : 'YOUR_API_KEY_HERE';
+        const CLIENT_ID = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : '';
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
         const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
         
