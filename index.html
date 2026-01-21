@@ -5272,10 +5272,14 @@
 
         async function initializeGapiClient() {
             try {
-                await gapi.client.init({
-                    apiKey: API_KEY,
+                const initConfig = {
                     discoveryDocs: [DISCOVERY_DOC],
-                });
+                };
+                // Only include apiKey if it's set and not a placeholder
+                if (API_KEY && API_KEY !== 'YOUR_API_KEY_HERE') {
+                    initConfig.apiKey = API_KEY;
+                }
+                await gapi.client.init(initConfig);
                 gapiInited = true;
             } catch (err) {
                 console.error('Error initializing Google API:', err);
@@ -5299,7 +5303,7 @@
                 gapiLoaded();
                 gisLoaded();
                 // Auto-connect to Google Calendar if credentials are set
-                if (CLIENT_ID !== 'YOUR_CLIENT_ID_HERE' && API_KEY !== 'YOUR_API_KEY_HERE') {
+                if (CLIENT_ID !== 'YOUR_CLIENT_ID_HERE') {
                     // Only try auto-connect if not already connected and no stored token
                     const storedToken = localStorage.getItem('googleCalendarToken');
                     if (!storedToken && !isGoogleConnected) {
