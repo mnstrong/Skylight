@@ -4581,7 +4581,6 @@ console.log('Script started loading...');
         let gisInited = false;
         let googleCalendarEvents = [];
         let isGoogleConnected = false;
-
         
         // Meal Planning Functions
         let mealHoldTimer = null;
@@ -5702,6 +5701,13 @@ console.log('Script started loading...');
                     console.log('Saved token expired, clearing...');
                     localStorage.removeItem('googleCalendarToken');
                     localStorage.removeItem('googleCalendarTokenExpiry');
+                    
+                    // Auto-reconnect after clearing expired token
+                    setTimeout(() => {
+                        if (gapiInited && gisInited) {
+                            connectGoogleCalendar();
+                        }
+                    }, 1000);
                 }
             }
         }
