@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Planner</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="manifest.json">
+    <title>Skylight</title>
     <script src="config.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -13,6 +18,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Noticia+Text:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -21,7 +28,7 @@
         }
 
         body {
-            font-family: "Jost", sans-serif;
+            font-family: "Jost", "Noto Color Emoji", sans-serif;
             background: #ffffff;
             height: 100vh;
             overflow: hidden;
@@ -1231,6 +1238,28 @@
         
         .emoji-picker-item.hidden {
             display: none;
+        }
+        
+        /* Twemoji image styling */
+        img.emoji {
+            height: 1em;
+            width: 1em;
+            margin: 0 0.05em 0 0.1em;
+            vertical-align: -0.1em;
+            display: inline-block;
+        }
+        
+        .emoji-picker-item img.emoji {
+            height: 24px;
+            width: 24px;
+            margin: 0;
+            vertical-align: middle;
+        }
+        
+        /* Reward card emoji sizing */
+        .reward-emoji img.emoji {
+            height: 48px;
+            width: 48px;
         }
         
         /* Confetti Animation */
@@ -4048,7 +4077,10 @@
                 
                 <div class="task-form-group emoji-picker-container">
                     <label class="task-form-icon">😊</label>
-                    <input type="text" id="rewardEmoji" placeholder="Emoji" class="task-input" readonly>
+                    <div style="position: relative; flex: 1;">
+                        <input type="text" id="rewardEmoji" placeholder="Emoji" class="task-input" readonly style="color: transparent; text-shadow: 0 0 0 #000;">
+                        <span id="rewardEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
+                    </div>
                     <button class="task-dropdown-btn" onclick="toggleRewardEmojiPicker(event)">▼</button>
                     
                     <div class="emoji-picker-dropdown" id="rewardEmojiPickerDropdown">
@@ -4570,6 +4602,8 @@ console.log('Script started loading...');
         // Lists data
         let lists = JSON.parse(localStorage.getItem('lists')) || [];
         let currentListId = null;
+        
+        // Google Calendar API configuration
 
         // Google Calendar API configuration
         const CLIENT_ID = typeof CONFIG !== 'undefined' ? CONFIG.GOOGLE_CLIENT_ID : '';
@@ -4581,6 +4615,7 @@ console.log('Script started loading...');
         let gisInited = false;
         let googleCalendarEvents = [];
         let isGoogleConnected = false;
+
         
         // Meal Planning Functions
         let mealHoldTimer = null;
@@ -4877,7 +4912,7 @@ console.log('Script started loading...');
                         try {
                             const data = JSON.parse(jsonText);
                             const recipe = Array.isArray(data) ? data.find(d => d['@type'] === 'Recipe') : 
-                                          (data['@type'] === 'Recipe' ? data : data['@graph']?.find(d => d['@type'] === 'Recipe'));
+                                          (data['@type'] === 'Recipe' ? data : (data['@graph'] && data['@graph'].find(d => d['@type'] === 'Recipe')));
                             
                             if (recipe) {
                                 return {
@@ -5701,13 +5736,6 @@ console.log('Script started loading...');
                     console.log('Saved token expired, clearing...');
                     localStorage.removeItem('googleCalendarToken');
                     localStorage.removeItem('googleCalendarTokenExpiry');
-                    
-                    // Auto-reconnect after clearing expired token
-                    setTimeout(() => {
-                        if (gapiInited && gisInited) {
-                            connectGoogleCalendar();
-                        }
-                    }, 1000);
                 }
             }
         }
@@ -5825,7 +5853,7 @@ console.log('Script started loading...');
                 // Find the Family calendar
                 const familyCalendar = calendars.find(cal => 
                     cal.summary.toLowerCase() === 'family' || 
-                    cal.summaryOverride?.toLowerCase() === 'family'
+                    cal.summaryOverride && cal.summaryOverride.toLowerCase() === 'family'
                 );
                 
                 // Load events from primary calendar
@@ -6031,7 +6059,7 @@ console.log('Script started loading...');
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member?.color || '#667eea';
+                    const color = (member && member.color) || '#667eea';
                     const bgColor = color + '40'; // Add transparency like week view
                     
                     // Format time to 12-hour format
@@ -6186,7 +6214,7 @@ console.log('Script started loading...');
                             const event = eventInfo.event;
                             const member = familyMembers.find(m => m.name === event.member);
                             const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                            const color = member?.color || '#667eea';
+                            const color = (member && member.color) || '#667eea';
                             const bgColor = color + '40';
                             
                             html += `<div class="week-allday-event" 
@@ -6249,7 +6277,7 @@ console.log('Script started loading...');
                     const width = eventInfo.width;
                     
                     // Get color - lighter pastel version
-                    const color = member?.color || '#667eea';
+                    const color = (member && member.color) || '#667eea';
                     const bgColor = color + '40'; // Add transparency
                     
                     html += `<div class="week-event-block" 
@@ -6492,7 +6520,7 @@ console.log('Script started loading...');
                 html += '<div class="day-view-events">';
                 dayEvents.forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member?.color || '#667eea';
+                    const color = (member && member.color) || '#667eea';
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
                     html += `<div class="day-event-item" style="background: ${color}40; border-left-color: ${color}">
@@ -6795,7 +6823,7 @@ console.log('Script started loading...');
                     html += '<div class="schedule-event-list">';
                     dayEvents.forEach(event => {
                         const member = familyMembers.find(m => m.name === event.member);
-                        const color = member?.color || '#667eea';
+                        const color = (member && member.color) || '#667eea';
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         
                         html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
@@ -6978,7 +7006,7 @@ console.log('Script started loading...');
                 const member = familyMembers.find(m => m.name === task.member);
                 const taskDate = new Date(task.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 html += `
-                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${member?.color || '#667eea'}">
+                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || '#667eea'}">
                         <input type="checkbox" ${task.completed ? 'checked' : ''} 
                                onchange="toggleTask(${task.id})">
                         <span>${task.title} - ${taskDate} ${task.member ? `(${task.member})` : ''}</span>
@@ -7489,6 +7517,14 @@ console.log('Script started loading...');
             
             const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
             grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
+            
+            // Parse emojis with Twemoji after populating
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(grid, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
         }
         
         function toggleEditRewardEmojiPicker(event) {
@@ -8339,6 +8375,14 @@ console.log('Script started loading...');
             grid.innerHTML = emojiData.map(item => 
                 `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEmoji('${item.emoji}')">${item.emoji}</div>`
             ).join('');
+            
+            // Parse emojis with Twemoji after populating
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(grid, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
         }
         
         function filterEmojis() {
@@ -8446,7 +8490,7 @@ console.log('Script started loading...');
             const stars = parseInt(document.getElementById('taskChoreStars').value) || 0;
             const hasDate = document.getElementById('taskChoreDateToggle').checked;
             const hasTime = document.getElementById('taskChoreTimeToggle').checked;
-            const hasRepeat = document.getElementById('taskChoreRepeatToggle')?.checked;
+            const hasRepeat = document.getElementById('taskChoreRepeatToggle') && getElementById('taskChoreRepeatToggle').checked;
             
             if (!title || selectedProfiles.length === 0) {
                 alert('Please enter a title and select at least one profile');
@@ -8693,6 +8737,14 @@ console.log('Script started loading...');
             
             const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
             grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditEmoji');
+            
+            // Parse emojis with Twemoji after populating
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(grid, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
         }
         
         function toggleEditEmojiPicker(event) {
@@ -9236,6 +9288,14 @@ console.log('Script started loading...');
             grid.innerHTML = emojiData.map(item => 
                 `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectRewardEmoji('${item.emoji}')">${item.emoji}</div>`
             ).join('');
+            
+            // Parse emojis with Twemoji after populating
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(grid, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
         }
         
         function toggleRewardEmojiPicker(event) {
@@ -9264,7 +9324,17 @@ console.log('Script started loading...');
         
         function selectRewardEmoji(emoji) {
             document.getElementById('rewardEmoji').value = emoji;
+            const display = document.getElementById('rewardEmojiDisplay');
+            display.textContent = emoji;
             closeRewardEmojiPicker();
+            
+            // Parse the emoji with Twemoji
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(display, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
         }
         
         function filterRewardEmojis() {
@@ -9327,7 +9397,7 @@ console.log('Script started loading...');
             list.innerHTML = todayTasks.map(task => {
                 const member = familyMembers.find(m => m.name === task.member);
                 return `
-                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${member?.color || '#667eea'}">
+                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || '#667eea'}">
                         <input type="checkbox" ${task.completed ? 'checked' : ''} 
                                onchange="toggleTask(${task.id})">
                         <span>${task.title} ${task.member ? `(${task.member})` : ''}</span>
@@ -9362,7 +9432,7 @@ console.log('Script started loading...');
                 weekMeals.push({
                     day: date.toLocaleDateString('en-US', { weekday: 'short' }),
                     date: dateStr,
-                    meal: meal?.name || 'No meal planned'
+                    meal: (meal && meal.name) || 'No meal planned'
                 });
             }
 
@@ -9393,6 +9463,77 @@ console.log('Script started loading...');
 
         init();
     </script>
-<!--  This is a test // -->
+    
+    <script>
+        // Convert all emojis to images using Twemoji
+        if (typeof twemoji !== 'undefined') {
+            // Parse the entire page on load
+            window.addEventListener('load', function() {
+                twemoji.parse(document.body, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            });
+            
+            // Also parse when new content is added dynamically
+            // Monitor DOM changes and re-parse
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            twemoji.parse(node, {
+                                folder: 'svg',
+                                ext: '.svg'
+                            });
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+    </script>
+    
+    <script>
+        // Auto-fullscreen when page loads
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.log('Fullscreen request failed:', err);
+                });
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.mozRequestFullScreen) { // Firefox
+                elem.mozRequestFullScreen();
+            } else if (elem.msRequestFullscreen) { // IE/Edge
+                elem.msRequestFullscreen();
+            }
+        }
+        
+        // Try to enter fullscreen after page loads
+        window.addEventListener('load', function() {
+            setTimeout(enterFullscreen, 500);
+        });
+        
+        // Re-enter fullscreen if user exits
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                setTimeout(enterFullscreen, 1000);
+            }
+        });
+        
+        // Also allow manual fullscreen trigger on first touch/click
+        let hasInteracted = false;
+        document.addEventListener('click', function() {
+            if (!hasInteracted) {
+                hasInteracted = true;
+                enterFullscreen();
+            }
+        }, { once: true });
+    </script>
 </body>
 </html>
