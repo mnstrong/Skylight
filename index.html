@@ -9563,6 +9563,23 @@ console.log('Script started loading...');
                 enterFullscreen();
             }
         }, { once: true });
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "firebase/app";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgEyHTkAE_4-Ua8uPHs8uUtRm8C6eDNi4",
+          authDomain: "skylight-d1c07.firebaseapp.com",
+          projectId: "skylight-d1c07",
+          storageBucket: "skylight-d1c07.firebasestorage.app",
+          messagingSenderId: "812789085658",
+          appId: "1:812789085658:web:e9f3860a26e9e4ff3d3ce3"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
     </script>
 </body>
 </html>
