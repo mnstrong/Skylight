@@ -1371,8 +1371,8 @@
         
         /* Reward card emoji sizing */
         .reward-emoji img.emoji {
-            height: 128px;
-            width: 128px;
+            height: 48px;
+            width: 48px;
         }
         
         /* Confetti Animation */
@@ -1415,14 +1415,6 @@
             overflow-x: auto;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
-        }
-
-        .rewards-container > * {
-            margin-right: 20px;
-        }
-        
-        .rewards-container > *:last-child {
-            margin-right: 0;
         }
         
         .rewards-container::-webkit-scrollbar {
@@ -10013,9 +10005,29 @@ console.log('Script started loading...');
             }
         });
         
+        document.addEventListener('webkitfullscreenchange', function() {
+            if (!document.webkitFullscreenElement) {
+                setTimeout(enterFullscreen, 1000);
+            }
+        });
+        
+        document.addEventListener('mozfullscreenchange', function() {
+            if (!document.mozFullScreenElement) {
+                setTimeout(enterFullscreen, 1000);
+            }
+        });
+        
         // Also allow manual fullscreen trigger on first touch/click
         let hasInteracted = false;
         document.addEventListener('click', function() {
+            if (!hasInteracted) {
+                hasInteracted = true;
+                enterFullscreen();
+            }
+        }, { once: true });
+        
+        // Also try on touch for mobile devices
+        document.addEventListener('touchstart', function() {
             if (!hasInteracted) {
                 hasInteracted = true;
                 enterFullscreen();
