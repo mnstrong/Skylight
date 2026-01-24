@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#667eea">
-    <link rel="manifest" href="manifest.json">
     <title>Skylight</title>
     <script src="config.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
@@ -32,6 +31,7 @@
             background: #ffffff;
             height: 100vh;
             overflow: hidden;
+            font-size: 18px;
         }
 
         .jost-<uniquifier> {
@@ -83,57 +83,63 @@
             background: #E8EBF0;
             color: #5C6370;
             border: none;
-            padding: 6px 12px;
+            padding: 10px 18px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;        /* Changed from 14px */
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
-            min-width: 32px;        /* Added this line */
+            min-width: 40px;
         }
 
         .week-nav-btn, .month-display, .week-display {
             background: #E8EBF0;
             color: #5C6370;
             border: none;
-            padding: 6px 12px;
+            padding: 10px 18px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 13px;        /* Changed from 14px */
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
-            min-width: 32px;        /* Added this line */
+            min-width: 40px;
         }
 
         .middle {
-            min-width: 135px !important;
-            margin: 0 5px;
+            min-width: 180px !important;
+            margin: 0 8px;
         }
 
         .container {
             display: grid;
-            grid-template-columns: 80px 1fr;
-            grid-template-rows: 80px 1fr;
+            grid-template-columns: 120px 1fr;
+            grid-template-rows: 120px 1fr;
             height: 100vh;
-            gap: 15px;
-            padding: 15px;
+            gap: 0px;
+            padding: 0;
         }
 
         .nav-sidebar {
             grid-row: 1 / -1;
             background: #E8EBF0;
-            border-radius: 15px;
-            padding: 20px 10px;
+            border-radius: 0;
+            padding: 15px 0px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .nav-sidebar > * {
+            margin-bottom: 20px;
+        }
+        
+        .nav-sidebar > *:last-child {
+            margin-bottom: 0;
         }
 
         .nav-item {
@@ -141,15 +147,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 15px 10px;
-            border-radius: 10px;
+            padding: 20px 0px;
+            border-radius: 0px;
             cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
             color: #5C6370;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 600;
-            gap: 5px;
+            gap: 8px;
         }
 
         .nav-item:hover {
@@ -158,36 +164,89 @@
         }
 
         .nav-item.active {
-            background: #667eea;
-            color: white;
+            background: white;
+            color: #667eea;
         }
 
         .nav-icon {
-            font-size: 24px;
-            width: 24px;
-            height: 24px;
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* Simple icon shapes using CSS */
-        .icon-calendar::before { content: '📅'; }
-        .icon-tasks::before { content: '✓'; }
-        .icon-rewards::before { content: '⭐'; }
-        .icon-meals::before { content: '🍽'; }
-        .icon-photos::before { content: '🖼'; }
-        .icon-lists::before { content: '☰'; }
+        /* Icons using images - place your icon files in the same directory as index.html */
+        .icon-calendar::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('calendar-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .icon-tasks::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('tasks-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .icon-rewards::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('rewards-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .icon-meals::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('meals-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .icon-photos::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('photos-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .icon-lists::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('lists-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
 
         .header {
             grid-column: 2 / -1;
             background: white;
-            border-radius: 15px;
-            padding: 15px 30px;
+            border-radius: 0;
+            padding: 25px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .header-left {
@@ -214,20 +273,27 @@
         .date-weather-line {
             display: flex;
             align-items: baseline;
-            gap: 15px;
+            font-size: 42px;
+            font-weight: 400;
+            color: #333;
+        }
+        
+        .date-weather-line > * {
+            margin-right: 45px;
+        }
+        
+        .date-weather-line > *:last-child {
+            margin-right: 0;
+        }
+
+        .time-line {
             font-size: 32px;
             font-weight: 400;
             color: #333;
         }
 
-        .time-line {
-            font-size: 25px;
-            font-weight: 400;
-            color: #333;
-        }
-
         .weather-inline {
-            font-size: 25px;
+            font-size: 32px;
             color: #666;
         }
 
@@ -237,15 +303,15 @@
         }
 
         .person-avatar {
-            width: 36px;
-            height: 36px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             color: white;
-            font-size: 14px;
+            font-size: 18px;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -257,17 +323,22 @@
         .main-content {
             grid-column: 2 / -1;
             background: white;
-            border-radius: 15px;
+            border-radius: 0;
             padding: 20px;
             overflow-y: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .family-pills {
             display: flex;
-            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            margin-left: -10px;
+            margin-top: -10px;
+        }
+        
+        .family-pills > * {
+            margin-left: 10px;
+            margin-top: 10px;
         }
 
         .family-pill {
@@ -420,10 +491,10 @@
             background: #E8EBF0;
             color: #5C6370;
             border: none;
-            padding: 8px 12px;
+            padding: 12px 18px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 17px;
             font-weight: 600;
             transition: background 0.2s;
         }
@@ -462,7 +533,7 @@
 
 .week-view-grid {
     display: grid;
-    grid-template-columns: 80px repeat(7, 1fr);
+    grid-template-columns: 100px repeat(7, 1fr);
     grid-template-rows:
         auto        /* day headers */
         auto        /* all-day events */
@@ -474,7 +545,7 @@
 
 .week-view-grid-8col {
     display: grid;
-    grid-template-columns: 80px repeat(7, 1fr) 200px;
+    grid-template-columns: 100px repeat(7, 1fr) 200px;
     background: white;
     border-radius: 12px;
     overflow: hidden;
@@ -501,7 +572,7 @@
 
 .week-day-label-serif {
     font-family: "Noticia Text", serif;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 400;
     color: #000;
     text-align: left;
@@ -524,7 +595,7 @@
 
 .next-week-dates-small {
     font-family: "Jost", sans-serif;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 400;
     color: #666;
     margin-top: 5px;
@@ -597,27 +668,48 @@
         .week-day-header-cell {
             padding: 20px 10px;
             text-align: center;
-            background: #f9f9f9;
+            background: white;
             border-bottom: 2px solid #e0e0e0;
             border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
         }
         
         .week-day-header-cell.today {
-            background: #667eea;
-            color: white;
+            background: white;
         }
         
-        .week-day-name {
-            font-size: 12px;
+        .week-day-header-cell .week-day-name {
+            font-size: 15px;
             font-weight: 600;
             text-transform: uppercase;
-            margin-bottom: 5px;
             opacity: 0.8;
         }
         
-        .week-day-number {
-            font-size: 24px;
+        .week-day-header-cell .week-day-number {
+            font-size: 32px;
             font-weight: 700;
+        }
+        
+        .week-day-header-cell > * {
+            margin-right: 10px;
+        }
+        
+        .week-day-header-cell > *:last-child {
+            margin-right: 0;
+        }
+        
+        .week-day-header-cell.today .week-day-number {
+            background: #FF6B6B;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .week-time-labels {
@@ -625,14 +717,14 @@
             grid-row: 3;
             display: flex;
             flex-direction: column;
-            background: #f9f9f9;
+            background: white;
             border-right: 1px solid #e0e0e0;
         }
         
         .week-time-label {
             height: 60px;
             padding: 5px 10px;
-            font-size: 11px;
+            font-size: 14px;
             color: #666;
             text-align: right;
             border-bottom: 1px solid #e0e0e0;
@@ -689,7 +781,7 @@
         }
         
         .week-event-title {
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
             margin-bottom: 3px;
@@ -699,23 +791,44 @@
         }
         
         .week-event-time {
-            font-size: 11px;
+            font-size: 14px;
             color: #666;
             white-space: nowrap;
         }
         
         .week-event-initial {
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
             flex-shrink: 0;
             margin-left: 8px;
+        }
+        
+        .current-time-indicator {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #FF6B6B;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .current-time-indicator::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: -5px;
+            width: 12px;
+            height: 12px;
+            background: #FF6B6B;
+            border-radius: 50%;
         }
 
         .week-grid {
@@ -1826,11 +1939,12 @@
         }
         
         .rewards-person-column {
-            min-width: 350px;
-            max-width: 350px;
+            min-width: 450px;
+            max-width: 450px;
+            min-height: 500px;
             flex-shrink: 0;
             border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
         }
         
         .rewards-person-header {
@@ -1841,13 +1955,13 @@
         }
         
         .rewards-person-avatar {
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 26px;
             font-weight: 700;
             color: white;
         }
@@ -1857,14 +1971,14 @@
         }
         
         .rewards-person-name {
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 600;
             color: #000;
             margin-bottom: 5px;
         }
         
         .rewards-person-total-stars {
-            font-size: 16px;
+            font-size: 17px;
             color: #666;
             display: flex;
             align-items: center;
@@ -1880,18 +1994,18 @@
         .reward-card {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
         .reward-icon {
-            font-size: 48px;
+            font-size: 60px;
             text-align: center;
             margin-bottom: 15px;
         }
         
         .reward-title {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 600;
             color: #000;
             text-align: center;
@@ -1907,27 +2021,27 @@
         
         .reward-progress-bar {
             flex: 1;
-            height: 24px;
+            height: 28px;
             background: rgba(0,0,0,0.1);
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
             position: relative;
         }
         
         .reward-progress-fill {
             height: 100%;
-            border-radius: 12px;
+            border-radius: 14px;
             transition: width 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
         }
         
         .reward-stars-text {
-            font-size: 14px;
+            font-size: 17px;
             color: #666;
             white-space: nowrap;
             display: flex;
@@ -2127,10 +2241,10 @@
             text-align: left;
             font-family: Georgia, 'Times New Roman', Times, serif;
             font-weight: 400;
-            padding: 10px;
+            padding: 12px;
             padding-left: 15px;
             color: #000;
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .day-cell {
@@ -2140,7 +2254,7 @@
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
-            height: 120px;
+            height: 145px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -2153,8 +2267,8 @@
         .day-cell.today .day-number {
             background: #FF6B6B;
             color: white;
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -2169,7 +2283,7 @@
             font-weight: 600;
             margin-bottom: 4px;
             align-self: flex-end;
-            font-size: 16px;
+            font-size: 20px;
         }
 
         .day-events {
@@ -2182,7 +2296,7 @@
         }
 
         .day-event-item {
-            font-size: 11px;
+            font-size: 13px;
             padding: 4px 6px;
             line-height: 1.3;
             word-wrap: break-word;
@@ -2196,7 +2310,7 @@
 
         .day-event-time {
             font-weight: 600;
-            font-size: 10px;
+            font-size: 12px;
             white-space: nowrap;
         }
         
@@ -2353,12 +2467,13 @@
         }
 
         .tab {
-            padding: 10px 20px;
-            background: #f0f0f0;
+            padding: 12px 18px;
+            background: #E8EBF0;
             border: none;
-            border-radius: 8px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
+            font-weight: 600;
         }
 
         .tab.active {
@@ -2547,11 +2662,18 @@
         /* Chores View Styling */
         .chores-container {
             display: flex;
-            gap: 20px;
             padding: 20px 0;
             overflow-x: auto;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
+        }
+        
+        .chores-container > * {
+            margin-right: 20px;
+        }
+        
+        .chores-container > *:last-child {
+            margin-right: 0;
         }
 
         .chores-container::-webkit-scrollbar {
@@ -2574,10 +2696,10 @@
         
         .chore-person-card {
             border-radius: 15px;
-            padding: 20px;
-            min-height: 400px;
-            min-width: 350px;
-            max-width: 350px;
+            padding: 30px;
+            min-height: 500px;
+            min-width: 450px;
+            max-width: 450px;
             flex-shrink: 0;
         }
         
@@ -2589,13 +2711,13 @@
         }
         
         .chore-person-avatar {
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 26px;
             font-weight: 700;
             color: white;
         }
@@ -2605,7 +2727,7 @@
         }
         
         .chore-person-name {
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 600;
             color: #000;
             margin-bottom: 5px;
@@ -2619,18 +2741,18 @@
         }
         
         .chore-person-progress-text {
-            font-size: 14px;
+            font-size: 17px;
             color: #666;
         }
         
         .chore-person-stars {
-            font-size: 14px;
+            font-size: 17px;
             color: #666;
         }
         
         .chore-progress-bar {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 10px;
             overflow: hidden;
@@ -2655,7 +2777,7 @@
         }
         
         .chore-category-header {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 600;
             color: #000;
             margin-bottom: 5px;
@@ -2668,11 +2790,11 @@
         }
         
         .chore-category-tab {
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             border: 1px solid #ddd;
             background: white;
-            font-size: 13px;
+            font-size: 16px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -2691,13 +2813,21 @@
         
         .chore-item {
             border-radius: 15px;
-            padding: 15px;
+            padding: 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             margin-bottom: 10px;
+        }
+        
+        .chore-item.completed {
+            order: 1;
+        }
+        
+        .chore-item:not(.completed) {
+            order: 0;
         }
         
         .chore-item:hover {
@@ -2709,7 +2839,7 @@
         }
         
         .chore-item-icon {
-            font-size: 24px;
+            font-size: 30px;
             flex-shrink: 0;
         }
         
@@ -2720,14 +2850,14 @@
         }
         
         .chore-item-title {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 500;
             color: #000;
             margin-bottom: 2px;
         }
         
         .chore-item-subtitle {
-            font-size: 13px;
+            font-size: 16px;
             color: #666;
         }
         
@@ -2740,14 +2870,14 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            font-size: 13px;
+            font-size: 16px;
             color: #666;
             margin-top: 4px;
         }
         
         .chore-item-checkbox {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.5);
             display: flex;
@@ -2757,7 +2887,7 @@
             background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
         }
         
@@ -2773,7 +2903,7 @@
         .chore-add-btn {
             background: rgba(255, 255, 255, 0.5);
             border-radius: 12px;
-            padding: 12px 15px;
+            padding: 15px 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2781,7 +2911,7 @@
             transition: all 0.2s;
             border: 2px dashed #ddd;
             margin-top: 10px;
-            font-size: 14px;
+            font-size: 17px;
             font-weight: 500;
             color: #666;
         }
@@ -2988,14 +3118,28 @@
         .meal-box.empty-box {
             background: rgba(255, 179, 179, 0.15);
             cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .meal-box.empty-box.selected {
+            border-color: rgba(255, 179, 179, 1);
         }
         
         .meal-box.empty-box.lunch {
             background: rgba(179, 229, 217, 0.15);
         }
         
+        .meal-box.empty-box.lunch.selected {
+            border-color: rgba(179, 229, 217, 1);
+        }
+        
         .meal-box.empty-box.dinner {
             background: rgba(255, 217, 163, 0.15);
+        }
+        
+        .meal-box.empty-box.dinner.selected {
+            border-color: rgba(255, 217, 163, 1);
         }
         
         .meal-box.empty-box.snack {
@@ -3164,10 +3308,10 @@
         
         .chore-column {
             border-radius: 15px;
-            padding: 20px;
-            min-height: 400px;
-            min-width: 350px;
-            max-width: 350px;
+            padding: 30px;
+            min-height: 500px;
+            min-width: 450px;
+            max-width: 450px;
             flex-shrink: 0;
         }
         
@@ -3180,32 +3324,32 @@
         }
         
         .column-header-avatar {
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 26px;
             font-weight: 700;
             color: white;
         }
         
         .column-emoji {
-            font-size: 24px;
+            font-size: 30px;
         }
         
         .column-name {
             flex: 1;
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 600;
             color: #000;
         }
         
         .list-card {
-            background: rgba(255, 255, 255, 0.15);
+            background: transparent;
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: none;
             margin-bottom: 15px;
         }
@@ -3220,30 +3364,29 @@
         
         .list-card-title {
             font-family: "Jost", sans-serif;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 600;
             color: #000;
         }
         
         .list-card-initial {
-            width: 28px;
-            height: 28px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 700;
             color: white;
             flex-shrink: 0;
-            background: rgba(255, 255, 255, 0.3);
         }
         
         .list-card-count {
             background: rgba(255, 255, 255, 0.5);
             padding: 4px 12px;
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
         }
         
@@ -3257,11 +3400,11 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 15px;
+            padding: 18px;
             border-radius: 15px;
             transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
+            margin-bottom: 10px;
         }
         
         .list-item:hover {
@@ -3269,8 +3412,8 @@
         }
         
         .list-item-checkbox {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.5);
             display: flex;
@@ -3280,7 +3423,7 @@
             background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
             order: 2;
         }
@@ -3296,7 +3439,7 @@
         
         .list-item-text {
             flex: 1;
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 500;
             color: #000;
             order: 1;
@@ -3308,10 +3451,10 @@
         
         .add-item-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px 18px;
             border: 2px dashed rgba(255, 255, 255, 0.5);
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 16px;
             margin-top: 10px;
             background: rgba(255, 255, 255, 0.5);
             color: #000;
@@ -3331,9 +3474,9 @@
         
         .list-add-section-btn {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px 18px;
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 16px;
             margin-top: 10px;
             background: transparent;
             color: #666;
@@ -3350,18 +3493,60 @@
             opacity: 0.7;
         }
         
+        .list-section {
+            margin-bottom: 15px;
+        }
+        
+        .list-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .list-section-header:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        .list-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
         .list-section-count {
             background: rgba(0, 0, 0, 0.15);
             color: #666;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
         }
         
         .list-section-arrow {
             margin-left: auto;
-            font-size: 12px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .list-section-header.collapsed .list-section-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .list-section-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .list-section-items.collapsed {
+            display: none;
         }
         
         /* Calendar Filter Button */
@@ -3716,7 +3901,7 @@
         /* Star confetti animation */
         .star-confetti {
             position: fixed;
-            font-size: 20px;
+            font-size: 80px;
             z-index: 99998;
             pointer-events: none;
             will-change: transform;
@@ -3732,7 +3917,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0.3);
+                transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0.8);
                 opacity: 0;
             }
         }
@@ -4455,6 +4640,31 @@
         </div>
     </div>
     
+    <!-- Edit List Side Panel -->
+    <div class="edit-panel-overlay" id="editListPanelOverlay" onclick="closeEditListPanel()"></div>
+    <div class="edit-side-panel" id="editListPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeEditListPanel()">←</button>
+            <div class="edit-panel-title">Edit List</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">List Name</label>
+                <input type="text" class="edit-form-input" id="editListName" placeholder="List name">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Assigned To</label>
+                <select class="edit-form-input" id="editListAssignedTo">
+                </select>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditedList()">Save</button>
+            <button class="edit-delete-btn" onclick="deleteList()">Delete List</button>
+        </div>
+    </div>
+    
     <!-- Edit List Item Side Panel -->
     <div class="edit-panel-overlay" id="editListItemPanelOverlay" onclick="closeEditListItemPanel()"></div>
     <div class="edit-side-panel" id="editListItemPanel">
@@ -4580,6 +4790,18 @@ console.log('Script started loading...');
             { name: 'Levi', color: '#D9B554' },
             { name: 'Elsie', color: '#DDC2F0' }
         ];
+        
+        // Ensure all family members have IDs (migration for existing data)
+        let needsUpdate = false;
+        familyMembers.forEach((member, index) => {
+            if (!member.id) {
+                member.id = index + 1;
+                needsUpdate = true;
+            }
+        });
+        if (needsUpdate) {
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        }
         let events = JSON.parse(localStorage.getItem('events')) || [];
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let chores = JSON.parse(localStorage.getItem('chores')) || [];
@@ -4661,7 +4883,7 @@ console.log('Script started loading...');
                     
                     if (meals.length === 0) {
                         // Show single empty box
-                        html += `<div class="meal-box empty-box ${mealTypeClass}" onclick="openMealSelector('${dateStr}', '${category.name}')"></div>`;
+                        html += `<div class="meal-box empty-box ${mealTypeClass}" onclick="toggleMealBoxSelection(event, '${dateStr}', '${category.name}'); openMealSelector('${dateStr}', '${category.name}')"></div>`;
                     } else {
                         // Show existing meals
                         meals.forEach(meal => {
@@ -4731,6 +4953,11 @@ console.log('Script started loading...');
             
             overlay.classList.add('active');
             panel.classList.add('active');
+        }
+        
+        function toggleMealBoxSelection(event, date, mealType) {
+            const box = event.target;
+            box.classList.toggle('selected');
         }
         
         function closeMealSelector() {
@@ -5106,7 +5333,7 @@ console.log('Script started loading...');
                 html += `
                     <button class="family-pill ${activeClass}" 
                             style="background: ${member.color}; color: white;" 
-                            onclick="filterListsByPerson('${member.id}')">
+                            onclick="filterListsByPerson(${member.id})">
                         ${member.emoji} ${member.name}
                     </button>
                 `;
@@ -5116,7 +5343,8 @@ console.log('Script started loading...');
         }
         
         function filterListsByPerson(personId) {
-            selectedListsPerson = personId;
+            // Convert to number if it's not 'all', to match member.id type
+            selectedListsPerson = personId === 'all' ? 'all' : Number(personId);
             renderFamilyPillsLists();
             renderListsColumns();
         }
@@ -5137,41 +5365,82 @@ console.log('Script started loading...');
                 const member = familyMembers.find(m => m.id === list.assignedTo);
                 if (!member) return;
                 
-                html += `<div class="chore-column" style="background: ${member.color}">`;
+                // Convert hex color to rgba with 20% opacity for column background
+                const columnBg = hexToRgba(member.color, 0.2);
+                
+                html += `<div class="chore-column" style="background: ${columnBg}">`;
                 
                 // Show list card with title and assigned person avatar
                 html += `
                     <div class="list-card">
-                        <div class="list-card-header">
+                        <div class="list-card-header" onclick="openEditListPanel(${list.id})" style="cursor: pointer;">
                             <div class="list-card-title">${list.name}</div>
-                            <div class="list-card-initial">${member.name.charAt(0).toUpperCase()}</div>
+                            <div class="list-card-initial" style="background: ${member.color};">${member.name.charAt(0).toUpperCase()}</div>
                         </div>
-                        <div class="list-items">
                 `;
                 
+                // Group items by section
+                const sections = [];
+                const itemsBySection = {};
+                
                 list.items.forEach(item => {
-                    const checkedClass = item.completed ? 'checked' : '';
-                    const textClass = item.completed ? 'completed' : '';
+                    const sectionName = item.section || 'Items';
+                    if (!itemsBySection[sectionName]) {
+                        itemsBySection[sectionName] = [];
+                        sections.push(sectionName);
+                    }
+                    itemsBySection[sectionName].push(item);
+                });
+                
+                // If no sections exist, create default "Items" section
+                if (sections.length === 0) {
+                    sections.push('Items');
+                    itemsBySection['Items'] = [];
+                }
+                
+                // Render each section
+                sections.forEach(sectionName => {
+                    const sectionItems = itemsBySection[sectionName] || [];
+                    const sectionId = sectionName.replace(/\s+/g, '-').toLowerCase();
+                    
                     html += `
-                        <div class="list-item" onclick="openListItemDetail(${list.id}, ${item.id})">
-                            <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
-                            <div class="list-item-text ${textClass}">${item.text}</div>
+                        <div class="list-section">
+                            <div class="list-section-header" onclick="toggleSection('${list.id}', '${sectionId}')">
+                                <span class="list-section-title">${sectionName}</span>
+                                <span class="list-section-count">${sectionItems.length}</span>
+                                <span class="list-section-arrow">^</span>
+                            </div>
+                            <div class="list-section-items" id="section-${list.id}-${sectionId}">
+                    `;
+                    
+                    sectionItems.forEach(item => {
+                        // Skip empty items (section placeholders)
+                        if (!item.text) return;
+                        
+                        const checkedClass = item.completed ? 'checked' : '';
+                        const textClass = item.completed ? 'completed' : '';
+                        const itemBg = hexToRgba(member.color, 0.4);
+                        html += `
+                            <div class="list-item" style="background: ${itemBg};" onclick="openListItemDetail(${list.id}, ${item.id})">
+                                <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
+                                <div class="list-item-text ${textClass}">${item.text}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                                <input type="text" class="add-item-input" placeholder="Add an item..." onkeypress="if(event.key==='Enter') addListItemToSection(${list.id}, '${sectionName}', this)">
+                            </div>
                         </div>
                     `;
                 });
                 
                 html += `
-                        </div>
-                        <input type="text" class="add-item-input" placeholder="Add an item..." onkeypress="if(event.key==='Enter') addListItemToList(${list.id}, this)">
-                        <div class="list-add-section-btn">
+                        <div class="list-add-section-btn" onclick="addNewSection(${list.id})">
                             Add section
-                            <div class="list-section-count">${list.items.length}</div>
-                            <span class="list-section-arrow">^</span>
                         </div>
                     </div>
-                `;
-                
-                html += `</div>`;
+                </div>`;
             });
             
             container.innerHTML = html;
@@ -5194,6 +5463,67 @@ console.log('Script started loading...');
             localStorage.setItem('lists', JSON.stringify(lists));
             inputElement.value = '';
             renderListsColumns();
+        }
+        
+        function addListItemToSection(listId, sectionName, inputElement) {
+            const text = inputElement.value.trim();
+            if (!text) return;
+            
+            const list = lists.find(l => l.id === listId);
+            if (!list) return;
+            
+            const newItem = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                section: sectionName
+            };
+            
+            list.items.push(newItem);
+            localStorage.setItem('lists', JSON.stringify(lists));
+            inputElement.value = '';
+            renderListsColumns();
+        }
+        
+        function addNewSection(listId) {
+            const sectionName = prompt('Enter section name:');
+            if (!sectionName || !sectionName.trim()) return;
+            
+            const list = lists.find(l => l.id === listId);
+            if (!list) return;
+            
+            // Check if section already exists
+            const existingSection = list.items.find(i => i.section === sectionName.trim());
+            if (existingSection) {
+                alert('A section with this name already exists');
+                return;
+            }
+            
+            // Create an empty item to establish the section
+            // This will show up as an empty section with the input field
+            const newItem = {
+                id: Date.now(),
+                text: '',
+                completed: false,
+                section: sectionName.trim()
+            };
+            
+            list.items.push(newItem);
+            localStorage.setItem('lists', JSON.stringify(lists));
+            renderListsColumns();
+        }
+        
+        function toggleSection(listId, sectionId) {
+            const sectionElement = document.getElementById(`section-${listId}-${sectionId}`);
+            const headerElement = sectionElement.previousElementSibling;
+            
+            if (sectionElement.classList.contains('collapsed')) {
+                sectionElement.classList.remove('collapsed');
+                headerElement.classList.remove('collapsed');
+            } else {
+                sectionElement.classList.add('collapsed');
+                headerElement.classList.add('collapsed');
+            }
         }
         
         function toggleListItem(listId, itemId) {
@@ -5234,7 +5564,7 @@ console.log('Script started loading...');
         
         function saveNewList() {
             const name = document.getElementById('addListName').value.trim();
-            const assignedTo = document.getElementById('addListAssignedTo').value;
+            const assignedTo = Number(document.getElementById('addListAssignedTo').value);
             
             if (!name) {
                 alert('Please enter a list name');
@@ -5328,6 +5658,65 @@ console.log('Script started loading...');
         function closeEditListItemPanel() {
             document.getElementById('editListItemPanel').classList.remove('active');
             document.getElementById('editListItemPanelOverlay').classList.remove('active');
+        }
+        
+        function openEditListPanel(listId) {
+            currentEditListId = listId;
+            
+            const list = lists.find(l => l.id === listId);
+            if (!list) return;
+            
+            // Populate form
+            document.getElementById('editListName').value = list.name || '';
+            
+            // Populate assigned to dropdown
+            const select = document.getElementById('editListAssignedTo');
+            select.innerHTML = familyMembers.map(m => 
+                `<option value="${m.id}" ${m.id === list.assignedTo ? 'selected' : ''}>${m.name}</option>`
+            ).join('');
+            
+            document.getElementById('editListPanelOverlay').classList.add('active');
+            document.getElementById('editListPanel').classList.add('active');
+        }
+        
+        function closeEditListPanel() {
+            document.getElementById('editListPanel').classList.remove('active');
+            document.getElementById('editListPanelOverlay').classList.remove('active');
+        }
+        
+        function saveEditedList() {
+            const newName = document.getElementById('editListName').value.trim();
+            const newAssignedTo = Number(document.getElementById('editListAssignedTo').value);
+            
+            if (!newName) {
+                alert('Please enter a list name');
+                return;
+            }
+            
+            const list = lists.find(l => l.id === currentEditListId);
+            if (!list) return;
+            
+            list.name = newName;
+            list.assignedTo = newAssignedTo;
+            localStorage.setItem('lists', JSON.stringify(lists));
+            
+            closeEditListPanel();
+            // Reset filter to 'all' so the list doesn't disappear after changing owner
+            selectedListsPerson = 'all';
+            renderFamilyPillsLists();
+            renderListsColumns();
+        }
+        
+        function deleteList() {
+            if (!confirm('Are you sure you want to delete this list and all its items?')) return;
+            
+            const index = lists.findIndex(l => l.id === currentEditListId);
+            if (index > -1) {
+                lists.splice(index, 1);
+                localStorage.setItem('lists', JSON.stringify(lists));
+                closeEditListPanel();
+                renderListsColumns();
+            }
         }
         
         function saveEditedListItem() {
@@ -5596,6 +5985,19 @@ console.log('Script started loading...');
                 dropdown.classList.remove('active');
             }
         });
+        
+        // Utility function to convert hex color to rgba
+        function hexToRgba(hex, alpha) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            
+            // Convert to RGB
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
         
         function init() {
             updateDateTime();
@@ -6202,10 +6604,10 @@ console.log('Script started loading...');
         }
 
         function renderWeekView() {
-            const weekStart = getWeekStart(currentDate);
-            const weekDays = [];
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const weekStart = new Date(today); // Start from today
+            const weekDays = [];
             
             for (let i = 0; i < 7; i++) {
                 const day = new Date(weekStart);
@@ -6222,7 +6624,8 @@ console.log('Script started loading...');
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
                 html += `<div class="week-day-header-cell ${isToday ? 'today' : ''}">
-                    <div class="week-day-label-serif">${dayName} ${dayNum}</div>
+                    <div class="week-day-name">${dayName}</div>
+                    <div class="week-day-number">${dayNum}</div>
                 </div>`;
             });
 
@@ -6319,6 +6722,22 @@ console.log('Script started loading...');
                         ${initial ? `<div class="week-event-initial" style="background: ${color}">${initial}</div>` : ''}
                     </div>`;
                 });
+                
+                // Add current time indicator if this is today
+                const isToday = day.getTime() === today.getTime();
+                if (isToday) {
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinutes = now.getMinutes();
+                    
+                    if (currentHour >= startHour && currentHour < endHour) {
+                        const totalMinutesFromStart = (currentHour - startHour) * 60 + currentMinutes;
+                        const totalMinutesInRange = (endHour - startHour) * 60;
+                        const topPercent = (totalMinutesFromStart / totalMinutesInRange) * 100;
+                        
+                        html += `<div class="current-time-indicator" style="top: ${topPercent}%;"></div>`;
+                    }
+                }
                 
                 html += '</div>'; // events-layer
                 html += '</div>'; // day-column-container
@@ -7087,7 +7506,9 @@ console.log('Script started loading...');
                     memberChores.reduce((sum, c) => sum + c.stars, 0) +
                     memberRoutines.reduce((sum, r) => sum + r.stars, 0);
                 
-                html += `<div class="rewards-person-column" style="background: ${member.color}15;">
+                const columnBg = hexToRgba(member.color, 0.2);
+                
+                html += `<div class="rewards-person-column" style="background: ${columnBg};">
                     <div class="rewards-person-header">
                         <div class="rewards-person-avatar" style="background: ${member.color}">
                             ${member.name.charAt(0).toUpperCase()}
@@ -7202,7 +7623,9 @@ console.log('Script started loading...');
                 // Calculate total stars earned
                 const starsEarned = memberChores.filter(c => c.completed && c.stars).reduce((sum, c) => sum + c.stars, 0);
                 
-                html += `<div class="chore-person-card" style="background: ${member.color}15;">
+                const columnBg = hexToRgba(member.color, 0.2);
+                
+                html += `<div class="chore-person-card" style="background: ${columnBg};">
                     <div class="chore-person-header">
                         <div class="chore-person-avatar" style="background: ${member.color}">
                             ${member.name.charAt(0).toUpperCase()}
@@ -7320,7 +7743,9 @@ console.log('Script started loading...');
                 // Get rewards for this member
                 const memberRewards = rewards.filter(r => r.member === member.name);
                 
-                html += `<div class="rewards-person-column" style="background: ${member.color}15;">
+                const columnBg = hexToRgba(member.color, 0.2);
+                
+                html += `<div class="rewards-person-column" style="background: ${columnBg};">
                     <div class="rewards-person-header">
                         <div class="rewards-person-avatar" style="background: ${member.color}">
                             ${member.name.charAt(0).toUpperCase()}
@@ -9490,6 +9915,31 @@ console.log('Script started loading...');
             alert(`Events for ${dateStr}:\n\n${eventList}`);
         }
 
+        // Update current time indicator every minute
+        function updateCurrentTimeIndicator() {
+            if (currentView !== 'week') return;
+            
+            const indicator = document.querySelector('.current-time-indicator');
+            if (!indicator) return;
+            
+            const now = new Date();
+            const startHour = 7;
+            const endHour = 21;
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+            
+            if (currentHour >= startHour && currentHour < endHour) {
+                const totalMinutesFromStart = (currentHour - startHour) * 60 + currentMinutes;
+                const totalMinutesInRange = (endHour - startHour) * 60;
+                const topPercent = (totalMinutesFromStart / totalMinutesInRange) * 100;
+                
+                indicator.style.top = topPercent + '%';
+            }
+        }
+        
+        // Update time indicator every minute
+        setInterval(updateCurrentTimeIndicator, 60000);
+
         init();
     </script>
     
@@ -9563,6 +10013,25 @@ console.log('Script started loading...');
                 enterFullscreen();
             }
         }, { once: true });
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAgEyHTkAE_4-Ua8uPHs8uUtRm8C6eDNi4",
+  authDomain: "skylight-d1c07.firebaseapp.com",
+  projectId: "skylight-d1c07",
+  storageBucket: "skylight-d1c07.firebasestorage.app",
+  messagingSenderId: "812789085658",
+  appId: "1:812789085658:web:e9f3860a26e9e4ff3d3ce3"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
     </script>
 </body>
 </html>
