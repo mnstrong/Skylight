@@ -578,17 +578,25 @@
         .simple-week-day-header .week-day-number {
             font-size: 32px;
             font-weight: 700;
+            line-height: 1;
+        }
+        
+        .simple-week-day-header.today .week-day-name {
+            opacity: 1 !important;
+            color: #000;
         }
         
         .simple-week-day-header.today .week-day-number {
-            background: #FF6B6B;
-            color: white;
+            background: #FF6B6B !important;
+            color: white !important;
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
+            font-size: 26px;
+            line-height: 1;
         }
         
         .simple-week-add-btn {
@@ -596,16 +604,67 @@
             font-size: 16px;
             font-weight: 400;
             margin-top: auto;
+            cursor: pointer;
+        }
+        
+        .simple-week-add-btn:hover {
+            color: #667eea;
+        }
+        
+        .simple-week-events {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex: 1;
+        }
+        
+        .simple-week-event {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .simple-week-event:hover {
+            transform: translateX(5px);
+        }
+        
+        .simple-week-event-time {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .simple-week-event-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .simple-week-next-week {
             background: #E8EBF0;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            align-items: stretch;
             font-size: 24px;
             font-weight: 600;
             color: #5C6370;
+        }
+        
+        .simple-week-next-week .simple-week-day-header {
+            justify-content: center;
+        }
+        
+        .simple-week-next-week .simple-week-events {
+            margin-top: 10px;
+        }
+        
+        .simple-week-next-week .simple-week-event {
+            background: white !important;
         }
 
 .week-view-grid {
@@ -1448,8 +1507,8 @@
         
         /* Reward card emoji sizing */
         .reward-emoji img.emoji {
-        height: 88px;
-        width: 88px;
+            height: 48px;
+            width: 48px;
         }
         
         /* Confetti Animation */
@@ -1946,14 +2005,68 @@
         
         .edit-toggle-label {
             display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 16px;
+            color: #5C6370;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .edit-toggle-label-top {
+            display: flex;
             align-items: center;
             gap: 10px;
+        }
+        
+        .edit-toggle-label-text {
             font-size: 16px;
-            color: #333;
+            color: #5C6370;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-toggle-label.has-value .edit-toggle-label-text {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .edit-toggle-label-value {
+            font-size: 18px;
+            color: #000;
+            font-weight: 500;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-left: 30px;
+        }
+        
+        .edit-toggle-label.has-value .edit-toggle-label-value {
+            opacity: 1;
+            max-height: 30px;
+        }
+        
+        .edit-toggle-label.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .edit-toggle-icon {
             font-size: 20px;
+        }
+        
+        /* Remove old time field styles */
+        .time-field-container {
+            display: none !important;
+        }
+        
+        .time-field-label {
+            display: none !important;
+        }
+        
+        .time-field-value {
+            display: none !important;
         }
         
         .edit-save-btn {
@@ -2538,6 +2651,172 @@
             margin-top: 10px;
         }
 
+        /* Clock Modal Styles */
+        .clock-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .clock-modal-overlay.active {
+            display: flex;
+        }
+
+        .clock-modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .clock-left-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .clock-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 64px;
+            font-weight: 600;
+            font-family: "Jost", sans-serif;
+            letter-spacing: -2px;
+        }
+
+        .clock-digit {
+            background: #1CB5C8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .clock-digit.inactive {
+            background: #f5f7fa;
+            color: #5C6370;
+        }
+
+        .clock-colon {
+            color: #5C6370;
+            font-weight: 400;
+        }
+
+        .am-pm-toggle {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .am-pm-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: 2px solid #e8ebf0;
+            background: white;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #5C6370;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .am-pm-btn.active {
+            background: #1CB5C8;
+            color: white;
+            border-color: #1CB5C8;
+        }
+
+        .clock-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: #f5f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clock-face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .clock-number {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #5C6370;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .clock-number:hover {
+            background: #e8ebf0;
+        }
+
+        .clock-number.selected {
+            background: #1CB5C8;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .clock-center-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: #1CB5C8;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .clock-hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            width: 3px;
+            background: #1CB5C8;
+            transform-origin: 50% 100%;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            border-radius: 2px;
+            margin-left: -1.5px;
+        }
+
+        .clock-mode-toggle {
+            display: none;
+        }
+
+        .clock-actions {
+            display: none;
+        }
+
         .tabs {
             display: none;
             gap: 10px;
@@ -3031,7 +3310,32 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-top: 65px;
+        }
+        
+        .chore-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .chore-empty-emoji {
+            font-size: 80px;
+            margin-bottom: 15px;
+            animation: floatEmoji 3s ease-in-out infinite;
+        }
+        
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .chore-empty-text {
+            font-size: 18px;
+            color: #999;
+            font-weight: 400;
         }
         
         .chore-item {
@@ -3062,7 +3366,7 @@
         }
         
         .chore-item-icon {
-            font-size: 45px;
+            font-size: 30px;
             flex-shrink: 0;
         }
         
@@ -3073,14 +3377,14 @@
         }
         
         .chore-item-title {
-            font-size: 25px;
+            font-size: 18px;
             font-weight: 500;
             color: #000;
             margin-bottom: 2px;
         }
         
         .chore-item-subtitle {
-            font-size: 20px;
+            font-size: 16px;
             color: #666;
         }
         
@@ -3149,7 +3453,7 @@
         .routine-indicators {
             display: flex;
             gap: 10px;
-            margin: 2px 0 20px 0;
+            margin: 20px 0;
             justify-content: center;
         }
         
@@ -3157,11 +3461,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 21px;
-            padding: 10px 0 0 0;
+            gap: 5px;
+            padding: 10px;
             border-radius: 50%;
-            width: 85px;
-            height: 85px;
+            width: 70px;
+            height: 70px;
             background: rgba(255, 255, 255, 0.3);
             cursor: default;
             transition: all 0.2s;
@@ -3181,16 +3485,12 @@
         }
         
         .routine-indicator-icon {
-            font-size: 48px;
-        }
-
-        .routine-indicator-icon img {
-            margin: 0;
+            font-size: 24px;
         }
         
         .routine-indicator-label {
-            font-size: 19px;
-            font-weight: 300;
+            font-size: 9px;
+            font-weight: 600;
             text-align: center;
             color: #666;
         }
@@ -4354,16 +4654,19 @@
             
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">🕐</span>
-                        <span>Time</span>
+                    <div class="edit-toggle-label" id="taskChoreTimeLabel" onclick="handleTimeFieldClick('taskChoreTime', 'taskChoreTimeToggle')">
+                        <div class="edit-toggle-label-top">
+                            <span class="edit-toggle-icon">🕐</span>
+                            <span class="edit-toggle-label-text">Time</span>
+                        </div>
+                        <div class="edit-toggle-label-value" id="taskChoreTimeDisplay"></div>
                     </div>
                     <label class="task-toggle">
                         <input type="checkbox" id="taskChoreTimeToggle" onchange="updateAddTimeVisibility()">
                         <span class="task-toggle-slider"></span>
                     </label>
                 </div>
-                <input type="time" class="edit-form-input" id="taskChoreTime" style="margin-top: 10px; display: none;">
+                <input type="time" class="edit-form-input" id="taskChoreTime" style="display: none;">
             </div>
             
             <div class="edit-form-group" id="taskStarsSection">
@@ -4448,12 +4751,18 @@
             <div id="eventTimeSection" style="display: none;">
                 <div class="edit-form-group">
                     <label class="edit-form-label">Start Time</label>
-                    <input type="time" class="edit-form-input" id="eventTime">
+                    <input type="time" class="edit-form-input" id="eventTime" style="display: none;">
+                    <button type="button" class="edit-form-input" onclick="openClockModal(document.getElementById('eventTime'), null, null)" style="text-align: left; cursor: pointer; background: white;">
+                        <span id="eventTimeDisplay">Select time</span>
+                    </button>
                 </div>
                 
                 <div class="edit-form-group">
                     <label class="edit-form-label">End Time</label>
-                    <input type="time" class="edit-form-input" id="eventEndTime">
+                    <input type="time" class="edit-form-input" id="eventEndTime" style="display: none;">
+                    <button type="button" class="edit-form-input" onclick="openClockModal(document.getElementById('eventEndTime'), null, null)" style="text-align: left; cursor: pointer; background: white;">
+                        <span id="eventEndTimeDisplay">Select time</span>
+                    </button>
                 </div>
             </div>
             
@@ -4638,16 +4947,19 @@
             
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">🕐</span>
-                        <span>Time</span>
+                    <div class="edit-toggle-label" id="editTaskTimeLabel" onclick="handleTimeFieldClick('editTaskTime', 'editTaskTimeToggle')">
+                        <div class="edit-toggle-label-top">
+                            <span class="edit-toggle-icon">🕐</span>
+                            <span class="edit-toggle-label-text">Time</span>
+                        </div>
+                        <div class="edit-toggle-label-value" id="editTaskTimeDisplay"></div>
                     </div>
                     <label class="task-toggle">
                         <input type="checkbox" id="editTaskTimeToggle" onchange="updateEditTimeVisibility()">
                         <span class="task-toggle-slider"></span>
                     </label>
                 </div>
-                <input type="time" class="edit-form-input" id="editTaskTime" style="margin-top: 10px; display: none;">
+                <input type="time" class="edit-form-input" id="editTaskTime" style="display: none;">
             </div>
             
             <div class="edit-form-group" id="editStarsSection">
@@ -5020,6 +5332,31 @@
             <div class="reward-redemption-subtitle" id="redemptionSubtitle">By Willow for 50 stars on April 02, 2025.</div>
             <button class="reward-redemption-done-btn" onclick="closeRewardRedemptionModal()">Done</button>
             <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
+        </div>
+    </div>
+    
+    <!-- Clock Modal -->
+    <div class="clock-modal-overlay" id="clockModalOverlay" onclick="closeClockModal()">
+        <div class="clock-modal" onclick="event.stopPropagation()">
+            <div class="clock-left-section">
+                <div class="clock-display">
+                    <div class="clock-digit" id="clockHourDigit">12</div>
+                    <div class="clock-colon">:</div>
+                    <div class="clock-digit inactive" id="clockMinuteDigit">00</div>
+                </div>
+                
+                <div class="am-pm-toggle">
+                    <button class="am-pm-btn" id="amBtn" onclick="setAmPm('AM')">AM</button>
+                    <button class="am-pm-btn active" id="pmBtn" onclick="setAmPm('PM')">PM</button>
+                </div>
+            </div>
+            
+            <div class="clock-container">
+                <div class="clock-face" id="clockFace">
+                    <div class="clock-center-dot"></div>
+                    <div class="clock-hand" id="clockHand"></div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -6314,6 +6651,288 @@ console.log('Script started loading...');
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
         
+        // Clock Modal Variables
+        let clockMode = 'hour'; // 'hour' or 'minute'
+        let clockHour = 12;
+        let clockMinute = 0;
+        let clockAmPm = 'PM';
+        let clockInputElement = null;
+        let clockToggleElement = null;
+        let clockTimeCallback = null;
+
+        // Initialize clock face
+        function initClockFace() {
+            const clockFace = document.getElementById('clockFace');
+            if (!clockFace) return;
+            
+            // Clear existing numbers
+            const existingNumbers = clockFace.querySelectorAll('.clock-number');
+            existingNumbers.forEach(num => num.remove());
+            
+            updateClockNumbers();
+        }
+
+        // Update clock numbers based on mode
+        function updateClockNumbers() {
+            const clockFace = document.getElementById('clockFace');
+            if (!clockFace) return;
+            
+            // Clear existing numbers
+            const existingNumbers = clockFace.querySelectorAll('.clock-number');
+            existingNumbers.forEach(num => num.remove());
+            
+            const numbers = 12;
+            const radius = 130; // Distance from center
+            
+            for (let i = 0; i < numbers; i++) {
+                const number = document.createElement('div');
+                number.className = 'clock-number';
+                
+                let displayValue;
+                if (clockMode === 'hour') {
+                    displayValue = i === 0 ? 12 : i;
+                } else {
+                    displayValue = i * 5;
+                    if (displayValue === 0) displayValue = '00';
+                }
+                
+                number.textContent = displayValue;
+                
+                // Calculate position
+                const angle = (i * 30 - 90) * (Math.PI / 180);
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                
+                number.style.left = `calc(50% + ${x}px - 22px)`;
+                number.style.top = `calc(50% + ${y}px - 22px)`;
+                
+                // Add click handler
+                number.addEventListener('click', function() {
+                    if (clockMode === 'hour') {
+                        clockHour = i === 0 ? 12 : i;
+                        updateClockDisplay();
+                        // Auto-advance to minute selection
+                        setTimeout(() => {
+                            setClockMode('minute');
+                        }, 300);
+                    } else {
+                        clockMinute = i * 5;
+                        updateClockDisplay();
+                        updateClockSelection();
+                        // Auto-confirm after selecting minute
+                        setTimeout(() => {
+                            confirmClockTime();
+                        }, 300);
+                    }
+                });
+                
+                clockFace.appendChild(number);
+            }
+            
+            updateClockSelection();
+        }
+
+        // Update clock hand position
+        function updateClockHand() {
+            const hand = document.getElementById('clockHand');
+            if (!hand) return;
+            
+            let angle;
+            let length;
+            
+            if (clockMode === 'hour') {
+                // For hours: 12 o'clock is at top
+                const hourIndex = clockHour === 12 ? 0 : clockHour;
+                angle = hourIndex * 30; // Each hour is 30 degrees
+                length = 100;
+            } else {
+                // For minutes: each 5-minute mark is 30 degrees
+                const minuteIndex = clockMinute / 5;
+                angle = minuteIndex * 30;
+                length = 120;
+            }
+            
+            hand.style.height = length + 'px';
+            hand.style.transform = `rotate(${angle}deg)`;
+        }
+
+        // Update clock selection highlighting
+        function updateClockSelection() {
+            const numbers = document.querySelectorAll('.clock-number');
+            numbers.forEach((num, index) => {
+                if (clockMode === 'hour') {
+                    const hourValue = index === 0 ? 12 : index;
+                    if (hourValue === clockHour) {
+                        num.classList.add('selected');
+                    } else {
+                        num.classList.remove('selected');
+                    }
+                } else {
+                    const minuteValue = index * 5;
+                    if (minuteValue === clockMinute) {
+                        num.classList.add('selected');
+                    } else {
+                        num.classList.remove('selected');
+                    }
+                }
+            });
+            updateClockHand();
+        }
+
+        // Set clock mode (hour or minute)
+        function setClockMode(mode) {
+            clockMode = mode;
+            
+            // Update digit highlighting
+            const hourDigit = document.getElementById('clockHourDigit');
+            const minuteDigit = document.getElementById('clockMinuteDigit');
+            
+            if (mode === 'hour') {
+                hourDigit.classList.remove('inactive');
+                minuteDigit.classList.add('inactive');
+            } else {
+                hourDigit.classList.add('inactive');
+                minuteDigit.classList.remove('inactive');
+            }
+            
+            updateClockNumbers();
+            updateClockHand();
+        }
+
+        // Set AM/PM
+        function setAmPm(period) {
+            clockAmPm = period;
+            document.getElementById('amBtn').classList.toggle('active', period === 'AM');
+            document.getElementById('pmBtn').classList.toggle('active', period === 'PM');
+            updateClockDisplay();
+        }
+
+        // Update clock display
+        function updateClockDisplay() {
+            const hourDigit = document.getElementById('clockHourDigit');
+            const minuteDigit = document.getElementById('clockMinuteDigit');
+            
+            if (hourDigit && minuteDigit) {
+                hourDigit.textContent = clockHour.toString().padStart(2, '0');
+                minuteDigit.textContent = clockMinute.toString().padStart(2, '0');
+            }
+        }
+
+        // Open clock modal
+        function openClockModal(inputElement, toggleElement, callback) {
+            clockInputElement = inputElement;
+            clockToggleElement = toggleElement;
+            clockTimeCallback = callback;
+            
+            // Get current time or set default
+            const now = new Date();
+            let currentTime = inputElement ? inputElement.value : null;
+            
+            if (currentTime) {
+                // Parse existing time
+                const timeParts = currentTime.split(':');
+                let hours = parseInt(timeParts[0]);
+                const minutes = parseInt(timeParts[1]);
+                
+                clockAmPm = hours >= 12 ? 'PM' : 'AM';
+                clockHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                clockMinute = Math.round(minutes / 5) * 5;
+            } else {
+                // Set to current time
+                clockHour = now.getHours() > 12 ? now.getHours() - 12 : (now.getHours() === 0 ? 12 : now.getHours());
+                clockMinute = Math.round(now.getMinutes() / 5) * 5;
+                clockAmPm = now.getHours() >= 12 ? 'PM' : 'AM';
+            }
+            
+            setClockMode('hour');
+            updateClockDisplay();
+            initClockFace();
+            
+            document.getElementById('clockModalOverlay').classList.add('active');
+        }
+
+        // Close clock modal
+        function closeClockModal() {
+            document.getElementById('clockModalOverlay').classList.remove('active');
+        }
+
+        // Confirm clock time
+        function confirmClockTime() {
+            const hour24 = clockAmPm === 'PM' && clockHour !== 12 ? clockHour + 12 : (clockAmPm === 'AM' && clockHour === 12 ? 0 : clockHour);
+            const timeString = `${hour24.toString().padStart(2, '0')}:${clockMinute.toString().padStart(2, '0')}`;
+            
+            if (clockInputElement) {
+                clockInputElement.value = timeString;
+                
+                // Update the display button
+                updateTimeDisplayButton(clockInputElement.id, timeString);
+                
+                // Trigger change event for the input
+                const event = new Event('change', { bubbles: true });
+                clockInputElement.dispatchEvent(event);
+            }
+            
+            if (clockToggleElement && !clockToggleElement.checked) {
+                clockToggleElement.checked = true;
+                
+                // Trigger change event for toggle
+                const event = new Event('change', { bubbles: true });
+                clockToggleElement.dispatchEvent(event);
+            }
+            
+            if (clockTimeCallback) {
+                clockTimeCallback(timeString);
+            }
+            
+            closeClockModal();
+        }
+        
+        // Update time display button
+        function updateTimeDisplayButton(inputId, timeString) {
+            let displayId = inputId + 'Display';
+            const displayElement = document.getElementById(displayId);
+            const labelId = inputId + 'Label';
+            const labelElement = document.getElementById(labelId);
+            
+            if (displayElement && timeString) {
+                // Convert 24-hour to 12-hour format for display
+                const timeParts = timeString.split(':');
+                let hours = parseInt(timeParts[0]);
+                const minutes = timeParts[1];
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                
+                displayElement.textContent = `${hours}:${minutes} ${ampm}`;
+                
+                // Add has-value class to trigger animation
+                if (labelElement) {
+                    labelElement.classList.add('has-value');
+                }
+            }
+        }
+        
+        // Handle time field click
+        function handleTimeFieldClick(inputId, toggleId) {
+            const inputElement = document.getElementById(inputId);
+            const toggleElement = toggleId ? document.getElementById(toggleId) : null;
+            const labelId = inputId + 'Label';
+            const label = document.getElementById(labelId);
+            
+            // Check if field is disabled
+            if (label && label.classList.contains('disabled')) {
+                // If disabled, enable the toggle first
+                if (toggleElement) {
+                    toggleElement.checked = true;
+                    const event = new Event('change', { bubbles: true });
+                    toggleElement.dispatchEvent(event);
+                }
+                return;
+            }
+            
+            // Open the clock modal
+            openClockModal(inputElement, toggleElement, null);
+        }
+        
         function init() {
             updateDateTime();
             updateWeather();
@@ -6344,6 +6963,15 @@ console.log('Script started loading...');
             switchSection('calendar');
             setInterval(updateDateTime, 1000);
             setInterval(updateWeather, 1800000); // Update every 30 minutes
+            
+            // Initialize time labels as disabled
+            const timeLabels = ['taskChoreTimeLabel', 'editTaskTimeLabel'];
+            timeLabels.forEach(labelId => {
+                const label = document.getElementById(labelId);
+                if (label) {
+                    label.classList.add('disabled');
+                }
+            });
             
             // Check for stored auth on startup
             checkStoredAuth();
@@ -6494,13 +7122,32 @@ console.log('Script started loading...');
         }
 
         function gisLoaded() {
-            if (typeof google !== 'undefined' && google.accounts) {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES,
-                    callback: '', // defined later
-                });
-                gisInited = true;
+            // Not needed for manual OAuth flow, but keeping for compatibility
+            gisInited = true;
+        }
+        
+        // Check for OAuth hash fragment on page load
+        function checkOAuthRedirect() {
+            const hash = window.location.hash;
+            if (hash) {
+                const params = new URLSearchParams(hash.substring(1));
+                const accessToken = params.get('access_token');
+                const expiresIn = params.get('expires_in');
+                
+                if (accessToken) {
+                    // Store the token
+                    localStorage.setItem('googleCalendarToken', accessToken);
+                    const expiryTime = Date.now() + (parseInt(expiresIn || '3600') * 1000);
+                    localStorage.setItem('googleCalendarTokenExpiry', expiryTime.toString());
+                    console.log('Google Calendar token received and saved');
+                    
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // Load events
+                    isGoogleConnected = true;
+                    loadGoogleCalendarEvents();
+                }
             }
         }
         
@@ -6509,6 +7156,7 @@ console.log('Script started loading...');
             setTimeout(() => {
                 gapiLoaded();
                 gisLoaded();
+                checkOAuthRedirect();
                 // Auto-connect to Google Calendar if credentials are set
                 if (CLIENT_ID !== 'YOUR_CLIENT_ID_HERE') {
                     // Only try auto-connect if not already connected and no stored token
@@ -6521,45 +7169,21 @@ console.log('Script started loading...');
         });
 
         function connectGoogleCalendar() {
-            if (!gapiInited || !gisInited) {
-                console.log('Google Calendar is still loading...');
-                return;
-            }
+            // Build OAuth URL manually to force redirect flow
+            const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+            const scope = encodeURIComponent(SCOPES);
+            const clientId = encodeURIComponent(CLIENT_ID);
             
-            tokenClient.callback = async (resp) => {
-                if (resp.error !== undefined) {
-                    console.error('Google auth error:', resp);
-                    return;
-                }
-                
-                // Store the token from the response
-                if (resp.access_token) {
-                    localStorage.setItem('googleCalendarToken', resp.access_token);
-                    // Token expires in 1 hour (3600 seconds) by default
-                    const expiryTime = Date.now() + (3600 * 1000);
-                    localStorage.setItem('googleCalendarTokenExpiry', expiryTime.toString());
-                    console.log('Google Calendar token saved to localStorage');
-                    
-                    // Set the token in gapi if it's initialized
-                    if (typeof gapi !== 'undefined' && gapi.client && gapi.client.setToken) {
-                        gapi.client.setToken({
-                            access_token: resp.access_token
-                        });
-                    }
-                }
-                
-                isGoogleConnected = true;
-                await loadGoogleCalendarEvents();
-                console.log('Google Calendar connected and synced');
-            };
-
-            if (gapi.client.getToken() === null) {
-                // First time - need user consent
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                // Already authenticated, just refresh silently
-                tokenClient.requestAccessToken({prompt: ''});
-            }
+            // Use OAuth 2.0 implicit flow with redirect
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                `client_id=${clientId}&` +
+                `redirect_uri=${redirectUri}&` +
+                `response_type=token&` +
+                `scope=${scope}&` +
+                `prompt=consent`;
+            
+            // Redirect to Google OAuth page
+            window.location.href = authUrl;
         }
 
         async function loadGoogleCalendarEvents() {
@@ -6935,27 +7559,87 @@ console.log('Script started loading...');
             
             let html = '<div class="simple-week-grid">';
             
-            // Render 7 day boxes
+            // Render 7 day boxes with events
             weekDays.forEach(day => {
+                day.setHours(0, 0, 0, 0);
                 const isToday = day.getTime() === today.getTime();
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
                 const dateStr = day.toISOString().split('T')[0];
                 
-                html += `<div class="simple-week-day" onclick="openEventModalForDate('${dateStr}')">
+                console.log('Day:', dayName, dayNum, 'isToday:', isToday, 'dayTime:', day.getTime(), 'todayTime:', today.getTime());
+                
+                // Get events for this day
+                const allEvents = getAllEvents();
+                const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e))
+                    .sort((a, b) => {
+                        if (!a.time) return -1;
+                        if (!b.time) return 1;
+                        return a.time.localeCompare(b.time);
+                    })
+                    .slice(0, 3); // Show max 3 events
+                
+                html += `<div class="simple-week-day">
                     <div class="simple-week-day-header ${isToday ? 'today' : ''}">
                         <div class="week-day-name">${dayName}</div>
                         <div class="week-day-number">${dayNum}</div>
-                    </div>
-                    <div class="simple-week-add-btn">+ Add Event</div>
+                    </div>`;
+                
+                // Display events
+                if (dayEvents.length > 0) {
+                    html += '<div class="simple-week-events">';
+                    dayEvents.forEach(event => {
+                        const member = familyMembers.find(m => m.name === event.member);
+                        const color = (member && member.color) || '#667eea';
+                        html += `<div class="simple-week-event" style="background: ${color}40; border-left: 3px solid ${color}" onclick="showEventDetails('${event.id}')">
+                            <div class="simple-week-event-time">${event.time ? formatTime(event.time) : 'All day'}</div>
+                            <div class="simple-week-event-title">${event.title}</div>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                html += `<div class="simple-week-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add Event</div>
                 </div>`;
             });
             
-            // Add "Next Week" box
+            // Add "Next Week" box with upcoming events preview
             const nextWeekDate = new Date(weekStart);
             nextWeekDate.setDate(nextWeekDate.getDate() + 7);
-            html += `<div class="simple-week-day simple-week-next-week" onclick="navigateView(1)">
-                Next Week
+            const nextWeekEnd = new Date(nextWeekDate);
+            nextWeekEnd.setDate(nextWeekEnd.getDate() + 6);
+            
+            // Get events for next week
+            const allEvents = getAllEvents();
+            const nextWeekEvents = allEvents.filter(e => {
+                if (!isEventVisible(e)) return false;
+                const eventDate = new Date(e.date);
+                return eventDate >= nextWeekDate && eventDate <= nextWeekEnd;
+            }).slice(0, 5); // Show max 5 upcoming events
+            
+            html += `<div class="simple-week-day simple-week-next-week">
+                <div class="simple-week-day-header">
+                    <div class="week-day-name">Next Week</div>
+                </div>`;
+            
+            if (nextWeekEvents.length > 0) {
+                html += '<div class="simple-week-events">';
+                nextWeekEvents.forEach(event => {
+                    const eventDate = new Date(event.date);
+                    const dayName = eventDate.toLocaleDateString('en-US', { weekday: 'short' });
+                    const member = familyMembers.find(m => m.name === event.member);
+                    const color = (member && member.color) || '#667eea';
+                    html += `<div class="simple-week-event" style="background: ${color}40; border-left: 3px solid ${color}" onclick="showEventDetails('${event.id}')">
+                        <div class="simple-week-event-time">${dayName} ${event.time ? formatTime(event.time) : ''}</div>
+                        <div class="simple-week-event-title">${event.title}</div>
+                    </div>`;
+                });
+                html += '</div>';
+            } else {
+                html += '<div style="text-align: center; color: #999; padding: 20px; font-style: italic;">No upcoming events</div>';
+            }
+            
+            html += `<div class="simple-week-add-btn" onclick="navigateView(1)" style="margin-top: auto;">View Next Week →</div>
             </div>`;
             
             html += '</div>';
@@ -7507,6 +8191,21 @@ console.log('Script started loading...');
                 // Show regular chores
                 html += `<div class="chore-items">`;
                 
+                // Check if there are no tasks to show
+                const hasCurrentRoutines = currentRoutine.length > 0;
+                const hasChores = memberChores.length > 0;
+                
+                if (!hasChores && !hasCurrentRoutines) {
+                    // Show empty state with emoji
+                    const emojis = ['🌟', '👏', '✨', '🎉', '⭐', '💫'];
+                    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    
+                    html += `<div class="chore-empty-state">
+                        <div class="chore-empty-emoji">${randomEmoji}</div>
+                        <div class="chore-empty-text">Nothing to do today.</div>
+                    </div>`;
+                }
+                
                 memberChores.forEach(chore => {
                     const isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
                     const daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
@@ -7863,7 +8562,28 @@ console.log('Script started loading...');
         
         function updateAddTimeVisibility() {
             const checked = document.getElementById('taskChoreTimeToggle').checked;
-            document.getElementById('taskChoreTime').style.display = checked ? 'block' : 'none';
+            const label = document.getElementById('taskChoreTimeLabel');
+            
+            if (label) {
+                if (checked) {
+                    label.classList.remove('disabled');
+                    // Set default time to current time rounded to nearest 30 minutes if not already set
+                    const timeInput = document.getElementById('taskChoreTime');
+                    if (!timeInput.value) {
+                        const now = new Date();
+                        const minutes = now.getMinutes();
+                        const roundedMinutes = minutes < 30 ? 0 : 30;
+                        now.setMinutes(roundedMinutes);
+                        now.setSeconds(0);
+                        const timeString = `${now.getHours().toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+                        timeInput.value = timeString;
+                        updateTimeDisplayButton('taskChoreTime', timeString);
+                    }
+                } else {
+                    label.classList.add('disabled');
+                    label.classList.remove('has-value');
+                }
+            }
         }
         
         function updateRepeatVisibility() {
@@ -8940,6 +9660,11 @@ console.log('Script started loading...');
             updateEditDateVisibility();
             updateEditTimeVisibility();
             
+            // Update time display if time exists
+            if (task.time) {
+                updateTimeDisplayButton('editTaskTime', task.time);
+            }
+            
             // Set task type
             setEditTaskType(currentEditTaskType);
             
@@ -8997,7 +9722,28 @@ console.log('Script started loading...');
         
         function updateEditTimeVisibility() {
             const checked = document.getElementById('editTaskTimeToggle').checked;
-            document.getElementById('editTaskTime').style.display = checked ? 'block' : 'none';
+            const label = document.getElementById('editTaskTimeLabel');
+            
+            if (label) {
+                if (checked) {
+                    label.classList.remove('disabled');
+                    // Set default time to current time rounded to nearest 30 minutes if not already set
+                    const timeInput = document.getElementById('editTaskTime');
+                    if (!timeInput.value) {
+                        const now = new Date();
+                        const minutes = now.getMinutes();
+                        const roundedMinutes = minutes < 30 ? 0 : 30;
+                        now.setMinutes(roundedMinutes);
+                        now.setSeconds(0);
+                        const timeString = `${now.getHours().toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+                        timeInput.value = timeString;
+                        updateTimeDisplayButton('editTaskTime', timeString);
+                    }
+                } else {
+                    label.classList.add('disabled');
+                    label.classList.remove('has-value');
+                }
+            }
         }
         
         function initializeEditEmojiPicker() {
