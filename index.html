@@ -1945,6 +1945,7 @@
             flex-shrink: 0;
             border-radius: 15px;
             padding: 30px;
+            margin-right: 20px;
         }
         
         .rewards-person-header {
@@ -2701,6 +2702,7 @@
             min-width: 450px;
             max-width: 450px;
             flex-shrink: 0;
+            margin-right: 20px;
         }
         
         .chore-person-header {
@@ -3313,6 +3315,7 @@
             min-width: 450px;
             max-width: 450px;
             flex-shrink: 0;
+            margin-right: 20px;
         }
         
         .column-header {
@@ -4490,13 +4493,25 @@
                 <input type="text" class="edit-form-input" id="addListName" placeholder="Enter list name">
             </div>
             
-            <div class="edit-form-group">
-                <label class="edit-form-label">Assigned To</label>
-                <select class="edit-form-input" id="addListAssignedTo">
-                </select>
+            <div class="task-form-group">
+                <label class="task-form-icon">👥</label>
+                <div class="task-form-label">Assigned To</div>
             </div>
             
+            <div class="task-profile-grid" id="addListProfileGrid"></div>
+            
             <button class="edit-save-btn" onclick="saveNewList()">Create List</button>
+        </div>
+    </div>
+    
+    <!-- Add Section Modal -->
+    <div class="modal" id="addSectionModal" onclick="handleModalBackdropClick(event, 'addSectionModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>Add Section</h2>
+            <input type="text" id="sectionNameInput" placeholder="Section name" onkeypress="if(event.key==='Enter') saveNewSection()">
+            <input type="hidden" id="sectionListId">
+            <button class="add-btn" onclick="saveNewSection()">Add Section</button>
+            <button class="close-btn" onclick="closeModal('addSectionModal')">Cancel</button>
         </div>
     </div>
     
@@ -5486,30 +5501,47 @@ console.log('Script started loading...');
         }
         
         function addNewSection(listId) {
-            const sectionName = prompt('Enter section name:');
-            if (!sectionName || !sectionName.trim()) return;
+            // Store the list ID and open modal
+            document.getElementById('sectionListId').value = listId;
+            document.getElementById('sectionNameInput').value = '';
+            document.getElementById('addSectionModal').classList.add('active');
+            // Focus on input after modal opens
+            setTimeout(() => {
+                document.getElementById('sectionNameInput').focus();
+            }, 100);
+        }
+        
+        function saveNewSection() {
+            const sectionName = document.getElementById('sectionNameInput').value.trim();
+            const listId = Number(document.getElementById('sectionListId').value);
+            
+            if (!sectionName) {
+                alert('Please enter a section name');
+                return;
+            }
             
             const list = lists.find(l => l.id === listId);
             if (!list) return;
             
             // Check if section already exists
-            const existingSection = list.items.find(i => i.section === sectionName.trim());
+            const existingSection = list.items.find(i => i.section === sectionName);
             if (existingSection) {
                 alert('A section with this name already exists');
                 return;
             }
             
             // Create an empty item to establish the section
-            // This will show up as an empty section with the input field
             const newItem = {
                 id: Date.now(),
                 text: '',
                 completed: false,
-                section: sectionName.trim()
+                section: sectionName
             };
             
             list.items.push(newItem);
             localStorage.setItem('lists', JSON.stringify(lists));
+            
+            closeModal('addSectionModal');
             renderListsColumns();
         }
         
@@ -5543,13 +5575,8 @@ console.log('Script started loading...');
         }
         
         function openAddListPanel() {
-            // Populate assigned to dropdown
-            const dropdown = document.getElementById('addListAssignedTo');
-            let html = '';
-            familyMembers.forEach(member => {
-                html += `<option value="${member.id}">${member.emoji} ${member.name}</option>`;
-            });
-            dropdown.innerHTML = html;
+            // Render profile grid
+            renderAddListProfileGrid();
             
             document.getElementById('addListPanelOverlay').classList.add('active');
             document.getElementById('addListPanel').classList.add('active');
@@ -5558,34 +5585,72 @@ console.log('Script started loading...');
         function closeAddListPanel() {
             document.getElementById('addListPanel').classList.remove('active');
             document.getElementById('addListPanelOverlay').classList.remove('active');
-            // Clear form
+            // Clear form and selection
             document.getElementById('addListName').value = '';
+            selectedAddListProfile = null;
         }
         
         function saveNewList() {
             const name = document.getElementById('addListName').value.trim();
-            const assignedTo = Number(document.getElementById('addListAssignedTo').value);
             
             if (!name) {
                 alert('Please enter a list name');
                 return;
             }
             
-            const member = familyMembers.find(m => m.id === assignedTo);
+            if (!selectedAddListProfile) {
+                alert('Please select a family member');
+                return;
+            }
+            
+            const member = familyMembers.find(m => m.id === selectedAddListProfile);
             
             const newList = {
                 id: Date.now(),
                 name: name,
                 color: member ? member.color : '#4A90E2',
-                assignedTo: assignedTo,
+                assignedTo: selectedAddListProfile,
                 items: []
             };
             
             lists.push(newList);
             localStorage.setItem('lists', JSON.stringify(lists));
             
+            // Reset
+            selectedAddListProfile = null;
+            document.getElementById('addListName').value = '';
+            
             closeAddListPanel();
             renderListsColumns();
+        }
+        
+        // Add List Profile Selection
+        let selectedAddListProfile = null;
+        
+        function renderAddListProfileGrid() {
+            const grid = document.getElementById('addListProfileGrid');
+            const listMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+            
+            let html = '';
+            listMembers.forEach(member => {
+                html += `<div class="task-profile-item" onclick="selectAddListProfile(${member.id})">
+                    <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="task-profile-name">${member.name}</div>
+                </div>`;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectAddListProfile(profileId) {
+            selectedAddListProfile = profileId;
+            // Update visual selection
+            document.querySelectorAll('#addListProfileGrid .task-profile-avatar').forEach(avatar => {
+                avatar.classList.remove('selected');
+            });
+            document.getElementById(`add-list-avatar-${profileId}`).classList.add('selected');
         }
         
         // List Item Detail and Edit Functions
@@ -10005,18 +10070,6 @@ console.log('Script started loading...');
             }
         });
         
-        document.addEventListener('webkitfullscreenchange', function() {
-            if (!document.webkitFullscreenElement) {
-                setTimeout(enterFullscreen, 1000);
-            }
-        });
-        
-        document.addEventListener('mozfullscreenchange', function() {
-            if (!document.mozFullScreenElement) {
-                setTimeout(enterFullscreen, 1000);
-            }
-        });
-        
         // Also allow manual fullscreen trigger on first touch/click
         let hasInteracted = false;
         document.addEventListener('click', function() {
@@ -10025,15 +10078,8 @@ console.log('Script started loading...');
                 enterFullscreen();
             }
         }, { once: true });
-        
-        // Also try on touch for mobile devices
-        document.addEventListener('touchstart', function() {
-            if (!hasInteracted) {
-                hasInteracted = true;
-                enterFullscreen();
-            }
-        }, { once: true });
 
+/*
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -10051,6 +10097,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+*/
 
     </script>
 </body>
