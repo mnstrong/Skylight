@@ -83,10 +83,10 @@
             background: #E8EBF0;
             color: #5C6370;
             border: none;
-            padding: 10px 18px;
+            padding: 12px 18px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -99,16 +99,20 @@
             background: #E8EBF0;
             color: #5C6370;
             border: none;
-            padding: 10px 18px;
+            padding: 12px 18px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
             min-width: 40px;
+        }
+        
+        .month-display {
+            padding-right: 30px;
         }
 
         .middle {
@@ -529,6 +533,79 @@
 
         .week-view.active, .day-view.active {
             display: block;
+        }
+        
+        .simple-week-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .simple-week-day {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 300px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .simple-week-day:hover {
+            transform: translateY(-5px);
+        }
+        
+        .simple-week-day-header {
+            font-size: 28px;
+            font-weight: 400;
+            color: #000;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .simple-week-day-header .week-day-name {
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        
+        .simple-week-day-header .week-day-number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .simple-week-day-header.today .week-day-number {
+            background: #FF6B6B;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .simple-week-add-btn {
+            color: #999;
+            font-size: 16px;
+            font-weight: 400;
+            margin-top: auto;
+        }
+        
+        .simple-week-next-week {
+            background: #E8EBF0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #5C6370;
         }
 
 .week-view-grid {
@@ -2486,11 +2563,11 @@
         .view-selector,
         select.view-selector,
         #mainViewSelector {
-            padding: 6px 14px !important;
+            padding: 12px 18px !important;
             border: none !important;
             border-radius: 20px !important;
             background-color: #E8EBF0 !important;
-            font-size: 13px !important;
+            font-size: 17px !important;
             cursor: pointer !important;
             font-family: "Jost", sans-serif;
             font-weight: 600 !important;
@@ -2506,16 +2583,40 @@
         }
 
         .schedule-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #CBD5E0 #F7FAFC;
+        }
+        
+        .schedule-container::-webkit-scrollbar {
+            height: 10px;
+        }
+        
+        .schedule-container::-webkit-scrollbar-track {
+            background: #F7FAFC;
+            border-radius: 10px;
+        }
+        
+        .schedule-container::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border-radius: 10px;
+        }
+        
+        .schedule-container::-webkit-scrollbar-thumb:hover {
+            background: #A0AEC0;
         }
 
         .schedule-day-column {
             background: transparent;
             border-radius: 0;
-            padding: 15px 0;
-            min-height: 400px;
+            padding: 15px;
+            min-height: 600px;
+            min-width: 400px;
+            max-width: 400px;
+            flex-shrink: 0;
         }
 
         .schedule-day-header {
@@ -2542,22 +2643,36 @@
         }
 
         .schedule-day-title {
-            font-family: "Noticia Text", serif;
             font-size: 18px;
             font-weight: 400;
             color: #000;
-            padding-bottom: 0;
-            border-bottom: none;
-            margin-bottom: 0;
             text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        .schedule-day-title.today {
-            background: transparent;
-            color: #667eea;
-            padding: 0;
-            border-radius: 0;
-            border-bottom: none;
+        
+        .schedule-day-title .week-day-name {
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        
+        .schedule-day-title .week-day-number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .schedule-day-title.today .week-day-number {
+            background: #FF6B6B;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .schedule-next-week-box {
@@ -2590,15 +2705,120 @@
         .schedule-event-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+        }
+        
+        /* Day View Styles */
+        .day-view-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .day-view-header {
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .day-view-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .day-view-title .week-day-name {
+            font-size: 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+        
+        .day-view-title .week-day-number {
+            font-size: 48px;
+            font-weight: 700;
+        }
+        
+        .day-view-title.today .week-day-number {
+            background: #FF6B6B;
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .day-view-month {
+            font-size: 20px;
+            font-weight: 400;
+            color: #666;
+        }
+        
+        .day-view-events {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .day-view-event {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .day-view-event:hover {
+            transform: translateY(-3px);
+        }
+        
+        .day-view-event-time {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .day-view-event-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .day-view-event-member {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .day-view-event-dot {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
         }
 
         .schedule-event {
             background: white;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 18px;
+            border-radius: 12px;
             border-left: 4px solid #667eea;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             cursor: pointer;
             display: flex;
@@ -2615,31 +2835,31 @@
         }
 
         .schedule-event-time {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
             color: #667eea;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .schedule-event-title {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 600;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
 
         .schedule-event-member {
-            font-size: 13px;
+            font-size: 15px;
             color: #666;
         }
         
         .schedule-event-dot {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
             flex-shrink: 0;
@@ -3072,17 +3292,38 @@
         .meal-day-header {
             text-align: center;
             padding: 15px 10px;
-            font-family: Georgia, 'Times New Roman', Times, serif;
             font-size: 16px;
             color: #000;
             font-weight: 400;
             background: white;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
         }
         
-        .meal-day-header.today {
-            background: #667eea;
-            color: white;
+        .meal-day-header .week-day-name {
+            font-size: 15px;
             font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-right: 10px;
+        }
+        
+        .meal-day-header .week-day-number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .meal-day-header.today .week-day-number {
+            background: #FF6B6B;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .meal-cell {
@@ -3554,11 +3795,11 @@
         
         /* Calendar Filter Button */
         .calendar-filter-btn {
-            padding: 6px 14px;
+            padding: 12px 18px;
             border: none;
             border-radius: 20px;
             background-color: #E8EBF0;
-            font-size: 13px;
+            font-size: 17px;
             cursor: pointer;
             font-family: "Jost", sans-serif;
             font-weight: 600;
@@ -4797,7 +5038,7 @@ console.log('Script started loading...');
         let currentDate = new Date();
         let currentView = 'month';
         let currentSection = 'calendar';
-        let scheduleDaysToShow = 7;
+        let scheduleDaysToShow = 14;
         let familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
             { name: 'Mary', color: '#FF6B6B' },
@@ -4834,7 +5075,7 @@ console.log('Script started loading...');
             { name: 'Snack', color: '#E5D4B3' }
         ];
         let currentMealWeekStart = new Date();
-        currentMealWeekStart.setDate(currentMealWeekStart.getDate() - currentMealWeekStart.getDay()); // Start on Sunday
+        currentMealWeekStart.setHours(0, 0, 0, 0); // Start on today
         
         // Lists data
         let lists = JSON.parse(localStorage.getItem('lists')) || [];
@@ -4879,8 +5120,12 @@ console.log('Script started loading...');
             // Day headers
             weekDays.forEach(day => {
                 const isToday = day.getTime() === today.getTime();
-                const dayName = day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
-                html += `<div class="meal-day-header ${isToday ? 'today' : ''}">${dayName}</div>`;
+                const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = day.getDate();
+                html += `<div class="meal-day-header ${isToday ? 'today' : ''}">
+                    <div class="week-day-name">${dayName}</div>
+                    <div class="week-day-number">${dayNum}</div>
+                </div>`;
             });
             
             // Rows for each meal type
@@ -5256,7 +5501,7 @@ console.log('Script started loading...');
         function goToMealToday() {
             const today = new Date();
             currentMealWeekStart = new Date(today);
-            currentMealWeekStart.setDate(today.getDate() - today.getDay()); // Start on Sunday
+            currentMealWeekStart.setHours(0, 0, 0, 0); // Start on today
             renderMealPlanGrid();
         }
         
@@ -6372,8 +6617,9 @@ console.log('Script started loading...');
         async function loadEventsFromCalendar(calendarId, memberName) {
             const token = localStorage.getItem('googleCalendarToken');
             
-            const timeMin = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString();
-            const timeMax = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59).toISOString();
+            // Load events from 1 month ago to 2 months in the future to cover all views
+            const timeMin = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString();
+            const timeMax = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
             
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
                 `timeMin=${encodeURIComponent(timeMin)}&` +
@@ -6669,366 +6915,83 @@ console.log('Script started loading...');
         }
 
         function renderWeekView() {
+            const container = document.getElementById('weekView');
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const weekStart = new Date(today); // Start from today
+            const weekStart = new Date(currentDate);
             const weekDays = [];
             
+            // Get 7 days starting from currentDate
             for (let i = 0; i < 7; i++) {
                 const day = new Date(weekStart);
                 day.setDate(weekStart.getDate() + i);
                 weekDays.push(day);
             }
-
-            let html = '<div class="week-view-grid">';
             
-            // Header row with day names and dates (left-aligned, serif font)
-            html += '<div class="week-time-gutter"></div>';
+            let html = '<div class="simple-week-grid">';
+            
+            // Render 7 day boxes
             weekDays.forEach(day => {
                 const isToday = day.getTime() === today.getTime();
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
-                html += `<div class="week-day-header-cell ${isToday ? 'today' : ''}">
-                    <div class="week-day-name">${dayName}</div>
-                    <div class="week-day-number">${dayNum}</div>
+                const dateStr = day.toISOString().split('T')[0];
+                
+                html += `<div class="simple-week-day" onclick="openEventModalForDate('${dateStr}')">
+                    <div class="simple-week-day-header ${isToday ? 'today' : ''}">
+                        <div class="week-day-name">${dayName}</div>
+                        <div class="week-day-number">${dayNum}</div>
+                    </div>
+                    <div class="simple-week-add-btn">+ Add Event</div>
                 </div>`;
             });
-
-            // All-day events section
-            const allEvents = getAllEvents();
-            const allDayEventsArranged = arrangeAllDayEvents(allEvents, weekDays);
-            const maxAllDayRows = allDayEventsArranged.length;
             
-            if (maxAllDayRows > 0) {
-                html += '<div class="week-allday-gutter">All Day</div>';
-                
-                // Create grid for all-day events
-                html += '<div class="week-allday-container" style="grid-column: 2 / 9; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; padding: 10px 0;">';
-                
-                allDayEventsArranged.forEach((row, rowIndex) => {
-                    row.forEach(eventInfo => {
-                        if (eventInfo) {
-                            const event = eventInfo.event;
-                            const member = familyMembers.find(m => m.name === event.member);
-                            const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                            const color = (member && member.color) || '#667eea';
-                            const bgColor = color + '40';
-                            
-                            html += `<div class="week-allday-event" 
-                                          style="grid-column: ${eventInfo.startCol + 1} / span ${eventInfo.span}; 
-                                                 grid-row: ${rowIndex + 1};
-                                                 background: ${bgColor}; 
-                                                 border-left: 4px solid ${color};
-                                                 margin: 2px 4px;"
-                                          onclick="showEventDetails('${event.id}')">
-                                <div class="week-event-content">
-                                    <div class="week-event-title">${event.title}</div>
-                                </div>
-                                ${initial ? `<div class="week-event-initial" style="background: ${color}">${initial}</div>` : ''}
-                            </div>`;
-                        }
-                    });
-                });
-                
-                html += '</div>'; // week-allday-container
-            }
-
-            // Time grid and timed events
-            const startHour = 7;
-            const endHour = 21;
+            // Add "Next Week" box
+            const nextWeekDate = new Date(weekStart);
+            nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+            html += `<div class="simple-week-day simple-week-next-week" onclick="navigateView(1)">
+                Next Week
+            </div>`;
             
-            // Time labels
-            html += '<div class="week-time-labels">';
-            for (let hour = startHour; hour < endHour; hour++) {
-                const timeLabel = hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
-                html += `<div class="week-time-label">${timeLabel}</div>`;
-            }
             html += '</div>';
-            
-            // Day columns with timed events only
-            weekDays.forEach(day => {
-                const dateStr = day.toISOString().split('T')[0];
-                const dayEvents = allEvents.filter(e => e.date === dateStr && e.time && isEventVisible(e)); // Only timed events
-                
-                html += '<div class="week-day-column-container">';
-                
-                // Background hour lines
-                for (let hour = startHour; hour < endHour; hour++) {
-                    html += '<div class="week-hour-line"></div>';
-                }
-                
-                // Events positioned absolutely
-                html += '<div class="week-events-layer">';
-                
-                // Group events by overlap
-                const eventBlocks = arrangeEventsForWeek(dayEvents);
-                
-                eventBlocks.forEach(eventInfo => {
-                    const event = eventInfo.event;
-                    const member = familyMembers.find(m => m.name === event.member);
-                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                    
-                    // Calculate position and height
-                    const { top, height } = calculateEventPosition(event.time, event.endTime, startHour, endHour);
-                    const left = eventInfo.column * 48; // 48% width for each overlapping event
-                    const width = eventInfo.width;
-                    
-                    // Get color - lighter pastel version
-                    const color = (member && member.color) || '#667eea';
-                    const bgColor = color + '40'; // Add transparency
-                    
-                    html += `<div class="week-event-block" 
-                                  style="top: ${top}%; height: ${height}%; left: ${left}%; width: ${width}%; background: ${bgColor}; border-left: 4px solid ${color};"
-                                  onclick="showEventDetails('${event.id}')">
-                        <div class="week-event-content">
-                            <div class="week-event-title">${event.title}</div>
-                            <div class="week-event-time">${formatEventTime(event.time, event.endTime)}</div>
-                        </div>
-                        ${initial ? `<div class="week-event-initial" style="background: ${color}">${initial}</div>` : ''}
-                    </div>`;
-                });
-                
-                // Add current time indicator if this is today
-                const isToday = day.getTime() === today.getTime();
-                if (isToday) {
-                    const now = new Date();
-                    const currentHour = now.getHours();
-                    const currentMinutes = now.getMinutes();
-                    
-                    if (currentHour >= startHour && currentHour < endHour) {
-                        const totalMinutesFromStart = (currentHour - startHour) * 60 + currentMinutes;
-                        const totalMinutesInRange = (endHour - startHour) * 60;
-                        const topPercent = (totalMinutesFromStart / totalMinutesInRange) * 100;
-                        
-                        html += `<div class="current-time-indicator" style="top: ${topPercent}%;"></div>`;
-                    }
-                }
-                
-                html += '</div>'; // events-layer
-                html += '</div>'; // day-column-container
-            });
-
-            html += '</div>'; // week-view-grid
-            document.getElementById('weekView').innerHTML = html;
+            container.innerHTML = html;
         }
         
-        function arrangeAllDayEvents(allEvents, weekDays) {
-            // Get all-day events for this week
-            const weekStart = weekDays[0].toISOString().split('T')[0];
-            const weekEnd = weekDays[6].toISOString().split('T')[0];
-            
-            const allDayEvents = allEvents.filter(e => !e.time).map(event => {
-                // Determine which columns this event spans
-                const eventDate = event.date;
-                const eventEndDate = event.endDate || event.date;
-                
-                let startCol = -1;
-                let endCol = -1;
-                
-                weekDays.forEach((day, index) => {
-                    const dayStr = day.toISOString().split('T')[0];
-                    if (dayStr === eventDate) startCol = index;
-                    if (dayStr === eventEndDate) endCol = index;
-                    
-                    // Handle events that span across this day
-                    if (dayStr >= eventDate && dayStr <= eventEndDate) {
-                        if (startCol === -1) startCol = index;
-                        endCol = index;
-                    }
-                });
-                
-                return {
-                    event: event,
-                    startCol: Math.max(0, startCol),
-                    endCol: endCol !== -1 ? endCol : startCol,
-                    span: endCol !== -1 ? (endCol - Math.max(0, startCol) + 1) : (startCol !== -1 ? 1 : 0)
-                };
-            }).filter(e => e.span > 0);
-            
-            // Sort by start column, then by span (longer events first)
-            allDayEvents.sort((a, b) => {
-                if (a.startCol !== b.startCol) return a.startCol - b.startCol;
-                return b.span - a.span;
-            });
-            
-            // Arrange into rows (vertical stacking)
-            const rows = [];
-            
-            allDayEvents.forEach(eventInfo => {
-                // Find the first row where this event fits
-                let placed = false;
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    let canPlace = true;
-                    
-                    // Check if this event overlaps with any event in this row
-                    for (let col = eventInfo.startCol; col <= eventInfo.endCol; col++) {
-                        if (row[col]) {
-                            canPlace = false;
-                            break;
-                        }
-                    }
-                    
-                    if (canPlace) {
-                        // Place event in this row
-                        for (let col = eventInfo.startCol; col <= eventInfo.endCol; col++) {
-                            row[col] = col === eventInfo.startCol ? eventInfo : { occupied: true };
-                        }
-                        placed = true;
-                        break;
-                    }
-                }
-                
-                // If not placed, create a new row
-                if (!placed) {
-                    const newRow = new Array(7).fill(null);
-                    for (let col = eventInfo.startCol; col <= eventInfo.endCol; col++) {
-                        newRow[col] = col === eventInfo.startCol ? eventInfo : { occupied: true };
-                    }
-                    rows.push(newRow);
-                }
-            });
-            
-            return rows;
-        }
-        
-        function arrangeEventsForWeek(events) {
-            // Sort events by start time
-            const sortedEvents = events.sort((a, b) => {
-                const timeA = a.time || '00:00';
-                const timeB = b.time || '00:00';
-                return timeA.localeCompare(timeB);
-            });
-            
-            const arranged = [];
-            const columns = [];
-            
-            sortedEvents.forEach(event => {
-                const eventStart = getMinutesFromTime(event.time || '00:00');
-                const eventEnd = getMinutesFromTime(event.endTime || calculateEndTime(event.time));
-                
-                // Find a column where this event doesn't overlap
-                let columnIndex = 0;
-                for (let i = 0; i < columns.length; i++) {
-                    const lastEventInColumn = columns[i];
-                    const lastEnd = getMinutesFromTime(lastEventInColumn.endTime || calculateEndTime(lastEventInColumn.time));
-                    
-                    if (eventStart >= lastEnd) {
-                        columnIndex = i;
-                        break;
-                    }
-                    columnIndex = i + 1;
-                }
-                
-                if (!columns[columnIndex]) {
-                    columns[columnIndex] = event;
-                } else {
-                    columns[columnIndex] = event;
-                }
-                
-                arranged.push({
-                    event: event,
-                    column: columnIndex,
-                    width: columnIndex > 0 ? 48 : 100,
-                    totalColumns: Math.max(columnIndex + 1, 2)
-                });
-            });
-            
-            // Adjust widths if there are overlapping events
-            const maxColumns = Math.max(...arranged.map(e => e.column + 1));
-            if (maxColumns > 1) {
-                arranged.forEach(e => {
-                    e.width = 100 / maxColumns;
-                });
-            }
-            
-            return arranged;
-        }
-        
-        function getMinutesFromTime(timeStr) {
-            if (!timeStr) return 0;
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
-        }
-        
-        function calculateEndTime(startTime) {
-            if (!startTime) return '23:59';
-            const [hours, minutes] = startTime.split(':').map(Number);
-            const endHours = Math.min(hours + 1, 23);
-            return `${String(endHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-        }
-        
-        function calculateEventPosition(startTime, endTime, startHour = 7, endHour = 21) {
-            const DAY_START = startHour * 60;
-            const DAY_END   = endHour * 60;
-            const TOTAL_MINUTES = DAY_END - DAY_START;
-
-            const start = Math.max(getMinutesFromTime(startTime || '07:00'), DAY_START);
-            const end   = Math.min(
-                getMinutesFromTime(endTime || calculateEndTime(startTime)),
-                DAY_END
-            );
-            const top = ((start - DAY_START) / TOTAL_MINUTES) * 100;
-            const height = ((end - start) / TOTAL_MINUTES) * 100;
-
-            return {
-                top,
-                height: Math.max(height, 3) // keep tiny events visible
-            };
-        }
-
-        
-        function formatEventTime(startTime, endTime) {
-            if (!startTime) return 'All day';
-            
-            const formatTime = (time) => {
-                const [hours, minutes] = time.split(':').map(Number);
-                const period = hours >= 12 ? 'PM' : 'AM';
-                const displayHours = hours % 12 || 12;
-                return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
-            };
-            
-            const start = formatTime(startTime);
-            if (endTime) {
-                const end = formatTime(endTime);
-                return `${start} - ${end}`;
-            }
-            return start;
-        }
-
         function renderDayView() {
-            const dateStr = currentDate.toISOString().split('T')[0];
+            const container = document.getElementById('dayView');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const viewDate = new Date(currentDate);
+            viewDate.setHours(0, 0, 0, 0);
+            const dateStr = viewDate.toISOString().split('T')[0];
+            const isToday = viewDate.getTime() === today.getTime();
+            
+            const dayName = viewDate.toLocaleDateString('en-US', { weekday: 'long' });
+            const dayNum = viewDate.getDate();
+            const monthName = viewDate.toLocaleDateString('en-US', { month: 'long' });
+            
             const allEvents = getAllEvents();
             const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
                 if (!a.time) return -1;
                 if (!b.time) return 1;
                 return a.time.localeCompare(b.time);
             });
-
-            const today = new Date();
-            const isToday = currentDate.getDate() === today.getDate() && 
-                           currentDate.getMonth() === today.getMonth() && 
-                           currentDate.getFullYear() === today.getFullYear();
-            const dateDisplay = isToday ? 'Today' : currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-            let html = `<div class="day-view-container">`;
             
-            // Mini calendar on the left
-            html += `<div class="day-view-mini-calendar">`;
-            html += renderMiniCalendar();
-            html += `</div>`;
+            let html = '<div class="day-view-container">';
             
-            // Events on the right
-            html += `<div class="day-view-events-container">`;
+            // Day header
             html += `<div class="day-view-header">
-                <div class="day-view-date-large">${dateDisplay}</div>
+                <div class="day-view-title ${isToday ? 'today' : ''}">
+                    <div class="week-day-name">${dayName}</div>
+                    <div class="week-day-number">${dayNum}</div>
+                </div>
+                <div class="day-view-month">${monthName}</div>
             </div>`;
             
+            // Events list
             if (dayEvents.length === 0) {
-                html += `<div style="text-align: center; color: #999; padding: 40px;">
-                    <p style="font-size: 18px;">No events scheduled</p>
-                    <p style="font-size: 14px; margin-top: 10px;">Click the + button to add an event</p>
-                </div>`;
+                html += `<div style="text-align: center; color: #999; padding: 40px; font-style: italic;">No events for this day</div>`;
             } else {
                 html += '<div class="day-view-events">';
                 dayEvents.forEach(event => {
@@ -7036,249 +6999,18 @@ console.log('Script started loading...');
                     const color = (member && member.color) || '#667eea';
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-event-item" style="background: ${color}40; border-left-color: ${color}">
-                        <div class="event-time-block">${event.time || 'All day'}</div>
-                        <div class="event-details">
-                            <div class="event-title-large">${event.title}</div>
-                            <div class="event-meta">
-                                ${event.member ? `${event.member} • ` : ''}
-                                ${event.notes || 'No notes'}
-                            </div>
-                        </div>
-                        ${initial ? `<div class="day-event-dot" style="background: ${color}">${initial}</div>` : ''}
+                    html += `<div class="day-view-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                        <div class="day-view-event-time">${event.time || 'All day'}</div>
+                        <div class="day-view-event-title">${event.title}</div>
+                        ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
+                        ${initial ? `<div class="day-view-event-dot" style="background: ${color}">${initial}</div>` : ''}
                     </div>`;
                 });
                 html += '</div>';
             }
             
             html += '</div>';
-            html += '</div>';
-            document.getElementById('dayView').innerHTML = html;
-        }
-
-        function renderMiniCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const today = new Date();
-            const selectedDate = currentDate;
-            
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const daysInPrevMonth = new Date(year, month, 0).getDate();
-            
-            const allEvents = getAllEvents();
-            
-            let html = `<div class="mini-cal-grid">`;
-            html += `<div class="mini-day-header">SUN</div>`;
-            html += `<div class="mini-day-header">MON</div>`;
-            html += `<div class="mini-day-header">TUE</div>`;
-            html += `<div class="mini-day-header">WED</div>`;
-            html += `<div class="mini-day-header">THU</div>`;
-            html += `<div class="mini-day-header">FRI</div>`;
-            html += `<div class="mini-day-header">SAT</div>`;
-            
-            // Previous month days
-            for (let i = firstDay - 1; i >= 0; i--) {
-                const day = daysInPrevMonth - i;
-                html += `<div class="mini-day-cell other-month">${day}</div>`;
-            }
-            
-            // Current month days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                const isSelected = day === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear();
-                const hasEvents = allEvents.some(e => e.date === dateStr);
-                
-                const classes = ['mini-day-cell'];
-                if (isSelected) classes.push('selected');
-                if (hasEvents) classes.push('has-events');
-                
-                html += `<div class="${classes.join(' ')}" onclick="selectMiniCalDay(${year}, ${month}, ${day})">${day}</div>`;
-            }
-            
-            // Next month days
-            const remainingCells = 42 - (firstDay + daysInMonth);
-            for (let day = 1; day <= remainingCells; day++) {
-                html += `<div class="mini-day-cell other-month">${day}</div>`;
-            }
-            
-            html += `</div>`;
-            return html;
-        }
-
-        function navigateMiniCal(direction) {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            renderDayView();
-            updateViewHeader();
-        }
-
-        function selectMiniCalDay(year, month, day) {
-            currentDate = new Date(year, month, day);
-            renderDayView();
-            updateViewHeader();
-        }
-
-        function openEventModalForCurrentDay() {
-            document.getElementById('eventPanelOverlay').classList.add('active');
-            document.getElementById('eventModal').classList.add('active');
-            document.getElementById('eventDate').valueAsDate = currentDate;
-            updateEventTimeVisibility();
-        }
-        
-        function openEventModalForDate(dateStr) {
-            document.getElementById('eventPanelOverlay').classList.add('active');
-            document.getElementById('eventModal').classList.add('active');
-            const date = new Date(dateStr + 'T00:00:00');
-            document.getElementById('eventDate').valueAsDate = date;
-            updateEventTimeVisibility();
-        }
-        
-        function updateEventTimeVisibility() {
-            const isAllDay = document.getElementById('eventAllDayToggle').checked;
-            document.getElementById('eventTimeSection').style.display = isAllDay ? 'none' : 'block';
-        }
-
-        let currentEventDetail = null;
-        
-        function showEventDetails(eventId) {
-            console.log('showEventDetails called with ID:', eventId);
-            
-            const allEvents = getAllEvents();
-            console.log('All events:', allEvents);
-            
-            const event = allEvents.find(e => e.id == eventId);
-            
-            if (!event) {
-                console.error('Event not found:', eventId);
-                return;
-            }
-            
-            console.log('Found event:', event);
-            
-            currentEventDetail = event;
-            
-            // Populate title
-            document.getElementById('eventDetailTitle').textContent = event.title;
-            
-            // Populate date and time
-            const eventDate = new Date(event.date);
-            const dateStr = eventDate.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-            
-            let timeStr = '';
-            if (event.time) {
-                if (event.endTime) {
-                    timeStr = ` at ${formatEventTime(event.time, event.endTime)}`;
-                } else {
-                    timeStr = ` at ${formatTime(event.time)}`;
-                }
-            } else {
-                timeStr = ' (All day)';
-            }
-            
-            document.getElementById('eventDetailDateTime').textContent = dateStr + timeStr;
-            
-            // Populate reminder (if exists)
-            const reminderRow = document.getElementById('eventDetailReminderRow');
-            if (event.reminder) {
-                reminderRow.style.display = 'flex';
-                document.getElementById('eventDetailReminder').textContent = 
-                    `${event.reminder} minutes before`;
-            } else {
-                reminderRow.style.display = 'none';
-            }
-            
-            // Populate member
-            const memberRow = document.getElementById('eventDetailMemberRow');
-            if (event.member) {
-                memberRow.style.display = 'flex';
-                const member = familyMembers.find(m => m.name === event.member);
-                if (member) {
-                    document.getElementById('eventDetailMember').innerHTML = 
-                        `<div class="task-detail-avatar" style="background: ${member.color}">${member.name.charAt(0).toUpperCase()}</div>
-                         <span>${member.name}</span>`;
-                } else {
-                    document.getElementById('eventDetailMember').innerHTML = `<span>${event.member}</span>`;
-                }
-            } else {
-                memberRow.style.display = 'none';
-            }
-            
-            // Populate calendar source
-            const calendarRow = document.getElementById('eventDetailCalendarRow');
-            if (event.isGoogle) {
-                calendarRow.style.display = 'flex';
-                document.getElementById('eventDetailCalendar').textContent = 'Google Calendar';
-            } else {
-                calendarRow.style.display = 'flex';
-                document.getElementById('eventDetailCalendar').textContent = 'Local Calendar';
-            }
-            
-            // Populate invitees
-            const inviteesRow = document.getElementById('eventDetailInviteesRow');
-            if (event.invitees && event.invitees.length > 0) {
-                inviteesRow.style.display = 'flex';
-                document.getElementById('eventDetailInvitees').textContent = event.invitees.join(', ');
-            } else {
-                inviteesRow.style.display = 'none';
-            }
-            
-            // Populate notes
-            const notesRow = document.getElementById('eventDetailNotesRow');
-            if (event.notes && event.notes.trim()) {
-                notesRow.style.display = 'flex';
-                document.getElementById('eventDetailNotes').textContent = event.notes;
-            } else {
-                notesRow.style.display = 'none';
-            }
-            
-            // Hide edit/delete buttons for Google Calendar events
-            if (event.isGoogle) {
-                document.getElementById('eventDetailEditBtn').style.display = 'none';
-                document.getElementById('eventDetailDeleteBtn').style.display = 'none';
-            } else {
-                document.getElementById('eventDetailEditBtn').style.display = 'block';
-                document.getElementById('eventDetailDeleteBtn').style.display = 'block';
-            }
-            
-            // Show panel
-            document.getElementById('eventDetailPanelOverlay').classList.add('active');
-            document.getElementById('eventDetailPanel').classList.add('active');
-        }
-        
-        function closeEventDetailPanel() {
-            document.getElementById('eventDetailPanel').classList.remove('active');
-            document.getElementById('eventDetailPanelOverlay').classList.remove('active');
-            currentEventDetail = null;
-        }
-        
-        function editEventFromDetail() {
-            // TODO: Implement event editing
-            alert('Event editing will be implemented');
-        }
-        
-        function deleteEventFromDetail() {
-            if (!currentEventDetail || currentEventDetail.isGoogle) return;
-            
-            if (!confirm('Are you sure you want to delete this event?')) return;
-            
-            const index = events.findIndex(e => e.id === currentEventDetail.id);
-            if (index > -1) {
-                events.splice(index, 1);
-                localStorage.setItem('events', JSON.stringify(events));
-                closeEventDetailPanel();
-                
-                // Re-render current view
-                if (currentView === 'month') renderCalendar();
-                else if (currentView === 'week') renderWeekView();
-                else if (currentView === 'schedule') renderScheduleView();
-                else if (currentView === 'day') renderDayView();
-            }
+            container.innerHTML = html;
         }
         
         function formatTime(time) {
@@ -7316,7 +7048,8 @@ console.log('Script started loading...');
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
                 
-                const dayEvents = events.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+                const allEvents = getAllEvents();
+                const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
                     if (!a.time) return -1;
                     if (!b.time) return 1;
                     return a.time.localeCompare(b.time);
@@ -7326,7 +7059,10 @@ console.log('Script started loading...');
                 
                 // Header with day title and add button
                 html += `<div class="schedule-day-header">
-                    <div class="schedule-day-title ${isToday ? 'today' : ''}">${dayName} ${dayNum}</div>
+                    <div class="schedule-day-title ${isToday ? 'today' : ''}">
+                        <div class="week-day-name">${dayName}</div>
+                        <div class="week-day-number">${dayNum}</div>
+                    </div>
                     <button class="schedule-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add Event</button>
                 </div>`;
                 
@@ -7353,12 +7089,6 @@ console.log('Script started loading...');
                 
                 html += '</div>';
             }
-            
-            // Add Next Week box after the 7 days
-            html += `<div class="schedule-day-column schedule-next-week-box">
-                <div class="schedule-next-week-title">Next Week</div>
-                <div class="schedule-next-week-dates">${nextWeekStartStr} - ${nextWeekEndStr}</div>
-            </div>`;
             
             container.innerHTML = html;
         }
@@ -7387,6 +7117,11 @@ console.log('Script started loading...');
             
             // Show relevant sections based on navigation
             if (section === 'calendar') {
+                // Reset display styles that may have been set by other sections
+                document.getElementById('monthNav').style.display = '';
+                document.getElementById('todayNav').style.display = '';
+                document.getElementById('mainViewSelector').style.display = '';
+                
                 contentArea.innerHTML = `
                     <div class="family-pills" id="familyPills"></div>
                     
@@ -7406,6 +7141,11 @@ console.log('Script started loading...');
                 // Show floating add event button
                 document.getElementById('floatingAddBtn').classList.add('active');
             } else if (section === 'chores') {
+                // Hide calendar navigation
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                
                 contentArea.innerHTML = `
                     <div class="chores-container" id="choresContainer"></div>
                 `;
@@ -7413,6 +7153,11 @@ console.log('Script started loading...');
                 // Show floating add task button
                 document.getElementById('floatingAddTaskBtn').classList.add('active');
             } else if (section === 'rewards') {
+                // Hide calendar navigation
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                
                 contentArea.innerHTML = `
                     <div class="rewards-container" id="rewardsContainer"></div>
                 `;
