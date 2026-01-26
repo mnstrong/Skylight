@@ -6542,7 +6542,7 @@ console.log('Script started loading...');
             const scope = SCOPES;
             const clientId = CLIENT_ID;
             
-            // Show the user what redirect URI is being used
+            // Log the redirect URI to console (no blocking alert)
             console.log('==========================================');
             console.log('GOOGLE OAUTH REDIRECT URI:');
             console.log(redirectUri);
@@ -6554,9 +6554,6 @@ console.log('Script started loading...');
             console.log('4. Add to Authorized redirect URIs');
             console.log('==========================================');
             
-            // Also show alert for easy copy/paste
-            alert(`Add this URL to Google Cloud Console Authorized redirect URIs:\n\n${redirectUri}\n\nCheck the browser console (F12) for detailed instructions.`);
-            
             // Use OAuth 2.0 implicit flow with redirect
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
                 `client_id=${encodeURIComponent(clientId)}&` +
@@ -6564,6 +6561,8 @@ console.log('Script started loading...');
                 `response_type=token&` +
                 `scope=${encodeURIComponent(scope)}&` +
                 `prompt=consent`;
+            
+            console.log('Redirecting to:', authUrl);
             
             // Redirect to Google OAuth page
             window.location.href = authUrl;
