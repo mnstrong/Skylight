@@ -608,47 +608,6 @@
             margin-bottom: 15px;
         }
         
-        .simple-week-event {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .simple-week-event:hover {
-            background: #e9ecef;
-        }
-        
-        .simple-week-event-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: #000;
-            margin-bottom: 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .simple-week-event-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-        
-        .simple-week-event-time {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .simple-week-event-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
         
         .simple-week-next-week {
             background: #E8EBF0;
@@ -1511,8 +1470,8 @@
         
         /* Reward card emoji sizing */
         .reward-emoji img.emoji {
-        height: 88px;
-        width: 88px;
+        height: 128px;
+        width: 128px;
         }
         
         /* Confetti Animation */
@@ -2877,10 +2836,11 @@
         }
 
         .schedule-event {
-            background: white;
+            /* background color set via inline style */
             padding: 18px;
             border-radius: 12px;
-            border-left: 4px solid #667eea;
+            /* border-left color set via inline style */
+            border-left: 4px solid;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             cursor: pointer;
@@ -2900,7 +2860,7 @@
         .schedule-event-time {
             font-size: 14px;
             font-weight: 600;
-            color: #667eea;
+            /* color set dynamically based on member */
             margin-bottom: 8px;
         }
 
@@ -4452,56 +4412,6 @@
             padding: 20px 30px;
         }
         
-        .day-event-item-modal {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-            position: relative;
-        }
-        
-        .day-event-item-modal:hover {
-            background: #e9ecef;
-        }
-        
-        .day-event-item-modal-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .day-event-dot-large {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-        
-        .day-event-item-modal-content {
-            flex: 1;
-        }
-        
-        .day-event-item-modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 5px;
-        }
-        
-        .day-event-item-modal-time {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .day-event-item-modal-member {
-            font-size: 14px;
-            color: #888;
-        }
         
         .day-events-footer {
             padding: 20px 30px;
@@ -4823,9 +4733,9 @@
             
             <div class="edit-form-group">
                 <label class="edit-form-label">Assigned To</label>
-                <select class="edit-form-input" id="eventMember">
-                    <option value="">Select Family Member</option>
-                </select>
+                <div class="edit-profile-grid" id="eventProfileGrid">
+                    <!-- Profiles will be populated here -->
+                </div>
             </div>
             
             <div class="edit-form-group">
@@ -6892,6 +6802,12 @@ console.log('Script started loading...');
         function getAllEvents() {
             return [...events, ...googleCalendarEvents];
         }
+        
+        function getFamilyColor() {
+            // Get the Family profile color as the default for unassigned events
+            const familyProfile = familyMembers.find(m => m.name === 'Family');
+            return familyProfile ? familyProfile.color : '#9B59B6';
+        }
 
         function updateDateTime() {
             const now = new Date();
@@ -7021,7 +6937,7 @@ console.log('Script started loading...');
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = (member && member.color) || '#667eea';
+                    const color = (member && member.color) || getFamilyColor();
                     const bgColor = color + '40'; // Add transparency like week view
                     
                     // Format time to 12-hour format
@@ -7176,8 +7092,10 @@ console.log('Script started loading...');
                 
                 // Display events
                 dayEvents.forEach(event => {
+                    console.log(`Week Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member ? member.color : '#999';
+                    const color = member ? member.color : getFamilyColor();
+                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                     
                     // Format time
                     let timeStr = '';
@@ -7190,12 +7108,15 @@ console.log('Script started loading...');
                         timeStr = 'All day';
                     }
                     
-                    html += `<div class="simple-week-event" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
-                        <div class="simple-week-event-title">${event.title}</div>
-                        <div class="simple-week-event-meta">
-                            <span class="simple-week-event-time">${timeStr}</span>
-                            <span class="simple-week-event-dot" style="background: ${color};"></span>
+                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                    
+                    html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                        <div class="schedule-event-content">
+                            <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
+                            <div class="schedule-event-title">${event.title}</div>
+                            ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
                         </div>
+                        ${initial ? `<div class="schedule-event-dot" style="background: ${color}">${initial}</div>` : ''}
                     </div>`;
                 });
                 
@@ -7263,7 +7184,7 @@ console.log('Script started loading...');
                 html += '<div class="day-view-events">';
                 dayEvents.forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = (member && member.color) || '#667eea';
+                    const color = (member && member.color) || getFamilyColor();
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
                     html += `<div class="day-view-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
@@ -7337,14 +7258,17 @@ console.log('Script started loading...');
                     html += `<div style="text-align: center; color: #999; padding: 20px; font-style: italic;">No events</div>`;
                 } else {
                     html += '<div class="schedule-event-list">';
+                    console.log(`📅 Schedule view for ${dateStr}:`, dayEvents);
                     dayEvents.forEach(event => {
+                        console.log(`Schedule Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                         const member = familyMembers.find(m => m.name === event.member);
-                        const color = (member && member.color) || '#667eea';
+                        const color = (member && member.color) || getFamilyColor();
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                        console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                         
                         html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                             <div class="schedule-event-content">
-                                <div class="schedule-event-time">${event.time || 'All day'}</div>
+                                <div class="schedule-event-time" style="color: ${color}">${event.time || 'All day'}</div>
                                 <div class="schedule-event-title">${event.title}</div>
                                 ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
                             </div>
@@ -7531,7 +7455,7 @@ console.log('Script started loading...');
                 const member = familyMembers.find(m => m.name === task.member);
                 const taskDate = new Date(task.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 html += `
-                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || '#667eea'}">
+                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || getFamilyColor()}">
                         <input type="checkbox" ${task.completed ? 'checked' : ''} 
                                onchange="toggleTask(${task.id})">
                         <span>${task.title} - ${taskDate} ${task.member ? `(${task.member})` : ''}</span>
@@ -8108,15 +8032,22 @@ console.log('Script started loading...');
         
         let currentTaskType = 'chore';
         let selectedProfiles = [];
+        let selectedEventProfile = ''; // For event modal (single selection)
         
-        function openTaskChoreModal() {
-            document.getElementById('taskChorePanelOverlay').classList.add('active');
-            document.getElementById('taskChoreModal').classList.add('active');
-            renderProfileGrid();
-            initializeEmojiPicker();
-            // Set today's date
-            document.getElementById('taskChoreDate').valueAsDate = new Date();
-        }
+function openTaskChoreModal() {
+    document.getElementById('taskChorePanelOverlay').classList.add('active');
+    document.getElementById('taskChoreModal').classList.add('active');
+    
+    // Set default date to today
+    document.getElementById('taskChoreDate').valueAsDate = new Date();
+    
+    // Reset selections
+    selectedProfiles = []; 
+    currentTaskType = 'chore';
+    
+    // REPAIR: Call the render function to show profiles
+    renderProfileGrid(); 
+}
         
         function updateAddDateVisibility() {
             const checked = document.getElementById('taskChoreDateToggle').checked;
@@ -8132,6 +8063,14 @@ console.log('Script started loading...');
             const checked = document.getElementById('taskChoreRepeatToggle').checked;
             document.getElementById('taskRepeatDetails').style.display = checked ? 'block' : 'none';
         }
+
+        function updateEventTimeVisibility() {
+    const isAllDay = document.getElementById('eventAllDayToggle').checked;
+    const timeInput = document.getElementById('eventTime');
+    if (timeInput) {
+        timeInput.style.display = isAllDay ? 'none' : 'block';
+    }
+}
         
         function initializeEmojiPicker() {
             const emojiData = [
@@ -8994,6 +8933,28 @@ console.log('Script started loading...');
             renderProfileGrid();
         }
         
+        function renderEventProfileGrid() {
+            const grid = document.getElementById('eventProfileGrid');
+            
+            let html = '';
+            familyMembers.forEach(member => {
+                const isSelected = selectedEventProfile === member.name;
+                html += `<div class="edit-profile-item" onclick="selectEventProfile('${member.name}')">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="edit-profile-name">${member.name}</div>
+                </div>`;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectEventProfile(profileName) {
+            selectedEventProfile = profileName;
+            renderEventProfileGrid();
+        }
+        
         function setTaskType(type) {
             currentTaskType = type;
             document.getElementById('choreTypeBtn').classList.toggle('active', type === 'chore');
@@ -9562,10 +9523,12 @@ console.log('Script started loading...');
         }
 
         function openEventModal() {
+            selectedEventProfile = ''; // Reset selection
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
             updateEventTimeVisibility();
+            renderEventProfileGrid();
         }
         
         function openEventModalForCurrentDay() {
@@ -9574,10 +9537,12 @@ console.log('Script started loading...');
         }
         
         function openEventModalForDate(dateStr) {
+            selectedEventProfile = ''; // Reset selection
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date(dateStr + 'T12:00:00');
             updateEventTimeVisibility();
+            renderEventProfileGrid();
         }
 
         function openTaskModal() {
@@ -9641,14 +9606,13 @@ console.log('Script started loading...');
         function saveEvent() {
             const isAllDay = document.getElementById('eventAllDayToggle').checked;
             const title = document.getElementById('eventTitle').value;
-            const selectedMember = document.getElementById('eventMember').value;
             
             console.log('Event title:', title);
-            console.log('Selected member:', selectedMember);
+            console.log('Selected profile:', selectedEventProfile);
             
-            // Auto-assign member if not manually selected or if empty string
-            let assignedMember = selectedMember;
-            if (!selectedMember || selectedMember === '') {
+            // Auto-assign member if not manually selected
+            let assignedMember = selectedEventProfile;
+            if (!selectedEventProfile || selectedEventProfile === '') {
                 assignedMember = autoAssignEventMember(title);
                 console.log('Auto-assigned to:', assignedMember);
             }
@@ -9682,8 +9646,8 @@ console.log('Script started loading...');
             document.getElementById('eventTime').value = '';
             document.getElementById('eventEndTime').value = '';
             document.getElementById('eventNotes').value = '';
-            document.getElementById('eventMember').value = '';
             document.getElementById('eventAllDayToggle').checked = true;
+            selectedEventProfile = '';
         }
 
         function saveTask() {
@@ -9940,7 +9904,7 @@ console.log('Script started loading...');
             list.innerHTML = todayTasks.map(task => {
                 const member = familyMembers.find(m => m.name === task.member);
                 return `
-                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || '#667eea'}">
+                    <li class="task-item ${task.completed ? 'completed' : ''}" style="border-left: 4px solid ${(member && member.color) || getFamilyColor()}">
                         <input type="checkbox" ${task.completed ? 'checked' : ''} 
                                onchange="toggleTask(${task.id})">
                         <span>${task.title} ${task.member ? `(${task.member})` : ''}</span>
@@ -10013,10 +9977,13 @@ console.log('Script started loading...');
             if (dayEvents.length === 0) {
                 listContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 40px; font-style: italic;">No events for this day</div>';
             } else {
+                console.log('📅 Displaying day events:', dayEvents);
                 let html = '';
                 dayEvents.forEach(event => {
+                    console.log(`Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member ? member.color : '#999';
+                    const color = member ? member.color : getFamilyColor();
+                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                     
                     // Format time
                     let timeStr = '';
@@ -10029,15 +9996,15 @@ console.log('Script started loading...');
                         timeStr = 'All day';
                     }
                     
-                    html += `<div class="day-event-item-modal" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
-                        <div class="day-event-item-modal-header">
-                            <div class="day-event-dot-large" style="background: ${color};"></div>
-                            <div class="day-event-item-modal-content">
-                                <div class="day-event-item-modal-title">${event.title}</div>
-                                <div class="day-event-item-modal-time">${timeStr}</div>
-                                ${event.member ? `<div class="day-event-item-modal-member">For ${event.member}</div>` : ''}
-                            </div>
+                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                    
+                    html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}; margin-bottom: 15px;" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
+                        <div class="schedule-event-content">
+                            <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
+                            <div class="schedule-event-title">${event.title}</div>
+                            ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
                         </div>
+                        ${initial ? `<div class="schedule-event-dot" style="background: ${color}">${initial}</div>` : ''}
                     </div>`;
                 });
                 listContainer.innerHTML = html;
