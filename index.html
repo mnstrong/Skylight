@@ -5081,17 +5081,11 @@ console.log('Script started loading...');
         
         // Google Calendar API configuration
 
-        // Google Calendar Service Account Configuration
-        const SERVICE_ACCOUNT = {
-            "client_email": "skylight-calendar@skylight-calendar-484704.iam.gserviceaccount.com",
-            "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC8DiW3Yx9Li7HN\nzDr1W77tfbJdlxEmhg05S+IW93X6eogOPwht1UE16ckKy+f3yEq3BX8y2Jfdlzel\nq/R2/wx/WflD/dCsAQj1G3DsKZJju+r7CSzg7Kb7gyLmQdVx66mhKbjF+bR8CKNQ\nA2S6cajD+jnKeKJcRNF7TWbr7b7K3jmjyfhAJJWucJsEH+Bnc52hsOJWsDAEKNkh\nsYwbc520/HrWCNrERtTaWkI0QAqsI/S3tn9iesDM/dnKk9PVLlfaupqcyN1R3Zo4\neDOsAvQxFzd6FCVJFAmxCf1lEQWJehyE84NJJcupEhgoLtw7eWkbRVoK9r7h1DC0\nqFFPVDSxAgMBAAECggEAJeQf21ygkKM8F0BgXNG4nbem+c6XiRCXl4TfsEr6PZb0\n1RIES8UdV5Scio1dVwLHcysrXv5fUynF756/Kj7nsL1bSUTaB95JhMGbtioGMgxK\nI3zMyyFD4AejP4viSwr16eAzN8jBggBnj5avdBW0sJA5lr9Jz5eaMeL9quoDeHKH\n1ClW6HujUpe0F2JK3FqkplUYNjk2MwuEAu5I/wCAtVWKTAtS394TrjvhVuvQ3rfr\n6dcyuPEhYABavttth8eMzziWGq7wuMed/SyhufaoYGrAsg/iGG96jLdFtrLSo5Ay\nbm3HoiONVW+M56ybS5d6W5+vyTfzbse8dmKR444zsQKBgQDnkmw2S1QKwKlPIaKp\n2lwNl84mqLvYVwI2tncTHY59DqTq3/po/tN9Q6lXsbABdv2Mq+aorLUJ6vp85QXF\neOfDuayxX3yNuUHh7WDtVLojO+uayF6yiA3F/wNHW24X8fhbfqqn5waadysYCs2o\n7IMQboZssbDkZxt9Iha7WuNmxQKBgQDP5I+AlpDXlDZAhcFuBeZIJ1HJ01fOkcNf\nvV0ZN2fHiGKK1O6c+vVgdjAyhAN8uNPscRrLtxL2vWCx4iitExICmS92hhMS5vFk\nzJ7ADs9VTvxnTpzX9xoY4tNi7Yjsk4QyYp5tnjKC7daXwJrbVAbOfDNuwY73kII9\nY7XuKVNU/QKBgGXNZgscZI7xkbz68XKwTyWepf8y0JnT7mI1JvXdWYW6yV+EJabA\n2CLKewjVUaXjNKYB8D4Y5uG8TnBXkoj0lRbjanrzmmMHnWIAJEtRox7YOcRq786W\np09yw3M8S5L1ShSXA9kaZDnFx8ki/rSTfS7dF/VyzGwss9X4BXxKAYxtAoGARG7D\nQhvN//i8xw6Adrwgap3u0VXtcIUQ4AIQlE1lrwvZDEQ9a5U8ko01HlvQXgzlTc6J\neIeCCZCbNNLyes5tPke4lPZbbvxwd7LXivcVDsraURNSk9C2WXzJAqaYTO/eM0u9\nRO4vSGQMIJX5I7uMJgpCT/INIrcB+D1LVONrl+0CgYBi7E9FdSoanvI9rm79/3HJ\nPDVek+m79DlPPqlW5dqIpX4ng6UaY1YgD+EayngPQAK5h84ZnNz+ph3GbiHOhRsw\n3ocofBUvNoDEpbo+e38HNLa51EHq8oZKmy2nsOi0Sy6xO0r8KxShh9yq0ZX7TU86\nAaxwTfYRb3mxnZox8EKV0g==\n-----END PRIVATE KEY-----\n"
-        };
-        const GOOGLE_CALENDAR_ID = 'family01945926476049559832@group.calendar.google.com';
+        // Google Calendar - Using Cloudflare Worker (keeps private key secure!)
+        const CALENDAR_WORKER_URL = 'https://skylight-calendar.mary-n-strong.workers.dev';
         
         let googleCalendarEvents = [];
         let isGoogleConnected = false;
-        let accessToken = null;
-        let tokenExpiry = null;
 
         
         // Meal Planning Functions
@@ -6468,125 +6462,39 @@ console.log('Script started loading...');
             }, 100);
         }
 
-        // Service Account JWT Authentication
-        async function getServiceAccountToken() {
-            // Check if we have a valid cached token
-            if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
-                return accessToken;
-            }
-            
-            console.log('🔐 Getting new service account token...');
-            
-            // Create JWT for service account
-            const now = Math.floor(Date.now() / 1000);
-            const claim = {
-                iss: SERVICE_ACCOUNT.client_email,
-                scope: 'https://www.googleapis.com/auth/calendar.readonly',
-                aud: 'https://oauth2.googleapis.com/token',
-                exp: now + 3600,
-                iat: now
-            };
-            
-            // Create JWT header and payload
-            const header = { alg: 'RS256', typ: 'JWT' };
-            const headerB64 = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-            const payloadB64 = btoa(JSON.stringify(claim)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-            const signInput = headerB64 + '.' + payloadB64;
-            
-            // Sign the JWT using Web Crypto API
-            const privateKeyPem = SERVICE_ACCOUNT.private_key;
-            const pemContents = privateKeyPem
-                .replace('-----BEGIN PRIVATE KEY-----', '')
-                .replace('-----END PRIVATE KEY-----', '')
-                .replace(/\s/g, '');
-            const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
-            
-            const key = await crypto.subtle.importKey(
-                'pkcs8',
-                binaryDer,
-                { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-                false,
-                ['sign']
-            );
-            
-            const signature = await crypto.subtle.sign(
-                'RSASSA-PKCS1-v1_5',
-                key,
-                new TextEncoder().encode(signInput)
-            );
-            
-            const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-                .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-            
-            const jwt = signInput + '.' + signatureB64;
-            
-            // Exchange JWT for access token
-            const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
-            });
-            
-            if (!tokenResponse.ok) {
-                throw new Error(`Token exchange failed: ${tokenResponse.status}`);
-            }
-            
-            const tokenData = await tokenResponse.json();
-            accessToken = tokenData.access_token;
-            tokenExpiry = Date.now() + (tokenData.expires_in * 1000) - 60000; // Refresh 1min early
-            
-            console.log('✅ Service account token obtained');
-            return accessToken;
-        }
-        
-        // Initialize service account authentication
+        // Simple initialization - uses Cloudflare Worker (keeps private key secure!)
         window.addEventListener('load', () => {
-            setTimeout(async () => {
-                try {
-                    console.log('🔑 Using Service Account authentication');
-                    await getServiceAccountToken();
-                    isGoogleConnected = true;
-                    loadGoogleCalendarEvents();
-                } catch (err) {
-                    console.error('Service account auth failed:', err);
-                }
+            setTimeout(() => {
+                console.log('🔑 Using Cloudflare Worker for Google Calendar');
+                isGoogleConnected = true;
+                loadGoogleCalendarEvents();
             }, 1000);
         });
 
         function connectGoogleCalendar() {
-            // Not needed with API key, but keeping function for compatibility
-            console.log('Already connected via API key');
+            // Reload calendar events
+            console.log('Reloading calendar from worker...');
             loadGoogleCalendarEvents();
         }
 
         async function loadGoogleCalendarEvents() {
             try {
-                console.log('📅 Loading Google Calendar events with service account...');
+                console.log('📅 Loading Google Calendar events via Cloudflare Worker...');
                 googleCalendarEvents = [];
-                
-                // Get access token
-                const token = await getServiceAccountToken();
                 
                 // Load events from 1 month ago to 2 months in the future to cover all views
                 const timeMin = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString();
                 const timeMax = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
                 
-                // Use service account token
-                const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GOOGLE_CALENDAR_ID)}/events?` +
-                    `timeMin=${encodeURIComponent(timeMin)}&` +
-                    `timeMax=${encodeURIComponent(timeMax)}&` +
-                    `showDeleted=false&singleEvents=true&maxResults=250&orderBy=startTime`;
+                // Call Cloudflare Worker (it handles authentication securely)
+                const url = `${CALENDAR_WORKER_URL}?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`;
                 
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('API Error:', response.status, errorText);
-                    throw new Error(`Events fetch failed: ${response.status}`);
+                    console.error('Worker Error:', response.status, errorText);
+                    throw new Error(`Worker request failed: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -9256,6 +9164,18 @@ console.log('Script started loading...');
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
+            updateEventTimeVisibility();
+        }
+        
+        function openEventModalForCurrentDay() {
+            // Open event modal with today's date
+            openEventModal();
+        }
+        
+        function openEventModalForDate(dateStr) {
+            document.getElementById('eventPanelOverlay').classList.add('active');
+            document.getElementById('eventModal').classList.add('active');
+            document.getElementById('eventDate').valueAsDate = new Date(dateStr + 'T12:00:00');
             updateEventTimeVisibility();
         }
 
