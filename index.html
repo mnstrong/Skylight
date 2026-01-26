@@ -6495,11 +6495,17 @@ console.log('Script started loading...');
         
         // Check for OAuth hash fragment on page load
         function checkOAuthRedirect() {
+            console.log('Checking for OAuth redirect...');
+            console.log('Current URL:', window.location.href);
+            console.log('Hash:', window.location.hash);
+            
             const hash = window.location.hash;
             if (hash) {
                 const params = new URLSearchParams(hash.substring(1));
                 const accessToken = params.get('access_token');
                 const expiresIn = params.get('expires_in');
+                
+                console.log('Access token found:', !!accessToken);
                 
                 if (accessToken) {
                     console.log('✅ OAuth token received from Google');
@@ -6509,15 +6515,26 @@ console.log('Script started loading...');
                     const expiryTime = Date.now() + (parseInt(expiresIn || '3600') * 1000);
                     localStorage.setItem('googleCalendarTokenExpiry', expiryTime.toString());
                     
-                    // Clean up URL (remove hash)
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    
-                    // Set connected flag and load events
+                    // Mark as connected to prevent re-connecting
                     isGoogleConnected = true;
+                    isConnecting = false;
+                    
+                    // Clean up URL (remove hash) - important for Android 8
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                    
+                    // Load events
                     loadGoogleCalendarEvents();
+                } else {
+                    console.log('Hash present but no access token found');
                 }
+            } else {
+                console.log('No hash in URL');
             }
         }
+        
+        let isConnecting = false;
         
         // Load Google APIs when script loads
         window.addEventListener('load', () => {
@@ -6525,11 +6542,22 @@ console.log('Script started loading...');
                 gapiLoaded();
                 gisLoaded();
                 checkOAuthRedirect();
+                
                 // Auto-connect to Google Calendar if credentials are set
                 if (CLIENT_ID !== 'YOUR_CLIENT_ID_HERE') {
-                    // Only try auto-connect if not already connected and no stored token
                     const storedToken = localStorage.getItem('googleCalendarToken');
-                    if (!storedToken && !isGoogleConnected) {
+                    const tokenExpiry = localStorage.getItem('googleCalendarTokenExpiry');
+                    
+                    // Check if token is still valid
+                    const isTokenValid = storedToken && tokenExpiry && parseInt(tokenExpiry) > Date.now();
+                    
+                    if (isTokenValid) {
+                        console.log('Using stored Google Calendar token');
+                        isGoogleConnected = true;
+                        loadGoogleCalendarEvents();
+                    } else if (!isConnecting && !isGoogleConnected) {
+                        console.log('No valid token found, initiating OAuth...');
+                        isConnecting = true;
                         setTimeout(connectGoogleCalendar, 2000);
                     }
                 }
