@@ -6570,18 +6570,52 @@ console.log('Script started loading...');
             const scope = SCOPES;
             const clientId = CLIENT_ID;
             
-            // Log the redirect URI to console (no blocking alert)
+            // Create a visible diagnostic message
+            const diagDiv = document.createElement('div');
+            diagDiv.style.position = 'fixed';
+            diagDiv.style.top = '50%';
+            diagDiv.style.left = '50%';
+            diagDiv.style.transform = 'translate(-50%, -50%)';
+            diagDiv.style.background = 'white';
+            diagDiv.style.padding = '40px';
+            diagDiv.style.borderRadius = '20px';
+            diagDiv.style.boxShadow = '0 10px 40px rgba(0,0,0,0.3)';
+            diagDiv.style.zIndex = '99999';
+            diagDiv.style.maxWidth = '600px';
+            diagDiv.style.fontFamily = 'monospace';
+            diagDiv.innerHTML = `
+                <h2 style="margin-top: 0; font-family: sans-serif;">⚠️ Google OAuth Setup Required</h2>
+                <p style="font-family: sans-serif; margin-bottom: 20px;">Add this EXACT redirect URI to Google Cloud Console:</p>
+                <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; word-break: break-all; margin-bottom: 20px;">
+                    <strong>${redirectUri}</strong>
+                </div>
+                <p style="font-family: sans-serif; font-size: 14px; color: #666; margin-bottom: 20px;">
+                    1. Go to console.cloud.google.com<br>
+                    2. APIs & Services → Credentials<br>
+                    3. Click your OAuth Client ID<br>
+                    4. Add the URI above to "Authorized redirect URIs"<br>
+                    5. Click SAVE<br>
+                    6. Wait 5 minutes for changes to take effect
+                </p>
+                <button onclick="this.parentElement.remove(); proceedWithOAuth('${redirectUri}', '${scope}', '${clientId}')" 
+                        style="width: 100%; padding: 15px; background: #4A90E2; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                    I've Added the URI - Continue to Google
+                </button>
+                <button onclick="this.parentElement.remove(); isConnecting = false;" 
+                        style="width: 100%; padding: 15px; background: #f0f0f0; color: #666; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;">
+                    Cancel
+                </button>
+            `;
+            document.body.appendChild(diagDiv);
+            
+            // Log to console as well
             console.log('==========================================');
             console.log('GOOGLE OAUTH REDIRECT URI:');
             console.log(redirectUri);
             console.log('==========================================');
-            console.log('Add this EXACT URL to Google Cloud Console:');
-            console.log('1. Go to console.cloud.google.com');
-            console.log('2. APIs & Services → Credentials');
-            console.log('3. Click your OAuth Client ID');
-            console.log('4. Add to Authorized redirect URIs');
-            console.log('==========================================');
-            
+        }
+        
+        function proceedWithOAuth(redirectUri, scope, clientId) {
             // Use OAuth 2.0 implicit flow with redirect
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
                 `client_id=${encodeURIComponent(clientId)}&` +
