@@ -6555,13 +6555,31 @@ console.log('Script started loading...');
         
         // Utility function to convert hex color to rgba
         function hexToRgba(hex, alpha) {
+            // Handle null/undefined/empty
+            if (!hex || hex === '') {
+                console.warn('⚠️ hexToRgba received invalid color:', hex);
+                return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
+            }
+            
             // Remove # if present
             hex = hex.replace('#', '');
+            
+            // Validate hex format
+            if (hex.length !== 6) {
+                console.warn('⚠️ Invalid hex color length:', hex);
+                return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
+            }
             
             // Convert to RGB
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
+            
+            // Validate RGB values
+            if (isNaN(r) || isNaN(g) || isNaN(b)) {
+                console.warn('⚠️ Invalid RGB values from hex:', hex, {r, g, b});
+                return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
+            }
             
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
@@ -6850,7 +6868,7 @@ console.log('Script started loading...');
         function renderFamilyMembers() {
             const container = document.getElementById('familyMembers');
             container.innerHTML = familyMembers.map(member => 
-                `<div class="member" style="background: ${hexToRgba(member.color, 0.125)}; border-left: 4px solid ${member.color}">
+                `<div class="member" style="background-color: ${hexToRgba(member.color, 0.125)}; border-left: 4px solid ${member.color}">
                     <strong>${member.name}</strong>
                 </div>`
             ).join('');
@@ -6943,9 +6961,11 @@ console.log('Script started loading...');
 
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
+                    console.log(`Month Event: "${event.title}" | Member: "${event.member}"`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = (member && member.color) || getFamilyColor();
-                    const bgColor = color + '40'; // Add transparency like week view
+                    const bgColor = hexToRgba(color, 0.25); // Android 8 compatible
+                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
                     
                     // Format time to 12-hour format
                     let timeStr = '';
@@ -6959,7 +6979,7 @@ console.log('Script started loading...');
                     }
                     
                     eventsHtml += `
-                        <div class="day-event-item" style="background: ${bgColor}; color: #000;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                        <div class="day-event-item" style="background-color: ${bgColor}; color: #000;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                             <span class="day-event-time">${timeStr}</span>
                             <span class="day-event-title">${event.title}</span>
                         </div>
@@ -7102,7 +7122,8 @@ console.log('Script started loading...');
                     console.log(`Week Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = member ? member.color : getFamilyColor();
-                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
+                    const bgColor = hexToRgba(color, 0.25);
+                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
                     
                     // Format time
                     let timeStr = '';
@@ -7117,7 +7138,7 @@ console.log('Script started loading...');
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                    html += `<div class="schedule-event" style="background-color: ${bgColor}; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
@@ -7194,7 +7215,7 @@ console.log('Script started loading...');
                     const color = (member && member.color) || getFamilyColor();
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -7273,7 +7294,7 @@ console.log('Script started loading...');
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                         
-                        html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                        html += `<div class="schedule-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                             <div class="schedule-event-content">
                                 <div class="schedule-event-time" style="color: ${color}">${event.time || 'All day'}</div>
                                 <div class="schedule-event-title">${event.title}</div>
@@ -7402,7 +7423,7 @@ console.log('Script started loading...');
                 // For Google Calendar members, don't show task count
                 if (member.isGoogleCalendar) {
                     return `
-                        <div class="family-pill" style="background: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
+                        <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
                             <div class="family-pill-content">
                                 <div class="family-pill-avatar" style="background: ${member.color}">
                                     ${initial}
@@ -7424,7 +7445,7 @@ console.log('Script started loading...');
                 const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 
                 return `
-                    <div class="family-pill" style="background: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
+                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
                         <div class="family-pill-progress" style="background: ${member.color}; width: ${progressPercent}%"></div>
                         <div class="family-pill-content">
                             <div class="family-pill-avatar" style="background: ${member.color}">
@@ -10003,7 +10024,7 @@ console.log('Script started loading...');
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}; margin-bottom: 15px;" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
+                    html += `<div class="schedule-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}; margin-bottom: 15px;" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
