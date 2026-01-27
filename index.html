@@ -1470,8 +1470,8 @@
         
         /* Reward card emoji sizing */
         .reward-emoji img.emoji {
-        height: 128px;
-        width: 128px;
+        height: 88px;
+        width: 88px;
         }
         
         /* Confetti Animation */
@@ -6765,16 +6765,20 @@ console.log('Script started loading...');
                 const events = data.items || [];
                 
                 console.log(`✅ Loaded ${events.length} events from Google Calendar`);
+                console.log('📋 Processing events with family members:', familyMembers.map(m => `${m.name} (${m.color})`));
                 
                 events.forEach(event => {
                     const start = event.start.dateTime || event.start.date;
                     const startDate = new Date(start);
                     const title = event.summary;
                     
+                    console.log(`\n📌 Processing: "${title}"`);
+                    
                     // Try to auto-assign based on title
                     let assignedMember = autoAssignEventMember(title);
+                    console.log(`   Result: member="${assignedMember}"`);
                     
-                    googleCalendarEvents.push({
+                    const newEvent = {
                         id: event.id + '_gcal',
                         title: title,
                         date: startDate.toISOString().split('T')[0],
@@ -6782,7 +6786,10 @@ console.log('Script started loading...');
                         notes: event.description || '',
                         member: assignedMember || '',
                         isGoogle: true
-                    });
+                    };
+                    
+                    console.log('   Final event object:', newEvent);
+                    googleCalendarEvents.push(newEvent);
                 });
                 
                 // Re-render calendar with Google events
@@ -8034,20 +8041,14 @@ console.log('Script started loading...');
         let selectedProfiles = [];
         let selectedEventProfile = ''; // For event modal (single selection)
         
-function openTaskChoreModal() {
-    document.getElementById('taskChorePanelOverlay').classList.add('active');
-    document.getElementById('taskChoreModal').classList.add('active');
-    
-    // Set default date to today
-    document.getElementById('taskChoreDate').valueAsDate = new Date();
-    
-    // Reset selections
-    selectedProfiles = []; 
-    currentTaskType = 'chore';
-    
-    // REPAIR: Call the render function to show profiles
-    renderProfileGrid(); 
-}
+        function openTaskChoreModal() {
+            document.getElementById('taskChorePanelOverlay').classList.add('active');
+            document.getElementById('taskChoreModal').classList.add('active');
+            renderProfileGrid();
+            initializeEmojiPicker();
+            // Set today's date
+            document.getElementById('taskChoreDate').valueAsDate = new Date();
+        }
         
         function updateAddDateVisibility() {
             const checked = document.getElementById('taskChoreDateToggle').checked;
@@ -8063,14 +8064,6 @@ function openTaskChoreModal() {
             const checked = document.getElementById('taskChoreRepeatToggle').checked;
             document.getElementById('taskRepeatDetails').style.display = checked ? 'block' : 'none';
         }
-
-        function updateEventTimeVisibility() {
-    const isAllDay = document.getElementById('eventAllDayToggle').checked;
-    const timeInput = document.getElementById('eventTime');
-    if (timeInput) {
-        timeInput.style.display = isAllDay ? 'none' : 'block';
-    }
-}
         
         function initializeEmojiPicker() {
             const emojiData = [
@@ -8934,7 +8927,15 @@ function openTaskChoreModal() {
         }
         
         function renderEventProfileGrid() {
+            console.log('🎨 Rendering event profile grid...');
             const grid = document.getElementById('eventProfileGrid');
+            console.log('Grid element:', grid);
+            console.log('Family members:', familyMembers);
+            
+            if (!grid) {
+                console.error('❌ eventProfileGrid element not found!');
+                return;
+            }
             
             let html = '';
             familyMembers.forEach(member => {
@@ -8947,7 +8948,9 @@ function openTaskChoreModal() {
                 </div>`;
             });
             
+            console.log('Generated HTML:', html.substring(0, 200) + '...');
             grid.innerHTML = html;
+            console.log('✅ Event profile grid rendered');
         }
         
         function selectEventProfile(profileName) {
@@ -9523,11 +9526,13 @@ function openTaskChoreModal() {
         }
 
         function openEventModal() {
+            console.log('📅 Opening event modal...');
             selectedEventProfile = ''; // Reset selection
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
             updateEventTimeVisibility();
+            console.log('Calling renderEventProfileGrid...');
             renderEventProfileGrid();
         }
         
