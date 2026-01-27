@@ -6850,7 +6850,7 @@ console.log('Script started loading...');
         function renderFamilyMembers() {
             const container = document.getElementById('familyMembers');
             container.innerHTML = familyMembers.map(member => 
-                `<div class="member" style="background: ${member.color}20; border-left: 4px solid ${member.color}">
+                `<div class="member" style="background: ${hexToRgba(member.color, 0.125)}; border-left: 4px solid ${member.color}">
                     <strong>${member.name}</strong>
                 </div>`
             ).join('');
@@ -7117,7 +7117,7 @@ console.log('Script started loading...');
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                    html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
@@ -7194,7 +7194,7 @@ console.log('Script started loading...');
                     const color = (member && member.color) || getFamilyColor();
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -7273,7 +7273,7 @@ console.log('Script started loading...');
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                         
-                        html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                        html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                             <div class="schedule-event-content">
                                 <div class="schedule-event-time" style="color: ${color}">${event.time || 'All day'}</div>
                                 <div class="schedule-event-title">${event.title}</div>
@@ -7402,7 +7402,7 @@ console.log('Script started loading...');
                 // For Google Calendar members, don't show task count
                 if (member.isGoogleCalendar) {
                     return `
-                        <div class="family-pill" style="background: ${member.color}20; color: ${member.color}">
+                        <div class="family-pill" style="background: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
                             <div class="family-pill-content">
                                 <div class="family-pill-avatar" style="background: ${member.color}">
                                     ${initial}
@@ -7424,7 +7424,7 @@ console.log('Script started loading...');
                 const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 
                 return `
-                    <div class="family-pill" style="background: ${member.color}20; color: ${member.color}">
+                    <div class="family-pill" style="background: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
                         <div class="family-pill-progress" style="background: ${member.color}; width: ${progressPercent}%"></div>
                         <div class="family-pill-content">
                             <div class="family-pill-avatar" style="background: ${member.color}">
@@ -10003,7 +10003,7 @@ console.log('Script started loading...');
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background: ${color}40; border-left-color: ${color}; margin-bottom: 15px;" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
+                    html += `<div class="schedule-event" style="background: ${hexToRgba(color, 0.25)}; border-left-color: ${color}; margin-bottom: 15px;" onclick="showEventDetails('${event.id}'); closeDayEventsModal();">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
