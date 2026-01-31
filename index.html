@@ -220,15 +220,16 @@
             background-repeat: no-repeat;
             background-position: center;
         }
-        .icon-photos::before { 
-            content: '';
-            display: block;
-            width: 32px;
-            height: 32px;
-            background-image: url('photos-icon.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .icon-allowance::before { 
+            content: '💰';
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-recipes::before { 
+            content: '📖';
+            font-size: 28px;
         }
         .icon-lists::before { 
             content: '';
@@ -1798,6 +1799,595 @@
             transform: translateY(-2px);
         }
         
+        /* Delete Options Modal */
+        .delete-options-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+        }
+        
+        .delete-options-overlay.active {
+            display: block;
+        }
+        
+        .delete-options-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 3001;
+            max-width: 400px;
+            width: 90%;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-options-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .delete-options-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        
+        .delete-options-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
+        .delete-options-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .delete-option-btn {
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #FF6B6B;
+            background: white;
+            color: #FF6B6B;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delete-option-btn:hover {
+            background: #FF6B6B;
+            color: white;
+        }
+        
+        .delete-cancel-btn {
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #666;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delete-cancel-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        /* Meal Filter Modal */
+        .meal-plan-container {
+            padding: 20px;
+        }
+        
+        .meal-plan-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        
+        .meal-filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #4A90E2;
+            background: white;
+            color: #4A90E2;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .meal-filter-btn:hover {
+            background: #4A90E2;
+            color: white;
+        }
+        
+        .meal-filter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+        }
+        
+        .meal-filter-overlay.active {
+            display: block;
+        }
+        
+        .meal-filter-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 3001;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .meal-filter-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .meal-filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .meal-filter-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .meal-filter-close {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: #f5f5f5;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .meal-filter-close:hover {
+            background: #e0e0e0;
+        }
+        
+        .meal-filter-body {
+            padding: 20px 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .meal-filter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .meal-filter-item:last-child {
+            border-bottom: none;
+        }
+        
+        .meal-filter-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .meal-filter-color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .meal-filter-category-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: #000;
+        }
+        
+        .meal-filter-item-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .meal-filter-edit-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            background: #f5f5f5;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .meal-filter-edit-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .meal-filter-toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        
+        .meal-filter-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .meal-filter-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        
+        .meal-filter-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .meal-filter-toggle input:checked + .meal-filter-toggle-slider {
+            background-color: #4A90E2;
+        }
+        
+        .meal-filter-toggle input:checked + .meal-filter-toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
+        /* Edit Category Modal */
+        .edit-category-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3002;
+            display: none;
+        }
+        
+        .edit-category-overlay.active {
+            display: block;
+        }
+        
+        .edit-category-modal {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            z-index: 3003;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            border-radius: 30px 0 0 30px;
+        }
+        
+        .edit-category-modal.active {
+            right: 0;
+        }
+        
+        .edit-category-header {
+            display: flex;
+            align-items: center;
+            padding: 25px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+        }
+        
+        .edit-category-body {
+            padding: 25px;
+        }
+        
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .color-picker-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+        
+        .color-picker-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-picker-option.active {
+            border-color: #4A90E2;
+            transform: scale(1.15);
+        }
+        
+        /* Recipes View Styles */
+        .recipes-container {
+            display: flex;
+            height: calc(100vh - 140px);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .recipes-left-panel {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        
+        .recipes-filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .recipe-filter-btn {
+            padding: 10px 18px;
+            border-radius: 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .recipe-filter-btn:hover {
+            border-color: #4A90E2;
+        }
+        
+        .recipe-filter-btn.active {
+            background: #4A90E2;
+            border-color: #4A90E2;
+            color: white;
+        }
+        
+        .recipes-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .recipe-list-item {
+            padding: 15px 18px;
+            border-radius: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .recipe-list-item:hover {
+            border-color: #4A90E2;
+            transform: translateX(3px);
+        }
+        
+        .recipe-list-item.active {
+            background: #4A90E2;
+            border-color: #4A90E2;
+            color: white;
+        }
+        
+        .recipe-list-item-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .recipe-list-item-menu {
+            font-size: 20px;
+            opacity: 0.5;
+        }
+        
+        .recipes-right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .recipes-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+        }
+        
+        .recipes-empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .recipes-empty-text {
+            font-size: 18px;
+        }
+        
+        .recipe-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .recipe-view-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 10px;
+        }
+        
+        .recipe-view-category {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .recipe-view-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .recipe-action-btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .recipe-plan-btn {
+            background: #4A90E2;
+            color: white;
+        }
+        
+        .recipe-plan-btn:hover {
+            background: #3a7bc8;
+            transform: translateY(-2px);
+        }
+        
+        .recipe-edit-btn {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .recipe-edit-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .recipe-delete-btn {
+            background: #FFE5E5;
+            color: #FF6B6B;
+        }
+        
+        .recipe-delete-btn:hover {
+            background: #FF6B6B;
+            color: white;
+        }
+        
+        .recipe-section {
+            margin-bottom: 30px;
+        }
+        
+        .recipe-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        
+        .recipe-section-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        
+        .recipe-grocery-btn {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            background: white;
+            color: #4CAF50;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .recipe-grocery-btn:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
         /* Edit Side Panel */
         .edit-side-panel {
             position: fixed;
@@ -2302,6 +2892,37 @@
             transform: translateX(22px);
         }
         
+        .days-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        
+        .day-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+            min-width: 40px;
+            height: 40px;
+        }
+        
+        .day-btn.active {
+            background: #4A90E2;
+            border-color: #4A90E2;
+            color: white;
+        }
+        
+        .day-btn:hover {
+            transform: scale(1.05);
+        }
+        
         .task-select {
             padding: 8px 12px;
             border: 1px solid #e0e0e0;
@@ -2732,9 +3353,97 @@
         
         /* Day View Styles */
         .day-view-container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        .day-view-mini-calendar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 320px;
+            flex-shrink: 0;
+        }
+        
+        .day-view-main {
+            flex: 1;
+        }
+        
+        .mini-calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .mini-calendar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .mini-calendar-nav {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+            color: #667eea;
+            border-radius: 5px;
+        }
+        
+        .mini-calendar-nav:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .mini-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
+        .mini-calendar-day-header {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            padding: 5px;
+        }
+        
+        .mini-calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .mini-calendar-day:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .mini-calendar-day.today {
+            background: #FF6B6B;
+            color: white;
+            font-weight: 700;
+        }
+        
+        .mini-calendar-day.selected {
+            background: #667eea;
+            color: white;
+            font-weight: 700;
+        }
+        
+        .mini-calendar-day.today.selected {
+            background: #667eea;
+            box-shadow: 0 0 0 2px #FF6B6B;
         }
         
         .day-view-header {
@@ -3203,6 +3912,11 @@
             background: rgba(255, 255, 255, 0.6);
         }
         
+        .routine-indicator.visible {
+            background: rgba(74, 144, 226, 0.3);
+            border: 2px solid #4A90E2;
+        }
+        
         .routine-indicator-icon {
             font-size: 48px;
         }
@@ -3248,6 +3962,20 @@
         
         .routine-task:hover {
             transform: translateX(3px);
+        }
+        
+        .routine-task-drag-handle {
+            font-size: 24px;
+            color: #666;
+            cursor: grab;
+            user-select: none;
+            flex-shrink: 0;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        
+        .routine-task-drag-handle:active {
+            cursor: grabbing;
         }
         
         .routine-task-icon {
@@ -3683,6 +4411,21 @@
             transform: translateX(3px);
         }
         
+        .list-item-drag-handle {
+            font-size: 24px;
+            color: #666;
+            cursor: grab;
+            user-select: none;
+            flex-shrink: 0;
+            padding: 0 5px;
+            line-height: 1;
+            order: 0;
+        }
+        
+        .list-item-drag-handle:active {
+            cursor: grabbing;
+        }
+        
         .list-item-checkbox {
             width: 40px;
             height: 40px;
@@ -3697,7 +4440,7 @@
             transition: all 0.2s;
             font-size: 22px;
             font-weight: 700;
-            order: 2;
+            order: 1;
         }
         
         .list-item-checkbox.checked {
@@ -3714,11 +4457,45 @@
             font-size: 18px;
             font-weight: 500;
             color: #000;
-            order: 1;
+            order: 2;
         }
         
         .list-item-text.completed {
             opacity: 0.9;
+        }
+        
+        .list-item-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+            order: 3;
+        }
+        
+        .list-item-assign-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            order: 3;
+        }
+        
+        .list-item-assign-btn:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
         }
         
         .add-item-input {
@@ -3808,6 +4585,199 @@
         
         .list-section-header.collapsed .list-section-arrow {
             transform: rotate(180deg);
+        }
+        
+        .list-section-items {
+            padding: 0 15px 15px 15px;
+            min-height: 60px;
+            transition: all 0.2s;
+            border-radius: 10px;
+        }
+        
+        /* Allowance Section */
+        .allowance-container {
+            padding: 20px;
+        }
+        
+        .allowance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .allowance-card {
+            /* Background gradient set via inline style */
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .allowance-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .allowance-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .allowance-info {
+            flex: 1;
+        }
+        
+        .allowance-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .allowance-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .allowance-section {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .allowance-section-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .allowance-section-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .allowance-transaction-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #4A90E2;
+            color: white;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .allowance-transaction-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .allowance-type-toggle {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .allowance-type-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .allowance-type-btn.active {
+            background: #4A90E2;
+            color: white;
+            border-color: #4A90E2;
+        }
+        
+        .allowance-history {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .allowance-history-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 5px 0;
+        }
+        
+        .allowance-transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .allowance-transaction:last-child {
+            border-bottom: none;
+        }
+        
+        .allowance-transaction-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .allowance-transaction-date {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .allowance-transaction-description {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .allowance-transaction-amount {
+            font-weight: 700;
+            font-size: 16px;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+        
+        .allowance-transaction-amount.positive {
+            color: #4CAF50;
+        }
+        
+        .allowance-transaction-amount.negative {
+            color: #FF6B6B;
         }
         
         .list-section-items {
@@ -4465,9 +5435,13 @@
                 <div class="nav-icon icon-meals"></div>
                 <div>Meals</div>
             </div>
-            <div class="nav-item" onclick="switchSection('photos')">
-                <div class="nav-icon icon-photos"></div>
-                <div>Photos</div>
+            <div class="nav-item" onclick="switchSection('allowance')">
+                <div class="nav-icon icon-allowance"></div>
+                <div>Allowance</div>
+            </div>
+            <div class="nav-item" onclick="switchSection('recipes')">
+                <div class="nav-icon icon-recipes"></div>
+                <div>Recipes</div>
             </div>
             <div class="nav-item" onclick="switchSection('lists')">
                 <div class="nav-icon icon-lists"></div>
@@ -4670,11 +5644,38 @@
                 
                 <div class="edit-form-group">
                     <label class="edit-form-label">Period</label>
-                    <select class="edit-form-input" id="taskRepeatUnit">
+                    <select class="edit-form-input" id="taskRepeatUnit" onchange="updateRepeatDaysVisibility()">
                         <option value="day">Day(s)</option>
                         <option value="week">Week(s)</option>
                         <option value="month">Month(s)</option>
                     </select>
+                </div>
+                
+                <div class="edit-form-group" id="taskRepeatDays" style="display: none;">
+                    <label class="edit-form-label">Repeat on</label>
+                    <div class="days-selector">
+                        <button type="button" class="day-btn" data-day="0" onclick="toggleDay(0)">S</button>
+                        <button type="button" class="day-btn" data-day="1" onclick="toggleDay(1)">M</button>
+                        <button type="button" class="day-btn" data-day="2" onclick="toggleDay(2)">T</button>
+                        <button type="button" class="day-btn" data-day="3" onclick="toggleDay(3)">W</button>
+                        <button type="button" class="day-btn" data-day="4" onclick="toggleDay(4)">T</button>
+                        <button type="button" class="day-btn" data-day="5" onclick="toggleDay(5)">F</button>
+                        <button type="button" class="day-btn" data-day="6" onclick="toggleDay(6)">S</button>
+                    </div>
+                </div>
+                
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">📅</span>
+                            <span>Repeats until</span>
+                        </div>
+                        <label class="task-toggle">
+                            <input type="checkbox" id="taskRepeatUntilToggle" onchange="updateRepeatUntilVisibility()">
+                            <span class="task-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <input type="date" class="edit-form-input" id="taskRepeatUntil" style="margin-top: 10px; display: none;">
                 </div>
             </div>
             
@@ -5214,6 +6215,11 @@
                 <input type="text" class="edit-form-input" id="editListItemText" placeholder="Item text">
             </div>
             
+            <div class="edit-form-group">
+                <label class="edit-form-label">Assign To (Optional)</label>
+                <div id="editListItemMemberGrid" class="task-profile-grid"></div>
+            </div>
+            
             <button class="edit-save-btn" onclick="saveEditedListItem()">Save</button>
         </div>
     </div>
@@ -5326,18 +6332,38 @@ console.log('Script started loading...');
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let chores = JSON.parse(localStorage.getItem('chores')) || [];
         let routines = JSON.parse(localStorage.getItem('routines')) || [];
+        let visiblePeriods = {}; // Track which periods are manually shown for each member
+        
+        // Initialize sortOrder for all routines if not set
+        let needsSave = false;
+        routines.forEach((routine, index) => {
+            if (routine.sortOrder === undefined) {
+                routine.sortOrder = index;
+                needsSave = true;
+            }
+        });
+        if (needsSave) {
+            localStorage.setItem('routines', JSON.stringify(routines));
+        }
         let meals = JSON.parse(localStorage.getItem('meals')) || [];
+        let allowances = JSON.parse(localStorage.getItem('allowances')) || [];
         let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         // Meal planning data
         let recipes = JSON.parse(localStorage.getItem('recipes')) || [];
         let mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || [];
-        let mealCategories = [
-            { name: 'Breakfast', color: '#FFB3B3' },
-            { name: 'Lunch', color: '#B3E5D9' },
-            { name: 'Dinner', color: '#FFD9A3' },
-            { name: 'Snack', color: '#E5D4B3' }
+        let mealCategories = JSON.parse(localStorage.getItem('mealCategories')) || [
+            { name: 'Breakfast', color: '#FFB3B3', visible: true },
+            { name: 'Lunch', color: '#B3E5D9', visible: true },
+            { name: 'Dinner', color: '#FFD9A3', visible: true },
+            { name: 'Snack', color: '#E5D4B3', visible: true }
         ];
+        
+        // Save meal categories to localStorage
+        function saveMealCategories() {
+            localStorage.setItem('mealCategories', JSON.stringify(mealCategories));
+        }
+        
         let currentMealWeekStart = new Date();
         currentMealWeekStart.setHours(0, 0, 0, 0); // Start on today
         
@@ -5385,8 +6411,8 @@ console.log('Script started loading...');
                 </div>`;
             });
             
-            // Rows for each meal type
-            mealCategories.forEach(category => {
+            // Rows for each meal type (only show visible ones)
+            mealCategories.filter(cat => cat.visible !== false).forEach(category => {
                 // Row label
                 html += `<div class="meal-row-label">${category.name}</div>`;
                 
@@ -5453,6 +6479,111 @@ console.log('Script started loading...');
             }
         }
         
+        // Meal Filter Modal Functions
+        function openMealFilterModal() {
+            renderMealFilterBody();
+            document.getElementById('mealFilterOverlay').classList.add('active');
+            document.getElementById('mealFilterModal').classList.add('active');
+        }
+        
+        function closeMealFilterModal() {
+            document.getElementById('mealFilterOverlay').classList.remove('active');
+            document.getElementById('mealFilterModal').classList.remove('active');
+        }
+        
+        function renderMealFilterBody() {
+            const container = document.getElementById('mealFilterBody');
+            let html = '';
+            
+            mealCategories.forEach((category, index) => {
+                const isVisible = category.visible !== false;
+                html += `
+                    <div class="meal-filter-item">
+                        <div class="meal-filter-item-left">
+                            <div class="meal-filter-color-dot" style="background: ${category.color}"></div>
+                            <span class="meal-filter-category-name">${category.name}</span>
+                        </div>
+                        <div class="meal-filter-item-right">
+                            <button class="meal-filter-edit-btn" onclick="openEditMealCategory(${index})">✏️</button>
+                            <label class="meal-filter-toggle">
+                                <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="toggleMealCategoryVisibility(${index})">
+                                <span class="meal-filter-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function toggleMealCategoryVisibility(index) {
+            mealCategories[index].visible = !mealCategories[index].visible;
+            saveMealCategories();
+            renderMealPlanGrid();
+            renderMealFilterBody();
+        }
+        
+        function openEditMealCategory(index) {
+            const category = mealCategories[index];
+            document.getElementById('editCategoryIndex').value = index;
+            document.getElementById('editCategoryName').value = category.name;
+            document.getElementById('editCategoryColor').value = category.color;
+            
+            // Render color picker
+            renderEditCategoryColorPicker(category.color);
+            
+            document.getElementById('editCategoryOverlay').classList.add('active');
+            document.getElementById('editCategoryModal').classList.add('active');
+        }
+        
+        function closeEditMealCategory() {
+            document.getElementById('editCategoryOverlay').classList.remove('active');
+            document.getElementById('editCategoryModal').classList.remove('active');
+        }
+        
+        function renderEditCategoryColorPicker(currentColor) {
+            const grid = document.getElementById('editCategoryColorGrid');
+            const colors = [
+                '#FFB3B3', '#FFD9A3', '#FFFFB3', '#B3FFB3', '#B3E5D9', 
+                '#B3D9FF', '#D9B3FF', '#FFB3E5', '#E5D4B3', '#D4B3E5'
+            ];
+            
+            let html = '';
+            colors.forEach(color => {
+                const isActive = color === currentColor;
+                html += `<div class="color-picker-option ${isActive ? 'active' : ''}" 
+                              style="background: ${color}" 
+                              onclick="selectEditCategoryColor('${color}')"></div>`;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectEditCategoryColor(color) {
+            document.getElementById('editCategoryColor').value = color;
+            renderEditCategoryColorPicker(color);
+        }
+        
+        function saveEditMealCategory() {
+            const index = parseInt(document.getElementById('editCategoryIndex').value);
+            const newName = document.getElementById('editCategoryName').value.trim();
+            const newColor = document.getElementById('editCategoryColor').value;
+            
+            if (!newName) {
+                alert('Please enter a category name');
+                return;
+            }
+            
+            mealCategories[index].name = newName;
+            mealCategories[index].color = newColor;
+            saveMealCategories();
+            
+            closeEditMealCategory();
+            renderMealFilterBody();
+            renderMealPlanGrid();
+        }
+        
         let currentMealType = '';
         let currentMealDate = '';
         
@@ -5486,7 +6617,39 @@ console.log('Script started loading...');
             const list = document.getElementById('mealSelectorList');
             const categoryRecipes = recipes.filter(r => r.mealType === currentMealType);
             
-            let html = `<div class="add-recipe-btn" onclick="openAddRecipePanel()">+ Add recipe</div>`;
+            let html = `<div style="padding: 0 20px;">`;
+            
+            // Repeat controls
+            html += `
+                <div class="edit-form-group" style="margin-top: 20px;">
+                    <div class="edit-toggle-row">
+                        <span>Repeats</span>
+                        <input type="checkbox" id="mealRepeatEnabled" onchange="toggleMealRepeatOptions()">
+                    </div>
+                </div>
+                
+                <div id="mealRepeatOptions" style="display: none;">
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Repeat Every</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" class="edit-form-input" id="mealRepeatEvery" value="1" min="1" style="flex: 1;">
+                            <select class="edit-form-input" id="mealRepeatUnit" style="flex: 1;">
+                                <option value="day">Day(s)</option>
+                                <option value="week" selected>Week(s)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Repeats Until (Optional)</label>
+                        <input type="date" class="edit-form-input" id="mealRepeatUntil">
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid #e0e0e0; margin: 20px 0;"></div>
+            `;
+            
+            html += `<div class="add-recipe-btn" onclick="openAddRecipePanel()">+ Add recipe</div>`;
             
             categoryRecipes.forEach(recipe => {
                 html += `
@@ -5501,17 +6664,41 @@ console.log('Script started loading...');
                 html += '<div style="padding: 40px; text-align: center; color: #999;">No recipes yet. Add one!</div>';
             }
             
+            html += `</div>`;
+            
             list.innerHTML = html;
         }
         
+        function toggleMealRepeatOptions() {
+            const enabled = document.getElementById('mealRepeatEnabled').checked;
+            document.getElementById('mealRepeatOptions').style.display = enabled ? 'block' : 'none';
+        }
+        
         function selectRecipe(recipeId) {
-            // Always add a new meal (allow multiple meals per day/type)
-            mealPlan.push({
-                id: Date.now(),
+            const repeatEnabled = document.getElementById('mealRepeatEnabled')?.checked || false;
+            const repeatEvery = repeatEnabled ? parseInt(document.getElementById('mealRepeatEvery')?.value || 1) : null;
+            const repeatUnit = repeatEnabled ? document.getElementById('mealRepeatUnit')?.value || 'week' : null;
+            const repeatUntil = repeatEnabled ? document.getElementById('mealRepeatUntil')?.value || null : null;
+            
+            // Create the meal
+            const newMeal = {
+                id: Date.now() + Math.random(),
                 date: currentMealDate,
                 mealType: currentMealType,
                 recipeId: recipeId
-            });
+            };
+            
+            // Add repeat data if enabled
+            if (repeatEnabled && repeatEvery && repeatUnit) {
+                newMeal.repeat = {
+                    every: repeatEvery,
+                    unit: repeatUnit,
+                    until: repeatUntil
+                };
+            }
+            
+            // Always add a new meal (allow multiple meals per day/type)
+            mealPlan.push(newMeal);
             
             localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
             closeMealSelector();
@@ -5580,6 +6767,175 @@ console.log('Script started loading...');
             showMealDetail(mealId);
         }
         
+        // Allowance Functions
+        function renderAllowanceGrid() {
+            const grid = document.getElementById('allowanceGrid');
+            // Only show Levi and Elsie
+            const allowanceMembers = familyMembers.filter(m => m.name === 'Levi' || m.name === 'Elsie');
+            
+            let html = '';
+            allowanceMembers.forEach(member => {
+                const memberAllowance = allowances.find(a => a.member === member.name) || {
+                    member: member.name,
+                    spending: 0,
+                    saving: 0,
+                    transactions: []
+                };
+                
+                // Calculate spending and saving from transactions
+                let spending = 0;
+                let saving = 0;
+                (memberAllowance.transactions || []).forEach(t => {
+                    if (t.type === 'spend') {
+                        spending += Math.abs(t.amount);
+                    } else if (t.type === 'save') {
+                        saving += t.amount;
+                    }
+                });
+                
+                const initial = member.name.charAt(0).toUpperCase();
+                // Show ALL transactions in reverse chronological order (newest first)
+                const allTransactions = (memberAllowance.transactions || []).slice().reverse();
+                
+                // Create gradient background like chores
+                const columnBg = hexToRgba(member.color, 0.2);
+                
+                html += `
+                    <div class="allowance-card" style="background: ${columnBg};">
+                        <div class="allowance-header">
+                            <div class="allowance-avatar" style="background: ${member.color}">
+                                ${initial}
+                            </div>
+                            <div class="allowance-info">
+                                <div class="allowance-name">${member.name}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="allowance-sections">
+                            <div class="allowance-section">
+                                <div class="allowance-section-label">Spending</div>
+                                <div class="allowance-section-amount">$${spending.toFixed(2)}</div>
+                            </div>
+                            <div class="allowance-section">
+                                <div class="allowance-section-label">Saving</div>
+                                <div class="allowance-section-amount">$${saving.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        
+                        <button class="allowance-transaction-btn" onclick="openAllowanceTransaction('${member.name}')">
+                            Add Transaction
+                        </button>
+                        
+                        ${allTransactions.length > 0 ? `
+                            <div class="allowance-history">
+                                <div class="allowance-history-title">Transaction History</div>
+                                ${allTransactions.map(t => `
+                                    <div class="allowance-transaction">
+                                        <div class="allowance-transaction-info">
+                                            <div class="allowance-transaction-date">${new Date(t.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                                            <div class="allowance-transaction-description">${t.description || 'No description'}</div>
+                                        </div>
+                                        <span class="allowance-transaction-amount ${t.type === 'save' ? 'positive' : 'negative'}">
+                                            ${t.type === 'save' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        let currentAllowanceMember = '';
+        let currentAllowanceType = 'save'; // Default to save
+        
+        function openAllowanceTransaction(memberName) {
+            currentAllowanceMember = memberName;
+            currentAllowanceType = 'save';
+            
+            // Reset toggle buttons
+            document.getElementById('saveTypeBtn').classList.add('active');
+            document.getElementById('spendTypeBtn').classList.remove('active');
+            
+            // Clear form
+            document.getElementById('allowanceAmount').value = '';
+            document.getElementById('allowanceDescription').value = '';
+            
+            // Open modal
+            document.getElementById('allowancePanelOverlay').classList.add('active');
+            document.getElementById('allowanceModal').classList.add('active');
+            
+            // Focus on amount field
+            setTimeout(() => document.getElementById('allowanceAmount').focus(), 100);
+        }
+        
+        function setTransactionType(type) {
+            currentAllowanceType = type;
+            document.getElementById('saveTypeBtn').classList.toggle('active', type === 'save');
+            document.getElementById('spendTypeBtn').classList.toggle('active', type === 'spend');
+        }
+        
+        function closeAllowanceModal() {
+            document.getElementById('allowancePanelOverlay').classList.remove('active');
+            document.getElementById('allowanceModal').classList.remove('active');
+            currentAllowanceMember = '';
+            currentAllowanceType = 'save';
+        }
+        
+        function saveAllowanceTransaction() {
+            const amountStr = document.getElementById('allowanceAmount').value;
+            const description = document.getElementById('allowanceDescription').value.trim();
+            
+            if (!amountStr) {
+                alert('Please enter an amount');
+                return;
+            }
+            
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            if (!description) {
+                alert('Please enter a description');
+                return;
+            }
+            
+            // Find or create allowance for member
+            let memberAllowance = allowances.find(a => a.member === currentAllowanceMember);
+            if (!memberAllowance) {
+                memberAllowance = {
+                    member: currentAllowanceMember,
+                    spending: 0,
+                    saving: 0,
+                    transactions: []
+                };
+                allowances.push(memberAllowance);
+            }
+            
+            // Add transaction
+            memberAllowance.transactions = memberAllowance.transactions || [];
+            memberAllowance.transactions.push({
+                date: new Date().toISOString(),
+                amount: amount,
+                type: currentAllowanceType,
+                description: description
+            });
+            
+            // Save
+            localStorage.setItem('allowances', JSON.stringify(allowances));
+            
+            // Close modal
+            closeAllowanceModal();
+            
+            // Re-render
+            renderAllowanceGrid();
+        }
+        
         function openAddRecipePanel() {
             closeMealSelector();
             document.getElementById('addRecipePanelOverlay').classList.add('active');
@@ -5594,6 +6950,8 @@ console.log('Script started loading...');
             document.getElementById('addRecipeName').value = '';
             document.getElementById('addRecipeIngredients').value = '';
             document.getElementById('addRecipeInstructions').value = '';
+            // Clear editing flag
+            delete document.getElementById('addRecipePanel').dataset.editingId;
         }
         
         async function importRecipeFromURL() {
@@ -5732,22 +7090,55 @@ console.log('Script started loading...');
                 return;
             }
             
-            const newRecipe = {
-                id: Date.now(),
-                name: name,
-                mealType: mealType,
-                ingredients: ingredients,
-                instructions: instructions,
-                category: 'Uncategorized'
-            };
+            const editingId = document.getElementById('addRecipePanel').dataset.editingId;
             
-            recipes.push(newRecipe);
-            localStorage.setItem('recipes', JSON.stringify(recipes));
-            
-            closeAddRecipePanel();
-            
-            // Add to meal plan
-            selectRecipe(newRecipe.id);
+            if (editingId) {
+                // Editing existing recipe
+                const recipe = recipes.find(r => r.id == editingId);
+                if (recipe) {
+                    recipe.name = name;
+                    recipe.mealType = mealType;
+                    recipe.ingredients = ingredients;
+                    recipe.instructions = instructions;
+                    localStorage.setItem('recipes', JSON.stringify(recipes));
+                    
+                    delete document.getElementById('addRecipePanel').dataset.editingId;
+                    closeAddRecipePanel();
+                    
+                    // Refresh recipe view if we're in recipes section
+                    if (currentSection === 'recipes') {
+                        renderRecipesView();
+                        if (selectedRecipeId == editingId) {
+                            renderRecipeDetail(selectedRecipeId);
+                        }
+                    }
+                }
+            } else {
+                // Creating new recipe
+                const newRecipe = {
+                    id: Date.now(),
+                    name: name,
+                    mealType: mealType,
+                    ingredients: ingredients,
+                    instructions: instructions,
+                    category: 'Uncategorized'
+                };
+                
+                recipes.push(newRecipe);
+                localStorage.setItem('recipes', JSON.stringify(recipes));
+                
+                closeAddRecipePanel();
+                
+                // If in meal selector, add to meal plan
+                if (currentMealDate && currentMealType) {
+                    selectRecipe(newRecipe.id);
+                }
+                
+                // If in recipes view, refresh
+                if (currentSection === 'recipes') {
+                    renderRecipesView();
+                }
+            }
         }
         
         function navigateMealWeek(direction) {
@@ -5760,6 +7151,203 @@ console.log('Script started loading...');
             currentMealWeekStart = new Date(today);
             currentMealWeekStart.setHours(0, 0, 0, 0); // Start on today
             renderMealPlanGrid();
+        }
+        
+        // Recipes View Functions
+        let selectedRecipeFilter = 'all';
+        let selectedRecipeId = null;
+        
+        function renderRecipesView() {
+            renderRecipeFilterButtons();
+            renderRecipesList();
+        }
+        
+        function renderRecipeFilterButtons() {
+            const container = document.getElementById('recipesFilterButtons');
+            const categories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack'];
+            
+            let html = '';
+            categories.forEach(cat => {
+                const catLower = cat.toLowerCase();
+                const isActive = selectedRecipeFilter === catLower;
+                html += `<button class="recipe-filter-btn ${isActive ? 'active' : ''}" onclick="filterRecipes('${catLower}')">${cat}</button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterRecipes(category) {
+            selectedRecipeFilter = category;
+            renderRecipeFilterButtons();
+            renderRecipesList();
+        }
+        
+        function renderRecipesList() {
+            const container = document.getElementById('recipesList');
+            
+            // Filter recipes
+            let filteredRecipes = recipes;
+            if (selectedRecipeFilter !== 'all') {
+                filteredRecipes = recipes.filter(r => r.mealType.toLowerCase() === selectedRecipeFilter);
+            }
+            
+            let html = '';
+            if (filteredRecipes.length === 0) {
+                html = '<div style="padding: 40px; text-align: center; color: #999;">No recipes yet. Add one!</div>';
+            } else {
+                filteredRecipes.forEach(recipe => {
+                    const isActive = recipe.id === selectedRecipeId;
+                    html += `
+                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView(${recipe.id})">
+                            <span class="recipe-list-item-name">${recipe.name}</span>
+                            <span class="recipe-list-item-menu">⋯</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function selectRecipeView(recipeId) {
+            selectedRecipeId = recipeId;
+            renderRecipesList();
+            renderRecipeDetail(recipeId);
+        }
+        
+        function renderRecipeDetail(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+            
+            const container = document.getElementById('recipesRightPanel');
+            const category = mealCategories.find(c => c.name === recipe.mealType);
+            const categoryColor = category ? category.color : '#999';
+            
+            let html = `
+                <div class="recipe-view-header">
+                    <div>
+                        <div class="recipe-view-title">${recipe.name}</div>
+                        <div class="recipe-view-category" style="background: ${categoryColor}; color: #000;">${recipe.mealType}</div>
+                    </div>
+                    <div class="recipe-view-actions">
+                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe(${recipe.id})">Plan Meal</button>
+                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView(${recipe.id})">✏️</button>
+                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView(${recipe.id})">🗑️</button>
+                    </div>
+                </div>
+            `;
+            
+            if (recipe.ingredients) {
+                html += `
+                    <div class="recipe-section">
+                        <div class="recipe-section-title">INGREDIENTS</div>
+                        <div class="recipe-section-content">${recipe.ingredients}</div>
+                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList(${recipe.id})">
+                            🛒 Add to Grocery List
+                        </button>
+                    </div>
+                `;
+            }
+            
+            if (recipe.instructions) {
+                html += `
+                    <div class="recipe-section">
+                        <div class="recipe-section-title">INSTRUCTIONS</div>
+                        <div class="recipe-section-content">${recipe.instructions}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function planMealFromRecipe(recipeId) {
+            // Open a modal to select date and meal type
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+            
+            // For now, use current meal selector flow
+            const today = new Date().toISOString().split('T')[0];
+            currentMealDate = today;
+            currentMealType = recipe.mealType;
+            
+            // Add directly to meal plan
+            selectRecipe(recipeId);
+        }
+        
+        function editRecipeFromView(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+            
+            // Populate edit panel
+            document.getElementById('addRecipeName').value = recipe.name || '';
+            document.getElementById('addRecipeMealType').value = recipe.mealType || 'Dinner';
+            document.getElementById('addRecipeIngredients').value = recipe.ingredients || '';
+            document.getElementById('addRecipeInstructions').value = recipe.instructions || '';
+            
+            // Set a flag that we're editing
+            document.getElementById('addRecipePanel').dataset.editingId = recipeId;
+            
+            // Open panel
+            openAddRecipePanel();
+        }
+        
+        function deleteRecipeFromView(recipeId) {
+            if (!confirm('Delete this recipe? This cannot be undone.')) return;
+            
+            const index = recipes.findIndex(r => r.id === recipeId);
+            if (index > -1) {
+                recipes.splice(index, 1);
+                localStorage.setItem('recipes', JSON.stringify(recipes));
+                selectedRecipeId = null;
+                renderRecipesView();
+                
+                // Show empty state
+                document.getElementById('recipesRightPanel').innerHTML = `
+                    <div class="recipes-empty-state">
+                        <div class="recipes-empty-icon">📖</div>
+                        <div class="recipes-empty-text">Select a recipe to view details</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function addRecipeToGroceryList(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe || !recipe.ingredients) return;
+            
+            // Find or create grocery list
+            let groceryList = lists.find(l => l.name === 'Grocery List');
+            if (!groceryList) {
+                // Create grocery list if it doesn't exist
+                const member = familyMembers.find(m => !m.isGoogleCalendar);
+                if (!member) return;
+                
+                groceryList = {
+                    id: Date.now(),
+                    name: 'Grocery List',
+                    assignedTo: member.id,
+                    items: []
+                };
+                lists.push(groceryList);
+            }
+            
+            // Parse ingredients (split by newlines)
+            const ingredientLines = recipe.ingredients.split('\n').filter(line => line.trim());
+            
+            ingredientLines.forEach(ingredient => {
+                if (ingredient.trim()) {
+                    groceryList.items.push({
+                        id: Date.now() + Math.random(),
+                        text: ingredient.trim(),
+                        completed: false,
+                        section: 'Items'
+                    });
+                }
+            });
+            
+            localStorage.setItem('lists', JSON.stringify(lists));
+            alert('Ingredients added to Grocery List!');
         }
         
         function initializeSampleRecipes() {
@@ -5927,20 +7515,44 @@ console.log('Script started loading...');
                                 <span class="list-section-count">${sectionItems.length}</span>
                                 <span class="list-section-arrow">^</span>
                             </div>
-                            <div class="list-section-items" id="section-${list.id}-${sectionId}">
+                            <div class="list-section-items" 
+                                 id="section-${list.id}-${sectionId}"
+                                 data-list-id="${list.id}"
+                                 data-section="${sectionName}"
+                                 ondragover="handleSectionDragOver(event)"
+                                 ondrop="handleSectionDrop(event)">
                     `;
                     
-                    sectionItems.forEach(item => {
+                    sectionItems.forEach((item, index) => {
                         // Skip empty items (section placeholders)
                         if (!item.text) return;
                         
                         const checkedClass = item.completed ? 'checked' : '';
                         const textClass = item.completed ? 'completed' : '';
                         const itemBg = hexToRgba(member.color, 0.4);
+                        
+                        // Get assigned member for this item
+                        const assignedMember = item.assignedTo ? familyMembers.find(m => m.name === item.assignedTo) : null;
+                        const assignedInitial = assignedMember ? assignedMember.name.charAt(0).toUpperCase() : '';
+                        const assignedColor = assignedMember ? assignedMember.color : '#ccc';
+                        
                         html += `
-                            <div class="list-item" style="background: ${itemBg};" onclick="openListItemDetail(${list.id}, ${item.id})">
+                            <div class="list-item" 
+                                 draggable="true"
+                                 data-item-id="${item.id}"
+                                 data-list-id="${list.id}"
+                                 data-section="${sectionName}"
+                                 data-index="${index}"
+                                 ondragstart="handleListItemDragStart(event)"
+                                 ondragover="handleListItemDragOver(event)"
+                                 ondrop="handleListItemDrop(event)"
+                                 ondragend="handleListItemDragEnd(event)"
+                                 style="background: ${itemBg}; cursor: move;">
+                                <div class="list-item-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
                                 <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
-                                <div class="list-item-text ${textClass}">${item.text}</div>
+                                <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
+                                ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
+                                ${!assignedMember ? `<div class="list-item-assign-btn" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">👤</div>` : ''}
                             </div>
                         `;
                     });
@@ -6070,6 +7682,183 @@ console.log('Script started loading...');
                 localStorage.setItem('lists', JSON.stringify(lists));
                 renderListsColumns();
             }
+        }
+        
+        // Drag and drop for list items
+        let draggedListItem = null;
+        let draggedFromList = null;
+        let draggedFromSection = null;
+        
+        function handleListItemDragStart(event) {
+            event.stopPropagation();
+            draggedListItem = event.currentTarget;
+            draggedFromList = parseInt(draggedListItem.dataset.listId);
+            draggedFromSection = draggedListItem.dataset.section;
+            
+            draggedListItem.style.opacity = '0.4';
+            event.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleListItemDragOver(event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            event.dataTransfer.dropEffect = 'move';
+            
+            const target = event.currentTarget;
+            const targetList = parseInt(target.dataset.listId);
+            const targetSection = target.dataset.section;
+            
+            // Allow moving within same list (even to different sections)
+            if (targetList === draggedFromList) {
+                const rect = target.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                
+                if (event.clientY < midpoint) {
+                    target.style.borderTop = '3px solid #4A90E2';
+                    target.style.borderBottom = '';
+                } else {
+                    target.style.borderBottom = '3px solid #4A90E2';
+                    target.style.borderTop = '';
+                }
+            }
+            
+            return false;
+        }
+        
+        function handleListItemDrop(event) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+            
+            const target = event.currentTarget;
+            const targetList = parseInt(target.dataset.listId);
+            const targetSection = target.dataset.section;
+            
+            // Allow moving within same list (even to different sections)
+            if (draggedListItem && targetList === draggedFromList) {
+                const draggedId = parseFloat(draggedListItem.dataset.itemId);
+                const targetId = parseFloat(target.dataset.itemId);
+                
+                const list = lists.find(l => l.id === targetList);
+                if (list) {
+                    // Find the dragged item
+                    const draggedItem = list.items.find(i => i.id === draggedId);
+                    
+                    if (draggedItem) {
+                        // If moving to a different section, update the item's section
+                        if (targetSection !== draggedFromSection) {
+                            draggedItem.section = targetSection;
+                        }
+                        
+                        // If dropping on a different item (reordering)
+                        if (draggedId !== targetId) {
+                            // Get all items for the target section
+                            const targetSectionItems = list.items.filter(i => (i.section || 'Items') === targetSection);
+                            
+                            // Find indices
+                            const draggedIndex = targetSectionItems.findIndex(i => i.id === draggedId);
+                            const targetIndex = targetSectionItems.findIndex(i => i.id === targetId);
+                            
+                            // If dragged item is already in target section, reorder
+                            if (draggedIndex !== -1 && targetIndex !== -1) {
+                                const [movedItem] = targetSectionItems.splice(draggedIndex, 1);
+                                targetSectionItems.splice(targetIndex, 0, movedItem);
+                            } else if (draggedIndex === -1 && targetIndex !== -1) {
+                                // Item is from different section, insert at target position
+                                targetSectionItems.splice(targetIndex, 0, draggedItem);
+                            }
+                            
+                            // Rebuild the list.items array
+                            const otherItems = list.items.filter(i => (i.section || 'Items') !== targetSection && i.id !== draggedId);
+                            list.items = [...otherItems, ...targetSectionItems];
+                        }
+                        
+                        localStorage.setItem('lists', JSON.stringify(lists));
+                        renderListsColumns();
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function handleListItemDragEnd(event) {
+            event.currentTarget.style.opacity = '1';
+            
+            // Remove all drop indicators
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.style.borderTop = '';
+                item.style.borderBottom = '';
+            });
+            
+            // Remove section drop indicators
+            document.querySelectorAll('.list-section-items').forEach(section => {
+                section.style.background = '';
+                section.style.border = '';
+            });
+            
+            draggedListItem = null;
+            draggedFromList = null;
+            draggedFromSection = null;
+        }
+        
+        // Handle dropping on a section (when section is empty or dropping at end)
+        function handleSectionDragOver(event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            event.dataTransfer.dropEffect = 'move';
+            
+            const target = event.currentTarget;
+            const targetList = parseInt(target.dataset.listId);
+            
+            // Allow moving within same list
+            if (targetList === draggedFromList) {
+                target.style.background = 'rgba(74, 144, 226, 0.1)';
+                target.style.border = '2px dashed #4A90E2';
+            }
+            
+            return false;
+        }
+        
+        function handleSectionDrop(event) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+            
+            const target = event.currentTarget;
+            const targetList = parseInt(target.dataset.listId);
+            const targetSection = target.dataset.section;
+            
+            // Allow moving within same list
+            if (draggedListItem && targetList === draggedFromList) {
+                const draggedId = parseFloat(draggedListItem.dataset.itemId);
+                
+                const list = lists.find(l => l.id === targetList);
+                if (list) {
+                    // Find the dragged item
+                    const draggedItem = list.items.find(i => i.id === draggedId);
+                    
+                    if (draggedItem) {
+                        // Update the item's section
+                        draggedItem.section = targetSection;
+                        
+                        // Remove from old position and add to end of target section
+                        const otherItems = list.items.filter(i => i.id !== draggedId);
+                        const targetSectionItems = otherItems.filter(i => (i.section || 'Items') === targetSection);
+                        const nonTargetItems = otherItems.filter(i => (i.section || 'Items') !== targetSection);
+                        
+                        // Rebuild array with dragged item at end of target section
+                        list.items = [...nonTargetItems, ...targetSectionItems, draggedItem];
+                        
+                        localStorage.setItem('lists', JSON.stringify(lists));
+                        renderListsColumns();
+                    }
+                }
+            }
+            
+            return false;
         }
         
         function addListItem() {
@@ -6218,6 +8007,9 @@ console.log('Script started loading...');
             
             document.getElementById('editListItemText').value = item.text || '';
             
+            // Render member selection grid
+            renderEditListItemMemberGrid(item.assignedTo);
+            
             document.getElementById('editListItemPanelOverlay').classList.add('active');
             document.getElementById('editListItemPanel').classList.add('active');
         }
@@ -6286,6 +8078,39 @@ console.log('Script started loading...');
             }
         }
         
+        let selectedListItemMember = null;
+        
+        function renderEditListItemMemberGrid(currentAssignment) {
+            const grid = document.getElementById('editListItemMemberGrid');
+            const listMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+            
+            selectedListItemMember = currentAssignment || null;
+            
+            let html = '';
+            // Add "None" option
+            html += `<div class="task-profile-item ${!selectedListItemMember ? 'active' : ''}" onclick="selectListItemMember(null)">
+                <div class="task-profile-avatar" style="background: #ccc;">—</div>
+                <div class="task-profile-name">None</div>
+            </div>`;
+            
+            listMembers.forEach(member => {
+                const isActive = selectedListItemMember === member.name;
+                html += `<div class="task-profile-item ${isActive ? 'active' : ''}" onclick="selectListItemMember('${member.name}')">
+                    <div class="task-profile-avatar" style="background: ${member.color}">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="task-profile-name">${member.name}</div>
+                </div>`;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectListItemMember(memberName) {
+            selectedListItemMember = memberName;
+            renderEditListItemMemberGrid(memberName);
+        }
+        
         function saveEditedListItem() {
             const newText = document.getElementById('editListItemText').value.trim();
             
@@ -6301,6 +8126,7 @@ console.log('Script started loading...');
             if (!item) return;
             
             item.text = newText;
+            item.assignedTo = selectedListItemMember;
             localStorage.setItem('lists', JSON.stringify(lists));
             
             closeEditListItemPanel();
@@ -6345,6 +8171,13 @@ console.log('Script started loading...');
         }
         
         function toggleCalendarFilter() {
+            // If in meals section, open meal filter modal instead
+            if (currentSection === 'meals') {
+                openMealFilterModal();
+                return;
+            }
+            
+            // Otherwise show calendar filter dropdown
             const dropdown = document.getElementById('calendarFilterDropdown');
             dropdown.classList.toggle('active');
         }
@@ -6790,7 +8623,22 @@ console.log('Script started loading...');
                     const startDate = new Date(start);
                     const title = event.summary;
                     
+                    // Parse end date for multi-day events
+                    const end = event.end.dateTime || event.end.date;
+                    const endDate = new Date(end);
+                    
+                    // For all-day events, Google Calendar's end date is exclusive (the day after)
+                    // So we need to subtract one day for all-day events
+                    let finalEndDate = endDate.toISOString().split('T')[0];
+                    if (event.end.date && !event.end.dateTime) {
+                        // All-day event - subtract one day from end
+                        const adjustedEnd = new Date(endDate);
+                        adjustedEnd.setDate(adjustedEnd.getDate() - 1);
+                        finalEndDate = adjustedEnd.toISOString().split('T')[0];
+                    }
+                    
                     console.log(`\n📌 Processing: "${title}"`);
+                    console.log(`   Start: ${startDate.toISOString().split('T')[0]} | End: ${finalEndDate}`);
                     
                     // Try to auto-assign based on title
                     let assignedMember = autoAssignEventMember(title);
@@ -6800,7 +8648,9 @@ console.log('Script started loading...');
                         id: event.id + '_gcal',
                         title: title,
                         date: startDate.toISOString().split('T')[0],
+                        endDate: finalEndDate,
                         time: event.start.dateTime ? startDate.toTimeString().substring(0, 5) : null,
+                        endTime: event.end.dateTime ? endDate.toTimeString().substring(0, 5) : null,
                         notes: event.description || '',
                         member: assignedMember || '',
                         isGoogle: true
@@ -6825,7 +8675,22 @@ console.log('Script started loading...');
         }
 
         function getAllEvents() {
-            return [...events, ...googleCalendarEvents];
+            const allEvents = [...events, ...googleCalendarEvents];
+            console.log('📊 All events with member assignments:', allEvents.map(e => ({
+                title: e.title,
+                member: e.member,
+                isGoogle: e.isGoogle
+            })));
+            return allEvents;
+        }
+        
+        function isEventOnDate(event, dateStr) {
+            // Check if event occurs on the given date
+            // For multi-day events, check if date falls within range
+            const eventStart = event.date;
+            const eventEnd = event.endDate || event.date; // Use start date if no end date
+            
+            return dateStr >= eventStart && dateStr <= eventEnd;
         }
         
         function getFamilyColor() {
@@ -6953,7 +8818,7 @@ console.log('Script started loading...');
             for (let day = 1; day <= daysInMonth; day++) {
                 const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+                const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                     if (!a.time) return -1;
                     if (!b.time) return 1;
                     return a.time.localeCompare(b.time);
@@ -7104,7 +8969,7 @@ console.log('Script started loading...');
                 const dateStr = day.toISOString().split('T')[0];
                 
                 // Get events for this day
-                const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+                const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                     if (!a.time) return -1;
                     if (!b.time) return 1;
                     return a.time.localeCompare(b.time);
@@ -7188,13 +9053,21 @@ console.log('Script started loading...');
             const monthName = viewDate.toLocaleDateString('en-US', { month: 'long' });
             
             const allEvents = getAllEvents();
-            const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+            const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                 if (!a.time) return -1;
                 if (!b.time) return 1;
                 return a.time.localeCompare(b.time);
             });
             
             let html = '<div class="day-view-container">';
+            
+            // Add mini calendar
+            html += '<div class="day-view-mini-calendar">';
+            html += renderMiniCalendar();
+            html += '</div>';
+            
+            // Main content area (header + events)
+            html += '<div class="day-view-main">';
             
             // Day header
             html += `<div class="day-view-header">
@@ -7225,8 +9098,69 @@ console.log('Script started loading...');
                 html += '</div>';
             }
             
-            html += '</div>';
+            html += '</div>'; // Close day-view-main
+            html += '</div>'; // Close day-view-container
             container.innerHTML = html;
+        }
+        
+        function renderMiniCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date();
+            const viewDate = new Date(currentDate);
+            viewDate.setHours(0, 0, 0, 0);
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            let html = `
+                <div class="mini-calendar-header">
+                    <button class="mini-calendar-nav" onclick="changeMiniMonth(-1)">‹</button>
+                    <div class="mini-calendar-title">${monthName}</div>
+                    <button class="mini-calendar-nav" onclick="changeMiniMonth(1)">›</button>
+                </div>
+                <div class="mini-calendar-grid">
+                    <div class="mini-calendar-day-header">S</div>
+                    <div class="mini-calendar-day-header">M</div>
+                    <div class="mini-calendar-day-header">T</div>
+                    <div class="mini-calendar-day-header">W</div>
+                    <div class="mini-calendar-day-header">T</div>
+                    <div class="mini-calendar-day-header">F</div>
+                    <div class="mini-calendar-day-header">S</div>
+            `;
+            
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="mini-calendar-day"></div>';
+            }
+            
+            // Days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                date.setHours(0, 0, 0, 0);
+                const isToday = date.getTime() === today.getTime();
+                const isSelected = date.getTime() === viewDate.getTime();
+                
+                html += `<div class="mini-calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" 
+                              onclick="selectDayViewDate(${year}, ${month}, ${day})">
+                    ${day}
+                </div>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function changeMiniMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderDayView();
+        }
+        
+        function selectDayViewDate(year, month, day) {
+            currentDate = new Date(year, month, day);
+            renderDayView();
         }
         
         function formatTime(time) {
@@ -7265,7 +9199,7 @@ console.log('Script started loading...');
                 const dayNum = day.getDate();
                 
                 const allEvents = getAllEvents();
-                const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+                const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                     if (!a.time) return -1;
                     if (!b.time) return 1;
                     return a.time.localeCompare(b.time);
@@ -7392,11 +9326,40 @@ console.log('Script started loading...');
                 contentArea.innerHTML = `<div id="mealPlanGrid"></div>`;
                 renderMealPlanGrid();
                 updateViewHeader();
-            } else if (section === 'photos') {
+            } else if (section === 'allowance') {
+                // Show allowance section
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                
                 contentArea.innerHTML = `
-                    <div class="section-title">Photos</div>
-                    <p style="color: #999; padding: 20px; text-align: center;">Photos feature coming soon!</p>
+                    <div class="allowance-container">
+                        <div class="section-title">Allowance</div>
+                        <div id="allowanceGrid" class="allowance-grid"></div>
+                    </div>
                 `;
+                renderAllowanceGrid();
+            } else if (section === 'recipes') {
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                document.getElementById('floatingAddTaskBtn').classList.add('active');
+                
+                contentArea.innerHTML = `
+                    <div class="recipes-container">
+                        <div class="recipes-left-panel">
+                            <div class="recipes-filter-buttons" id="recipesFilterButtons"></div>
+                            <div class="recipes-list" id="recipesList"></div>
+                        </div>
+                        <div class="recipes-right-panel" id="recipesRightPanel">
+                            <div class="recipes-empty-state">
+                                <div class="recipes-empty-icon">📖</div>
+                                <div class="recipes-empty-text">Select a recipe to view details</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                renderRecipesView();
             } else if (section === 'lists') {
                 document.getElementById('monthNav').style.display = 'none';
                 document.getElementById('todayNav').style.display = 'none';
@@ -7678,10 +9641,11 @@ console.log('Script started loading...');
                     ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(period => {
                         const hasRoutine = memberRoutines.some(r => r.period === period);
                         const isActive = period === currentPeriod;
-                        const icon = period === 'Morning' ? '☀️' : period === 'Afternoon' ? '☀️' : period === 'Evening' ? '🌙' : '🧹';
+                        const isVisible = visiblePeriods[`${member.name}-${period}`] === true;
+                        const icon = period === 'Morning' ? '⛅' : period === 'Afternoon' ? '☀️' : period === 'Evening' ? '🌙' : '🧹';
                         
-                        html += `<div class="routine-indicator ${isActive ? 'active' : ''} ${hasRoutine ? 'has-routine' : ''}" 
-                                      onclick="${hasRoutine ? `showRoutine('${member.name}', '${period}')` : ''}">
+                        html += `<div class="routine-indicator ${isActive ? 'active' : ''} ${isVisible ? 'visible' : ''} ${hasRoutine ? 'has-routine' : ''}" 
+                                      onclick="${hasRoutine ? `togglePeriodVisibility('${member.name}', '${period}')` : ''}">
                             <div class="routine-indicator-icon">${icon}</div>
                             <div class="routine-indicator-label">${period}</div>
                         </div>`;
@@ -7690,33 +9654,52 @@ console.log('Script started loading...');
                     html += `</div>`;
                 }
                 
-                // Show current period's routine tasks
-                const currentRoutine = memberRoutines.filter(r => r.period === currentPeriod);
-                
-                if (currentRoutine.length > 0) {
-                    html += `<div class="routine-section">
-                        <div class="routine-section-title">${currentPeriod}</div>
-                        <div class="routine-tasks">`;
+                // Show routines for current period and manually visible periods
+                ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(period => {
+                    const isCurrentPeriod = period === currentPeriod;
+                    const isManuallyVisible = visiblePeriods[`${member.name}-${period}`] === true;
                     
-                    currentRoutine.forEach(task => {
-                        html += `<div class="routine-task ${task.completed ? 'completed' : ''}" 
-                                      style="background: ${member.color}${task.completed ? '80' : '30'}; cursor: pointer;"
-                                      onclick="openTaskDetail(${task.id}, 'routine', event)">
-                            <div class="routine-task-icon">${task.icon || '✓'}</div>
-                            <div class="routine-task-content">
-                                <div class="routine-task-title">${task.title}</div>
-                                ${task.stars ? `<div class="routine-task-stars">⭐ ${task.stars}</div>` : ''}
-                            </div>
-                            <div class="chore-item-checkbox ${task.completed ? 'checked' : ''}" 
-                                 style="${task.completed ? `background: ${member.color}; border-color: ${member.color};` : ''}"
-                                 onclick="event.stopPropagation(); toggleRoutine(${task.id})">
-                                ${task.completed ? '✓' : ''}
-                            </div>
-                        </div>`;
-                    });
-                    
-                    html += `</div></div>`;
-                }
+                    // Show if it's the current period OR manually toggled visible
+                    if (isCurrentPeriod || isManuallyVisible) {
+                        const periodRoutines = memberRoutines
+                            .filter(r => r.period === period)
+                            .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                        
+                        if (periodRoutines.length > 0) {
+                            html += `<div class="routine-section">
+                                <div class="routine-section-title">${period}</div>
+                                <div class="routine-tasks" id="routine-tasks-${member.name}-${period}">`;
+                            
+                            periodRoutines.forEach((task, index) => {
+                                html += `<div class="routine-task ${task.completed ? 'completed' : ''}" 
+                                              draggable="true"
+                                              data-task-id="${task.id}"
+                                              data-member="${member.name}"
+                                              data-period="${period}"
+                                              data-index="${index}"
+                                              ondragstart="handleRoutineDragStart(event)"
+                                              ondragover="handleRoutineDragOver(event)"
+                                              ondrop="handleRoutineDrop(event)"
+                                              ondragend="handleRoutineDragEnd(event)"
+                                              style="background: ${member.color}${task.completed ? '80' : '30'}; cursor: move;">
+                                    <div class="routine-task-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
+                                    <div class="routine-task-icon" onclick="openTaskDetail(${task.id}, 'routine', event)">${task.icon || '✓'}</div>
+                                    <div class="routine-task-content" onclick="openTaskDetail(${task.id}, 'routine', event)">
+                                        <div class="routine-task-title">${task.title}</div>
+                                        ${task.stars ? `<div class="routine-task-stars">⭐ ${task.stars}</div>` : ''}
+                                    </div>
+                                    <div class="chore-item-checkbox ${task.completed ? 'checked' : ''}" 
+                                         style="${task.completed ? `background: ${member.color}; border-color: ${member.color};` : ''}"
+                                         onclick="event.stopPropagation(); toggleRoutine(${task.id})">
+                                        ${task.completed ? '✓' : ''}
+                                    </div>
+                                </div>`;
+                            });
+                            
+                            html += `</div></div>`;
+                        }
+                    }
+                });
                 
                 // Show regular chores
                 html += `<div class="chore-items">`;
@@ -8053,9 +10036,137 @@ console.log('Script started loading...');
             }
         }
         
-        function showRoutine(memberName, period) {
-            // This could open a modal or change the view to show that routine
-            console.log(`Show routine for ${memberName} - ${period}`);
+        // Drag and drop variables
+        let draggedRoutine = null;
+        let draggedFromMember = null;
+        let draggedFromPeriod = null;
+        
+        function handleRoutineDragStart(event) {
+            event.stopPropagation();
+            draggedRoutine = event.currentTarget;
+            draggedFromMember = draggedRoutine.dataset.member;
+            draggedFromPeriod = draggedRoutine.dataset.period;
+            
+            draggedRoutine.style.opacity = '0.4';
+            event.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleRoutineDragOver(event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            event.dataTransfer.dropEffect = 'move';
+            
+            const target = event.currentTarget;
+            const targetMember = target.dataset.member;
+            const targetPeriod = target.dataset.period;
+            
+            // Only allow reordering within same member and same period
+            if (targetMember === draggedFromMember && targetPeriod === draggedFromPeriod) {
+                const rect = target.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                
+                if (event.clientY < midpoint) {
+                    target.style.borderTop = '3px solid #4A90E2';
+                    target.style.borderBottom = '';
+                } else {
+                    target.style.borderBottom = '3px solid #4A90E2';
+                    target.style.borderTop = '';
+                }
+            }
+            
+            return false;
+        }
+        
+        function handleRoutineDrop(event) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+            
+            const target = event.currentTarget;
+            const targetMember = target.dataset.member;
+            const targetPeriod = target.dataset.period;
+            
+            console.log('🎯 Drop Event:', {
+                draggedFromMember,
+                draggedFromPeriod,
+                targetMember,
+                targetPeriod
+            });
+            
+            // Only allow reordering within same member and same period
+            if (draggedRoutine && targetMember === draggedFromMember && targetPeriod === draggedFromPeriod) {
+                const draggedId = parseFloat(draggedRoutine.dataset.taskId);
+                const targetId = parseFloat(target.dataset.taskId);
+                
+                console.log('📋 IDs:', { draggedId, targetId });
+                
+                if (draggedId !== targetId) {
+                    // Get all routines for this specific member and period
+                    const allMemberRoutines = routines.filter(r => r.member === targetMember && r.period === targetPeriod);
+                    
+                    // Sort by current sortOrder
+                    allMemberRoutines.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                    
+                    console.log('👥 Before:', allMemberRoutines.map(r => ({ title: r.title, sortOrder: r.sortOrder })));
+                    
+                    // Find positions
+                    const oldIndex = allMemberRoutines.findIndex(r => r.id === draggedId);
+                    const newIndex = allMemberRoutines.findIndex(r => r.id === targetId);
+                    
+                    console.log('📍 Indices:', { oldIndex, newIndex });
+                    console.log('🔍 Looking for IDs in:', allMemberRoutines.map(r => ({ id: r.id, title: r.title })));
+                    
+                    if (oldIndex !== -1 && newIndex !== -1) {
+                        // Move the item
+                        const [movedItem] = allMemberRoutines.splice(oldIndex, 1);
+                        allMemberRoutines.splice(newIndex, 0, movedItem);
+                        
+                        // Reassign sortOrder to all
+                        allMemberRoutines.forEach((r, idx) => {
+                            r.sortOrder = idx;
+                            // Update in main routines array
+                            const mainIndex = routines.findIndex(routine => routine.id === r.id);
+                            if (mainIndex !== -1) {
+                                routines[mainIndex].sortOrder = idx;
+                            }
+                        });
+                        
+                        console.log('👥 After:', allMemberRoutines.map(r => ({ title: r.title, sortOrder: r.sortOrder })));
+                        console.log('💾 Saving...');
+                        
+                        localStorage.setItem('routines', JSON.stringify(routines));
+                        
+                        console.log('✅ Saved and re-rendering');
+                        renderChoresView();
+                    }
+                }
+            } else {
+                console.log('❌ Cannot drop - different member or period');
+            }
+            
+            return false;
+        }
+        
+        function handleRoutineDragEnd(event) {
+            event.currentTarget.style.opacity = '1';
+            
+            // Remove all drop indicators
+            document.querySelectorAll('.routine-task').forEach(task => {
+                task.style.borderTop = '';
+                task.style.borderBottom = '';
+            });
+            
+            draggedRoutine = null;
+            draggedFromMember = null;
+            draggedFromPeriod = null;
+        }
+        
+        function togglePeriodVisibility(memberName, period) {
+            const key = `${memberName}-${period}`;
+            // Toggle visibility
+            visiblePeriods[key] = !visiblePeriods[key];
+            renderChoresView();
         }
         
         let currentTaskType = 'chore';
@@ -8084,6 +10195,35 @@ console.log('Script started loading...');
         function updateRepeatVisibility() {
             const checked = document.getElementById('taskChoreRepeatToggle').checked;
             document.getElementById('taskRepeatDetails').style.display = checked ? 'block' : 'none';
+            if (checked) {
+                updateRepeatDaysVisibility();
+            }
+        }
+        
+        let selectedDays = [];
+        
+        function updateRepeatDaysVisibility() {
+            const unit = document.getElementById('taskRepeatUnit').value;
+            const daysSection = document.getElementById('taskRepeatDays');
+            daysSection.style.display = unit === 'week' ? 'block' : 'none';
+        }
+        
+        function toggleDay(dayIndex) {
+            const index = selectedDays.indexOf(dayIndex);
+            if (index > -1) {
+                selectedDays.splice(index, 1);
+            } else {
+                selectedDays.push(dayIndex);
+            }
+            
+            // Update button visual state
+            const btn = document.querySelector(`.day-btn[data-day="${dayIndex}"]`);
+            btn.classList.toggle('active');
+        }
+        
+        function updateRepeatUntilVisibility() {
+            const checked = document.getElementById('taskRepeatUntilToggle').checked;
+            document.getElementById('taskRepeatUntil').style.display = checked ? 'block' : 'none';
         }
         
         function initializeEmojiPicker() {
@@ -9006,11 +11146,27 @@ console.log('Script started loading...');
             const stars = parseInt(document.getElementById('taskChoreStars').value) || 0;
             const hasDate = document.getElementById('taskChoreDateToggle').checked;
             const hasTime = document.getElementById('taskChoreTimeToggle').checked;
-            const hasRepeat = document.getElementById('taskChoreRepeatToggle') && getElementById('taskChoreRepeatToggle').checked;
+            const hasRepeat = document.getElementById('taskChoreRepeatToggle') && document.getElementById('taskChoreRepeatToggle').checked;
             
             if (!title || selectedProfiles.length === 0) {
                 alert('Please enter a title and select at least one profile');
                 return;
+            }
+            
+            // Get repeat details
+            let repeatData = null;
+            if (hasRepeat) {
+                const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
+                const repeatUnit = document.getElementById('taskRepeatUnit').value;
+                const hasRepeatUntil = document.getElementById('taskRepeatUntilToggle').checked;
+                const repeatUntil = hasRepeatUntil ? document.getElementById('taskRepeatUntil').value : null;
+                
+                repeatData = {
+                    every: repeatEvery,
+                    unit: repeatUnit,
+                    days: repeatUnit === 'week' ? [...selectedDays] : null,
+                    until: repeatUntil
+                };
             }
             
             selectedProfiles.forEach(profileName => {
@@ -9030,7 +11186,8 @@ console.log('Script started loading...');
                         title: title,
                         icon: emoji,
                         completed: false,
-                        stars: stars
+                        stars: stars,
+                        repeat: repeatData
                     };
                     
                     routines.push(newRoutine);
@@ -9044,7 +11201,8 @@ console.log('Script started loading...');
                         dueDate: hasDate ? date : null,
                         time: hasTime ? time : null,
                         completed: false,
-                        stars: stars
+                        stars: stars,
+                        repeat: repeatData
                     };
                     
                     chores.push(newChore);
@@ -9059,6 +11217,10 @@ console.log('Script started loading...');
             document.getElementById('taskChoreEmoji').value = '';
             document.getElementById('taskChoreStars').value = '5';
             selectedProfiles = [];
+            selectedDays = [];
+            
+            // Reset day buttons
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
             
             closeModal('taskChoreModal');
             renderChoresView();
@@ -9141,22 +11303,78 @@ console.log('Script started loading...');
         }
         
         function deleteCurrentTask() {
-            if (!confirm('Are you sure you want to delete this task?')) return;
+            const task = currentEditTaskType === 'chore' ? 
+                chores.find(c => c.id === currentEditTaskId) : 
+                routines.find(r => r.id === currentEditTaskId);
             
+            if (!task) return;
+            
+            // Check if task has repeat data
+            const hasRepeat = task.repeat && (task.repeat.every || task.frequency !== 'Once');
+            
+            // Show different options based on whether task repeats
+            const deleteCurrentBtn = document.getElementById('deleteCurrentBtn');
+            const deleteFutureBtn = document.getElementById('deleteFutureBtn');
+            const deleteAllBtn = document.getElementById('deleteAllBtn');
+            
+            if (hasRepeat) {
+                // Show all three options for repeating tasks
+                deleteCurrentBtn.style.display = 'block';
+                deleteFutureBtn.style.display = 'block';
+                deleteAllBtn.style.display = 'block';
+                deleteCurrentBtn.textContent = 'Delete this task only';
+                deleteFutureBtn.textContent = 'Delete all future tasks';
+                deleteAllBtn.textContent = 'Delete all tasks';
+            } else {
+                // Only show "delete all" for non-repeating tasks
+                deleteCurrentBtn.style.display = 'none';
+                deleteFutureBtn.style.display = 'none';
+                deleteAllBtn.style.display = 'block';
+                deleteAllBtn.textContent = 'Delete this task';
+            }
+            
+            // Show modal
+            document.getElementById('deleteOptionsOverlay').classList.add('active');
+            document.getElementById('deleteOptionsModal').classList.add('active');
+        }
+        
+        function closeDeleteOptions() {
+            document.getElementById('deleteOptionsOverlay').classList.remove('active');
+            document.getElementById('deleteOptionsModal').classList.remove('active');
+        }
+        
+        function confirmDelete(option) {
             if (currentEditTaskType === 'chore') {
                 const index = chores.findIndex(c => c.id === currentEditTaskId);
                 if (index > -1) {
-                    chores.splice(index, 1);
+                    if (option === 'all' || !chores[index].repeat) {
+                        // Delete the entire task
+                        chores.splice(index, 1);
+                    } else if (option === 'current') {
+                        // For now, just mark this instance as deleted
+                        // TODO: Implement proper instance tracking
+                        chores.splice(index, 1);
+                    } else if (option === 'future') {
+                        // Delete the task (future instances won't be generated)
+                        chores.splice(index, 1);
+                    }
                     localStorage.setItem('chores', JSON.stringify(chores));
                 }
             } else {
                 const index = routines.findIndex(r => r.id === currentEditTaskId);
                 if (index > -1) {
-                    routines.splice(index, 1);
+                    if (option === 'all' || !routines[index].repeat) {
+                        // Delete the entire routine
+                        routines.splice(index, 1);
+                    } else if (option === 'future') {
+                        // Delete the routine (future instances won't be generated)
+                        routines.splice(index, 1);
+                    }
                     localStorage.setItem('routines', JSON.stringify(routines));
                 }
             }
             
+            closeDeleteOptions();
             closeModal('taskDetailModal');
             closeEditPanel();
             renderChoresView();
@@ -9714,6 +11932,8 @@ console.log('Script started loading...');
                 openRewardModal();
             } else if (currentSection === 'lists') {
                 openAddListPanel();
+            } else if (currentSection === 'recipes') {
+                openAddRecipePanel();
             } else {
                 openTaskChoreModal();
             }
@@ -9982,7 +12202,7 @@ console.log('Script started loading...');
         function showDayEvents(dateStr) {
             currentDayModalDate = dateStr;
             const allEvents = getAllEvents();
-            const dayEvents = allEvents.filter(e => e.date === dateStr && isEventVisible(e)).sort((a, b) => {
+            const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                 if (!a.time) return -1;
                 if (!b.time) return 1;
                 return a.time.localeCompare(b.time);
@@ -10299,9 +12519,11 @@ function updateClockHand() {
     let angle;
     
     if (currentClockMode === 'hour') {
+        // Hour hand: 12 positions, 30 degrees each
         angle = (selectedHour % 12) * 30;
     } else {
-        angle = (selectedMinute / 5) * 30;
+        // Minute hand: 60 positions, 6 degrees each
+        angle = selectedMinute * 6;
     }
     
     hand.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
@@ -10376,6 +12598,98 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="day-events-btn day-events-close" onclick="closeDayEventsModal()">Close</button>
                 <button class="day-events-btn day-events-add" onclick="addEventFromDayModal()">+ Add Event</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Meal Filter Modal -->
+    <div class="meal-filter-overlay" id="mealFilterOverlay" onclick="closeMealFilterModal()"></div>
+    <div class="meal-filter-modal" id="mealFilterModal">
+        <div class="meal-filter-header">
+            <div class="meal-filter-title">Meal Categories</div>
+            <button class="meal-filter-close" onclick="closeMealFilterModal()">✕</button>
+        </div>
+        
+        <div class="meal-filter-body" id="mealFilterBody">
+            <!-- Categories will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Edit Meal Category Modal -->
+    <div class="edit-category-overlay" id="editCategoryOverlay" onclick="closeEditMealCategory()"></div>
+    <div class="edit-category-modal" id="editCategoryModal">
+        <div class="edit-category-header">
+            <button class="edit-panel-back" onclick="closeEditMealCategory()">←</button>
+            <div class="edit-panel-title">Edit Category</div>
+        </div>
+        
+        <div class="edit-category-body">
+            <input type="hidden" id="editCategoryIndex">
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Title</label>
+                <input type="text" class="edit-form-input" id="editCategoryName" placeholder="Category name">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Color</label>
+                <input type="hidden" id="editCategoryColor">
+                <div class="color-picker-grid" id="editCategoryColorGrid"></div>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveEditMealCategory()">Save</button>
+        </div>
+    </div>
+
+    <!-- Delete Options Modal -->
+    <div class="delete-options-overlay" id="deleteOptionsOverlay" onclick="closeDeleteOptions()"></div>
+    <div class="delete-options-modal" id="deleteOptionsModal">
+        <div class="delete-options-title">Delete Task</div>
+        <div class="delete-options-message" id="deleteOptionsMessage">Choose what to delete:</div>
+        
+        <div class="delete-options-buttons">
+            <button class="delete-option-btn" id="deleteCurrentBtn" onclick="confirmDelete('current')">
+                Delete this task only
+            </button>
+            <button class="delete-option-btn" id="deleteFutureBtn" onclick="confirmDelete('future')">
+                Delete all future tasks
+            </button>
+            <button class="delete-option-btn" id="deleteAllBtn" onclick="confirmDelete('all')">
+                Delete all tasks
+            </button>
+            <button class="delete-cancel-btn" onclick="closeDeleteOptions()">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Allowance Modal -->
+    <div class="edit-panel-overlay" id="allowancePanelOverlay" onclick="closeAllowanceModal()"></div>
+    <div class="edit-side-panel" id="allowanceModal">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeAllowanceModal()">←</button>
+            <div class="edit-panel-title">Add Transaction</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Type</label>
+                <div class="allowance-type-toggle">
+                    <button class="allowance-type-btn active" id="saveTypeBtn" onclick="setTransactionType('save')">Save</button>
+                    <button class="allowance-type-btn" id="spendTypeBtn" onclick="setTransactionType('spend')">Spend</button>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Amount</label>
+                <input type="number" class="edit-form-input" id="allowanceAmount" placeholder="5.00" step="0.01" min="0">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Description</label>
+                <input type="text" class="edit-form-input" id="allowanceDescription" placeholder="What is this for?">
+            </div>
+            
+            <button class="edit-save-btn" id="allowanceSaveBtn" onclick="saveAllowanceTransaction()">Save</button>
         </div>
     </div>
 </body>
