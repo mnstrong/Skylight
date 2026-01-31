@@ -149,7 +149,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px 0px;
+            padding: 15px 0px;
             border-radius: 0px;
             cursor: pointer;
             transition: all 0.3s;
@@ -221,15 +221,24 @@
             background-position: center;
         }
         .icon-allowance::before { 
-            content: '💰';
-            font-size: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('money-bag-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-recipes::before { 
-            content: '📖';
-            font-size: 28px;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('recipes-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-lists::before { 
             content: '';
@@ -237,6 +246,17 @@
             width: 32px;
             height: 32px;
             background-image: url('lists-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .icon-timer::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('timer-icon.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -2517,7 +2537,7 @@
         }
         
         .edit-profile-avatar.selected {
-            box-shadow: 0 0 0 3px white;
+            box-shadow: 0 0 0 5px white, 0 0 0 6px black !important;
         }
         
         .edit-profile-name {
@@ -2544,6 +2564,92 @@
         }
         
         .edit-type-btn.active {
+            background: #000;
+            color: white;
+            border-color: #000;
+        }
+        
+        .task-type-toggle-new {
+            display: flex;
+            gap: 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .task-type-btn-new {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .task-type-btn-new.active {
+            background: #000;
+            color: white;
+        }
+        
+        .task-type-btn-new:first-child {
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .routine-choice-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .routine-choice-btn.active {
+            background: #000;
+            color: white;
+            border-color: #000;
+        }
+        
+        .routine-number-input {
+            width: 80px;
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .days-selector-new {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .day-btn-new {
+            flex: 1;
+            min-width: 45px;
+            padding: 12px 8px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        
+        .day-btn-new.active {
             background: #000;
             color: white;
             border-color: #000;
@@ -3934,7 +4040,7 @@
         
         /* Routine Section */
         .routine-section {
-            margin-bottom: 20px;
+            margin: 60px 0 20px 0;
         }
         
         .routine-section-title {
@@ -5414,6 +5520,134 @@
             background: #4A90E2;
             color: white;
         }
+        
+        /* Timer Section */
+        .timer-section {
+            display: none;
+            padding: 40px;
+        }
+        
+        .timer-section.active {
+            display: block;
+        }
+        
+        .timers-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .timer-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .timer-card.running {
+            box-shadow: 0 8px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .timer-display {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            font-family: 'Jost', monospace;
+            user-select: none;
+        }
+        
+        .timer-digit-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .timer-digits {
+            font-size: 72px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .timer-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #a0aec0;
+            margin-top: -5px;
+        }
+        
+        .timer-colon {
+            font-size: 48px;
+            color: #cbd5e0;
+            padding-bottom: 8px;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .timer-btn {
+            padding: 16px 40px;
+            border-radius: 50px;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .timer-btn-start {
+            background: #667eea;
+            color: white;
+        }
+        
+        .timer-btn-start:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .timer-btn-stop {
+            background: #fc8181;
+            color: white;
+        }
+        
+        .timer-btn-stop:hover {
+            background: #f56565;
+            transform: translateY(-2px);
+        }
+        
+        .timer-btn-reset {
+            background: #e2e8f0;
+            color: #718096;
+        }
+        
+        .timer-btn-reset:hover {
+            background: #cbd5e0;
+        }
+        
+        .timer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .timer-card.alarm {
+            animation: pulse 0.5s ease-in-out infinite;
+            background: #fef5e7;
+        }
     </style>
 </head>
 <body>
@@ -5446,6 +5680,11 @@
             <div class="nav-item" onclick="switchSection('lists')">
                 <div class="nav-icon icon-lists"></div>
                 <div>Lists</div>
+            </div>
+            <div style="flex: 1;"></div>
+            <div class="nav-item" onclick="switchSection('timer')">
+                <div class="nav-icon icon-timer"></div>
+                <div>Timer</div>
             </div>
         </div>
 
@@ -5551,135 +5790,111 @@
     <div class="edit-side-panel" id="taskChoreModal">
         <div class="edit-panel-header">
             <button class="edit-panel-back" onclick="closeModal('taskChoreModal')">←</button>
-            <div class="edit-panel-title">Add Task</div>
+            <div class="edit-panel-title">Add task</div>
         </div>
         
         <div class="edit-panel-body">
+            <!-- Title -->
             <div class="edit-form-group">
-                <label class="edit-form-label">Title</label>
-                <input type="text" class="edit-form-input" id="taskChoreTitle" placeholder="Task title">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">☰</span>
+                        <span>Title</span>
+                    </div>
+                </div>
+                <input type="text" class="edit-form-input" id="taskChoreTitle" placeholder="Task title" style="margin-top: 10px;">
             </div>
             
-            <div class="edit-form-group">
-                <label class="edit-form-label">Emoji (Optional)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" class="edit-form-input" id="taskChoreEmoji" placeholder="😊" readonly style="flex: 1;">
-                    <button class="task-dropdown-btn" onclick="toggleEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
+            <!-- Emoji -->
+            <div class="edit-form-group emoji-picker-container">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">😊</span>
+                        <span>Emoji (optional)</span>
+                    </div>
                 </div>
-                <div class="emoji-picker-dropdown" id="emojiPickerDropdown" style="position: relative; margin-top: 10px;">
-                    <input type="text" class="emoji-search-input" id="emojiSearchInput" placeholder="Search emojis..." onkeyup="filterEmojis()" onclick="event.stopPropagation()">
-                    <div class="emoji-picker-grid" id="emojiPickerGrid"></div>
+                <div style="position: relative; margin-top: 10px;">
+                    <input type="text" class="edit-form-input" id="taskChoreEmoji" placeholder="Select emoji" readonly style="color: transparent; text-shadow: 0 0 0 #000; cursor: pointer;" onclick="toggleTaskEmojiPicker(event)">
+                    <span id="taskChoreEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
+                </div>
+                
+                <div class="emoji-picker-dropdown" id="taskEmojiPickerDropdown">
+                    <input type="text" class="emoji-search-input" id="taskEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterTaskEmojis()" onclick="event.stopPropagation()">
+                    <div class="emoji-picker-grid" id="taskEmojiPickerGrid"></div>
                 </div>
             </div>
             
+            <!-- Profiles -->
             <div class="edit-form-group">
-                <label class="edit-form-label">Profiles</label>
-                <div class="edit-profile-grid" id="taskProfileGrid">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">👥</span>
+                        <span>Profiles</span>
+                    </div>
+                </div>
+                <div class="edit-profile-grid" id="taskProfileGrid" style="margin-top: 10px;">
                     <!-- Profiles will be populated here -->
                 </div>
             </div>
             
+            <!-- Chore/Routine Toggle -->
             <div class="edit-form-group">
-                <div class="edit-type-toggle">
-                    <button class="edit-type-btn active" id="choreTypeBtn" onclick="setTaskType('chore')">Chore</button>
-                    <button class="edit-type-btn" id="routineTypeBtn" onclick="setTaskType('routine')">Routine</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="routine-choice-btn" id="choreTypeBtn" onclick="setTaskType('chore')">Chore</button>
+                    <button class="routine-choice-btn active" id="routineTypeBtn" onclick="setTaskType('routine')">Routine</button>
                 </div>
             </div>
             
+            <!-- Every (Repeat frequency) -->
             <div class="edit-form-group">
-                <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">📅</span>
-                        <span>Date</span>
-                    </div>
-                    <label class="task-toggle">
-                        <input type="checkbox" id="taskChoreDateToggle" checked onchange="updateAddDateVisibility()">
-                        <span class="task-toggle-slider"></span>
-                    </label>
-                </div>
-                <input type="date" class="edit-form-input" id="taskChoreDate" style="margin-top: 10px;">
-            </div>
-            
-            <div class="edit-form-group">
-                <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">🕐</span>
-                        <span>Time</span>
-                    </div>
-                    <label class="task-toggle">
-                        <input type="checkbox" id="taskChoreTimeToggle" onchange="updateAddTimeVisibility()">
-                        <span class="task-toggle-slider"></span>
-                    </label>
-                </div>
-                <input type="time" class="edit-form-input" id="taskChoreTime" style="margin-top: 10px; display: none;">
-            </div>
-            
-            <div class="edit-form-group" id="taskStarsSection">
-                <label class="edit-form-label">Stars</label>
-                <input type="number" class="edit-form-input" id="taskChoreStars" value="5" min="0">
-            </div>
-            
-            <div class="edit-form-group" id="taskRepeatSection" style="display: none;">
-                <div class="edit-toggle-row">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
                         <span class="edit-toggle-icon">🔄</span>
-                        <span>Repeats</span>
+                        <span>Every</span>
                     </div>
-                    <label class="task-toggle">
-                        <input type="checkbox" id="taskChoreRepeatToggle" onchange="updateRepeatVisibility()">
-                        <span class="task-toggle-slider"></span>
-                    </label>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="number" class="routine-number-input" id="taskRepeatEvery" value="1" min="1">
+                    <button class="routine-choice-btn" id="repeatDay" onclick="setRepeatUnit('day')">Day</button>
+                    <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
                 </div>
             </div>
             
-            <div id="taskRepeatDetails" style="display: none; margin-top: 15px;">
-                <div class="edit-form-group">
-                    <label class="edit-form-label">Every</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="number" class="edit-form-input" id="taskRepeatEvery" value="1" min="1" style="flex: 1;">
-                        <button class="task-nav-btn" onclick="changeRepeatEvery(-1)">◀</button>
-                        <button class="task-nav-btn" onclick="changeRepeatEvery(1)">▶</button>
+            <!-- On (Days of week) -->
+            <div class="edit-form-group" id="taskRepeatDays">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">📅</span>
+                        <span>On</span>
                     </div>
                 </div>
-                
-                <div class="edit-form-group">
-                    <label class="edit-form-label">Period</label>
-                    <select class="edit-form-input" id="taskRepeatUnit" onchange="updateRepeatDaysVisibility()">
-                        <option value="day">Day(s)</option>
-                        <option value="week">Week(s)</option>
-                        <option value="month">Month(s)</option>
-                    </select>
-                </div>
-                
-                <div class="edit-form-group" id="taskRepeatDays" style="display: none;">
-                    <label class="edit-form-label">Repeat on</label>
-                    <div class="days-selector">
-                        <button type="button" class="day-btn" data-day="0" onclick="toggleDay(0)">S</button>
-                        <button type="button" class="day-btn" data-day="1" onclick="toggleDay(1)">M</button>
-                        <button type="button" class="day-btn" data-day="2" onclick="toggleDay(2)">T</button>
-                        <button type="button" class="day-btn" data-day="3" onclick="toggleDay(3)">W</button>
-                        <button type="button" class="day-btn" data-day="4" onclick="toggleDay(4)">T</button>
-                        <button type="button" class="day-btn" data-day="5" onclick="toggleDay(5)">F</button>
-                        <button type="button" class="day-btn" data-day="6" onclick="toggleDay(6)">S</button>
-                    </div>
-                </div>
-                
-                <div class="edit-form-group">
-                    <div class="edit-toggle-row">
-                        <div class="edit-toggle-label">
-                            <span class="edit-toggle-icon">📅</span>
-                            <span>Repeats until</span>
-                        </div>
-                        <label class="task-toggle">
-                            <input type="checkbox" id="taskRepeatUntilToggle" onchange="updateRepeatUntilVisibility()">
-                            <span class="task-toggle-slider"></span>
-                        </label>
-                    </div>
-                    <input type="date" class="edit-form-input" id="taskRepeatUntil" style="margin-top: 10px; display: none;">
+                <div class="days-selector-new" style="margin-top: 10px;">
+                    <button type="button" class="day-btn-new" data-day="0" onclick="toggleDayNew(0)">Su</button>
+                    <button type="button" class="day-btn-new" data-day="1" onclick="toggleDayNew(1)">Mo</button>
+                    <button type="button" class="day-btn-new" data-day="2" onclick="toggleDayNew(2)">Tu</button>
+                    <button type="button" class="day-btn-new" data-day="3" onclick="toggleDayNew(3)">We</button>
+                    <button type="button" class="day-btn-new active" data-day="4" onclick="toggleDayNew(4)">Th</button>
+                    <button type="button" class="day-btn-new" data-day="5" onclick="toggleDayNew(5)">Fr</button>
+                    <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
                 </div>
             </div>
             
-            <button class="edit-save-btn" onclick="saveTaskChore()">Add Task</button>
+            <!-- In the (Time of day) -->
+            <div class="edit-form-group">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">☀️</span>
+                        <span>In the</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="routine-choice-btn" id="timeOfDayMorning" onclick="setTimeOfDay('morning')">Morning</button>
+                    <button class="routine-choice-btn" id="timeOfDayAfternoon" onclick="setTimeOfDay('afternoon')">Afternoon</button>
+                    <button class="routine-choice-btn active" id="timeOfDayEvening" onclick="setTimeOfDay('evening')">Evening</button>
+                </div>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveTaskChore()">Add</button>
         </div>
     </div>
 
@@ -5734,6 +5949,7 @@
             
             <div class="edit-form-group">
                 <label class="edit-form-label">Assigned To</label>
+                <div id="eventProfileSummary" style="color: #999; font-size: 14px; margin-bottom: 8px; min-height: 20px;"></div>
                 <div class="edit-profile-grid" id="eventProfileGrid">
                     <!-- Profiles will be populated here -->
                 </div>
@@ -5742,6 +5958,80 @@
             <div class="edit-form-group">
                 <label class="edit-form-label">Notes (Optional)</label>
                 <textarea class="edit-form-input" id="eventNotes" placeholder="Add notes..." rows="4" style="resize: vertical;"></textarea>
+            </div>
+            
+            <div class="edit-form-group">
+                <div class="edit-toggle-row">
+                    <div class="edit-toggle-label">
+                        <span>Repeats</span>
+                    </div>
+                    <label class="task-toggle">
+                        <input type="checkbox" id="eventRepeatToggle" onchange="toggleRepeatSection()">
+                        <span class="task-toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="repeatOptionsSection" style="display: none;">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Repeat Frequency</label>
+                    <div class="edit-profile-grid">
+                        <div class="edit-profile-item" data-repeat="daily" onclick="selectRepeatFrequency('daily')">
+                            <div class="edit-profile-avatar" style="background: #667eea;">D</div>
+                            <div class="edit-profile-name">Daily</div>
+                        </div>
+                        <div class="edit-profile-item" data-repeat="weekly" onclick="selectRepeatFrequency('weekly')">
+                            <div class="edit-profile-avatar" style="background: #667eea;">W</div>
+                            <div class="edit-profile-name">Weekly</div>
+                        </div>
+                        <div class="edit-profile-item" data-repeat="monthly" onclick="selectRepeatFrequency('monthly')">
+                            <div class="edit-profile-avatar" style="background: #667eea;">M</div>
+                            <div class="edit-profile-name">Monthly</div>
+                        </div>
+                        <div class="edit-profile-item" data-repeat="yearly" onclick="selectRepeatFrequency('yearly')">
+                            <div class="edit-profile-avatar" style="background: #667eea;">Y</div>
+                            <div class="edit-profile-name">Yearly</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row">
+                        <div class="edit-toggle-label">
+                            <span>Repeats until</span>
+                        </div>
+                        <label class="task-toggle">
+                            <input type="checkbox" id="eventRepeatUntilToggle" onchange="toggleRepeatUntilSection()">
+                            <span class="task-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="repeatUntilSection" style="display: none;">
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">End Type</label>
+                        <div class="edit-profile-grid">
+                            <div class="edit-profile-item" data-endtype="on" onclick="selectRepeatEndType('on')">
+                                <div class="edit-profile-avatar" style="background: #667eea;">📅</div>
+                                <div class="edit-profile-name">On Date</div>
+                            </div>
+                            <div class="edit-profile-item" data-endtype="after" onclick="selectRepeatEndType('after')">
+                                <div class="edit-profile-avatar" style="background: #667eea;">#</div>
+                                <div class="edit-profile-name">After Count</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-form-group" id="repeatEndDateGroup" style="display: none;">
+                        <label class="edit-form-label">End Date</label>
+                        <input type="date" class="edit-form-input" id="repeatEndDate">
+                    </div>
+                    
+                    <div class="edit-form-group" id="repeatCountGroup" style="display: none;">
+                        <label class="edit-form-label">Number of Occurrences</label>
+                        <input type="number" class="edit-form-input" id="repeatCount" min="1" value="10">
+                    </div>
+                </div>
             </div>
             
             <button class="edit-save-btn" onclick="saveEvent()">Add Event</button>
@@ -7437,7 +7727,7 @@ console.log('Script started loading...');
                 const activeClass = selectedListsPerson === member.id ? 'active' : '';
                 html += `
                     <button class="family-pill ${activeClass}" 
-                            style="background: ${member.color}; color: white;" 
+                            style="background: ${member.color}; color: white; " 
                             onclick="filterListsByPerson(${member.id})">
                         ${member.emoji} ${member.name}
                     </button>
@@ -8829,7 +9119,7 @@ console.log('Script started loading...');
                     console.log(`Month Event: "${event.title}" | Member: "${event.member}"`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = (member && member.color) || getFamilyColor();
-                    const bgColor = hexToRgba(color, 0.25); // Android 8 compatible
+                    const bgColor = hexToRgba(color, 0.45); // Android 8 compatible
                     console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
                     
                     // Format time to 12-hour format
@@ -9370,7 +9660,268 @@ console.log('Script started loading...');
                     <div id="listsColumnsContainer" class="chores-columns"></div>
                 `;
                 renderListsColumns();
+            } else if (section === 'timer') {
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                
+                contentArea.innerHTML = `
+                    <div class="timer-section active">
+                        <div class="timers-container">
+                            <div class="timer-card" id="timer1">
+                                <div class="timer-display" onclick="openTimerSetModal(1)" style="cursor: pointer;">
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer1-hours">00</div>
+                                        <div class="timer-label">hours</div>
+                                    </div>
+                                    <div class="timer-colon">:</div>
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer1-minutes">00</div>
+                                        <div class="timer-label">minutes</div>
+                                    </div>
+                                    <div class="timer-colon">:</div>
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer1-seconds">00</div>
+                                        <div class="timer-label">seconds</div>
+                                    </div>
+                                </div>
+                                <div class="timer-controls">
+                                    <button class="timer-btn timer-btn-reset" onclick="resetTimer(1)">🔄 Reset</button>
+                                    <button class="timer-btn timer-btn-start" id="timer1-start-btn" onclick="startTimer(1)">▶ Start</button>
+                                </div>
+                            </div>
+                            
+                            <div class="timer-card" id="timer2">
+                                <div class="timer-display" onclick="openTimerSetModal(2)" style="cursor: pointer;">
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer2-hours">00</div>
+                                        <div class="timer-label">hours</div>
+                                    </div>
+                                    <div class="timer-colon">:</div>
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer2-minutes">00</div>
+                                        <div class="timer-label">minutes</div>
+                                    </div>
+                                    <div class="timer-colon">:</div>
+                                    <div class="timer-digit-group">
+                                        <div class="timer-digits" id="timer2-seconds">00</div>
+                                        <div class="timer-label">seconds</div>
+                                    </div>
+                                </div>
+                                <div class="timer-controls">
+                                    <button class="timer-btn timer-btn-reset" onclick="resetTimer(2)">🔄 Reset</button>
+                                    <button class="timer-btn timer-btn-start" id="timer2-start-btn" onclick="startTimer(2)">▶ Start</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timer Set Modal -->
+                    <div class="edit-panel-overlay" id="timerSetOverlay" onclick="closeTimerSetModal()"></div>
+                    <div class="edit-side-panel" id="timerSetModal">
+                        <div class="edit-panel-header">
+                            <button class="edit-panel-back" onclick="closeTimerSetModal()">←</button>
+                            <div class="edit-panel-title">Set Timer</div>
+                        </div>
+                        
+                        <div class="edit-panel-body">
+                            <div class="edit-form-group">
+                                <label class="edit-form-label">Hours</label>
+                                <input type="number" class="edit-form-input" id="timerSetHours" min="0" max="23" value="0">
+                            </div>
+                            
+                            <div class="edit-form-group">
+                                <label class="edit-form-label">Minutes</label>
+                                <input type="number" class="edit-form-input" id="timerSetMinutes" min="0" max="59" value="0">
+                            </div>
+                            
+                            <button class="edit-save-btn" onclick="saveTimerSet()">Set Timer</button>
+                        </div>
+                    </div>
+                `;
+                
+                initializeTimers();
             }
+        }
+
+        // Timer functionality
+        let timer1State = { interval: null, totalSeconds: 0, running: false, alarmInterval: null };
+        let timer2State = { interval: null, totalSeconds: 0, running: false, alarmInterval: null };
+        let currentTimerBeingSet = null;
+        
+        function initializeTimers() {
+            // Timers are now clickable via onclick in HTML
+        }
+        
+        function openTimerSetModal(timerNum) {
+            const timerState = timerNum === 1 ? timer1State : timer2State;
+            if (timerState.running) return; // Can't edit while running
+            
+            currentTimerBeingSet = timerNum;
+            
+            // Pre-fill with current values
+            const hours = Math.floor(timerState.totalSeconds / 3600);
+            const minutes = Math.floor((timerState.totalSeconds % 3600) / 60);
+            
+            document.getElementById('timerSetHours').value = hours;
+            document.getElementById('timerSetMinutes').value = minutes;
+            
+            document.getElementById('timerSetOverlay').classList.add('active');
+            document.getElementById('timerSetModal').classList.add('active');
+        }
+        
+        function closeTimerSetModal() {
+            document.getElementById('timerSetOverlay').classList.remove('active');
+            document.getElementById('timerSetModal').classList.remove('active');
+            currentTimerBeingSet = null;
+        }
+        
+        function saveTimerSet() {
+            if (!currentTimerBeingSet) return;
+            
+            const hours = parseInt(document.getElementById('timerSetHours').value) || 0;
+            const minutes = parseInt(document.getElementById('timerSetMinutes').value) || 0;
+            
+            updateTimerDisplay(currentTimerBeingSet, hours, minutes, 0);
+            closeTimerSetModal();
+        }
+        
+        function makeTimerEditable(timerNum) {
+            // No longer needed - using modal instead
+        }
+        
+        function updateTimerDisplay(timerNum, hours, minutes, seconds) {
+            document.getElementById(`timer${timerNum}-hours`).textContent = String(hours).padStart(2, '0');
+            document.getElementById(`timer${timerNum}-minutes`).textContent = String(minutes).padStart(2, '0');
+            document.getElementById(`timer${timerNum}-seconds`).textContent = String(seconds).padStart(2, '0');
+            
+            const timerState = timerNum === 1 ? timer1State : timer2State;
+            timerState.totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        }
+        
+        function startTimer(timerNum) {
+            const timerState = timerNum === 1 ? timer1State : timer2State;
+            const card = document.getElementById(`timer${timerNum}`);
+            const startBtn = document.getElementById(`timer${timerNum}-start-btn`);
+            
+            if (timerState.running) {
+                // Stop timer
+                clearInterval(timerState.interval);
+                if (timerState.alarmInterval) {
+                    clearInterval(timerState.alarmInterval);
+                    timerState.alarmInterval = null;
+                }
+                timerState.running = false;
+                card.classList.remove('running', 'alarm');
+                startBtn.innerHTML = '▶ Start';
+                startBtn.className = 'timer-btn timer-btn-start';
+            } else {
+                // Start timer
+                if (timerState.totalSeconds === 0) {
+                    alert('Please set a time first by clicking on the timer');
+                    return;
+                }
+                
+                timerState.running = true;
+                card.classList.add('running');
+                startBtn.innerHTML = '■ Stop';
+                startBtn.className = 'timer-btn timer-btn-stop';
+                
+                timerState.interval = setInterval(() => {
+                    timerState.totalSeconds--;
+                    
+                    const hours = Math.floor(timerState.totalSeconds / 3600);
+                    const minutes = Math.floor((timerState.totalSeconds % 3600) / 60);
+                    const seconds = timerState.totalSeconds % 60;
+                    
+                    document.getElementById(`timer${timerNum}-hours`).textContent = String(hours).padStart(2, '0');
+                    document.getElementById(`timer${timerNum}-minutes`).textContent = String(minutes).padStart(2, '0');
+                    document.getElementById(`timer${timerNum}-seconds`).textContent = String(seconds).padStart(2, '0');
+                    
+                    if (timerState.totalSeconds <= 0) {
+                        clearInterval(timerState.interval);
+                        timerState.running = false;
+                        card.classList.remove('running');
+                        card.classList.add('alarm');
+                        startBtn.innerHTML = '▶ Start';
+                        startBtn.className = 'timer-btn timer-btn-start';
+                        
+                        // Start repeating alarm
+                        startRepeatingAlarm(timerNum);
+                    }
+                }, 1000);
+            }
+        }
+        
+        function startRepeatingAlarm(timerNum) {
+            const timerState = timerNum === 1 ? timer1State : timer2State;
+            
+            // Play alarm immediately
+            playAlarmSound();
+            
+            // Then repeat every 2 seconds
+            timerState.alarmInterval = setInterval(() => {
+                playAlarmSound();
+            }, 2000);
+        }
+        
+        function resetTimer(timerNum) {
+            const timerState = timerNum === 1 ? timer1State : timer2State;
+            const card = document.getElementById(`timer${timerNum}`);
+            const startBtn = document.getElementById(`timer${timerNum}-start-btn`);
+            
+            clearInterval(timerState.interval);
+            if (timerState.alarmInterval) {
+                clearInterval(timerState.alarmInterval);
+                timerState.alarmInterval = null;
+            }
+            timerState.running = false;
+            timerState.totalSeconds = 0;
+            card.classList.remove('running', 'alarm');
+            startBtn.innerHTML = '▶ Start';
+            startBtn.className = 'timer-btn timer-btn-start';
+            
+            updateTimerDisplay(timerNum, 0, 0, 0);
+        }
+        
+        function playAlarmSound() {
+            // Create an audio context and play a beep sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+            
+            // Play multiple beeps
+            setTimeout(() => playBeep(audioContext), 600);
+            setTimeout(() => playBeep(audioContext), 1200);
+        }
+        
+        function playBeep(audioContext) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
         }
 
         function renderFamilyPills() {
@@ -9408,7 +9959,7 @@ console.log('Script started loading...');
                 const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 
                 return `
-                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
+                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.5)}; color: ${member.color}">
                         <div class="family-pill-progress" style="background: ${member.color}; width: ${progressPercent}%"></div>
                         <div class="family-pill-content">
                             <div class="family-pill-avatar" style="background: ${member.color}">
@@ -10172,24 +10723,61 @@ console.log('Script started loading...');
         let currentTaskType = 'chore';
         let selectedProfiles = [];
         let selectedEventProfile = ''; // For event modal (single selection)
+        let selectedEventProfiles = []; // For event modal (multiple selections)
         
         function openTaskChoreModal() {
             document.getElementById('taskChorePanelOverlay').classList.add('active');
             document.getElementById('taskChoreModal').classList.add('active');
             renderProfileGrid();
             initializeEmojiPicker();
-            // Set today's date
-            document.getElementById('taskChoreDate').valueAsDate = new Date();
+            
+            // Initialize defaults
+            currentTaskType = 'routine';
+            selectedRepeatUnit = 'week';
+            selectedDays = [4]; // Thursday by default
+            selectedTimeOfDay = 'evening';
+            
+            // Set button states
+            document.getElementById('choreTypeBtn').classList.remove('active');
+            document.getElementById('routineTypeBtn').classList.add('active');
+            document.getElementById('repeatDay').classList.remove('active');
+            document.getElementById('repeatWeek').classList.add('active');
+            
+            // Set time of day button states
+            document.getElementById('timeOfDayMorning').classList.remove('active');
+            document.getElementById('timeOfDayAfternoon').classList.remove('active');
+            document.getElementById('timeOfDayEvening').classList.add('active');
+            
+            // Set day button state
+            document.querySelectorAll('.day-btn-new').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const thursdayBtn = document.querySelector('.day-btn-new[data-day="4"]');
+            if (thursdayBtn) {
+                thursdayBtn.classList.add('active');
+            }
+            
+            // Show days section by default
+            const daysSection = document.getElementById('taskRepeatDays');
+            if (daysSection) {
+                daysSection.style.display = 'block';
+            }
         }
         
         function updateAddDateVisibility() {
             const checked = document.getElementById('taskChoreDateToggle').checked;
-            document.getElementById('taskChoreDate').style.display = checked ? 'block' : 'none';
+            const section = document.getElementById('taskChoreDateSection');
+            if (section) {
+                section.style.display = checked ? 'block' : 'none';
+            }
         }
         
         function updateAddTimeVisibility() {
             const checked = document.getElementById('taskChoreTimeToggle').checked;
-            document.getElementById('taskChoreTime').style.display = checked ? 'block' : 'none';
+            const section = document.getElementById('taskChoreTimeSection');
+            if (section) {
+                section.style.display = checked ? 'block' : 'none';
+            }
         }
         
         function updateRepeatVisibility() {
@@ -10206,6 +10794,14 @@ console.log('Script started loading...');
             const unit = document.getElementById('taskRepeatUnit').value;
             const daysSection = document.getElementById('taskRepeatDays');
             daysSection.style.display = unit === 'week' ? 'block' : 'none';
+        }
+        
+        function updateRepeatUntilVisibility() {
+            const checked = document.getElementById('taskRepeatUntilToggle').checked;
+            const section = document.getElementById('taskRepeatUntilSection');
+            if (section) {
+                section.style.display = checked ? 'block' : 'none';
+            }
         }
         
         function toggleDay(dayIndex) {
@@ -10995,18 +11591,26 @@ console.log('Script started loading...');
                 { emoji: '🎫', keywords: 'ticket admission' },
             ];
             
-            const grid = document.getElementById('emojiPickerGrid');
-            grid.innerHTML = emojiData.map(item => 
-                `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEmoji('${item.emoji}')">${item.emoji}</div>`
-            ).join('');
+            // Store globally for use by other emoji pickers
+            window.emojiData = emojiData;
             
-            // Parse emojis with Twemoji after populating
-            if (typeof twemoji !== 'undefined') {
-                twemoji.parse(grid, {
-                    folder: 'svg',
-                    ext: '.svg'
-                });
+            const grid = document.getElementById('emojiPickerGrid');
+            if (grid) {
+                grid.innerHTML = emojiData.map(item => 
+                    `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEmoji('${item.emoji}')">${item.emoji}</div>`
+                ).join('');
+                
+                // Parse emojis with Twemoji after populating
+                if (typeof twemoji !== 'undefined') {
+                    twemoji.parse(grid, {
+                        folder: 'svg',
+                        ext: '.svg'
+                    });
+                }
             }
+            
+            // Also initialize the task emoji picker
+            initializeTaskEmojiPicker();
         }
         
         function filterEmojis() {
@@ -11054,6 +11658,81 @@ console.log('Script started loading...');
             closeEmojiPicker();
         }
         
+        function toggleTaskEmojiPicker(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('taskEmojiPickerDropdown');
+            const searchInput = document.getElementById('taskEmojiSearchInput');
+            
+            dropdown.classList.toggle('active');
+            
+            if (dropdown.classList.contains('active')) {
+                searchInput.value = '';
+                filterTaskEmojis();
+                setTimeout(() => searchInput.focus(), 100);
+                
+                setTimeout(() => {
+                    document.addEventListener('click', closeTaskEmojiPicker);
+                }, 0);
+            }
+        }
+        
+        function closeTaskEmojiPicker() {
+            const dropdown = document.getElementById('taskEmojiPickerDropdown');
+            dropdown.classList.remove('active');
+            document.removeEventListener('click', closeTaskEmojiPicker);
+        }
+        
+        function selectTaskEmoji(emoji) {
+            document.getElementById('taskChoreEmoji').value = emoji;
+            const display = document.getElementById('taskChoreEmojiDisplay');
+            display.textContent = emoji;
+            closeTaskEmojiPicker();
+            
+            // Parse the emoji with Twemoji
+            if (typeof twemoji !== 'undefined') {
+                twemoji.parse(display, {
+                    folder: 'svg',
+                    ext: '.svg'
+                });
+            }
+        }
+        
+        function filterTaskEmojis() {
+            const searchTerm = document.getElementById('taskEmojiSearchInput').value.toLowerCase();
+            const emojiItems = document.querySelectorAll('#taskEmojiPickerGrid .emoji-picker-item');
+            
+            emojiItems.forEach(item => {
+                const keywords = item.getAttribute('data-keywords');
+                if (keywords.includes(searchTerm) || searchTerm === '') {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+        
+        function initializeTaskEmojiPicker() {
+            const grid = document.getElementById('taskEmojiPickerGrid');
+            if (!grid) return;
+            
+            // Use the emoji data stored globally
+            const emojiData = window.emojiData || [];
+            
+            if (emojiData.length > 0) {
+                grid.innerHTML = emojiData.map(item => 
+                    `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectTaskEmoji('${item.emoji}')">${item.emoji}</div>`
+                ).join('');
+                
+                // Parse emojis with Twemoji after populating
+                if (typeof twemoji !== 'undefined') {
+                    twemoji.parse(grid, {
+                        folder: 'svg',
+                        ext: '.svg'
+                    });
+                }
+            }
+        }
+        
         function renderProfileGrid() {
             const grid = document.getElementById('taskProfileGrid');
             const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar);
@@ -11062,7 +11741,7 @@ console.log('Script started loading...');
             choreMembers.forEach(member => {
                 const isSelected = selectedProfiles.includes(member.name);
                 html += `<div class="edit-profile-item" onclick="toggleProfile('${member.name}')">
-                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="edit-profile-name">${member.name}</div>
@@ -11090,6 +11769,7 @@ console.log('Script started loading...');
         function renderEventProfileGrid() {
             console.log('🎨 Rendering event profile grid...');
             const grid = document.getElementById('eventProfileGrid');
+            const summary = document.getElementById('eventProfileSummary');
             console.log('Grid element:', grid);
             console.log('Family members:', familyMembers);
             
@@ -11100,8 +11780,8 @@ console.log('Script started loading...');
             
             let html = '';
             familyMembers.forEach(member => {
-                const isSelected = selectedEventProfile === member.name;
-                html += `<div class="edit-profile-item" onclick="selectEventProfile('${member.name}')">
+                const isSelected = selectedEventProfiles.includes(member.name);
+                html += `<div class="edit-profile-item" onclick="toggleEventProfile('${member.name}')">
                     <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
@@ -11111,11 +11791,35 @@ console.log('Script started loading...');
             
             console.log('Generated HTML:', html.substring(0, 200) + '...');
             grid.innerHTML = html;
+            
+            // Update summary text
+            if (summary) {
+                if (selectedEventProfiles.length > 0) {
+                    summary.textContent = selectedEventProfiles.join(', ');
+                } else {
+                    summary.textContent = '';
+                }
+            }
+            
             console.log('✅ Event profile grid rendered');
         }
         
+        function toggleEventProfile(profileName) {
+            const index = selectedEventProfiles.indexOf(profileName);
+            if (index > -1) {
+                // Remove if already selected
+                selectedEventProfiles.splice(index, 1);
+            } else {
+                // Add if not selected
+                selectedEventProfiles.push(profileName);
+            }
+            renderEventProfileGrid();
+        }
+        
         function selectEventProfile(profileName) {
+            // Keep this for backward compatibility
             selectedEventProfile = profileName;
+            selectedEventProfiles = [profileName];
             renderEventProfileGrid();
         }
         
@@ -11131,6 +11835,42 @@ console.log('Script started loading...');
             document.getElementById('taskStarsSection').style.display = 'flex';
         }
         
+        let selectedRepeatUnit = 'week';
+        let selectedTimeOfDay = 'evening';
+        
+        function setRepeatUnit(unit) {
+            selectedRepeatUnit = unit;
+            document.getElementById('repeatDay').classList.toggle('active', unit === 'day');
+            document.getElementById('repeatWeek').classList.toggle('active', unit === 'week');
+            
+            // Show/hide days selector based on unit
+            const daysSection = document.getElementById('taskRepeatDays');
+            if (daysSection) {
+                daysSection.style.display = unit === 'week' ? 'block' : 'none';
+            }
+        }
+        
+        function setTimeOfDay(timeOfDay) {
+            selectedTimeOfDay = timeOfDay;
+            document.getElementById('timeOfDayMorning').classList.toggle('active', timeOfDay === 'morning');
+            document.getElementById('timeOfDayAfternoon').classList.toggle('active', timeOfDay === 'afternoon');
+            document.getElementById('timeOfDayEvening').classList.toggle('active', timeOfDay === 'evening');
+        }
+        
+        function toggleDayNew(dayIndex) {
+            const btn = document.querySelector(`.day-btn-new[data-day="${dayIndex}"]`);
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            
+            const index = selectedDays.indexOf(dayIndex);
+            if (index > -1) {
+                selectedDays.splice(index, 1);
+            } else {
+                selectedDays.push(dayIndex);
+            }
+        }
+        
         function changeRepeatEvery(delta) {
             const input = document.getElementById('taskRepeatEvery');
             const currentValue = parseInt(input.value) || 1;
@@ -11141,43 +11881,31 @@ console.log('Script started loading...');
         function saveTaskChore() {
             const title = document.getElementById('taskChoreTitle').value;
             const emoji = document.getElementById('taskChoreEmoji').value;
-            const date = document.getElementById('taskChoreDate').value;
-            const time = document.getElementById('taskChoreTime').value;
-            const stars = parseInt(document.getElementById('taskChoreStars').value) || 0;
-            const hasDate = document.getElementById('taskChoreDateToggle').checked;
-            const hasTime = document.getElementById('taskChoreTimeToggle').checked;
-            const hasRepeat = document.getElementById('taskChoreRepeatToggle') && document.getElementById('taskChoreRepeatToggle').checked;
             
             if (!title || selectedProfiles.length === 0) {
                 alert('Please enter a title and select at least one profile');
                 return;
             }
             
-            // Get repeat details
-            let repeatData = null;
-            if (hasRepeat) {
-                const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
-                const repeatUnit = document.getElementById('taskRepeatUnit').value;
-                const hasRepeatUntil = document.getElementById('taskRepeatUntilToggle').checked;
-                const repeatUntil = hasRepeatUntil ? document.getElementById('taskRepeatUntil').value : null;
-                
-                repeatData = {
-                    every: repeatEvery,
-                    unit: repeatUnit,
-                    days: repeatUnit === 'week' ? [...selectedDays] : null,
-                    until: repeatUntil
-                };
-            }
+            // Get repeat details from new structure
+            const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
+            const repeatUnit = selectedRepeatUnit; // Use the global variable
+            const repeatDays = repeatUnit === 'week' ? [...selectedDays] : null;
+            
+            const repeatData = {
+                every: repeatEvery,
+                unit: repeatUnit,
+                days: repeatDays,
+                until: null // No repeat until in new structure
+            };
             
             selectedProfiles.forEach(profileName => {
                 if (currentTaskType === 'routine') {
-                    // Determine period based on time
-                    let period = 'Morning';
-                    if (hasTime && time) {
-                        const hour = parseInt(time.split(':')[0]);
-                        if (hour >= 12 && hour < 18) period = 'Afternoon';
-                        else if (hour >= 18) period = 'Evening';
-                    }
+                    // Use the selected time of day
+                    let period = 'Evening'; // Default
+                    if (selectedTimeOfDay === 'morning') period = 'Morning';
+                    else if (selectedTimeOfDay === 'afternoon') period = 'Afternoon';
+                    else if (selectedTimeOfDay === 'evening') period = 'Evening';
                     
                     const newRoutine = {
                         id: Date.now() + Math.random(),
@@ -11186,22 +11914,23 @@ console.log('Script started loading...');
                         title: title,
                         icon: emoji,
                         completed: false,
-                        stars: stars,
+                        stars: 0,
                         repeat: repeatData
                     };
                     
                     routines.push(newRoutine);
                 } else {
+                    // For chores
                     const newChore = {
                         id: Date.now() + Math.random(),
                         member: profileName,
                         title: title,
                         icon: emoji,
-                        frequency: hasRepeat ? getFrequencyText() : 'Once',
-                        dueDate: hasDate ? date : null,
-                        time: hasTime ? time : null,
+                        frequency: `Every ${repeatEvery} ${repeatUnit}${repeatEvery > 1 ? 's' : ''}`,
+                        dueDate: null,
+                        time: null,
                         completed: false,
-                        stars: stars,
+                        stars: 0,
                         repeat: repeatData
                     };
                     
@@ -11215,12 +11944,18 @@ console.log('Script started loading...');
             // Reset form
             document.getElementById('taskChoreTitle').value = '';
             document.getElementById('taskChoreEmoji').value = '';
-            document.getElementById('taskChoreStars').value = '5';
+            document.getElementById('taskChoreEmojiDisplay').textContent = '';
             selectedProfiles = [];
-            selectedDays = [];
+            selectedDays = [4]; // Reset to Thursday
+            selectedRepeatUnit = 'week';
+            selectedTimeOfDay = 'evening';
             
-            // Reset day buttons
-            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+            // Reset buttons to defaults
+            document.querySelectorAll('.day-btn-new').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const thursdayBtn = document.querySelector('.day-btn-new[data-day="4"]');
+            if (thursdayBtn) thursdayBtn.classList.add('active');
             
             closeModal('taskChoreModal');
             renderChoresView();
@@ -11764,15 +12499,36 @@ console.log('Script started loading...');
             }
         }
 
+        function updateEventTimeVisibility() {
+            const isAllDay = document.getElementById('eventAllDayToggle').checked;
+            const timeSection = document.getElementById('eventTimeSection');
+            if (timeSection) {
+                timeSection.style.display = isAllDay ? 'none' : 'block';
+            }
+        }
+        
         function openEventModal() {
             console.log('📅 Opening event modal...');
             selectedEventProfile = ''; // Reset selection
+            selectedEventProfiles = []; // Reset array
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
             updateEventTimeVisibility();
             console.log('Calling renderEventProfileGrid...');
             renderEventProfileGrid();
+            
+            // Initialize repeat options
+            selectedRepeatFrequency = 'weekly';
+            selectedRepeatEndType = 'on';
+            setTimeout(() => {
+                // Set default active states
+                const weeklyItem = document.querySelector('[data-repeat="weekly"]');
+                if (weeklyItem) weeklyItem.classList.add('active');
+                
+                const onDateItem = document.querySelector('[data-endtype="on"]');
+                if (onDateItem) onDateItem.classList.add('active');
+            }, 100);
         }
         
         function openEventModalForCurrentDay() {
@@ -11782,11 +12538,24 @@ console.log('Script started loading...');
         
         function openEventModalForDate(dateStr) {
             selectedEventProfile = ''; // Reset selection
+            selectedEventProfiles = []; // Reset array
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date(dateStr + 'T12:00:00');
             updateEventTimeVisibility();
             renderEventProfileGrid();
+            
+            // Initialize repeat options
+            selectedRepeatFrequency = 'weekly';
+            selectedRepeatEndType = 'on';
+            setTimeout(() => {
+                // Set default active states
+                const weeklyItem = document.querySelector('[data-repeat="weekly"]');
+                if (weeklyItem) weeklyItem.classList.add('active');
+                
+                const onDateItem = document.querySelector('[data-endtype="on"]');
+                if (onDateItem) onDateItem.classList.add('active');
+            }, 100);
         }
 
         function openTaskModal() {
@@ -11847,34 +12616,186 @@ console.log('Script started loading...');
             return '';
         }
         
+        let selectedRepeatFrequency = 'weekly';
+        let selectedRepeatEndType = 'on';
+        
+        function toggleRepeatSection() {
+            const toggle = document.getElementById('eventRepeatToggle');
+            const section = document.getElementById('repeatOptionsSection');
+            const untilToggle = document.getElementById('eventRepeatUntilToggle');
+            
+            if (toggle.checked) {
+                section.style.display = 'block';
+                // Enable the until toggle
+                untilToggle.disabled = false;
+                untilToggle.parentElement.parentElement.style.opacity = '1';
+            } else {
+                section.style.display = 'none';
+                // Disable and hide the until toggle
+                untilToggle.disabled = true;
+                untilToggle.checked = false;
+                untilToggle.parentElement.parentElement.style.opacity = '0.5';
+                document.getElementById('repeatUntilSection').style.display = 'none';
+            }
+        }
+        
+        function toggleRepeatUntilSection() {
+            const toggle = document.getElementById('eventRepeatUntilToggle');
+            const section = document.getElementById('repeatUntilSection');
+            
+            if (toggle.checked) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+        
+        function selectRepeatFrequency(frequency) {
+            selectedRepeatFrequency = frequency;
+            
+            // Remove active class from all frequency items
+            document.querySelectorAll('[data-repeat]').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected item
+            document.querySelector(`[data-repeat="${frequency}"]`).classList.add('active');
+        }
+        
+        function selectRepeatEndType(endType) {
+            selectedRepeatEndType = endType;
+            
+            // Remove active class from all end type items
+            document.querySelectorAll('[data-endtype]').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected item
+            document.querySelector(`[data-endtype="${endType}"]`).classList.add('active');
+            
+            // Show/hide appropriate input
+            const endDateGroup = document.getElementById('repeatEndDateGroup');
+            const countGroup = document.getElementById('repeatCountGroup');
+            
+            endDateGroup.style.display = 'none';
+            countGroup.style.display = 'none';
+            
+            if (endType === 'on') {
+                endDateGroup.style.display = 'block';
+            } else if (endType === 'after') {
+                countGroup.style.display = 'block';
+            }
+        }
+        
+        function generateRecurringEvents(baseEvent) {
+            const events = [];
+            const repeatToggle = document.getElementById('eventRepeatToggle');
+            
+            if (!repeatToggle || !repeatToggle.checked) {
+                return [baseEvent];
+            }
+            
+            const repeatType = selectedRepeatFrequency;
+            const untilToggle = document.getElementById('eventRepeatUntilToggle');
+            const hasEndCondition = untilToggle && untilToggle.checked;
+            const endType = hasEndCondition ? selectedRepeatEndType : 'never';
+            const repeatEndDate = document.getElementById('repeatEndDate').value;
+            const repeatCount = parseInt(document.getElementById('repeatCount').value) || 10;
+            
+            const startDate = new Date(baseEvent.date);
+            let currentDate = new Date(startDate);
+            let count = 0;
+            const maxIterations = hasEndCondition && endType === 'after' ? repeatCount : 365;
+            
+            while (count < maxIterations) {
+                // Create event for current date
+                const event = {
+                    ...baseEvent,
+                    id: Date.now() + count,
+                    date: currentDate.toISOString().split('T')[0],
+                    recurringId: baseEvent.id,
+                    recurringIndex: count
+                };
+                
+                // If there's an end date for the event itself, update it
+                if (baseEvent.endDate) {
+                    const daysDiff = Math.floor((new Date(baseEvent.endDate) - startDate) / (1000 * 60 * 60 * 24));
+                    const newEndDate = new Date(currentDate);
+                    newEndDate.setDate(newEndDate.getDate() + daysDiff);
+                    event.endDate = newEndDate.toISOString().split('T')[0];
+                }
+                
+                events.push(event);
+                
+                // Check if we've reached the end date
+                if (hasEndCondition && endType === 'on' && repeatEndDate) {
+                    if (currentDate >= new Date(repeatEndDate)) {
+                        break;
+                    }
+                }
+                
+                // Move to next occurrence
+                switch (repeatType) {
+                    case 'daily':
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        break;
+                    case 'weekly':
+                        currentDate.setDate(currentDate.getDate() + 7);
+                        break;
+                    case 'monthly':
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                        break;
+                    case 'yearly':
+                        currentDate.setFullYear(currentDate.getFullYear() + 1);
+                        break;
+                }
+                
+                count++;
+            }
+            
+            return events;
+        }
+        
         function saveEvent() {
             const isAllDay = document.getElementById('eventAllDayToggle').checked;
             const title = document.getElementById('eventTitle').value;
             
             console.log('Event title:', title);
-            console.log('Selected profile:', selectedEventProfile);
+            console.log('Selected profiles:', selectedEventProfiles);
             
             // Auto-assign member if not manually selected
-            let assignedMember = selectedEventProfile;
-            if (!selectedEventProfile || selectedEventProfile === '') {
-                assignedMember = autoAssignEventMember(title);
-                console.log('Auto-assigned to:', assignedMember);
+            let assignedMembers = selectedEventProfiles.length > 0 ? selectedEventProfiles : [];
+            if (assignedMembers.length === 0) {
+                const autoAssigned = autoAssignEventMember(title);
+                if (autoAssigned) {
+                    assignedMembers = [autoAssigned];
+                }
+                console.log('Auto-assigned to:', assignedMembers);
             }
             
-            const event = {
+            // Store as comma-separated string for backward compatibility
+            const memberString = assignedMembers.join(', ');
+            
+            const baseEvent = {
                 id: Date.now(),
                 title: title,
                 date: document.getElementById('eventDate').value,
                 endDate: document.getElementById('eventEndDate').value,
                 time: isAllDay ? '' : document.getElementById('eventTime').value,
                 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
-                member: assignedMember,
+                member: memberString,
+                members: assignedMembers, // Store array for future use
                 notes: document.getElementById('eventNotes').value
             };
             
-            console.log('Saving event:', event);
+            console.log('Saving event:', baseEvent);
             
-            events.push(event);
+            // Generate recurring events if needed
+            const eventsToAdd = generateRecurringEvents(baseEvent);
+            console.log('Generated events:', eventsToAdd.length);
+            
+            // Add all events
+            events.push(...eventsToAdd);
             localStorage.setItem('events', JSON.stringify(events));
             closeModal('eventModal');
             
@@ -11891,7 +12812,22 @@ console.log('Script started loading...');
             document.getElementById('eventEndTime').value = '';
             document.getElementById('eventNotes').value = '';
             document.getElementById('eventAllDayToggle').checked = true;
+            document.getElementById('eventRepeatToggle').checked = false;
+            document.getElementById('eventRepeatUntilToggle').checked = false;
+            document.getElementById('repeatOptionsSection').style.display = 'none';
+            document.getElementById('repeatUntilSection').style.display = 'none';
             selectedEventProfile = '';
+            selectedEventProfiles = [];
+            selectedRepeatFrequency = 'weekly';
+            selectedRepeatEndType = 'on';
+            
+            // Reset active states
+            document.querySelectorAll('[data-repeat]').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('[data-endtype]').forEach(item => {
+                item.classList.remove('active');
+            });
         }
 
         function saveTask() {
@@ -12690,6 +13626,29 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             
             <button class="edit-save-btn" id="allowanceSaveBtn" onclick="saveAllowanceTransaction()">Save</button>
+        </div>
+    </div>
+    
+    <!-- Timer Set Modal -->
+    <div class="edit-panel-overlay" id="timerSetPanelOverlay" onclick="closeTimerSetModal()"></div>
+    <div class="edit-side-panel" id="timerSetModal">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeTimerSetModal()">←</button>
+            <div class="edit-panel-title">Set Timer</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <div class="edit-form-group">
+                <label class="edit-form-label">Hours</label>
+                <input type="number" class="edit-form-input" id="timerSetHours" placeholder="0" min="0" max="23" value="0">
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">Minutes</label>
+                <input type="number" class="edit-form-input" id="timerSetMinutes" placeholder="0" min="0" max="59" value="5">
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveTimerSet()">Set Timer</button>
         </div>
     </div>
 </body>
