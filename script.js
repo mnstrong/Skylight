@@ -3702,6 +3702,10 @@ console.log('Script started loading...');
                                 <div class="routine-tasks" id="routine-tasks-${member.name}-${period}">`;
                             
                             periodRoutines.forEach((task, index) => {
+                                // Android 8 compatible: use rgba instead of hex alpha
+                                const bgOpacity = task.completed ? 0.5 : 0.19;
+                                const taskBg = hexToRgba(member.color, bgOpacity);
+                                
                                 html += `<div class="routine-task ${task.completed ? 'completed' : ''}" 
                                               draggable="true"
                                               data-task-id="${task.id}"
@@ -3712,7 +3716,7 @@ console.log('Script started loading...');
                                               ondragover="handleRoutineDragOver(event)"
                                               ondrop="handleRoutineDrop(event)"
                                               ondragend="handleRoutineDragEnd(event)"
-                                              style="background: ${member.color}${task.completed ? '80' : '30'}; cursor: move;">
+                                              style="background: ${taskBg}; cursor: move;">
                                     <div class="routine-task-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
                                     <div class="routine-task-icon" onclick="openTaskDetail(${task.id}, 'routine', event)">${task.icon || '✓'}</div>
                                     <div class="routine-task-content" onclick="openTaskDetail(${task.id}, 'routine', event)">
@@ -3740,11 +3744,12 @@ console.log('Script started loading...');
                     const daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
                     const lateText = isLate ? (daysLate === 0 ? 'Due today' : `${daysLate} day${daysLate > 1 ? 's' : ''} late`) : '';
                     
-                    // Determine background opacity based on completion
-                    const bgOpacity = chore.completed ? '80' : '30';
+                    // Android 8 compatible: use rgba instead of hex alpha
+                    const bgOpacity = chore.completed ? 0.5 : 0.19;
+                    const choreBg = hexToRgba(member.color, bgOpacity);
                     
                     html += `<div class="chore-item ${chore.completed ? 'completed' : ''}" 
-                                  style="background: ${member.color}${bgOpacity}; cursor: pointer;"
+                                  style="background: ${choreBg}; cursor: pointer;"
                                   onclick="openTaskDetail(${chore.id}, 'chore', event)">
                         ${chore.icon ? `<div class="chore-item-icon">${chore.icon}</div>` : ''}
                         <div class="chore-item-content">

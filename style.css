@@ -1,5 +1,4 @@
-
-        * {
+* {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -104,7 +103,6 @@
             grid-template-columns: 120px 1fr;
             grid-template-rows: 120px 1fr;
             height: 100vh;
-            gap: 0px;
             padding: 0;
         }
 
@@ -138,7 +136,7 @@
             color: #5C6370;
             font-size: 14px;
             font-weight: 600;
-            gap: 8px;
+            
         }
 
         .nav-item:hover {
@@ -236,7 +234,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            
             font-family: "Noticia Text", serif;
             font-weight: 400;
             font-style: normal;
@@ -245,13 +243,13 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 15px;
+            
         }
 
         .date-time-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            
         }
 
         .date-weather-line {
@@ -283,7 +281,7 @@
 
         .person-avatars {
             display: flex;
-            gap: 8px;
+            
         }
 
         .person-avatar {
@@ -333,7 +331,6 @@
             transition: transform 0.2s;
             display: flex;
             align-items: center;
-            gap: 10px;
             position: relative;
             overflow: hidden;
             min-width: 150px;
@@ -355,7 +352,6 @@
         .family-pill-content {
             display: flex;
             align-items: center;
-            gap: 10px;
             position: relative;
             z-index: 1;
         }
@@ -370,6 +366,7 @@
             font-weight: 700;
             color: white;
             flex-shrink: 0;
+            margin-right: 10px;
         }
 
         .family-pill-info {
@@ -446,7 +443,6 @@
         .family-members {
             display: flex;
             flex-direction: column;
-            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -468,7 +464,6 @@
         .today-nav {
             display: flex;
             align-items: center;
-            gap: 5px;
         }
 
         .today-nav-btn {
@@ -504,7 +499,6 @@
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
         }
 
         .week-view, .day-view {
@@ -518,7 +512,6 @@
         .simple-week-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
             padding: 20px;
         }
         
@@ -545,7 +538,6 @@
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
         }
         
         .simple-week-day-header .week-day-name {
@@ -597,7 +589,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
         }
         
         .simple-week-next-label {
@@ -915,7 +906,6 @@
         .week-grid {
             display: grid;
             grid-template-columns: 80px repeat(7, 1fr);
-            gap: 10px;
         }
 
         .time-slot {
@@ -966,7 +956,6 @@
         .day-view-container {
             display: grid;
             grid-template-columns: 300px 1fr;
-            gap: 20px;
             height: 100%;
         }
 
@@ -992,7 +981,6 @@
         .mini-cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
         }
 
         .mini-day-header {
@@ -1059,7 +1047,6 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 10px;
         }
         
         .week-day-box {
@@ -1150,12 +1137,10 @@
         .day-view-events {
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
 
         .day-event-item {
             background: #f9f9f9;
-            border-left: 4px solid #667eea;
             padding: 15px;
             border-radius: 8px;
             display: flex;
@@ -1254,7 +1239,6 @@
         .task-modal-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             padding: 20px 25px;
             border-bottom: 1px solid #e0e0e0;
         }
@@ -1283,7 +1267,6 @@
         .task-form-group {
             display: flex;
             align-items: center;
-            gap: 12px;
             margin-bottom: 20px;
             padding-bottom: 20px;
             border-bottom: 1px solid #f0f0f0;
@@ -1392,7 +1375,6 @@
         .emoji-picker-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
             max-height: 250px;
             overflow-y: auto;
             scrollbar-width: thin;
@@ -1491,7 +1473,6 @@
         /* Rewards Page Styling */
         .rewards-container {
             display: flex;
-            gap: 20px;
             padding: 20px 0;
             overflow-x: auto;
             scrollbar-width: thin;
@@ -1523,7 +1504,6 @@
         .rewards-person-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             margin-bottom: 20px;
         }
         
@@ -1553,7 +1533,6 @@
         .rewards-person-total-stars {
             display: flex;
             align-items: center;
-            gap: 5px;
             font-size: 16px;
             color: #666;
         }
@@ -1614,7 +1593,6 @@
             color: #000;
             display: flex;
             align-items: center;
-            gap: 5px;
             z-index: 1;
         }
         
@@ -1631,7 +1609,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
         }
         
         .reward-redeem-btn:hover {
@@ -1686,7 +1663,6 @@
         
         .task-detail-actions {
             display: flex;
-            gap: 20px;
             margin-bottom: 30px;
         }
         
@@ -1701,7 +1677,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             transition: transform 0.2s;
         }
         
@@ -1722,13 +1697,11 @@
         .task-detail-info {
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
         
         .task-detail-row {
             display: flex;
             align-items: center;
-            gap: 15px;
             font-size: 16px;
             color: #333;
         }
@@ -1748,7 +1721,6 @@
         .task-detail-assigned {
             display: flex;
             align-items: center;
-            gap: 10px;
         }
         
         .task-detail-avatar {
@@ -1835,7 +1807,6 @@
         .delete-options-buttons {
             display: flex;
             flex-direction: column;
-            gap: 12px;
         }
         
         .delete-option-btn {
@@ -1885,7 +1856,6 @@
         .meal-filter-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
             padding: 12px 20px;
             border-radius: 10px;
             border: 2px solid #4A90E2;
@@ -1994,7 +1964,6 @@
         .meal-filter-item-left {
             display: flex;
             align-items: center;
-            gap: 12px;
         }
         
         .meal-filter-color-dot {
@@ -2012,7 +1981,6 @@
         .meal-filter-item-right {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
         
         .meal-filter-edit-btn {
@@ -2127,7 +2095,6 @@
         .color-picker-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
             margin-top: 10px;
         }
         
@@ -2153,7 +2120,6 @@
         .recipes-container {
             display: flex;
             height: calc(100vh - 140px);
-            gap: 20px;
             padding: 20px;
         }
         
@@ -2161,13 +2127,11 @@
             width: 350px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
             flex-shrink: 0;
         }
         
         .recipes-filter-buttons {
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
         }
         
@@ -2198,7 +2162,6 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
         
         .recipe-list-item {
@@ -2289,7 +2252,6 @@
         
         .recipe-view-actions {
             display: flex;
-            gap: 10px;
         }
         
         .recipe-action-btn {
@@ -2406,7 +2368,6 @@
         .edit-panel-header {
             display: flex;
             align-items: center;
-            gap: 20px;
             padding: 30px;
             border-bottom: 1px solid #e0e0e0;
         }
@@ -2467,7 +2428,6 @@
         .edit-profile-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
             margin-top: 10px;
         }
         
@@ -2475,7 +2435,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
             cursor: pointer;
         }
         
@@ -2508,7 +2467,6 @@
         
         .edit-type-toggle {
             display: flex;
-            gap: 10px;
             margin-top: 10px;
         }
         
@@ -2574,8 +2532,8 @@
         }
         
         .routine-choice-btn.active {
-            background: #000;
-            color: white;
+            background: white;
+            color: black;
             border-color: #000;
         }
         
@@ -2592,7 +2550,6 @@
         
         .days-selector-new {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
         }
         
@@ -2626,7 +2583,6 @@
         .edit-toggle-label {
             display: flex;
             align-items: center;
-            gap: 10px;
             font-size: 16px;
             color: #333;
         }
@@ -2667,13 +2623,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
         }
         
         /* Rewards Page Styling */
         .rewards-container {
             display: flex;
-            gap: 20px;
             padding: 20px 0;
             overflow-x: auto;
             scrollbar-width: thin;
@@ -2707,7 +2661,6 @@
         .rewards-person-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             margin-bottom: 20px;
         }
         
@@ -2739,13 +2692,11 @@
             color: #666;
             display: flex;
             align-items: center;
-            gap: 5px;
         }
         
         .rewards-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
         }
         
         .reward-card {
@@ -2772,7 +2723,6 @@
         .reward-progress-container {
             display: flex;
             align-items: center;
-            gap: 10px;
             margin-bottom: 15px;
         }
         
@@ -2803,7 +2753,6 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 3px;
         }
         
         .reward-redeem-btn {
@@ -2818,7 +2767,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             color: white;
         }
         
@@ -2836,7 +2784,6 @@
         .task-profile-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
             margin-bottom: 20px;
             padding: 0 20px;
         }
@@ -2845,7 +2792,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
             cursor: pointer;
         }
         
@@ -2961,7 +2907,6 @@
         
         .days-selector {
             display: flex;
-            gap: 8px;
             justify-content: space-between;
         }
         
@@ -3077,7 +3022,6 @@
         .day-events {
             display: flex;
             flex-direction: column;
-            gap: 3px;
             margin-top: 5px;
             overflow: hidden;
             flex: 1;
@@ -3093,13 +3037,13 @@
             margin-bottom: 2px;
             display: flex;
             align-items: center;
-            gap: 4px;
         }
 
         .day-event-time {
             font-weight: 600;
             font-size: 12px;
             white-space: nowrap;
+            padding-right: 6px;
         }
         
         .day-event-title {
@@ -3129,7 +3073,6 @@
             margin-bottom: 8px;
             background: #f9f9f9;
             border-radius: 8px;
-            gap: 10px;
         }
 
         .task-item input[type="checkbox"] {
@@ -3170,7 +3113,6 @@
             margin-bottom: 20px;
             display: none;
             align-items: center;
-            gap: 8px;
         }
 
         .google-sync-btn:hover {
@@ -3186,7 +3128,6 @@
         .meal-plan {
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
 
         .meal-day {
@@ -3250,7 +3191,6 @@
 
         .tabs {
             display: none;
-            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -3294,7 +3234,6 @@
 
         .schedule-container {
             display: flex;
-            gap: 20px;
             overflow-x: auto;
             padding: 20px 0;
             scrollbar-width: thin;
@@ -3359,7 +3298,6 @@
             text-align: left;
             display: flex;
             align-items: center;
-            gap: 10px;
         }
         
         .schedule-day-title .week-day-name {
@@ -3415,7 +3353,6 @@
         .schedule-event-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
         }
         
         /* Day View Styles */
@@ -3424,7 +3361,6 @@
             margin: 0 auto;
             padding: 40px 20px;
             display: flex;
-            gap: 40px;
             align-items: flex-start;
         }
         
@@ -3470,7 +3406,6 @@
         .mini-calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
         }
         
         .mini-calendar-day-header {
@@ -3517,13 +3452,11 @@
             margin-bottom: 40px;
             display: flex;
             align-items: center;
-            gap: 20px;
         }
         
         .day-view-title {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
         
         .day-view-title .week-day-name {
@@ -3558,7 +3491,6 @@
         .day-view-events {
             display: flex;
             flex-direction: column;
-            gap: 15px;
         }
         
         .day-view-event {
@@ -3727,7 +3659,6 @@
         .chore-person-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             margin-bottom: 20px;
         }
         
@@ -3757,7 +3688,6 @@
         .chore-person-stats {
             display: flex;
             align-items: center;
-            gap: 10px;
             margin-bottom: 8px;
         }
         
@@ -3788,13 +3718,11 @@
         .chore-categories {
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
         
         .chore-category {
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
         
         .chore-category-header {
@@ -3806,7 +3734,6 @@
         
         .chore-category-tabs {
             display: flex;
-            gap: 10px;
             margin-bottom: 10px;
         }
         
@@ -3829,7 +3756,6 @@
         .chore-items {
             display: flex;
             flex-direction: column;
-            gap: 8px;
             margin-top: 65px;
         }
         
@@ -3838,7 +3764,6 @@
             padding: 18px;
             display: flex;
             align-items: center;
-            gap: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 10px;
@@ -3891,7 +3816,6 @@
         .chore-item-stars {
             display: flex;
             align-items: center;
-            gap: 4px;
             font-size: 16px;
             color: #666;
             margin-top: 4px;
@@ -3947,7 +3871,6 @@
         /* Routine Indicators */
         .routine-indicators {
             display: flex;
-            gap: 10px;
             margin: 2px 0 20px 0;
             justify-content: center;
         }
@@ -3956,7 +3879,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 21px;
             padding: 10px 0 0 0;
             border-radius: 50%;
             width: 85px;
@@ -4014,7 +3936,6 @@
         .routine-tasks {
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
         
         .routine-task {
@@ -4022,7 +3943,6 @@
             padding: 20px;
             display: flex;
             align-items: center;
-            gap: 15px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -4065,7 +3985,6 @@
         .routine-task-stars {
             display: flex;
             align-items: center;
-            gap: 4px;
             font-size: 13px;
             color: #666;
         }
@@ -4081,7 +4000,6 @@
         .meal-plan-nav {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
         
         .meal-category-dropdown {
@@ -4155,7 +4073,6 @@
             background: white;
             display: flex;
             flex-direction: column;
-            gap: 6px;
             aspect-ratio: 1 / 1;
         }
         
@@ -4237,7 +4154,6 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
             font-size: 16px;
             color: #4A90E2;
         }
@@ -4291,7 +4207,6 @@
         
         .meal-detail-actions {
             display: flex;
-            gap: 10px;
         }
         
         .meal-detail-btn {
@@ -4302,7 +4217,6 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
         }
         
         .meal-detail-edit {
@@ -4322,7 +4236,6 @@
         .meal-detail-info-row {
             display: flex;
             align-items: center;
-            gap: 8px;
             padding: 8px 0;
             color: #666;
         }
@@ -4347,7 +4260,6 @@
         /* Lists Styles */
         .chores-columns {
             display: flex;
-            gap: 20px;
             padding: 20px 0;
             overflow-x: auto;
             scrollbar-width: thin;
@@ -4385,7 +4297,6 @@
         .column-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             margin-bottom: 20px;
             background: transparent;
         }
@@ -4460,13 +4371,11 @@
         .list-items {
             display: flex;
             flex-direction: column;
-            gap: 8px;
         }
         
         .list-item {
             display: flex;
             align-items: center;
-            gap: 12px;
             padding: 18px;
             border-radius: 15px;
             transition: all 0.2s;
@@ -4600,7 +4509,6 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
             transition: all 0.2s;
             border: none;
         }
@@ -4616,7 +4524,6 @@
         .list-section-header {
             display: flex;
             align-items: center;
-            gap: 10px;
             padding: 10px 15px;
             cursor: pointer;
             border-radius: 8px;
@@ -4669,7 +4576,6 @@
         .allowance-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
             margin-top: 20px;
         }
         
@@ -4684,7 +4590,6 @@
         .allowance-header {
             display: flex;
             align-items: center;
-            gap: 15px;
             margin-bottom: 20px;
         }
         
@@ -4714,7 +4619,6 @@
         .allowance-sections {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
             margin: 20px 0;
         }
         
@@ -4760,7 +4664,6 @@
         
         .allowance-type-toggle {
             display: flex;
-            gap: 10px;
         }
         
         .allowance-type-btn {
@@ -4818,7 +4721,6 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
         }
         
         .allowance-transaction-date {
@@ -4850,7 +4752,6 @@
         .list-section-items {
             display: flex;
             flex-direction: column;
-            gap: 8px;
             margin-top: 8px;
         }
         
@@ -4871,7 +4772,6 @@
             color: #5C6370;
             display: flex;
             align-items: center;
-            gap: 6px;
             margin-left: 15px;
             transition: background-color 0.2s;
             position: relative;
@@ -4919,7 +4819,6 @@
         .calendar-filter-item {
             display: flex;
             align-items: center;
-            gap: 12px;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 8px;
@@ -4973,7 +4872,6 @@
         .color-picker-container {
             display: flex;
             align-items: center;
-            gap: 10px;
             margin-top: 10px;
         }
         
@@ -4992,7 +4890,6 @@
         
         .color-picker-grid {
             display: flex;
-            gap: 12px;
             padding: 8px 0;
         }
         
@@ -5272,7 +5169,6 @@
 
         .clock-picker-period-toggle {
             display: flex;
-            gap: 10px;
             justify-content: center;
         }
 
@@ -5367,7 +5263,6 @@
 
         .clock-picker-actions {
             display: flex;
-            gap: 15px;
             margin-top: 20px;
         }
 
@@ -5454,7 +5349,6 @@
             padding: 20px 30px;
             border-top: 1px solid #e0e0e0;
             display: flex;
-            gap: 15px;
         }
         
         .day-events-btn {
@@ -5495,7 +5389,6 @@
         .timers-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 40px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -5508,7 +5401,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
         }
         
         .timer-card.running {
@@ -5518,7 +5410,6 @@
         .timer-display {
             display: flex;
             align-items: flex-end;
-            gap: 8px;
             font-family: 'Jost', monospace;
             user-select: none;
         }
@@ -5550,7 +5441,6 @@
         
         .timer-controls {
             display: flex;
-            gap: 15px;
         }
         
         .timer-btn {
@@ -5563,7 +5453,6 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 10px;
         }
         
         .timer-btn-start {
@@ -5609,3 +5498,345 @@
             animation: pulse 0.5s ease-in-out infinite;
             background: #fef5e7;
         }
+/* Android 8 compatibility: Replace gap with margin-based spacing */
+
+/* Navigation */
+.nav-item > * {
+    margin-top: 8px;
+}
+.nav-item > *:first-child {
+    margin-top: 0;
+}
+
+/* Header sections */
+.header-left > * {
+    margin-left: 20px;
+}
+.header-left > *:first-child {
+    margin-left: 0;
+}
+
+.header-right > * {
+    margin-left: 15px;
+}
+.header-right > *:first-child {
+    margin-left: 0;
+}
+
+.date-time-group > * {
+    margin-top: 5px;
+}
+.date-time-group > *:first-child {
+    margin-top: 0;
+}
+
+.person-avatars > * {
+    margin-left: 8px;
+}
+.person-avatars > *:first-child {
+    margin-left: 0;
+}
+
+/* Family pills and filters */
+.family-filter > * {
+    margin-left: 10px;
+}
+.family-filter > *:first-child {
+    margin-left: 0;
+}
+
+.person-filter > * {
+    margin-left: 10px;
+}
+.person-filter > *:first-child {
+    margin-left: 0;
+}
+
+/* View toggles */
+.view-toggle > * {
+    margin-left: 10px;
+}
+.view-toggle > *:first-child {
+    margin-left: 0;
+}
+
+/* Event meta */
+.event-meta > * {
+    margin-left: 5px;
+}
+.event-meta > *:first-child {
+    margin-left: 0;
+}
+
+.event-attendees > * {
+    margin-left: 5px;
+}
+.event-attendees > *:first-child {
+    margin-left: 0;
+}
+
+/* Modal action buttons */
+.modal-actions > * {
+    margin-left: 20px;
+}
+.modal-actions > *:first-child {
+    margin-left: 0;
+}
+
+/* Edit form groups */
+.time-inputs > * {
+    margin-left: 10px;
+}
+.time-inputs > *:first-child {
+    margin-left: 0;
+}
+
+.repeat-controls > * {
+    margin-left: 10px;
+}
+.repeat-controls > *:first-child {
+    margin-left: 0;
+}
+
+/* Chores sections */
+.routine-indicators > * {
+    margin-right: 10px;
+}
+.routine-indicators > *:last-child {
+    margin-right: 0px;
+}
+.chore-person-avatar {
+    position: relative;
+    bottom: 8px;
+}
+
+.chore-person-avatar, .rewards-person-avatar  {
+
+    margin-right: 12px;    
+}
+
+/* Task sections */
+.period-header > * {
+    margin-left: 20px;
+}
+.period-header > *:first-child {
+    margin-left: 0;
+}
+
+.task-meta > * {
+    margin-top: 5px;
+}
+.task-meta > *:first-child {
+    margin-top: 0;
+}
+
+/* Rewards */
+.reward-info > * {
+    margin-top: 10px;
+}
+.reward-info > *:first-child {
+    margin-top: 0;
+}
+
+/* Meal planning */
+.meal-week-nav > * {
+    margin-left: 15px;
+}
+.meal-week-nav > *:first-child {
+    margin-left: 0;
+}
+
+.category-filter > * {
+    margin-left: 12px;
+}
+.category-filter > *:first-child {
+    margin-left: 0;
+}
+
+/* Recipes */
+.recipe-header-actions > * {
+    margin-left: 8px;
+}
+.recipe-header-actions > *:first-child {
+    margin-left: 0;
+}
+
+.recipe-meta > * {
+    margin-left: 20px;
+}
+.recipe-meta > *:first-child {
+    margin-left: 0;
+}
+
+.ingredient-item-content > * {
+    margin-left: 8px;
+}
+.ingredient-item-content > *:first-child {
+    margin-left: 0;
+}
+
+/* Lists */
+.list-card-header > * {
+    margin-left: 20px;
+}
+.list-card-header > *:first-child {
+    margin-left: 0;
+}
+
+/* Allowance */
+.allowance-header > * {
+    margin-left: 15px;
+}
+.allowance-header > *:first-child {
+    margin-left: 0;
+}
+
+.transaction-amount > * {
+    margin-left: 8px;
+}
+.transaction-amount > *:first-child {
+    margin-left: 0;
+}
+
+/* Clock picker */
+.clock-picker-period-toggle > * {
+    margin-left: 10px;
+}
+.clock-picker-period-toggle > *:first-child {
+    margin-left: 0;
+}
+
+.clock-picker-actions > * {
+    margin-left: 15px;
+}
+.clock-picker-actions > *:first-child {
+    margin-left: 0;
+}
+
+/* Day events modal */
+.day-events-footer > * {
+    margin-left: 15px;
+}
+.day-events-footer > *:first-child {
+    margin-left: 0;
+}
+
+/* Timer */
+.timers-container > * {
+    margin-left: 40px;
+    margin-top: 40px;
+}
+.timers-container > *:first-child,
+.timers-container > *:nth-child(2) {
+    margin-top: 0;
+}
+.timers-container > *:nth-child(odd) {
+    margin-left: 0;
+}
+
+.timer-card > * {
+    margin-top: 30px;
+}
+.timer-card > *:first-child {
+    margin-top: 0;
+}
+
+.timer-display > * {
+    margin-left: 8px;
+}
+.timer-display > *:first-child {
+    margin-left: 0;
+}
+
+.timer-controls > * {
+    margin-left: 15px;
+}
+.timer-controls > *:first-child {
+    margin-left: 0;
+}
+
+.timer-btn > * {
+    margin-left: 10px;
+}
+.timer-btn > *:first-child {
+    margin-left: 0;
+}
+
+/* General flex gap replacements */
+.flex-gap-5 > * {
+    margin-left: 5px;
+}
+.flex-gap-5 > *:first-child {
+    margin-left: 0;
+}
+
+.flex-gap-8 > * {
+    margin-left: 8px;
+}
+.flex-gap-8 > *:first-child {
+    margin-left: 0;
+}
+
+.flex-gap-10 > * {
+    margin-left: 10px;
+}
+.flex-gap-10 > *:first-child {
+    margin-left: 0;
+}
+
+.flex-gap-12 > * {
+    margin-left: 12px;
+}
+.flex-gap-12 > *:first-child {
+    margin-left: 0;
+}
+
+.flex-gap-15 > * {
+    margin-left: 15px;
+}
+.flex-gap-15 > *:first-child {
+    margin-left: 0;
+}
+
+.flex-gap-20 > * {
+    margin-left: 20px;
+}
+.flex-gap-20 > *:first-child {
+    margin-left: 0;
+}
+
+/* Vertical gaps for flex-direction: column */
+.flex-gap-vertical-5 > * {
+    margin-top: 5px;
+}
+.flex-gap-vertical-5 > *:first-child {
+    margin-top: 0;
+}
+
+.flex-gap-vertical-8 > * {
+    margin-top: 8px;
+}
+.flex-gap-vertical-8 > *:first-child {
+    margin-top: 0;
+}
+
+.flex-gap-vertical-10 > * {
+    margin-top: 10px;
+}
+.flex-gap-vertical-10 > *:first-child {
+    margin-top: 0;
+}
+
+.flex-gap-vertical-15 > * {
+    margin-top: 15px;
+}
+.flex-gap-vertical-15 > *:first-child {
+    margin-top: 0;
+}
+
+.flex-gap-vertical-20 > * {
+    margin-top: 20px;
+}
+.flex-gap-vertical-20 > *:first-child {
+    margin-top: 0;
+}
