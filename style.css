@@ -116,9 +116,13 @@
         }
         
         .nav-sidebar > * {
-            margin-bottom: 20px;
+            margin-bottom: 50px;
         }
         
+        .nav-sidebar > *:first-child {
+            margin-top: 30px;
+        }
+
         .nav-sidebar > *:last-child {
             margin-bottom: 0;
         }
@@ -200,15 +204,24 @@
             background-position: center;
         }
         .icon-allowance::before { 
-            content: '💰';
-            font-size: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('money-bag-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-recipes::before { 
-            content: '📖';
-            font-size: 28px;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('recipes-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-lists::before { 
             content: '';
@@ -2457,7 +2470,7 @@
         }
         
         .edit-profile-avatar.selected {
-            box-shadow: 0 0 0 3px white;
+            box-shadow: 0 0 0 5px white, 0 0 0 6px black !important;
         }
         
         .edit-profile-name {
@@ -3945,6 +3958,7 @@
             align-items: center;
             cursor: pointer;
             transition: all 0.2s;
+            margin-bottom: 20px;
         }
         
         .routine-task:hover {
@@ -4627,6 +4641,10 @@
             padding: 15px;
             border-radius: 12px;
             text-align: center;
+        }
+
+        .allowance-sections:first-child {
+            margin-right: 20px;
         }
         
         .allowance-section-label {
@@ -5502,7 +5520,7 @@
 
 /* Navigation */
 .nav-item > * {
-    margin-top: 8px;
+    margin-top: 25px;
 }
 .nav-item > *:first-child {
     margin-top: 0;
@@ -5529,6 +5547,7 @@
 .date-time-group > *:first-child {
     margin-top: 0;
 }
+
 
 .person-avatars > * {
     margin-left: 8px;

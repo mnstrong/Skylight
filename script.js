@@ -1695,7 +1695,7 @@ console.log('Script started loading...');
             let html = '';
             listMembers.forEach(member => {
                 html += `<div class="task-profile-item" onclick="selectAddListProfile(${member.id})">
-                    <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}">
+                    <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="task-profile-name">${member.name}</div>
@@ -1866,7 +1866,7 @@ console.log('Script started loading...');
             listMembers.forEach(member => {
                 const isActive = selectedListItemMember === member.name;
                 html += `<div class="task-profile-item ${isActive ? 'active' : ''}" onclick="selectListItemMember('${member.name}')">
-                    <div class="task-profile-avatar" style="background: ${member.color}">
+                    <div class="task-profile-avatar" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="task-profile-name">${member.name}</div>
@@ -5226,7 +5226,7 @@ console.log('Script started loading...');
             choreMembers.forEach(member => {
                 const isSelected = selectedProfiles.includes(member.name);
                 html += `<div class="edit-profile-item" onclick="toggleProfile('${member.name}')">
-                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="edit-profile-name">${member.name}</div>
@@ -5267,7 +5267,7 @@ console.log('Script started loading...');
             familyMembers.forEach(member => {
                 const isSelected = selectedEventProfiles.includes(member.name);
                 html += `<div class="edit-profile-item" onclick="toggleEventProfile('${member.name}')">
-                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="edit-profile-name">${member.name}</div>
@@ -5652,7 +5652,7 @@ console.log('Script started loading...');
             choreMembers.forEach(member => {
                 const isSelected = member.name === selectedMember;
                 html += `<div class="edit-profile-item" onclick="selectEditProfile('${member.name}')">
-                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="edit-profile-name">${member.name}</div>
@@ -6372,7 +6372,7 @@ console.log('Script started loading...');
             let html = '';
             rewardMembers.forEach(member => {
                 html += `<div class="task-profile-item" onclick="selectRewardProfile('${member.name}')">
-                    <div class="task-profile-avatar" id="reward-avatar-${member.name}" style="background: ${member.color}">
+                    <div class="task-profile-avatar" id="reward-avatar-${member.name}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="task-profile-name">${member.name}</div>
