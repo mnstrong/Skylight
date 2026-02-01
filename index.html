@@ -149,7 +149,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px 0px;
+            padding: 15px 0px;
             border-radius: 0px;
             cursor: pointer;
             transition: all 0.3s;
@@ -221,15 +221,24 @@
             background-position: center;
         }
         .icon-allowance::before { 
-            content: '💰';
-            font-size: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('money-bag-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-recipes::before { 
-            content: '📖';
-            font-size: 28px;
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('recipes-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         .icon-lists::before { 
             content: '';
@@ -237,6 +246,17 @@
             width: 32px;
             height: 32px;
             background-image: url('lists-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .icon-timer::before { 
+            content: '';
+            display: block;
+            width: 32px;
+            height: 32px;
+            background-image: url('timer-icon.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -2517,7 +2537,7 @@
         }
         
         .edit-profile-avatar.selected {
-            box-shadow: 0 0 0 3px white;
+            box-shadow: 0 0 0 5px white, 0 0 0 6px black !important;
         }
         
         .edit-profile-name {
@@ -4020,7 +4040,7 @@
         
         /* Routine Section */
         .routine-section {
-            margin-bottom: 20px;
+            margin: 60px 0 20px 0;
         }
         
         .routine-section-title {
@@ -5663,7 +5683,7 @@
             </div>
             <div style="flex: 1;"></div>
             <div class="nav-item" onclick="switchSection('timer')">
-                <div class="nav-icon" style="font-size: 28px;">⏱️</div>
+                <div class="nav-icon icon-timer"></div>
                 <div>Timer</div>
             </div>
         </div>
@@ -6574,78 +6594,6 @@
     </div>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-// Polyfills for Android 8 compatibility
-if (!String.prototype.padStart) {
-    String.prototype.padStart = function padStart(targetLength, padString) {
-        targetLength = targetLength >> 0;
-        padString = String(typeof padString !== 'undefined' ? padString : ' ');
-        if (this.length >= targetLength) {
-            return String(this);
-        } else {
-            targetLength = targetLength - this.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength / padString.length);
-            }
-            return padString.slice(0, targetLength) + String(this);
-        }
-    };
-}
-
-if (!Array.prototype.includes) {
-    Array.prototype.includes = function(searchElement, fromIndex) {
-        if (this == null) {
-            throw new TypeError('"this" is null or not defined');
-        }
-        var o = Object(this);
-        var len = o.length >>> 0;
-        if (len === 0) {
-            return false;
-        }
-        var n = fromIndex | 0;
-        var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-        while (k < len) {
-            if (o[k] === searchElement) {
-                return true;
-            }
-            k++;
-        }
-        return false;
-    };
-}
-
-if (!String.prototype.includes) {
-    String.prototype.includes = function(search, start) {
-        if (typeof start !== 'number') {
-            start = 0;
-        }
-        if (start + search.length > this.length) {
-            return false;
-        } else {
-            return this.indexOf(search, start) !== -1;
-        }
-    };
-}
-
-if (!Object.assign) {
-    Object.assign = function(target) {
-        if (target == null) {
-            throw new TypeError('Cannot convert undefined or null to object');
-        }
-        var to = Object(target);
-        for (var index = 1; index < arguments.length; index++) {
-            var nextSource = arguments[index];
-            if (nextSource != null) {
-                for (var nextKey in nextSource) {
-                    if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-                        to[nextKey] = nextSource[nextKey];
-                    }
-                }
-            }
-        }
-        return to;
-    };
-}
-
 console.log('Script started loading...');
         let currentDate = new Date();
         let currentView = 'month';
@@ -7779,7 +7727,7 @@ console.log('Script started loading...');
                 const activeClass = selectedListsPerson === member.id ? 'active' : '';
                 html += `
                     <button class="family-pill ${activeClass}" 
-                            style="background: ${member.color}; color: white;" 
+                            style="background: ${member.color}; color: white; " 
                             onclick="filterListsByPerson(${member.id})">
                         ${member.emoji} ${member.name}
                     </button>
@@ -9171,7 +9119,7 @@ console.log('Script started loading...');
                     console.log(`Month Event: "${event.title}" | Member: "${event.member}"`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = (member && member.color) || getFamilyColor();
-                    const bgColor = hexToRgba(color, 0.25); // Android 8 compatible
+                    const bgColor = hexToRgba(color, 0.45); // Android 8 compatible
                     console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
                     
                     // Format time to 12-hour format
@@ -10011,7 +9959,7 @@ console.log('Script started loading...');
                 const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 
                 return `
-                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
+                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.5)}; color: ${member.color}">
                         <div class="family-pill-progress" style="background: ${member.color}; width: ${progressPercent}%"></div>
                         <div class="family-pill-content">
                             <div class="family-pill-avatar" style="background: ${member.color}">
@@ -11793,7 +11741,7 @@ console.log('Script started loading...');
             choreMembers.forEach(member => {
                 const isSelected = selectedProfiles.includes(member.name);
                 html += `<div class="edit-profile-item" onclick="toggleProfile('${member.name}')">
-                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}" data-member="${member.name}">
+                    <div class="edit-profile-avatar ${isSelected ? 'selected' : ''}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80" data-member="${member.name}">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="edit-profile-name">${member.name}</div>
@@ -12761,12 +12709,13 @@ console.log('Script started loading...');
             
             while (count < maxIterations) {
                 // Create event for current date
-                const event = Object.assign({}, baseEvent, {
+                const event = {
+                    ...baseEvent,
                     id: Date.now() + count,
                     date: currentDate.toISOString().split('T')[0],
                     recurringId: baseEvent.id,
                     recurringIndex: count
-                });
+                };
                 
                 // If there's an end date for the event itself, update it
                 if (baseEvent.endDate) {
@@ -12846,7 +12795,7 @@ console.log('Script started loading...');
             console.log('Generated events:', eventsToAdd.length);
             
             // Add all events
-            Array.prototype.push.apply(events, eventsToAdd);
+            events.push(...eventsToAdd);
             localStorage.setItem('events', JSON.stringify(events));
             closeModal('eventModal');
             
