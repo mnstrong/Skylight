@@ -5634,7 +5634,7 @@
         <div class="nav-sidebar">
             <div class="nav-item active" onclick="switchSection('calendar')">
                 <div class="nav-icon icon-calendar"></div>
-                <div>Calendar</div>
+                <div>Test Current</div>
             </div>
             <div class="nav-item" onclick="switchSection('chores')">
                 <div class="nav-icon icon-tasks"></div>
@@ -7016,10 +7016,14 @@ console.log('Script started loading...');
         }
         
         function selectRecipe(recipeId) {
-            const repeatEnabled = document.getElementById('mealRepeatEnabled')?.checked || false;
-            const repeatEvery = repeatEnabled ? parseInt(document.getElementById('mealRepeatEvery')?.value || 1) : null;
-            const repeatUnit = repeatEnabled ? document.getElementById('mealRepeatUnit')?.value || 'week' : null;
-            const repeatUntil = repeatEnabled ? document.getElementById('mealRepeatUntil')?.value || null : null;
+            const mealRepeatEnabledEl = document.getElementById('mealRepeatEnabled');
+            const repeatEnabled = mealRepeatEnabledEl ? mealRepeatEnabledEl.checked : false;
+            const mealRepeatEveryEl = document.getElementById('mealRepeatEvery');
+            const repeatEvery = repeatEnabled ? parseInt((mealRepeatEveryEl ? mealRepeatEveryEl.value : null) || 1) : null;
+            const mealRepeatUnitEl = document.getElementById('mealRepeatUnit');
+            const repeatUnit = repeatEnabled ? ((mealRepeatUnitEl ? mealRepeatUnitEl.value : null) || 'week') : null;
+            const mealRepeatUntilEl = document.getElementById('mealRepeatUntil');
+            const repeatUntil = repeatEnabled ? ((mealRepeatUntilEl ? mealRepeatUntilEl.value : null) || null) : null;
             
             // Create the meal
             const newMeal = {
@@ -8919,13 +8923,13 @@ console.log('Script started loading...');
         }
 
         // Simple initialization - uses Cloudflare Worker (keeps private key secure!)
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        console.log('🔑 Using Cloudflare Worker for Google Calendar');
-        isGoogleConnected = true;
-        loadGoogleCalendarEvents();
-    }, 500);
-});
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                console.log('🔑 Using Cloudflare Worker for Google Calendar');
+                isGoogleConnected = true;
+                loadGoogleCalendarEvents();
+            }, 500);
+        });
 
         function connectGoogleCalendar() {
             // Reload calendar events
@@ -13290,8 +13294,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Convert all emojis to images using Twemoji
         if (typeof twemoji !== 'undefined') {
             // Parse the entire page on load
-document.addEventListener('DOMContentLoaded', function() {
-                    twemoji.parse(document.body, {
+            document.addEventListener('DOMContentLoaded', function() {
+                twemoji.parse(document.body, {
                     folder: 'svg',
                     ext: '.svg'
                 });
