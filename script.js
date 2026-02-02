@@ -78,10 +78,10 @@ console.log('Script started loading...');
         let scheduleDaysToShow = 14;
         let familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
-            { name: 'Mary', color: '#FF6B6B' },
-            { name: 'Bret', color: '#4ECDC4' },
-            { name: 'Levi', color: '#D9B554' },
-            { name: 'Elsie', color: '#DDC2F0' }
+            { name: 'Mary', color: '#54eef3' },
+            { name: 'Bret', color: '#43AEDE' },
+            { name: 'Levi', color: '#f2c342' },
+            { name: 'Elsie', color: '#d9aafa' }
         ];
         
         // Ensure all family members have IDs (migration for existing data)
@@ -1323,10 +1323,9 @@ let visiblePeriods = {
                                  ondrop="handleListItemDrop(event)"
                                  ondragend="handleListItemDragEnd(event)"
                                  style="background: ${itemBg}; cursor: move;">
-                                <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
                                 <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
                                 ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
-                                ${!assignedMember ? `<div class="list-item-assign-btn" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">👤</div>` : ''}
+                                <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
                             </div>
                         `;
                     });
@@ -3313,7 +3312,6 @@ let visiblePeriods = {
                 
                 contentArea.innerHTML = `
                     <div class="allowance-container">
-                        <div class="section-title">Allowance</div>
                         <div id="allowanceGrid" class="allowance-grid"></div>
                     </div>
                 `;
@@ -4019,8 +4017,8 @@ let visiblePeriods = {
                                     html += '<div class="routine-task-content" onclick="openTaskDetail(' + task.id + ', \'routine\', event)">';
                                     html += '<div class="routine-task-title">' + task.title + '</div>';
                                     html += '</div>';
+                                    html += '<div class="routine-emoji-container">';
                                     if (task.stars) {
-                                        html += '<div class="routine-emoji-container">';
                                         html += '<div class="routine-task-stars">⭐ ' + task.stars + '</div>';
                                     }
                                     html += '<div class="chore-item-checkbox' + (task.completed ? ' checked' : '') + '" style="' + (task.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleRoutine(' + task.id + ')">';
