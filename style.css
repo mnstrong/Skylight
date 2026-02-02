@@ -445,6 +445,7 @@
         }
 
         .section-title {
+            font-family: "Noticia Text", serif;
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 15px;
@@ -3672,59 +3673,75 @@
         .chore-person-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .chore-person-avatar {
-            width: 65px;
-            height: 65px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            font-size: 32px;
             font-weight: 700;
             color: white;
+            margin-right: 20px;
         }
         
         .chore-person-info {
             flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .chore-person-name {
-            font-size: 28px;
+            font-size: 42px;
             font-weight: 600;
             color: #000;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .chore-person-stats {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            justify-content: space-between;
         }
         
-        .chore-person-progress-text {
-            font-size: 17px;
-            color: #666;
+        .chore-person-progress-badge {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
         }
         
-        .chore-person-stars {
-            font-size: 17px;
-            color: #666;
+        .chore-person-stars, .routine-task-stars {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
         }
         
         .chore-progress-bar {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
             overflow: hidden;
+            margin: 15px 0;
         }
         
         .chore-progress-fill {
             height: 100%;
-            border-radius: 10px;
+            border-radius: 20px;
             transition: width 0.3s ease;
         }
         
@@ -3769,11 +3786,10 @@
         .chore-items {
             display: flex;
             flex-direction: column;
-            margin-top: 65px;
         }
         
         .chore-item {
-            border-radius: 15px;
+            border-radius: 40px;
             padding: 18px;
             display: flex;
             align-items: center;
@@ -3798,27 +3814,35 @@
             opacity: 0.9;
         }
         
-        .chore-item-icon {
-            font-size: 45px;
+        .chore-item-icon, .routine-task-icon {
+            font-size: 95px;
             flex-shrink: 0;
+            width: 100%;
         }
         
         .chore-item-content {
             flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: left;
+            width: 100%;
         }
         
         .chore-item-title {
-            font-size: 25px;
+            font-size: 24px;
             font-weight: 500;
             color: #000;
-            margin-bottom: 2px;
+            margin: 0 0 5px 0;
+            display: flex;
+            justify-content: left;
         }
         
         .chore-item-subtitle {
             font-size: 20px;
             color: #666;
+            justify-content: left;
+            width: 100%;
+            display: flex;
         }
         
         .chore-item-subtitle.late {
@@ -3827,6 +3851,11 @@
         }
         
         .chore-item-stars {
+           background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             font-size: 16px;
@@ -3848,6 +3877,7 @@
             transition: all 0.2s;
             font-size: 22px;
             font-weight: 700;
+            margin-left: auto;
         }
         
         .chore-item-checkbox.checked {
@@ -3884,7 +3914,7 @@
         /* Routine Indicators */
         .routine-indicators {
             display: flex;
-            margin: 2px 0 20px 0;
+            margin: 0 0 20px 0;
             justify-content: center;
         }
         
@@ -3894,11 +3924,12 @@
             align-items: center;
             padding: 10px 0 0 0;
             border-radius: 50%;
-            width: 85px;
-            height: 85px;
-            background: rgba(255, 255, 255, 0.3);
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.4);
             cursor: default;
             transition: all 0.2s;
+            border: 3px solid transparent;
         }
         
         .routine-indicator.has-routine {
@@ -3912,15 +3943,16 @@
         
         .routine-indicator.active {
             background: rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(0, 0, 0, 0.15);
         }
         
         .routine-indicator.visible {
-            background: rgba(74, 144, 226, 0.3);
-            border: 2px solid #4A90E2;
+       //* //    background: rgba(74, 144, 226, 0.3);
+            border: 3px solid #4A90E2; *//
         }
         
         .routine-indicator-icon {
-            font-size: 48px;
+            font-size: 40px;
         }
 
         .routine-indicator-icon img {
@@ -3928,20 +3960,28 @@
         }
         
         .routine-indicator-label {
-            font-size: 19px;
-            font-weight: 300;
+            font-size: 16px;
+            font-weight: 500;
             text-align: center;
-            color: #666;
+            color: #333;
+            margin-top: 2px;
+        }
+
+        .routine-indicator-label {
+            position: absolute !important;
+            top: 87px;
         }
         
         /* Routine Section */
         .routine-section {
             margin-bottom: 20px;
+            margin-top: 50px;
         }
         
         .routine-section-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-family: "Noticia Text", serif;
+            font-size: 30px;
+            font-weight: 200;
             color: #000;
             margin-bottom: 15px;
         }
@@ -3960,6 +4000,41 @@
             transition: all 0.2s;
             margin-bottom: 20px;
         }
+
+.routine-task, .chore-item {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: center;
+    align-items: center; /* Centers items horizontally in the column */
+    -webkit-justify-content: center;
+    justify-content: center;
+    text-align: center;
+    padding: 26px;
+    width: 100%;
+}
+
+.routine-indicator, .chore-item-icon {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    margin-bottom: 8px; /* Space between circle and text */
+}
+
+.routine-task .routine-indicator-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
         
         .routine-task:hover {
             transform: translateX(3px);
@@ -3979,28 +4054,43 @@
             cursor: grabbing;
         }
         
-        .routine-task-icon {
-            font-size: 48px;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-        
         .routine-task-content {
             flex: 1;
+            width: 100%;
         }
         
         .routine-task-title {
-            font-size: 16px;
+            font-size: 24px;
             font-weight: 500;
             color: #000;
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
+            display: flex;
+            justify-content: left;
         }
         
         .routine-task-stars {
             display: flex;
             align-items: center;
-            font-size: 13px;
+            font-size: 25px;
             color: #666;
+        }
+
+        .routine-task-stars .emoji {
+            margin: 0 6px 0 1px;
+        }
+
+        .routine-emoji-container {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: row;
+            flex-direction: row;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: left;
+            gap: 10px; /* Space between text and checkbox */
+            width: 100%;
+            margin-top: 8px;
         }
         
         /* Meal Planning Styles */
@@ -5858,4 +5948,100 @@
 }
 .flex-gap-vertical-20 > *:first-child {
     margin-top: 0;
+}
+/* Fix inline gap styles for Android 8 compatibility in modals */
+.routine-choice-btn {
+    margin-left: 10px;
+}
+.routine-choice-btn:first-child {
+    margin-left: 0;
+}
+
+.routine-number-input + .routine-choice-btn {
+    margin-left: 10px;
+}
+
+/* Task completion animation */
+@keyframes taskComplete {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+}
+
+.task-completing {
+    animation: taskComplete 0.3s ease-in-out;
+}
+
+/* Routine indicator progress circle */
+.routine-indicator {
+    position: relative;
+}
+
+.routine-indicator-progress {
+    pointer-events: none;
+    z-index: 0;
+}
+
+.routine-indicator-icon,
+.routine-indicator-label {
+    position: relative;
+    z-index: 1;
+}
+
+/* Smooth transition for completed tasks moving to bottom */
+.routine-task,
+.chore-item {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Complete checkmark styling */
+.routine-indicator.complete {
+    background: rgba(255, 255, 255, 0.6);
+    border: 3px solid rgba(0, 0, 0, 0.2);
+}
+
+.routine-indicator.complete .routine-indicator-icon {
+    color: #333;
+    font-weight: bold;
+    font-size: 32px;
+}
+
+.complete-icon {
+    /* No animation by default - will be triggered on state change */
+}
+
+.complete-icon-animate {
+    animation: checkmarkPop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-circle {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes checkmarkPop {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animated progress circle fill */
+@keyframes progressFill {
+    from {
+        stroke-dashoffset: 125.6;
+    }
 }

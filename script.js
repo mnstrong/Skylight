@@ -74,6 +74,7 @@ console.log('Script started loading...');
         let currentDate = new Date();
         let currentView = 'month';
         let currentSection = 'calendar';
+        let showCompletedChores = false;
         let scheduleDaysToShow = 14;
         let familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
@@ -98,8 +99,12 @@ console.log('Script started loading...');
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let chores = JSON.parse(localStorage.getItem('chores')) || [];
         let routines = JSON.parse(localStorage.getItem('routines')) || [];
-        let visiblePeriods = {}; // Track which periods are manually shown for each member
-        
+let visiblePeriods = {
+    'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
+    'Bret-Morning': true, 'Bret-Afternoon': true, 'Bret-Evening': true,
+    'Levi-Morning': true, 'Levi-Afternoon': true, 'Levi-Evening': true,
+    'Elsie-Morning': true, 'Elsie-Afternoon': true, 'Elsie-Evening': true
+};        
         // Initialize sortOrder for all routines if not set
         let needsSave = false;
         routines.forEach((routine, index) => {
@@ -1318,7 +1323,6 @@ console.log('Script started loading...');
                                  ondrop="handleListItemDrop(event)"
                                  ondragend="handleListItemDragEnd(event)"
                                  style="background: ${itemBg}; cursor: move;">
-                                <div class="list-item-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
                                 <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
                                 <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
                                 ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
@@ -1789,6 +1793,199 @@ console.log('Script started loading...');
             document.getElementById('editListItemPanelOverlay').classList.remove('active');
         }
         
+        // Add List Item Panel Functions
+        let selectedListItemProfile = null;
+        let currentListItemEmoji = '';
+        
+        function openAddListItemPanel() {
+            // Check if elements exist
+            const titleInput = document.getElementById('listItemTitle');
+            const emojiInput = document.getElementById('listItemEmoji');
+            const emojiDisplay = document.getElementById('listItemEmojiDisplay');
+            
+            if (!titleInput) {
+                console.error('listItemTitle element not found');
+                return;
+            }
+            if (!emojiInput) {
+                console.error('listItemEmoji element not found');
+                return;
+            }
+            if (!emojiDisplay) {
+                console.error('listItemEmojiDisplay element not found');
+                return;
+            }
+            
+            // Reset form
+            titleInput.value = '';
+            emojiInput.value = '';
+            emojiDisplay.textContent = '';
+            currentListItemEmoji = '';
+            selectedListItemProfile = null;
+            
+            // Populate list dropdown
+            populateListDropdown();
+            
+            // Render profile grid
+            renderListItemProfileGrid();
+            
+            // Initialize emoji picker
+            initializeListItemEmojiPicker();
+            
+            const overlay = document.getElementById('addListItemPanelOverlay');
+            const panel = document.getElementById('addListItemPanel');
+            
+            if (overlay) overlay.classList.add('active');
+            if (panel) panel.classList.add('active');
+        }
+        
+        function closeAddListItemPanel() {
+            document.getElementById('addListItemPanel').classList.remove('active');
+            document.getElementById('addListItemPanelOverlay').classList.remove('active');
+        }
+        
+        function populateListDropdown() {
+            const select = document.getElementById('listItemListSelect');
+            let html = '<option value="">Select a list...</option>';
+            
+            lists.forEach(list => {
+                const member = familyMembers.find(m => m.id === list.assignedTo);
+                html += `<option value="${list.id}">${list.name}${member ? ' (' + member.name + ')' : ''}</option>`;
+            });
+            
+            select.innerHTML = html;
+        }
+        
+        function renderListItemProfileGrid() {
+            const grid = document.getElementById('listItemProfileGrid');
+            const listMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+            
+            let html = '';
+            listMembers.forEach(member => {
+                html += `<div class="task-profile-item" onclick="selectListItemProfile('${member.name}')">
+                    <div class="task-profile-avatar" id="list-item-avatar-${member.name}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="task-profile-name">${member.name}</div>
+                </div>`;
+            });
+            
+            // Add "None" option
+            html += `<div class="task-profile-item" onclick="selectListItemProfile(null)">
+                <div class="task-profile-avatar" id="list-item-avatar-none" style="background: #ccc; box-shadow: 0 0 0 5px #ccc80">
+                    ✕
+                </div>
+                <div class="task-profile-name">None</div>
+            </div>`;
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectListItemProfile(profileName) {
+            selectedListItemProfile = profileName;
+            // Update visual selection
+            document.querySelectorAll('#listItemProfileGrid .task-profile-avatar').forEach(avatar => {
+                avatar.classList.remove('selected');
+            });
+            if (profileName) {
+                document.getElementById(`list-item-avatar-${profileName}`).classList.add('selected');
+            } else {
+                document.getElementById('list-item-avatar-none').classList.add('selected');
+            }
+        }
+        
+        function initializeListItemEmojiPicker() {
+            const emojis = ['😊', '😁', '😎', '🤗', '😴', '🤔', '😋', '🥳', '🎉', '🎈', '🎁', '🎂', '🎮', '🎯', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎸', '🎺', '🎷', '📱', '💻', '🖥️', '⌨️', '🖱️', '🖨️', '📷', '📹', '📺', '📻', '☎️', '📞', '📟', '📠', '🔋', '🔌', '💡', '🔦', '🕯️', '🗑️', '🛒', '🎒', '👔', '👗', '👠', '👟', '🥾', '🧦', '🧤', '🧣', '🎩', '👑', '💍', '💎', '🔨', '🔧', '🔩', '🧰', '🧲', '⚙️', '🧪', '🧫', '🧬', '🔬', '🔭', '📡', '💉', '💊', '🩹', '🩺', '🌡️', '🧯', '🪓', '🔪', '🗡️', '⚔️', '🛡️', '🚬', '⚰️', '⚱️', '🏺', '🔮', '📿', '💈', '⚗️', '🔭', '🩸', '🦠', '🧬', '🔬'];
+            
+            const grid = document.getElementById('listItemEmojiPickerGrid');
+            let html = '';
+            emojis.forEach(emoji => {
+                html += `<div class="emoji-item" onclick="selectListItemEmoji('${emoji}')">${emoji}</div>`;
+            });
+            grid.innerHTML = html;
+        }
+        
+        function toggleListItemEmojiPicker(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('listItemEmojiPickerDropdown');
+            const isVisible = dropdown.style.display === 'block';
+            
+            // Close all emoji pickers first
+            document.querySelectorAll('.emoji-picker-dropdown').forEach(picker => {
+                picker.style.display = 'none';
+            });
+            
+            if (!isVisible) {
+                dropdown.style.display = 'block';
+                document.getElementById('listItemEmojiSearchInput').value = '';
+                document.getElementById('listItemEmojiSearchInput').focus();
+                
+                // Add click listener to close when clicking outside
+                setTimeout(() => {
+                    document.addEventListener('click', closeListItemEmojiPicker);
+                }, 10);
+            }
+        }
+        
+        function closeListItemEmojiPicker() {
+            document.getElementById('listItemEmojiPickerDropdown').style.display = 'none';
+            document.removeEventListener('click', closeListItemEmojiPicker);
+        }
+        
+        function selectListItemEmoji(emoji) {
+            currentListItemEmoji = emoji;
+            document.getElementById('listItemEmoji').value = emoji;
+            document.getElementById('listItemEmojiDisplay').textContent = emoji;
+            closeListItemEmojiPicker();
+        }
+        
+        function filterListItemEmojis() {
+            const searchTerm = document.getElementById('listItemEmojiSearchInput').value.toLowerCase();
+            const emojiItems = document.querySelectorAll('#listItemEmojiPickerGrid .emoji-item');
+            
+            emojiItems.forEach(item => {
+                // Simple filter - you could enhance this with emoji names
+                item.style.display = 'flex';
+            });
+        }
+        
+        function saveNewListItem() {
+            const title = document.getElementById('listItemTitle').value.trim();
+            const listId = parseInt(document.getElementById('listItemListSelect').value);
+            
+            if (!title) {
+                alert('Please enter an item name');
+                return;
+            }
+            
+            if (!listId) {
+                alert('Please select a list');
+                return;
+            }
+            
+            const list = lists.find(l => l.id === listId);
+            if (!list) {
+                alert('List not found');
+                return;
+            }
+            
+            // Create new item
+            const newItem = {
+                id: Date.now(),
+                text: title,
+                emoji: currentListItemEmoji || '',
+                assignedTo: selectedListItemProfile,
+                completed: false,
+                section: 'Items' // Default section
+            };
+            
+            list.items.push(newItem);
+            localStorage.setItem('lists', JSON.stringify(lists));
+            
+            closeAddListItemPanel();
+            renderListsColumns();
+        }
+        
         function openEditListPanel(listId) {
             currentEditListId = listId;
             
@@ -1967,6 +2164,12 @@ console.log('Script started loading...');
             else if (currentView === 'week') renderWeekView();
             else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
+        }
+        
+        function toggleShowCompletedChores() {
+            var checkbox = document.getElementById('showCompletedChores');
+            showCompletedChores = checkbox ? checkbox.checked : false;
+            renderChoresView();
         }
         
         function updateFilterButtonState() {
@@ -3032,11 +3235,17 @@ console.log('Script started loading...');
                 });
             }
             
-            const contentArea = document.getElementById('contentArea');
+            var contentArea = document.getElementById('contentArea');
             
             // Hide all floating buttons
             document.getElementById('floatingAddBtn').classList.remove('active');
             document.getElementById('floatingAddTaskBtn').classList.remove('active');
+            
+            // Show/hide chores filter section based on current section
+            var choresFilterSection = document.getElementById('choresFilterSection');
+            if (choresFilterSection) {
+                choresFilterSection.style.display = section === 'chores' ? 'block' : 'none';
+            }
             
             // Show relevant sections based on navigation
             if (section === 'calendar') {
@@ -3667,111 +3876,184 @@ console.log('Script started loading...');
                 
                 // Show routine indicators if person has routines
                 if (memberRoutines.length > 0) {
-                    html += `<div class="routine-indicators">`;
+                    html += '<div class="routine-indicators">';
                     
-                    ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(period => {
-                        const hasRoutine = memberRoutines.some(r => r.period === period);
-                        const isActive = period === currentPeriod;
-                        const isVisible = visiblePeriods[`${member.name}-${period}`] === true;
-                        const icon = period === 'Morning' ? '⛅' : period === 'Afternoon' ? '☀️' : period === 'Evening' ? '🌙' : '🧹';
+                    ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(function(period) {
+                        var periodTasks;
+                        var completedTasks;
+                        var totalTasks;
                         
-                        html += `<div class="routine-indicator ${isActive ? 'active' : ''} ${isVisible ? 'visible' : ''} ${hasRoutine ? 'has-routine' : ''}" 
-                                      onclick="${hasRoutine ? `togglePeriodVisibility('${member.name}', '${period}')` : ''}">
-                            <div class="routine-indicator-icon">${icon}</div>
-                            <div class="routine-indicator-label">${period}</div>
-                        </div>`;
+                        if (period === 'Chores') {
+                            periodTasks = memberChores;
+                            completedTasks = memberChores.filter(function(c) { return c.completed; }).length;
+                            totalTasks = memberChores.length;
+                        } else {
+                            periodTasks = memberRoutines.filter(function(r) { return r.period === period; });
+                            completedTasks = periodTasks.filter(function(r) { return r.completed; }).length;
+                            totalTasks = periodTasks.length;
+                        }
+                        
+                        var hasRoutine = totalTasks > 0;
+                        var isActive = period === currentPeriod;
+                        var isVisible = visiblePeriods[member.name + '-' + period] === true;
+                        var isComplete = totalTasks > 0 && completedTasks === totalTasks;
+                        
+                        var icon;
+                        if (isComplete) {
+                            icon = '✓';
+                        } else if (period === 'Morning') {
+                            icon = '⛅';
+                        } else if (period === 'Afternoon') {
+                            icon = '☀️';
+                        } else if (period === 'Evening') {
+                            icon = '🌙';
+                        } else {
+                            icon = '🧹';
+                        }
+                        
+                        var progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                        var circumference = 2 * 3.14159 * 20;
+                        var dashOffset = circumference * (1 - progressPercent / 100);
+                        
+                        var classes = 'routine-indicator';
+                        if (isActive) classes += ' active';
+                        if (isVisible) classes += ' visible';
+                        if (hasRoutine) classes += ' has-routine';
+                        if (isComplete) classes += ' complete';
+                        
+                        var iconClass = '';
+                        var onclickAttr = hasRoutine ? ('togglePeriodVisibility(\'' + member.name + '\', \'' + period + '\')') : '';
+                        
+                        html += '<div class="' + classes + '" data-period-id="' + member.name + '-' + period + '" onclick="' + onclickAttr + '" style="position: relative;">';
+                        html += '<svg class="routine-indicator-progress" viewBox="0 0 50 50" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg);">';
+                        html += '<circle cx="25" cy="25" r="20" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle>';
+                        html += '<circle cx="25" cy="25" r="20" fill="none" stroke="' + member.color + '" stroke-width="3" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + dashOffset + '" data-final-offset="' + dashOffset + '" data-period-id="' + member.name + '-' + period + '" class="progress-circle"></circle>';
+                        html += '<div class="routine-indicator-icon' + iconClass + '">' + icon + '</div>';
+                        html += '<div class="routine-indicator-label">' + period + '</div>';
+                        html += '</div>';
                     });
                     
-                    html += `</div>`;
+                    html += '</div>';
                 }
                 
                 // Show routines for current period and manually visible periods
-                ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(period => {
-                    const isCurrentPeriod = period === currentPeriod;
-                    const isManuallyVisible = visiblePeriods[`${member.name}-${period}`] === true;
+                ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(function(period) {
+                    var isCurrentPeriod = period === currentPeriod;
+                    var isManuallyVisible = visiblePeriods[member.name + '-' + period] === true;
                     
                     // Show if it's the current period OR manually toggled visible
                     if (isCurrentPeriod || isManuallyVisible) {
-                        const periodRoutines = memberRoutines
-                            .filter(r => r.period === period)
-                            .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-                        
-                        if (periodRoutines.length > 0) {
-                            html += `<div class="routine-section">
-                                <div class="routine-section-title">${period}</div>
-                                <div class="routine-tasks" id="routine-tasks-${member.name}-${period}">`;
+                        if (period === 'Chores') {
+                            // For Chores period, show only actual chores (not routines)
+                            // Filter out completed chores unless showCompletedChores is true
+                            var visibleChores = showCompletedChores ? memberChores : memberChores.filter(function(c) { return !c.completed; });
                             
-                            periodRoutines.forEach((task, index) => {
-                                // Android 8 compatible: use rgba instead of hex alpha
-                                const bgOpacity = task.completed ? 0.5 : 0.19;
-                                const taskBg = hexToRgba(member.color, bgOpacity);
+                            if (visibleChores.length > 0) {
+                                // Sort chores: incomplete first, then completed
+                                var sortedChores = visibleChores.slice().sort(function(a, b) {
+                                    if (a.completed !== b.completed) {
+                                        return a.completed ? 1 : -1;
+                                    }
+                                    return 0;
+                                });
                                 
-                                html += `<div class="routine-task ${task.completed ? 'completed' : ''}" 
-                                              draggable="true"
-                                              data-task-id="${task.id}"
-                                              data-member="${member.name}"
-                                              data-period="${period}"
-                                              data-index="${index}"
-                                              ondragstart="handleRoutineDragStart(event)"
-                                              ondragover="handleRoutineDragOver(event)"
-                                              ondrop="handleRoutineDrop(event)"
-                                              ondragend="handleRoutineDragEnd(event)"
-                                              style="background: ${taskBg}; cursor: move;">
-                                    <div class="routine-task-drag-handle" onclick="event.stopPropagation()">⋮⋮</div>
-                                    <div class="routine-task-icon" onclick="openTaskDetail(${task.id}, 'routine', event)">${task.icon || '✓'}</div>
-                                    <div class="routine-task-content" onclick="openTaskDetail(${task.id}, 'routine', event)">
-                                        <div class="routine-task-title">${task.title}</div>
-                                        ${task.stars ? `<div class="routine-task-stars">⭐ ${task.stars}</div>` : ''}
-                                    </div>
-                                    <div class="chore-item-checkbox ${task.completed ? 'checked' : ''}" 
-                                         style="${task.completed ? `background: ${member.color}; border-color: ${member.color};` : ''}"
-                                         onclick="event.stopPropagation(); toggleRoutine(${task.id})">
-                                        ${task.completed ? '✓' : ''}
-                                    </div>
-                                </div>`;
-                            });
+                                html += '<div class="routine-section">';
+                                html += '<div class="routine-section-title">' + period + '</div>';
+                                html += '<div class="chore-items">';
+                                
+                                sortedChores.forEach(function(chore) {
+                                    var isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
+                                    var daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
+                                    var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
+                                    
+                                    var bgOpacity = chore.completed ? 0.5 : 0.19;
+                                    var choreBg = hexToRgba(member.color, bgOpacity);
+                                    
+                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(' + chore.id + ', \'chore\', event)">';
+                                    if (chore.icon) {
+                                        html += '<div class="chore-item-icon">' + chore.icon + '</div>';
+                                    }
+                                    html += '<div class="chore-item-content">';
+                                    html += '<div class="chore-item-title">' + chore.title + '</div>';
+                                    if (chore.frequency || isLate) {
+                                        html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
+                                    }
+                                    html += '</div>';
+                                    if (chore.stars) {
+                                        html += '<div class="routine-emoji-container">';
+                                        html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
+                                    }
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(' + chore.id + ')">';
+                                    html += chore.completed ? '✓' : '';
+                                    html += '</div>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
+                                
+                                html += '</div></div>';
+                            }
+                        } else {
+                            // For other periods, show only routines
+                            var periodRoutines = memberRoutines
+                                .filter(function(r) { return r.period === period; })
+                                .sort(function(a, b) {
+                                    // First sort by completion status (incomplete first)
+                                    if (a.completed !== b.completed) {
+                                        return a.completed ? 1 : -1;
+                                    }
+                                    // Then by sort order
+                                    return (a.sortOrder || 0) - (b.sortOrder || 0);
+                                });
                             
-                            html += `</div></div>`;
+                            if (periodRoutines.length > 0) {
+                                html += '<div class="routine-section">';
+                                html += '<div class="routine-section-title">' + period + '</div>';
+                                html += '<div class="routine-tasks" id="routine-tasks-' + member.name + '-' + period + '">';
+                                
+                                periodRoutines.forEach(function(task, index) {
+                                    var bgOpacity = task.completed ? 0.5 : 0.19;
+                                    var taskBg = hexToRgba(member.color, bgOpacity);
+                                    
+                                    html += '<div class="routine-task' + (task.completed ? ' completed' : '') + '" draggable="true" data-task-id="' + task.id + '" data-member="' + member.name + '" data-period="' + period + '" data-index="' + index + '" ondragstart="handleRoutineDragStart(event)" ondragover="handleRoutineDragOver(event)" ondrop="handleRoutineDrop(event)" ondragend="handleRoutineDragEnd(event)" style="background: ' + taskBg + '; cursor: move;">';
+                                    html += '<div class="routine-task-icon" onclick="openTaskDetail(' + task.id + ', \'routine\', event)">' + (task.icon || '✓') + '</div>';
+                                    html += '<div class="routine-task-content" onclick="openTaskDetail(' + task.id + ', \'routine\', event)">';
+                                    html += '<div class="routine-task-title">' + task.title + '</div>';
+                                    html += '</div>';
+                                    if (task.stars) {
+                                        html += '<div class="routine-emoji-container">';
+                                        html += '<div class="routine-task-stars">⭐ ' + task.stars + '</div>';
+                                    }
+                                    html += '<div class="chore-item-checkbox' + (task.completed ? ' checked' : '') + '" style="' + (task.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleRoutine(' + task.id + ')">';
+                                    html += task.completed ? '✓' : '';
+                                    html += '</div>';
+                                    html += '</div>';
+                                    html += '</div>';
+                                });
+                                
+                                html += '</div></div>';
+                            }
                         }
                     }
                 });
                 
-                // Show regular chores
-                html += `<div class="chore-items">`;
-                
-                memberChores.forEach(chore => {
-                    const isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
-                    const daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
-                    const lateText = isLate ? (daysLate === 0 ? 'Due today' : `${daysLate} day${daysLate > 1 ? 's' : ''} late`) : '';
-                    
-                    // Android 8 compatible: use rgba instead of hex alpha
-                    const bgOpacity = chore.completed ? 0.5 : 0.19;
-                    const choreBg = hexToRgba(member.color, bgOpacity);
-                    
-                    html += `<div class="chore-item ${chore.completed ? 'completed' : ''}" 
-                                  style="background: ${choreBg}; cursor: pointer;"
-                                  onclick="openTaskDetail(${chore.id}, 'chore', event)">
-                        ${chore.icon ? `<div class="chore-item-icon">${chore.icon}</div>` : ''}
-                        <div class="chore-item-content">
-                            <div class="chore-item-title">${chore.title}</div>
-                            ${chore.frequency || isLate ? 
-                                `<div class="chore-item-subtitle ${isLate ? 'late' : ''}">${isLate ? lateText : chore.frequency}</div>` 
-                                : ''}
-                            ${chore.stars ? `<div class="chore-item-stars">⭐ ${chore.stars}</div>` : ''}
-                        </div>
-                        <div class="chore-item-checkbox ${chore.completed ? 'checked' : ''}" 
-                             style="${chore.completed ? `background: ${member.color}; border-color: ${member.color};` : ''}"
-                             onclick="event.stopPropagation(); toggleChore(${chore.id})">
-                            ${chore.completed ? '✓' : ''}
-                        </div>
-                    </div>`;
-                });
-                
-                html += `</div>
-                </div>`;
+                html += '</div>';
             });
             
             container.innerHTML = html;
+            
+            // Update progress circles smoothly without re-rendering
+            setTimeout(function() {
+                var progressCircles = document.querySelectorAll('.progress-circle');
+                progressCircles.forEach(function(circle) {
+                    var finalOffset = circle.getAttribute('data-final-offset');
+                    var currentOffset = circle.getAttribute('stroke-dashoffset');
+                    
+                    // Only update if value actually changed
+                    if (finalOffset && finalOffset !== currentOffset) {
+                        circle.setAttribute('stroke-dashoffset', finalOffset);
+                    }
+                });
+            }, 10);
         }
         
         function renderRewardsView() {
@@ -4199,9 +4481,11 @@ console.log('Script started loading...');
         }
         
         function togglePeriodVisibility(memberName, period) {
-            const key = `${memberName}-${period}`;
-            // Toggle visibility
+            const key = memberName + '-' + period;
+            // Toggle the visibility state
             visiblePeriods[key] = !visiblePeriods[key];
+            
+            // Re-render the view to reflect the change
             renderChoresView();
         }
         
@@ -4216,11 +4500,17 @@ console.log('Script started loading...');
             renderProfileGrid();
             initializeEmojiPicker();
             
-            // Initialize defaults
+            // Initialize defaults for routine (default type)
             currentTaskType = 'routine';
             selectedRepeatUnit = 'week';
             selectedDays = [4]; // Thursday by default
             selectedTimeOfDay = 'evening';
+            selectedChoreDays = [];
+            selectedChoreRepeatUnit = 'day';
+            
+            // Show/hide appropriate fields (routine by default)
+            document.getElementById('choreFields').style.display = 'none';
+            document.getElementById('routineFields').style.display = 'block';
             
             // Set button states
             document.getElementById('choreTypeBtn').classList.remove('active');
@@ -4233,8 +4523,8 @@ console.log('Script started loading...');
             document.getElementById('timeOfDayAfternoon').classList.remove('active');
             document.getElementById('timeOfDayEvening').classList.add('active');
             
-            // Set day button state
-            document.querySelectorAll('.day-btn-new').forEach(btn => {
+            // Set day button state for routine
+            document.querySelectorAll('#taskRepeatDays .day-btn-new').forEach(btn => {
                 btn.classList.remove('active');
             });
             const thursdayBtn = document.querySelector('.day-btn-new[data-day="4"]');
@@ -5313,11 +5603,65 @@ console.log('Script started loading...');
             document.getElementById('choreTypeBtn').classList.toggle('active', type === 'chore');
             document.getElementById('routineTypeBtn').classList.toggle('active', type === 'routine');
             
-            // Show/hide repeat section based on type
-            document.getElementById('taskRepeatSection').style.display = type === 'chore' ? 'flex' : 'none';
+            // Show/hide appropriate fields
+            document.getElementById('choreFields').style.display = type === 'chore' ? 'block' : 'none';
+            document.getElementById('routineFields').style.display = type === 'routine' ? 'block' : 'none';
+        }
+        
+        // Chore-specific functions
+        let selectedChoreDays = [];
+        let selectedChoreRepeatUnit = 'day';
+        
+        function toggleChoreDate() {
+            const enabled = document.getElementById('taskChoreDate').checked;
+            document.getElementById('taskChoreDateValue').style.display = enabled ? 'block' : 'none';
+            if (enabled && !document.getElementById('taskChoreDateValue').value) {
+                // Set to today by default
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('taskChoreDateValue').value = today;
+            }
+        }
+        
+        function toggleChoreTime() {
+            const enabled = document.getElementById('taskChoreTime').checked;
+            document.getElementById('taskChoreTimeValue').style.display = enabled ? 'block' : 'none';
+        }
+        
+        function toggleChoreRepeat() {
+            const enabled = document.getElementById('taskChoreRepeatToggle').checked;
+            document.getElementById('taskChoreRepeatDetails').style.display = enabled ? 'block' : 'none';
+        }
+        
+        function setChoreRepeatUnit(unit) {
+            selectedChoreRepeatUnit = unit;
+            document.getElementById('choreRepeatDay').classList.toggle('active', unit === 'day');
+            document.getElementById('choreRepeatWeek').classList.toggle('active', unit === 'week');
+            document.getElementById('choreRepeatMonth').classList.toggle('active', unit === 'month');
             
-            // Show/hide stars section based on type (both chores and routines can have stars)
-            document.getElementById('taskStarsSection').style.display = 'flex';
+            // Show/hide days selector based on unit
+            const daysSection = document.getElementById('choreRepeatDays');
+            if (daysSection) {
+                daysSection.style.display = unit === 'week' ? 'block' : 'none';
+            }
+        }
+        
+        function toggleChoreDayNew(dayIndex) {
+            const btn = document.querySelector(`#choreRepeatDays .day-btn-new[data-day="${dayIndex}"]`);
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            
+            const index = selectedChoreDays.indexOf(dayIndex);
+            if (index > -1) {
+                selectedChoreDays.splice(index, 1);
+            } else {
+                selectedChoreDays.push(dayIndex);
+            }
+        }
+        
+        function toggleChoreRepeatsUntil() {
+            const enabled = document.getElementById('choreRepeatsUntil').checked;
+            document.getElementById('choreRepeatsUntilDate').style.display = enabled ? 'block' : 'none';
         }
         
         let selectedRepeatUnit = 'week';
@@ -5366,26 +5710,27 @@ console.log('Script started loading...');
         function saveTaskChore() {
             const title = document.getElementById('taskChoreTitle').value;
             const emoji = document.getElementById('taskChoreEmoji').value;
+            const stars = parseInt(document.getElementById('taskStars').value) || 0;
             
             if (!title || selectedProfiles.length === 0) {
                 alert('Please enter a title and select at least one profile');
                 return;
             }
             
-            // Get repeat details from new structure
-            const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
-            const repeatUnit = selectedRepeatUnit; // Use the global variable
-            const repeatDays = repeatUnit === 'week' ? [...selectedDays] : null;
-            
-            const repeatData = {
-                every: repeatEvery,
-                unit: repeatUnit,
-                days: repeatDays,
-                until: null // No repeat until in new structure
-            };
-            
             selectedProfiles.forEach(profileName => {
                 if (currentTaskType === 'routine') {
+                    // ROUTINE CREATION
+                    const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
+                    const repeatUnit = selectedRepeatUnit;
+                    const repeatDays = repeatUnit === 'week' ? [...selectedDays] : null;
+                    
+                    const repeatData = {
+                        every: repeatEvery,
+                        unit: repeatUnit,
+                        days: repeatDays,
+                        until: null
+                    };
+                    
                     // Use the selected time of day
                     let period = 'Evening'; // Default
                     if (selectedTimeOfDay === 'morning') period = 'Morning';
@@ -5399,27 +5744,48 @@ console.log('Script started loading...');
                         title: title,
                         icon: emoji,
                         completed: false,
-                        stars: 0,
+                        stars: stars,
                         repeat: repeatData
                     };
                     
                     routines.push(newRoutine);
                 } else {
-                    // For chores
-                    const newChore = {
+                    // CHORE CREATION
+                    const hasDate = document.getElementById('taskChoreDate').checked;
+                    const hasTime = document.getElementById('taskChoreTime').checked;
+                    const hasRepeat = document.getElementById('taskChoreRepeatToggle').checked;
+                    
+                    const choreData = {
                         id: Date.now() + Math.random(),
                         member: profileName,
                         title: title,
                         icon: emoji,
-                        frequency: `Every ${repeatEvery} ${repeatUnit}${repeatEvery > 1 ? 's' : ''}`,
-                        dueDate: null,
-                        time: null,
                         completed: false,
-                        stars: 0,
-                        repeat: repeatData
+                        stars: stars,
+                        dueDate: hasDate ? document.getElementById('taskChoreDateValue').value : null,
+                        time: hasTime ? document.getElementById('taskChoreTimeValue').value : null
                     };
                     
-                    chores.push(newChore);
+                    if (hasRepeat) {
+                        const repeatEvery = parseInt(document.getElementById('choreRepeatEvery').value) || 1;
+                        const repeatUnit = selectedChoreRepeatUnit;
+                        const repeatDays = repeatUnit === 'week' ? [...selectedChoreDays] : null;
+                        const hasUntil = document.getElementById('choreRepeatsUntil').checked;
+                        const repeatUntil = hasUntil ? document.getElementById('choreRepeatsUntilDate').value : null;
+                        
+                        choreData.repeat = {
+                            every: repeatEvery,
+                            unit: repeatUnit,
+                            days: repeatDays,
+                            until: repeatUntil
+                        };
+                        
+                        choreData.frequency = `Every ${repeatEvery} ${repeatUnit}${repeatEvery > 1 ? 's' : ''}`;
+                    } else {
+                        choreData.frequency = 'Once';
+                    }
+                    
+                    chores.push(choreData);
                 }
             });
             
@@ -5430,17 +5796,35 @@ console.log('Script started loading...');
             document.getElementById('taskChoreTitle').value = '';
             document.getElementById('taskChoreEmoji').value = '';
             document.getElementById('taskChoreEmojiDisplay').textContent = '';
+            document.getElementById('taskStars').value = '';
             selectedProfiles = [];
             selectedDays = [4]; // Reset to Thursday
+            selectedChoreDays = [];
             selectedRepeatUnit = 'week';
+            selectedChoreRepeatUnit = 'day';
             selectedTimeOfDay = 'evening';
             
-            // Reset buttons to defaults
-            document.querySelectorAll('.day-btn-new').forEach(btn => {
+            // Reset chore toggles
+            document.getElementById('taskChoreDate').checked = false;
+            document.getElementById('taskChoreDateValue').style.display = 'none';
+            document.getElementById('taskChoreTime').checked = false;
+            document.getElementById('taskChoreTimeValue').style.display = 'none';
+            document.getElementById('taskChoreRepeatToggle').checked = false;
+            document.getElementById('taskChoreRepeatDetails').style.display = 'none';
+            document.getElementById('choreRepeatsUntil').checked = false;
+            document.getElementById('choreRepeatsUntilDate').style.display = 'none';
+            
+            // Reset routine day buttons
+            document.querySelectorAll('#taskRepeatDays .day-btn-new').forEach(btn => {
                 btn.classList.remove('active');
             });
-            const thursdayBtn = document.querySelector('.day-btn-new[data-day="4"]');
+            const thursdayBtn = document.querySelector('#taskRepeatDays .day-btn-new[data-day="4"]');
             if (thursdayBtn) thursdayBtn.classList.add('active');
+            
+            // Reset chore day buttons
+            document.querySelectorAll('#choreRepeatDays .day-btn-new').forEach(btn => {
+                btn.classList.remove('active');
+            });
             
             closeModal('taskChoreModal');
             renderChoresView();
@@ -5803,33 +6187,26 @@ console.log('Script started loading...');
             }
         }
         
-        function checkAllTasksComplete(memberName) {
-            console.log(`Checking completion for ${memberName}`);
-            
-            // Check all chores assigned to this person
-            const memberChores = chores.filter(c => c.member === memberName);
-            const completedChores = memberChores.filter(c => c.completed);
-            const allChoresComplete = memberChores.length > 0 && memberChores.length === completedChores.length;
-            
-            // Check all routines assigned to this person
-            const memberRoutines = routines.filter(r => r.member === memberName);
-            const completedRoutines = memberRoutines.filter(r => r.completed);
-            const allRoutinesComplete = memberRoutines.length > 0 && memberRoutines.length === completedRoutines.length;
-            
-            console.log(`${memberName} - Chores: ${completedChores.length}/${memberChores.length}, Routines: ${completedRoutines.length}/${memberRoutines.length}`);
-            
-            // Trigger confetti if all chores complete
-            if (allChoresComplete) {
-                console.log(`🎉 All chores complete for ${memberName}!`);
-                triggerConfetti();
-            }
-            
-            // Also trigger if all routines complete (separate celebration)
-            if (allRoutinesComplete) {
-                console.log(`🎉 All routines complete for ${memberName}!`);
-                triggerConfetti();
-            }
-        }
+function checkAllTasksComplete(memberName) {
+    // 1. Check Chores
+    const memberChores = chores.filter(c => c.member === memberName);
+    const completedChores = memberChores.filter(c => c.completed);
+    // Only celebrate if they HAVE chores and ALL are finished
+    const allChoresComplete = memberChores.length > 0 && 
+                              memberChores.length === completedChores.length;
+
+    // 2. Check Routines
+    const memberRoutines = routines.filter(r => r.member === memberName);
+    const completedRoutines = memberRoutines.filter(r => r.completed);
+    // Only celebrate if they HAVE routines and ALL are finished
+    const allRoutinesComplete = memberRoutines.length > 0 && 
+                                memberRoutines.length === completedRoutines.length;
+
+    // Trigger confetti only if a non-empty section was just finished
+    if (allChoresComplete || allRoutinesComplete) {
+        triggerConfetti();
+    }
+}
         
         function triggerConfetti() {
             console.log('🎉 Confetti function called!');
@@ -6066,7 +6443,8 @@ console.log('Script started loading...');
         
         function handleModalBackdropClick(event, modalId) {
             // Only close if clicking the backdrop (not the modal content)
-            if (event.target.classList.contains('modal')) {
+            if (event.target.classList.contains('modal') || 
+                event.target.classList.contains('task-detail-modal')) {
                 closeModal(modalId);
             }
         }
@@ -6351,7 +6729,7 @@ console.log('Script started loading...');
             if (currentSection === 'rewards') {
                 openRewardModal();
             } else if (currentSection === 'lists') {
-                openAddListPanel();
+                openAddListItemPanel();
             } else if (currentSection === 'recipes') {
                 openAddRecipePanel();
             } else {
@@ -6750,8 +7128,8 @@ console.log('Script started loading...');
             });
         }
 
-        // Auto-fullscreen when page loads
-        function enterFullscreen() {
+       // Auto-fullscreen when page loads
+  /*       function enterFullscreen() {
             const elem = document.documentElement;
             if (elem.requestFullscreen) {
                 elem.requestFullscreen().catch(err => {
@@ -6786,7 +7164,7 @@ console.log('Script started loading...');
                 enterFullscreen();
             }
         }, { once: true });
-
+/*
 /*
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";

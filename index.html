@@ -80,6 +80,13 @@
                         <div id="calendarFilterList">
                             <!-- Filter items will be populated here -->
                         </div>
+                        <div id="choresFilterSection" style="display: none;">
+                            <div class="calendar-filter-divider"></div>
+                            <label class="calendar-filter-item">
+                                <input type="checkbox" id="showCompletedChores" onchange="toggleShowCompletedChores()">
+                                <span>Show Completed</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="today-nav" id="todayNav">
@@ -207,59 +214,172 @@
             
             <!-- Chore/Routine Toggle -->
             <div class="edit-form-group">
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex;">
                     <button class="routine-choice-btn" id="choreTypeBtn" onclick="setTaskType('chore')">Chore</button>
                     <button class="routine-choice-btn active" id="routineTypeBtn" onclick="setTaskType('routine')">Routine</button>
                 </div>
             </div>
             
-            <!-- Every (Repeat frequency) -->
-            <div class="edit-form-group">
-                <div class="edit-toggle-row" style="padding: 10px 0;">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">🔄</span>
-                        <span>Every</span>
+            <!-- CHORE-SPECIFIC FIELDS -->
+            <div id="choreFields" style="display: none;">
+                <!-- Date -->
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">📅</span>
+                            <span>Date</span>
+                        </div>
+                        <label class="edit-toggle-switch">
+                            <input type="checkbox" id="taskChoreDate" onchange="toggleChoreDate()">
+                            <span class="edit-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <input type="date" class="edit-form-input" id="taskChoreDateValue" style="margin-top: 10px; display: none;">
+                </div>
+                
+                <!-- Time -->
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">⏰</span>
+                            <span>Time</span>
+                        </div>
+                        <label class="edit-toggle-switch">
+                            <input type="checkbox" id="taskChoreTime" onchange="toggleChoreTime()">
+                            <span class="edit-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <input type="time" class="edit-form-input" id="taskChoreTimeValue" style="margin-top: 10px; display: none;">
+                </div>
+                
+                <!-- Repeats -->
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">🔄</span>
+                            <span>Repeats</span>
+                        </div>
+                        <label class="edit-toggle-switch">
+                            <input type="checkbox" id="taskChoreRepeatToggle" onchange="toggleChoreRepeat()">
+                            <span class="edit-toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <input type="number" class="routine-number-input" id="taskRepeatEvery" value="1" min="1">
-                    <button class="routine-choice-btn" id="repeatDay" onclick="setRepeatUnit('day')">Day</button>
-                    <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
+                
+                <div id="taskChoreRepeatDetails" style="display: none;">
+                    <!-- Repeat Frequency -->
+                    <div class="edit-form-group">
+                        <div class="edit-toggle-row" style="padding: 10px 0;">
+                            <div class="edit-toggle-label">
+                                <span class="edit-toggle-icon">🔄</span>
+                                <span>Every</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; margin-top: 10px;">
+                            <input type="number" class="routine-number-input" id="choreRepeatEvery" value="1" min="1">
+                            <button class="routine-choice-btn active" id="choreRepeatDay" onclick="setChoreRepeatUnit('day')">Day</button>
+                            <button class="routine-choice-btn" id="choreRepeatWeek" onclick="setChoreRepeatUnit('week')">Week</button>
+                            <button class="routine-choice-btn" id="choreRepeatMonth" onclick="setChoreRepeatUnit('month')">Month</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Days of Week (only shown when repeat unit is week) -->
+                    <div class="edit-form-group" id="choreRepeatDays" style="display: none;">
+                        <div class="edit-toggle-row" style="padding: 10px 0;">
+                            <div class="edit-toggle-label">
+                                <span class="edit-toggle-icon">📅</span>
+                                <span>On</span>
+                            </div>
+                        </div>
+                        <div class="days-selector-new" style="margin-top: 10px;">
+                            <button type="button" class="day-btn-new" data-day="0" onclick="toggleChoreDayNew(0)">Su</button>
+                            <button type="button" class="day-btn-new" data-day="1" onclick="toggleChoreDayNew(1)">Mo</button>
+                            <button type="button" class="day-btn-new" data-day="2" onclick="toggleChoreDayNew(2)">Tu</button>
+                            <button type="button" class="day-btn-new" data-day="3" onclick="toggleChoreDayNew(3)">We</button>
+                            <button type="button" class="day-btn-new" data-day="4" onclick="toggleChoreDayNew(4)">Th</button>
+                            <button type="button" class="day-btn-new" data-day="5" onclick="toggleChoreDayNew(5)">Fr</button>
+                            <button type="button" class="day-btn-new" data-day="6" onclick="toggleChoreDayNew(6)">Sa</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Repeats Until -->
+                    <div class="edit-form-group">
+                        <div class="edit-toggle-row" style="padding: 10px 0;">
+                            <div class="edit-toggle-label">
+                                <span class="edit-toggle-icon">🛑</span>
+                                <span>Repeats Until</span>
+                            </div>
+                            <label class="edit-toggle-switch">
+                                <input type="checkbox" id="choreRepeatsUntil" onchange="toggleChoreRepeatsUntil()">
+                                <span class="edit-toggle-slider"></span>
+                            </label>
+                        </div>
+                        <input type="date" class="edit-form-input" id="choreRepeatsUntilDate" style="margin-top: 10px; display: none;">
+                    </div>
                 </div>
             </div>
             
-            <!-- On (Days of week) -->
-            <div class="edit-form-group" id="taskRepeatDays">
-                <div class="edit-toggle-row" style="padding: 10px 0;">
-                    <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">📅</span>
-                        <span>On</span>
+            <!-- ROUTINE-SPECIFIC FIELDS -->
+            <div id="routineFields">
+                <!-- Every (Repeat frequency) -->
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">🔄</span>
+                            <span>Every</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; margin-top: 10px;">
+                        <input type="number" class="routine-number-input" id="taskRepeatEvery" value="1" min="1">
+                        <button class="routine-choice-btn" id="repeatDay" onclick="setRepeatUnit('day')">Day</button>
+                        <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
                     </div>
                 </div>
-                <div class="days-selector-new" style="margin-top: 10px;">
-                    <button type="button" class="day-btn-new" data-day="0" onclick="toggleDayNew(0)">Su</button>
-                    <button type="button" class="day-btn-new" data-day="1" onclick="toggleDayNew(1)">Mo</button>
-                    <button type="button" class="day-btn-new" data-day="2" onclick="toggleDayNew(2)">Tu</button>
-                    <button type="button" class="day-btn-new" data-day="3" onclick="toggleDayNew(3)">We</button>
-                    <button type="button" class="day-btn-new active" data-day="4" onclick="toggleDayNew(4)">Th</button>
-                    <button type="button" class="day-btn-new" data-day="5" onclick="toggleDayNew(5)">Fr</button>
-                    <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
+                
+                <!-- On (Days of week) -->
+                <div class="edit-form-group" id="taskRepeatDays">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">📅</span>
+                            <span>On</span>
+                        </div>
+                    </div>
+                    <div class="days-selector-new" style="margin-top: 10px;">
+                        <button type="button" class="day-btn-new" data-day="0" onclick="toggleDayNew(0)">Su</button>
+                        <button type="button" class="day-btn-new" data-day="1" onclick="toggleDayNew(1)">Mo</button>
+                        <button type="button" class="day-btn-new" data-day="2" onclick="toggleDayNew(2)">Tu</button>
+                        <button type="button" class="day-btn-new" data-day="3" onclick="toggleDayNew(3)">We</button>
+                        <button type="button" class="day-btn-new active" data-day="4" onclick="toggleDayNew(4)">Th</button>
+                        <button type="button" class="day-btn-new" data-day="5" onclick="toggleDayNew(5)">Fr</button>
+                        <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
+                    </div>
+                </div>
+                
+                <!-- In the (Time of day) -->
+                <div class="edit-form-group">
+                    <div class="edit-toggle-row" style="padding: 10px 0;">
+                        <div class="edit-toggle-label">
+                            <span class="edit-toggle-icon">☀️</span>
+                            <span>In the</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; margin-top: 10px;">
+                        <button class="routine-choice-btn" id="timeOfDayMorning" onclick="setTimeOfDay('morning')">Morning</button>
+                        <button class="routine-choice-btn" id="timeOfDayAfternoon" onclick="setTimeOfDay('afternoon')">Afternoon</button>
+                        <button class="routine-choice-btn active" id="timeOfDayEvening" onclick="setTimeOfDay('evening')">Evening</button>
+                    </div>
                 </div>
             </div>
             
-            <!-- In the (Time of day) -->
+            <!-- Stars (for both chores and routines) -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
-                        <span class="edit-toggle-icon">☀️</span>
-                        <span>In the</span>
+                        <span class="edit-toggle-icon">⭐</span>
+                        <span>Stars</span>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="routine-choice-btn" id="timeOfDayMorning" onclick="setTimeOfDay('morning')">Morning</button>
-                    <button class="routine-choice-btn" id="timeOfDayAfternoon" onclick="setTimeOfDay('afternoon')">Afternoon</button>
-                    <button class="routine-choice-btn active" id="timeOfDayEvening" onclick="setTimeOfDay('evening')">Evening</button>
-                </div>
+                <input type="number" class="edit-form-input" id="taskStars" placeholder="0" min="0" style="margin-top: 10px;">
             </div>
             
             <button class="edit-save-btn" onclick="saveTaskChore()">Add</button>
@@ -531,7 +651,7 @@
             
             <div class="edit-form-group">
                 <label class="edit-form-label">Emoji (Optional)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; align-items: center;">
                     <input type="text" class="edit-form-input" id="editTaskEmoji" placeholder="😊" readonly style="flex: 1;">
                     <button class="task-dropdown-btn" onclick="toggleEditEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
                 </div>
@@ -620,7 +740,7 @@
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Import from URL (Optional)</label>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex;">
                     <input type="url" class="edit-form-input" id="addRecipeURL" placeholder="Paste recipe URL..." style="flex: 1;">
                     <button class="task-dropdown-btn" onclick="importRecipeFromURL()" style="padding: 15px; background: #4A90E2; color: white; border-radius: 8px; font-weight: 600;">Import</button>
                 </div>
@@ -680,6 +800,75 @@
             <div class="task-profile-grid" id="addListProfileGrid"></div>
             
             <button class="edit-save-btn" onclick="saveNewList()">Create List</button>
+        </div>
+    </div>
+    
+    <!-- Add List Item Side Panel -->
+    <div class="edit-panel-overlay" id="addListItemPanelOverlay" onclick="closeAddListItemPanel()"></div>
+    <div class="edit-side-panel" id="addListItemPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeAddListItemPanel()">←</button>
+            <div class="edit-panel-title">Add Item</div>
+        </div>
+        
+        <div class="edit-panel-body">
+            <!-- Title -->
+            <div class="edit-form-group">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">☰</span>
+                        <span>Title</span>
+                    </div>
+                </div>
+                <input type="text" class="edit-form-input" id="listItemTitle" placeholder="Item name" style="margin-top: 10px;">
+            </div>
+            
+            <!-- Emoji -->
+            <div class="edit-form-group emoji-picker-container">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">😊</span>
+                        <span>Emoji (optional)</span>
+                    </div>
+                </div>
+                <div style="position: relative; margin-top: 10px;">
+                    <input type="text" class="edit-form-input" id="listItemEmoji" placeholder="Select emoji" readonly style="color: transparent; text-shadow: 0 0 0 #000; cursor: pointer;" onclick="toggleListItemEmojiPicker(event)">
+                    <span id="listItemEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
+                </div>
+                
+                <div class="emoji-picker-dropdown" id="listItemEmojiPickerDropdown">
+                    <input type="text" class="emoji-search-input" id="listItemEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterListItemEmojis()" onclick="event.stopPropagation()">
+                    <div class="emoji-picker-grid" id="listItemEmojiPickerGrid"></div>
+                </div>
+            </div>
+            
+            <!-- List Selection -->
+            <div class="edit-form-group">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">📋</span>
+                        <span>List</span>
+                    </div>
+                </div>
+                <select class="edit-form-input" id="listItemListSelect" style="margin-top: 10px;">
+                    <option value="">Select a list...</option>
+                </select>
+            </div>
+            
+            <!-- Profile Assignment -->
+            <div class="edit-form-group">
+                <div class="edit-toggle-row" style="padding: 10px 0;">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">👤</span>
+                        <span>Assigned To (optional)</span>
+                    </div>
+                </div>
+                <div class="edit-profile-grid" id="listItemProfileGrid" style="margin-top: 10px;">
+                    <!-- Profiles will be populated here -->
+                </div>
+            </div>
+            
+            <button class="edit-save-btn" onclick="saveNewListItem()">Add Item</button>
         </div>
     </div>
     
@@ -898,7 +1087,7 @@
             
             <div class="edit-form-group">
                 <label class="edit-form-label">Emoji (Optional)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; align-items: center;">
                     <input type="text" class="edit-form-input" id="editRewardEmoji" placeholder="🎁" readonly style="flex: 1;">
                     <button class="task-dropdown-btn" onclick="toggleEditRewardEmojiPicker(event)" style="padding: 15px; font-size: 18px;">▼</button>
                 </div>
