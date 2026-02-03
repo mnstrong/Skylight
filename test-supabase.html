@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .config-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .data-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            background: #f8f9fa;
+        }
+        .step h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔌 Supabase Connection Test</h1>
+        <p>Use this page to test your Supabase setup before integrating it into the main app.</p>
+        
+        <div id="status" class="status loading">
+            ⏳ Initializing...
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Update Configuration</h3>
+            <p>Open <code>supabase-config.js</code> and update these values:</p>
+            <div class="config-box">
+                <div>const SUPABASE_URL = '<span id="currentUrl">YOUR_SUPABASE_URL</span>';</div>
+                <div>const SUPABASE_ANON_KEY = '<span id="currentKey">YOUR_SUPABASE_ANON_KEY</span>';</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test Connection</h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <button onclick="loadFamilyMembers()">Load Family Members</button>
+            <button onclick="addTestTask()">Add Test Task</button>
+        </div>
+
+        <div class="step">
+            <h3>Results:</h3>
+            <div id="results" class="data-display">
+                <em>Click a button above to test...</em>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    
+    <script>
+        // Check if SupabaseAPI is loaded
+        window.addEventListener('load', function() {
+            const statusDiv = document.getElementById('status');
+            
+            if (typeof SupabaseAPI === 'undefined') {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ ERROR: SupabaseAPI not loaded. Make sure supabase-config.js is in the same folder.';
+                return;
+            }
+            
+            // Check if configured
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '⚠️ Please update SUPABASE_URL and SUPABASE_ANON_KEY in supabase-config.js';
+                document.getElementById('currentUrl').style.color = 'red';
+                document.getElementById('currentKey').style.color = 'red';
+            } else {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ SupabaseAPI loaded! Configuration looks good. Click "Test Connection" to verify.';
+                document.getElementById('currentUrl').textContent = SUPABASE_URL;
+                document.getElementById('currentKey').textContent = SUPABASE_ANON_KEY.substring(0, 20) + '...';
+            }
+        });
+
+        function showResult(message, data = null) {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let html = `<strong>[${timestamp}]</strong> ${message}<br>`;
+            
+            if (data) {
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            resultsDiv.innerHTML = html + '<hr>' + resultsDiv.innerHTML;
+        }
+
+        async function testConnection() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = '⏳ Testing connection...';
+            
+            try {
+                const members = await SupabaseAPI.getFamilyMembers();
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `✅ SUCCESS! Connected to Supabase. Found ${members.length} family members.`;
+                showResult(`Connection successful! Found ${members.length} family members:`, members);
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Connection failed. Check console for details.';
+                showResult('ERROR: ' + error.message, error);
+                console.error('Full error:', error);
+            }
+        }
+
+        async function loadFamilyMembers() {
+            try {
+                const members = await SupabaseAPI.getFamilyMembers();
+                showResult('Family Members loaded:', members);
+            } catch (error) {
+                showResult('ERROR loading family members: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function addTestTask() {
+            try {
+                // First get a family member to assign the task to
+                const members = await SupabaseAPI.getFamilyMembers();
+                if (members.length === 0) {
+                    showResult('ERROR: No family members found. Run the SQL schema first.');
+                    return;
+                }
+                
+                const task = {
+                    title: 'Test Task - ' + new Date().toLocaleTimeString(),
+                    description: 'This is a test task created from the test page',
+                    assigned_to: members[0].id,
+                    due_date: new Date().toISOString().split('T')[0],
+                    points: 10,
+                    completed: false
+                };
+                
+                const newTask = await SupabaseAPI.addTask(task);
+                showResult('Task created successfully:', newTask);
+            } catch (error) {
+                showResult('ERROR creating task: ' + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
