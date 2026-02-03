@@ -511,6 +511,15 @@ function startPeriodicRefresh() {
             await loadTasksFromSupabase();
             await loadListsFromSupabase();
             await loadMealPlansFromSupabase();
+            
+            // Force UI refresh if we're on the chores section
+            if (typeof window.renderChoresView === 'function') {
+                console.log('🔄 Refreshing chores view...');
+                window.renderChoresView();
+            } else if (typeof window.renderSection === 'function' && typeof window.currentSection !== 'undefined') {
+                console.log('🔄 Refreshing current section...');
+                window.renderSection(window.currentSection);
+            }
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
