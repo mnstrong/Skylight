@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sync Test - Skylight</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+        .good { background: #d4edda; color: #155724; }
+        .bad { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #45a049; }
+        .chore-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .chore-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔄 Cross-Device Sync Test</h1>
+        <p>This page tests if changes sync across devices.</p>
+        
+        <div id="status" class="status warning">⏳ Initializing...</div>
+        
+        <h2>Current Chores:</h2>
+        <div id="choreList" class="chore-list">Loading...</div>
+        
+        <button onclick="addTestChore()">+ Add Test Chore</button>
+        <button onclick="refreshChores()">🔄 Refresh Now</button>
+        <button onclick="clearAllChores()">🗑️ Clear All (Testing)</button>
+        
+        <div id="instructions" style="margin-top: 30px; padding: 15px; background: #e7f3ff; border-radius: 5px;">
+            <h3>How to Test:</h3>
+            <ol>
+                <li>Open this page on your desktop</li>
+                <li>Click "Add Test Chore"</li>
+                <li>Open the SAME URL on your phone</li>
+                <li>Wait 10 seconds or click "Refresh Now"</li>
+                <li>You should see the chore appear on your phone!</li>
+            </ol>
+            <p><strong>Note:</strong> Automatic refresh happens every 10 seconds.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-sync.js"></script>
+    <script src="auto-sync-wrapper.js"></script>
+
+    <script>
+        let choreRefreshInterval;
+
+        async function init() {
+            const statusDiv = document.getElementById('status');
+            
+            try {
+                // Wait for Supabase to initialize
+                await SupabaseSync.initialize();
+                statusDiv.className = 'status good';
+                statusDiv.textContent = '✅ Connected to Supabase! Changes will sync across devices.';
+                
+                // Display chores
+                displayChores();
+                
+                // Refresh chores every 3 seconds (more frequent for testing)
+                choreRefreshInterval = setInterval(displayChores, 3000);
+                
+            } catch (error) {
+                statusDiv.className = 'status bad';
+                statusDiv.textContent = '❌ Connection failed: ' + error.message;
+            }
+        }
+
+        function displayChores() {
+            const chores = JSON.parse(localStorage.getItem('chores') || '[]');
+            const listDiv = document.getElementById('choreList');
+            
+            if (chores.length === 0) {
+                listDiv.innerHTML = '<p style="color: #999; font-style: italic;">No chores yet. Add one to test syncing!</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = chores.map(chore => `
+                <div class="chore-item ${chore.completed ? 'completed' : ''}">
+                    <strong>${chore.title}</strong>
+                    <br>
+                    <small>👤 ${chore.member} | ⭐ ${chore.stars} points | ID: ${String(chore.id).substring(0, 8)}</small>
+                </div>
+            `).join('');
+        }
+
+        async function addTestChore() {
+            const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            
+            if (familyMembers.length === 0) {
+                alert('No family members found! Please run the main app first to set up family members.');
+                return;
+            }
+            
+            const randomMember = familyMembers[Math.floor(Math.random() * familyMembers.length)];
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const testChore = {
+                id: Date.now(),
+                member: randomMember.name,
+                title: `Test Chore - ${timestamp}`,
+                icon: '🧪',
+                completed: false,
+                stars: Math.floor(Math.random() * 5) + 1,
+                dueDate: new Date().toISOString().split('T')[0],
+                time: null,
+                frequency: 'Once'
+            };
+            
+            let chores = JSON.parse(localStorage.getItem('chores') || '[]');
+            chores.push(testChore);
+            localStorage.setItem('chores', JSON.stringify(chores));
+            
+            displayChores();
+            console.log('✅ Added test chore - should sync to Supabase automatically!');
+        }
+
+        async function refreshChores() {
+            console.log('🔄 Manually refreshing chores...');
+            await SupabaseSync.initialize();
+            displayChores();
+        }
+
+        async function clearAllChores() {
+            if (!confirm('Clear all chores? This is for testing only.')) return;
+            
+            localStorage.setItem('chores', JSON.stringify([]));
+            displayChores();
+            console.log('🗑️ Cleared all chores from localStorage');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

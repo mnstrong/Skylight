@@ -26,6 +26,9 @@ async function initializeSupabaseSync() {
         // Set up real-time listeners
         setupRealtimeListeners();
         
+        // Start periodic refresh to catch changes from other devices
+        startPeriodicRefresh();
+        
         isSupabaseReady = true;
         console.log('✅ Supabase sync ready!');
     } catch (error) {
@@ -58,27 +61,35 @@ async function loadAllDataFromSupabase() {
             console.log('✓ Loaded', members.length, 'family members');
         }
         
-        // Load tasks
+        // Load tasks from Supabase and convert to chores format
         const allTasks = await SupabaseAPI.getTasks();
-        if (allTasks) {
-            const formattedTasks = allTasks.map(t => ({
-                id: t.id,
-                title: t.title,
-                description: t.description,
-                assignedTo: t.assigned_to,
-                dueDate: t.due_date,
-                dueTime: t.due_time,
-                completed: t.completed,
-                completedAt: t.completed_at,
-                priority: t.priority,
-                recurringPattern: t.recurring_pattern,
-                recurringDays: t.recurring_days,
-                points: t.points,
-                category: t.category
-            }));
-            localStorage.setItem('tasks', JSON.stringify(formattedTasks));
-            window.tasks = formattedTasks;
-            console.log('✓ Loaded', allTasks.length, 'tasks');
+        if (allTasks && allTasks.length > 0) {
+            const choresFromSupabase = allTasks.map(t => {
+                // Find member name from ID
+                const member = formattedMembers.find(m => m.id === t.assigned_to);
+                
+                return {
+                    id: t.id,
+                    member: member ? member.name : 'Unknown',
+                    title: t.title,
+                    icon: '📋',
+                    completed: t.completed || false,
+                    stars: t.points || 0,
+                    dueDate: t.due_date,
+                    time: t.due_time,
+                    frequency: t.recurring_pattern ? `Every ${t.recurring_pattern}` : 'Once',
+                    repeat: t.recurring_pattern ? {
+                        every: 1,
+                        unit: 'day',
+                        days: t.recurring_days || null,
+                        until: null
+                    } : null
+                };
+            });
+            
+            localStorage.setItem('chores', JSON.stringify(choresFromSupabase));
+            window.chores = choresFromSupabase;
+            console.log('✓ Loaded', allTasks.length, 'chores from Supabase');
         }
         
         // Load recipes
@@ -396,24 +407,34 @@ function handleListChange(payload) {
 
 async function loadTasksFromSupabase() {
     const allTasks = await SupabaseAPI.getTasks();
-    if (allTasks) {
-        const formattedTasks = allTasks.map(t => ({
-            id: t.id,
-            title: t.title,
-            description: t.description,
-            assignedTo: t.assigned_to,
-            dueDate: t.due_date,
-            dueTime: t.due_time,
-            completed: t.completed,
-            completedAt: t.completed_at,
-            priority: t.priority,
-            recurringPattern: t.recurring_pattern,
-            recurringDays: t.recurring_days,
-            points: t.points,
-            category: t.category
-        }));
-        localStorage.setItem('tasks', JSON.stringify(formattedTasks));
-        window.tasks = formattedTasks;
+    if (allTasks && allTasks.length > 0) {
+        // Get family members for name lookup
+        const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        
+        const choresFromSupabase = allTasks.map(t => {
+            const member = familyMembers.find(m => m.id === t.assigned_to);
+            
+            return {
+                id: t.id,
+                member: member ? member.name : 'Unknown',
+                title: t.title,
+                icon: '📋',
+                completed: t.completed || false,
+                stars: t.points || 0,
+                dueDate: t.due_date,
+                time: t.due_time,
+                frequency: t.recurring_pattern ? `Every ${t.recurring_pattern}` : 'Once',
+                repeat: t.recurring_pattern ? {
+                    every: 1,
+                    unit: 'day',
+                    days: t.recurring_days || null,
+                    until: null
+                } : null
+            };
+        });
+        
+        localStorage.setItem('chores', JSON.stringify(choresFromSupabase));
+        window.chores = choresFromSupabase;
         
         // Refresh UI if on tasks/chores section
         if (typeof renderSection === 'function' && currentSection === 'chores') {
@@ -466,6 +487,36 @@ async function loadListsFromSupabase() {
             renderSection('lists');
         }
     }
+}
+
+// ============================================
+// PERIODIC REFRESH
+// ============================================
+
+// Check for updates every 10 seconds
+let refreshInterval = null;
+
+function startPeriodicRefresh() {
+    if (!syncEnabled) return;
+    
+    // Clear any existing interval
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    
+    // Refresh every 10 seconds
+    refreshInterval = setInterval(async () => {
+        console.log('🔄 Checking for updates from other devices...');
+        try {
+            await loadTasksFromSupabase();
+            await loadListsFromSupabase();
+            await loadMealPlansFromSupabase();
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+        }
+    }, 10000); // 10 seconds
+    
+    console.log('✅ Periodic refresh started (every 10 seconds)');
 }
 
 // ============================================
