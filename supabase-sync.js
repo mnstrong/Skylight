@@ -47,10 +47,11 @@ async function loadAllDataFromSupabase() {
     console.log('📥 Loading data from Supabase...');
     
     try {
-        // Load family members
+        // Load family members FIRST
+        let formattedMembers = [];
         const members = await SupabaseAPI.getFamilyMembers();
         if (members && members.length > 0) {
-            const formattedMembers = members.map(m => ({
+            formattedMembers = members.map(m => ({
                 id: m.id,
                 name: m.name,
                 color: m.color,
@@ -59,6 +60,13 @@ async function loadAllDataFromSupabase() {
             localStorage.setItem('familyMembers', JSON.stringify(formattedMembers));
             window.familyMembers = formattedMembers;
             console.log('✓ Loaded', members.length, 'family members');
+        } else {
+            // Try to get from localStorage if Supabase has none
+            const localMembers = localStorage.getItem('familyMembers');
+            if (localMembers) {
+                formattedMembers = JSON.parse(localMembers);
+                console.log('✓ Using', formattedMembers.length, 'family members from localStorage');
+            }
         }
         
         // Load tasks from Supabase and convert to chores format
