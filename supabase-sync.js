@@ -516,18 +516,16 @@ function startPeriodicRefresh() {
     refreshInterval = setInterval(async () => {
         console.log('🔄 Checking for updates from other devices...');
         try {
+            // Just update the data silently in background
             await loadTasksFromSupabase();
             await loadListsFromSupabase();
             await loadMealPlansFromSupabase();
             
-            // Force UI refresh if we're on the chores section
-            if (typeof window.renderChoresView === 'function') {
-                console.log('🔄 Refreshing chores view...');
-                window.renderChoresView();
-            } else if (typeof window.renderSection === 'function' && typeof window.currentSection !== 'undefined') {
-                console.log('🔄 Refreshing current section...');
-                window.renderSection(window.currentSection);
-            }
+            console.log('✅ Data refreshed from Supabase (refresh page to see changes)');
+            
+            // Don't try to render - let user refresh page manually
+            // This avoids errors when elements don't exist
+            
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
