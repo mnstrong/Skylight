@@ -48,6 +48,9 @@
                     case 'tasks':
                         await syncTasks(data);
                         break;
+                    case 'routines':
+                        await syncRoutines(data);
+                        break;
                     case 'lists':
                         await syncLists(data);
                         break;
@@ -56,6 +59,18 @@
                         break;
                     case 'mealPlan':
                         await syncMealPlan(data);
+                        break;
+                    case 'events':
+                        await syncCalendarEvents(data);
+                        break;
+                    case 'rewards':
+                        await syncRewards(data);
+                        break;
+                    case 'allowances':
+                        await syncAllowanceTransactions(data);
+                        break;
+                    case 'familyMembers':
+                        await syncFamilyMembers(data);
                         break;
                 }
             } catch (error) {
@@ -92,11 +107,7 @@
             
             // Find the member
             const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
-            console.log('🔍 Syncing chore:', chore.title, '| Member:', chore.member);
-            console.log('   Available family members:', familyMembers.map(m => m.name));
-            
             const memberObj = familyMembers.find(m => m.name === chore.member);
-            console.log('   Found member object?', memberObj ? `YES (${memberObj.name})` : 'NO');
             
             // Convert to Supabase format
             const supabaseTask = {
@@ -109,8 +120,6 @@
                 points: chore.stars || 0,
                 category: 'chore'
             };
-            
-            console.log('   Saving with assigned_to:', supabaseTask.assigned_to);
             
             // Add repeat pattern if exists
             if (chore.repeat) {
@@ -215,6 +224,177 @@
                 console.log('✓ Synced meal plan entry');
             } catch (error) {
                 console.error('Error syncing meal:', error);
+            }
+        }
+    }
+    
+    // ============================================
+    // NEW SYNC FUNCTIONS
+    // ============================================
+    
+    let syncedRoutines = new Set();
+    let syncedEvents = new Set();
+    let syncedRewards = new Set();
+    let syncedAllowances = new Set();
+    let syncedMembers = new Set();
+    
+    async function syncRoutines(routines) {
+        if (!Array.isArray(routines)) return;
+        
+        for (const routine of routines) {
+            if (syncedRoutines.has(routine.id)) continue;
+            if (typeof routine.id === 'string' && routine.id.includes('-')) {
+                syncedRoutines.add(routine.id);
+                continue;
+            }
+            
+            const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            const memberObj = familyMembers.find(m => m.name === routine.member);
+            
+            // Convert routine to task format for Supabase
+            const supabaseTask = {
+                title: routine.title,
+                description: `${routine.period} routine`,
+                assigned_to: memberObj ? memberObj.id : null,
+                due_date: null,
+                due_time: null,
+                completed: routine.completed || false,
+                points: routine.stars || 0,
+                recurring_pattern: routine.repeat ? `every_${routine.repeat.every}_${routine.repeat.unit}` : null,
+                recurring_days: routine.repeat && routine.repeat.days ? routine.repeat.days.map(d => {
+                    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    return days[d];
+                }) : null,
+                category: 'routine'
+            };
+            
+            try {
+                await window.SupabaseSync.syncTask(supabaseTask, 'add');
+                syncedRoutines.add(routine.id);
+                console.log('✓ Synced routine:', routine.title);
+            } catch (error) {
+                console.error('Error syncing routine:', error);
+            }
+        }
+    }
+    
+    async function syncCalendarEvents(events) {
+        if (!Array.isArray(events)) return;
+        
+        for (const event of events) {
+            if (syncedEvents.has(event.id)) continue;
+            if (typeof event.id === 'string' && event.id.includes('-')) {
+                syncedEvents.add(event.id);
+                continue;
+            }
+            
+            const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            const memberObj = familyMembers.find(m => m.name === event.member);
+            
+            const supabaseEvent = {
+                title: event.title,
+                description: event.description,
+                start_time: event.start,
+                end_time: event.end,
+                all_day: event.allDay || false,
+                member_id: memberObj ? memberObj.id : null,
+                location: event.location,
+                google_event_id: event.googleEventId || null,
+                calendar_id: event.calendarId || null
+            };
+            
+            try {
+                await window.SupabaseAPI.addCalendarEvent(supabaseEvent);
+                syncedEvents.add(event.id);
+                console.log('✓ Synced calendar event:', event.title);
+            } catch (error) {
+                console.error('Error syncing event:', error);
+            }
+        }
+    }
+    
+    async function syncRewards(rewards) {
+        if (!Array.isArray(rewards)) return;
+        
+        for (const reward of rewards) {
+            if (syncedRewards.has(reward.id)) continue;
+            if (typeof reward.id === 'string' && reward.id.includes('-')) {
+                syncedRewards.add(reward.id);
+                continue;
+            }
+            
+            const supabaseReward = {
+                name: reward.name,
+                description: reward.description,
+                points_cost: reward.cost || reward.pointsCost || 0,
+                icon: reward.icon,
+                available: reward.available !== false
+            };
+            
+            try {
+                await window.SupabaseAPI.addReward(supabaseReward);
+                syncedRewards.add(reward.id);
+                console.log('✓ Synced reward:', reward.name);
+            } catch (error) {
+                console.error('Error syncing reward:', error);
+            }
+        }
+    }
+    
+    async function syncAllowanceTransactions(allowances) {
+        if (!Array.isArray(allowances)) return;
+        
+        for (const allowance of allowances) {
+            if (syncedAllowances.has(allowance.id)) continue;
+            if (typeof allowance.id === 'string' && allowance.id.includes('-')) {
+                syncedAllowances.add(allowance.id);
+                continue;
+            }
+            
+            const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            const memberObj = familyMembers.find(m => m.name === allowance.member);
+            
+            const supabaseTransaction = {
+                member_id: memberObj ? memberObj.id : null,
+                amount: allowance.amount,
+                transaction_type: allowance.type || 'save',
+                description: allowance.description,
+                date: allowance.date || new Date().toISOString()
+            };
+            
+            try {
+                await window.SupabaseAPI.addAllowanceTransaction(supabaseTransaction);
+                syncedAllowances.add(allowance.id);
+                console.log('✓ Synced allowance transaction');
+            } catch (error) {
+                console.error('Error syncing allowance:', error);
+            }
+        }
+    }
+    
+    async function syncFamilyMembers(members) {
+        if (!Array.isArray(members)) return;
+        
+        for (const member of members) {
+            if (syncedMembers.has(member.id)) continue;
+            if (typeof member.id === 'string' && member.id.includes('-')) {
+                syncedMembers.add(member.id);
+                continue;
+            }
+            
+            try {
+                const newMember = await window.SupabaseAPI.addFamilyMember(
+                    member.name,
+                    member.color,
+                    member.avatar_url || member.avatarUrl
+                );
+                if (newMember) {
+                    member.id = newMember.id; // Update local with Supabase ID
+                    syncedMembers.add(newMember.id);
+                    console.log('✓ Synced family member:', member.name);
+                }
+            } catch (error) {
+                console.error('Error syncing family member:', error);
             }
         }
     }

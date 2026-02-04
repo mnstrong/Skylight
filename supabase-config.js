@@ -468,6 +468,64 @@ async function deleteListItem(id) {
 }
 
 // ============================================
+// REWARDS
+// ============================================
+async function getRewards() {
+    const { data, error } = await supabaseClient
+        .from('rewards')
+        .select('*')
+        .order('points_cost');
+    
+    if (error) {
+        console.error('Error fetching rewards:', error);
+        return [];
+    }
+    return data;
+}
+
+async function addReward(reward) {
+    const { data, error} = await supabaseClient
+        .from('rewards')
+        .insert([reward])
+        .select()
+        .single();
+    
+    if (error) {
+        console.error('Error adding reward:', error);
+        return null;
+    }
+    return data;
+}
+
+async function updateReward(id, updates) {
+    const { data, error } = await supabaseClient
+        .from('rewards')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error('Error updating reward:', error);
+        return null;
+    }
+    return data;
+}
+
+async function deleteReward(id) {
+    const { error } = await supabaseClient
+        .from('rewards')
+        .delete()
+        .eq('id', id);
+    
+    if (error) {
+        console.error('Error deleting reward:', error);
+        return false;
+    }
+    return true;
+}
+
+// ============================================
 // ALLOWANCE/MONEY TRACKING
 // ============================================
 async function getAllowanceBalance(memberId) {
@@ -595,6 +653,12 @@ window.SupabaseAPI = {
     addListItem,
     updateListItem,
     deleteListItem,
+    
+    // Rewards
+    getRewards,
+    addReward,
+    updateReward,
+    deleteReward,
     
     // Allowance
     getAllowanceBalance,
