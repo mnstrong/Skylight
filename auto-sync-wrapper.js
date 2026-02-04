@@ -92,7 +92,11 @@
             
             // Find the member
             const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            console.log('🔍 Syncing chore:', chore.title, '| Member:', chore.member);
+            console.log('   Available family members:', familyMembers.map(m => m.name));
+            
             const memberObj = familyMembers.find(m => m.name === chore.member);
+            console.log('   Found member object?', memberObj ? `YES (${memberObj.name})` : 'NO');
             
             // Convert to Supabase format
             const supabaseTask = {
@@ -105,6 +109,8 @@
                 points: chore.stars || 0,
                 category: 'chore'
             };
+            
+            console.log('   Saving with assigned_to:', supabaseTask.assigned_to);
             
             // Add repeat pattern if exists
             if (chore.repeat) {
