@@ -12,8 +12,8 @@
     let isSyncing = false;
     
     // Override localStorage.setItem to auto-sync
-    localStorage.setItem = async function(key, value) {
-        // Call original function first
+    localStorage.setItem = function(key, value) {
+        // Call original function first (synchronous)
         originalSetItem(key, value);
         
         // Don't sync if we're already in a sync operation
@@ -34,32 +34,36 @@
             return;
         }
         
+        // Sync in background (don't await, let it run async)
         isSyncing = true;
         
-        try {
-            // Sync based on what key was saved
-            switch(key) {
-                case 'chores':
-                    await syncChores(data);
-                    break;
-                case 'tasks':
-                    await syncTasks(data);
-                    break;
-                case 'lists':
-                    await syncLists(data);
-                    break;
-                case 'recipes':
-                    await syncRecipes(data);
-                    break;
-                case 'mealPlan':
-                    await syncMealPlan(data);
-                    break;
+        // Run sync in background
+        (async function() {
+            try {
+                // Sync based on what key was saved
+                switch(key) {
+                    case 'chores':
+                        await syncChores(data);
+                        break;
+                    case 'tasks':
+                        await syncTasks(data);
+                        break;
+                    case 'lists':
+                        await syncLists(data);
+                        break;
+                    case 'recipes':
+                        await syncRecipes(data);
+                        break;
+                    case 'mealPlan':
+                        await syncMealPlan(data);
+                        break;
+                }
+            } catch (error) {
+                console.error('Sync error for', key, ':', error);
+            } finally {
+                isSyncing = false;
             }
-        } catch (error) {
-            console.error('Sync error for', key, ':', error);
-        } finally {
-            isSyncing = false;
-        }
+        })();
     };
     
     // ============================================
