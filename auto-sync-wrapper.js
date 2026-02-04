@@ -19,8 +19,9 @@
         // Don't sync if we're already in a sync operation
         if (isSyncing) return;
         
-        // Don't sync if Supabase isn't ready
-        if (!window.SupabaseSync || !window.SupabaseSync.isEnabled()) {
+        // Don't sync if SupabaseSync isn't loaded yet
+        if (!window.SupabaseSync) {
+            console.log('⚠️ SupabaseSync not ready yet, skipping sync');
             return;
         }
         
