@@ -14,7 +14,7 @@ if (!String.prototype.padStart) {
         }
     };
 }
-
+ßS
 if (!Array.prototype.includes) {
     Array.prototype.includes = function(searchElement, fromIndex) {
         if (this == null) {
@@ -424,7 +424,7 @@ let visiblePeriods = {
             
             categoryRecipes.forEach(recipe => {
                 html += `
-                    <div class="recipe-list-item" onclick="selectRecipe(${recipe.id})">
+                    <div class="recipe-list-item" onclick="selectRecipe('${recipe.id}')">
                         <span class="recipe-list-item-name">${recipe.name}</span>
                         <span class="recipe-list-item-menu">⋯</span>
                     </div>
@@ -973,7 +973,7 @@ let visiblePeriods = {
                 filteredRecipes.forEach(recipe => {
                     const isActive = recipe.id === selectedRecipeId;
                     html += `
-                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView(${recipe.id})">
+                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView('${recipe.id}')">
                             <span class="recipe-list-item-name">${recipe.name}</span>
                             <span class="recipe-list-item-menu">⋯</span>
                         </div>
@@ -1005,9 +1005,9 @@ let visiblePeriods = {
                         <div class="recipe-view-category" style="background: ${categoryColor}; color: #000;">${recipe.mealType}</div>
                     </div>
                     <div class="recipe-view-actions">
-                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe(${recipe.id})">Plan Meal</button>
-                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView(${recipe.id})">✏️</button>
-                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView(${recipe.id})">🗑️</button>
+                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe('${recipe.id}')">Plan Meal</button>
+                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView('${recipe.id}')">✏️</button>
+                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView('${recipe.id}')">🗑️</button>
                     </div>
                 </div>
             `;
@@ -1017,7 +1017,7 @@ let visiblePeriods = {
                     <div class="recipe-section">
                         <div class="recipe-section-title">INGREDIENTS</div>
                         <div class="recipe-section-content">${recipe.ingredients}</div>
-                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList(${recipe.id})">
+                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList('${recipe.id}')">
                             🛒 Add to Grocery List
                         </button>
                     </div>
@@ -1213,7 +1213,7 @@ let visiblePeriods = {
                 html += `
                     <button class="family-pill ${activeClass}" 
                             style="background: ${member.color}; color: white;" 
-                            onclick="filterListsByPerson(${member.id})">
+                            onclick="filterListsByPerson('${member.id}')">
                         ${member.emoji} ${member.name}
                     </button>
                 `;
@@ -1253,7 +1253,7 @@ let visiblePeriods = {
                 // Show list card with title and assigned person avatar
                 html += `
                     <div class="list-card">
-                        <div class="list-card-header" onclick="openEditListPanel(${list.id})" style="cursor: pointer;">
+                        <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
                             <div class="list-card-title">${list.name}</div>
                             <div class="list-card-initial" style="background: ${member.color};">${member.name.charAt(0).toUpperCase()}</div>
                         </div>
@@ -1323,7 +1323,7 @@ let visiblePeriods = {
                                  ondrop="handleListItemDrop(event)"
                                  ondragend="handleListItemDragEnd(event)"
                                  style="background: ${itemBg}; cursor: move;">
-                                <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
+                                <div class="list-item-text ${textClass}" onclick="openListItemDetail('${list.id}', '${item.id}')">${item.text}</div>
                                 ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
                                 <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
                             </div>
@@ -1338,7 +1338,7 @@ let visiblePeriods = {
                 });
                 
                 html += `
-                        <div class="list-add-section-btn" onclick="addNewSection(${list.id})">
+                        <div class="list-add-section-btn" onclick="addNewSection('${list.id}')">
                             Add section
                         </div>
                     </div>
@@ -1697,7 +1697,7 @@ let visiblePeriods = {
             
             let html = '';
             listMembers.forEach(member => {
-                html += `<div class="task-profile-item" onclick="selectAddListProfile(${member.id})">
+                html += `<div class="task-profile-item" onclick="selectAddListProfile('${member.id}')">
                     <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
@@ -3762,7 +3762,7 @@ let visiblePeriods = {
                         const progressPercent = Math.min(100, (totalStarsEarned / starsRequired) * 100);
                         const canRedeem = totalStarsEarned >= starsRequired && !reward.redeemed;
                         
-                        html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
+                        html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
                             <div class="reward-icon">${reward.emoji || reward.icon || '🎁'}</div>
                             <div class="reward-title">${reward.title}</div>
                             <div class="reward-progress-container">
@@ -3967,8 +3967,7 @@ let visiblePeriods = {
                                     var bgOpacity = chore.completed ? 0.5 : 0.19;
                                     var choreBg = hexToRgba(member.color, bgOpacity);
                                     
-                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(' + chore.id + ', \'chore\', event)">';
-                                    if (chore.icon) {
+                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)">';                                    if (chore.icon) {
                                         html += '<div class="chore-item-icon">' + chore.icon + '</div>';
                                     }
                                     html += '<div class="chore-item-content">';
@@ -3981,7 +3980,7 @@ let visiblePeriods = {
                                         html += '<div class="routine-emoji-container">';
                                         html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                                     }
-                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(' + chore.id + ')">';
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">';
                                     html += chore.completed ? '✓' : '';
                                     html += '</div>';
                                     html += '</div>';
@@ -4013,15 +4012,15 @@ let visiblePeriods = {
                                     var taskBg = hexToRgba(member.color, bgOpacity);
                                     
                                     html += '<div class="routine-task' + (task.completed ? ' completed' : '') + '" draggable="true" data-task-id="' + task.id + '" data-member="' + member.name + '" data-period="' + period + '" data-index="' + index + '" ondragstart="handleRoutineDragStart(event)" ondragover="handleRoutineDragOver(event)" ondrop="handleRoutineDrop(event)" ondragend="handleRoutineDragEnd(event)" style="background: ' + taskBg + '; cursor: move;">';
-                                    html += '<div class="routine-task-icon" onclick="openTaskDetail(' + task.id + ', \'routine\', event)">' + (task.icon || '✓') + '</div>';
-                                    html += '<div class="routine-task-content" onclick="openTaskDetail(' + task.id + ', \'routine\', event)">';
+                                    html += '<div class="routine-task-icon" onclick="openTaskDetail(\'' + task.id + '\', \'routine\', event)">' + (task.icon || '✓') + '</div>';
+                                    html += '<div class="routine-task-content" onclick="openTaskDetail(\'' + task.id + '\', \'routine\', event)">';
                                     html += '<div class="routine-task-title">' + task.title + '</div>';
                                     html += '</div>';
                                     html += '<div class="routine-emoji-container">';
                                     if (task.stars) {
                                         html += '<div class="routine-task-stars">⭐ ' + task.stars + '</div>';
                                     }
-                                    html += '<div class="chore-item-checkbox' + (task.completed ? ' checked' : '') + '" style="' + (task.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleRoutine(' + task.id + ')">';
+                                    html += '<div class="chore-item-checkbox' + (task.completed ? ' checked' : '') + '" style="' + (task.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleRoutine(\'' + task.id + '\')">';
                                     html += task.completed ? '✓' : '';
                                     html += '</div>';
                                     html += '</div>';
@@ -4093,7 +4092,7 @@ let visiblePeriods = {
                     const progressPercent = (currentStars / reward.starsNeeded) * 100;
                     const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
                     
-                    html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
+                    html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
                         <div class="reward-emoji">${reward.emoji}</div>
                         <div class="reward-title">${reward.title}</div>
                         <div class="reward-progress-container">
