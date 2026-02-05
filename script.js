@@ -14,6 +14,7 @@ if (!String.prototype.padStart) {
         }
     };
 }
+
 if (!Array.prototype.includes) {
     Array.prototype.includes = function(searchElement, fromIndex) {
         if (this == null) {
@@ -5947,28 +5948,77 @@ let visiblePeriods = {
             if (currentEditTaskType === 'chore') {
                 const index = chores.findIndex(c => c.id === currentEditTaskId);
                 if (index > -1) {
+                    const choreToDelete = chores[index];
+                    
                     if (option === 'all' || !chores[index].repeat) {
                         // Delete the entire task
                         chores.splice(index, 1);
+                        
+                        // Sync delete to Supabase
+                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
+                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
+                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
+                            }).catch(err => {
+                                console.error('Error deleting from Supabase:', err);
+                            });
+                        }
                     } else if (option === 'current') {
                         // For now, just mark this instance as deleted
                         // TODO: Implement proper instance tracking
                         chores.splice(index, 1);
+                        
+                        // Sync delete to Supabase
+                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
+                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
+                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
+                            }).catch(err => {
+                                console.error('Error deleting from Supabase:', err);
+                            });
+                        }
                     } else if (option === 'future') {
                         // Delete the task (future instances won't be generated)
                         chores.splice(index, 1);
+                        
+                        // Sync delete to Supabase
+                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
+                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
+                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
+                            }).catch(err => {
+                                console.error('Error deleting from Supabase:', err);
+                            });
+                        }
                     }
                     localStorage.setItem('chores', JSON.stringify(chores));
                 }
             } else {
                 const index = routines.findIndex(r => r.id === currentEditTaskId);
                 if (index > -1) {
+                    const routineToDelete = routines[index];
+                    
                     if (option === 'all' || !routines[index].repeat) {
                         // Delete the entire routine
                         routines.splice(index, 1);
+                        
+                        // Sync delete to Supabase
+                        if (typeof SupabaseAPI !== 'undefined' && routineToDelete.id) {
+                            SupabaseAPI.deleteTask(routineToDelete.id).then(() => {
+                                console.log('✓ Deleted routine from Supabase:', routineToDelete.title);
+                            }).catch(err => {
+                                console.error('Error deleting from Supabase:', err);
+                            });
+                        }
                     } else if (option === 'future') {
                         // Delete the routine (future instances won't be generated)
                         routines.splice(index, 1);
+                        
+                        // Sync delete to Supabase
+                        if (typeof SupabaseAPI !== 'undefined' && routineToDelete.id) {
+                            SupabaseAPI.deleteTask(routineToDelete.id).then(() => {
+                                console.log('✓ Deleted routine from Supabase:', routineToDelete.title);
+                            }).catch(err => {
+                                console.error('Error deleting from Supabase:', err);
+                            });
+                        }
                     }
                     localStorage.setItem('routines', JSON.stringify(routines));
                 }
