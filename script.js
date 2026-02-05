@@ -14,7 +14,6 @@ if (!String.prototype.padStart) {
         }
     };
 }
-ßS
 if (!Array.prototype.includes) {
     Array.prototype.includes = function(searchElement, fromIndex) {
         if (this == null) {
