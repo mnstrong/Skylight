@@ -197,13 +197,13 @@ async function syncTask(task, operation = 'update') {
             const supabaseTask = {
                 title: task.title,
                 description: task.description,
-                assigned_to: task.assignedTo,
-                due_date: task.dueDate,
-                due_time: task.dueTime,
+                assigned_to: task.assigned_to || task.assignedTo,  // Support both formats
+                due_date: task.due_date || task.dueDate,
+                due_time: task.due_time || task.dueTime,
                 completed: task.completed || false,
                 priority: task.priority,
-                recurring_pattern: task.recurringPattern,
-                recurring_days: task.recurringDays,
+                recurring_pattern: task.recurring_pattern || task.recurringPattern,
+                recurring_days: task.recurring_days || task.recurringDays,
                 points: task.points || 0,
                 category: task.category
             };
@@ -217,11 +217,11 @@ async function syncTask(task, operation = 'update') {
             const updates = {
                 title: task.title,
                 description: task.description,
-                assigned_to: task.assignedTo,
-                due_date: task.dueDate,
-                due_time: task.dueTime,
+                assigned_to: task.assigned_to || task.assignedTo,  // Support both formats
+                due_date: task.due_date || task.dueDate,
+                due_time: task.due_time || task.dueTime,
                 completed: task.completed,
-                completed_at: task.completedAt,
+                completed_at: task.completed_at || task.completedAt,
                 priority: task.priority,
                 points: task.points,
                 category: task.category
@@ -520,7 +520,14 @@ function startPeriodicRefresh() {
             await loadListsFromSupabase();
             await loadMealPlansFromSupabase();
             
-            console.log('✅ Data refreshed from Supabase (refresh page to see changes)');
+            // Force UI refresh if we're on the chores section
+            if (typeof window.renderChoresView === 'function') {
+                console.log('🔄 Refreshing chores view...');
+                window.renderChoresView();
+            } else if (typeof window.renderSection === 'function' && typeof window.currentSection !== 'undefined') {
+                console.log('🔄 Refreshing current section...');
+                window.renderSection(window.currentSection);
+            }
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
