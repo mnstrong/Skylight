@@ -6738,6 +6738,56 @@ function checkAllTasksComplete(memberName) {
             });
         }
 
+        function showEventDetails(eventId) {
+            // Find the event
+            const event = events.find(e => e.id == eventId);
+            if (!event) {
+                console.error('Event not found:', eventId);
+                return;
+            }
+            
+            // Populate the detail panel
+            document.getElementById('eventDetailTitle').textContent = event.title || 'Event';
+            
+            // Format date and time
+            const startDate = new Date(event.date + 'T' + (event.time || '00:00'));
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let dateTimeText = startDate.toLocaleDateString('en-US', dateOptions);
+            
+            if (event.time) {
+                const timeOptions = { hour: 'numeric', minute: '2-digit' };
+                dateTimeText += ' at ' + startDate.toLocaleTimeString('en-US', timeOptions);
+                
+                if (event.endTime) {
+                    const endDate = new Date(event.endDate || event.date + 'T' + event.endTime);
+                    dateTimeText += ' - ' + endDate.toLocaleTimeString('en-US', timeOptions);
+                }
+            } else {
+                dateTimeText += ' (All day)';
+            }
+            
+            document.getElementById('eventDetailDateTime').textContent = dateTimeText;
+            
+            // Show/hide reminder row (if needed)
+            const reminderRow = document.getElementById('eventDetailReminderRow');
+            if (reminderRow) {
+                reminderRow.style.display = 'none'; // Hide for now
+            }
+            
+            // Show the panel
+            document.getElementById('eventDetailPanelOverlay').classList.add('active');
+            document.getElementById('eventDetailPanel').classList.add('active');
+            
+            // Store current event ID for editing/deleting
+            window.currentEventDetailId = eventId;
+        }
+        
+        function closeEventDetailPanel() {
+            document.getElementById('eventDetailPanelOverlay').classList.remove('active');
+            document.getElementById('eventDetailPanel').classList.remove('active');
+            window.currentEventDetailId = null;
+        }
+
         function saveTask() {
             const task = {
                 id: Date.now(),
