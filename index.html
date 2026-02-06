@@ -1439,5 +1439,281 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="auto-sync-wrapper.js"></script>
 <script src="script.js"></script>
 <script src="supabase-init.js"></script>
+<!-- ============================================
+     MOBILE HOME PAGE
+     Add this section to your index.html body
+     ============================================ -->
+
+<!-- Mobile Header (fixed top) -->
+
+<div class="mobile-header">
+    <div class="mobile-header-back" onclick="window.history.back()">
+        ←
+    </div>
+    <div class="mobile-header-title">strongcalendar23</div>
+    <div class="mobile-header-profile" onclick="openProfileSettings()">
+        👤
+    </div>
+</div>
+
+<!-- Mobile Home Content -->
+
+<div class="mobile-home" id="mobileHome" style="display: none;">
+
+```
+<!-- Icon Navigation Grid -->
+<div class="mobile-icon-grid">
+    
+    <!-- Calendar -->
+    <div class="mobile-icon-item" onclick="switchSection('calendar'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-calendar">
+            📅
+        </div>
+        <div class="mobile-icon-label">Calendar</div>
+    </div>
+    
+    <!-- Tasks -->
+    <div class="mobile-icon-item" onclick="switchSection('chores'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-tasks">
+            ✓
+        </div>
+        <div class="mobile-icon-label">Tasks</div>
+    </div>
+    
+    <!-- Rewards -->
+    <div class="mobile-icon-item" onclick="switchSection('rewards'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-rewards">
+            ⭐
+            <div class="mobile-icon-badge">+</div>
+        </div>
+        <div class="mobile-icon-label">Rewards</div>
+    </div>
+    
+    <!-- Lists -->
+    <div class="mobile-icon-item" onclick="switchSection('lists'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-lists">
+            📝
+        </div>
+        <div class="mobile-icon-label">Lists</div>
+    </div>
+    
+    <!-- Meals -->
+    <div class="mobile-icon-item" onclick="switchSection('meals'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-meals">
+            🍴
+            <div class="mobile-icon-badge">+</div>
+        </div>
+        <div class="mobile-icon-label">Meals</div>
+    </div>
+    
+    <!-- Recipes -->
+    <div class="mobile-icon-item" onclick="switchSection('recipes'); hideMobileHome();">
+        <div class="mobile-icon-circle mobile-icon-recipes">
+            📖
+            <div class="mobile-icon-badge">+</div>
+        </div>
+        <div class="mobile-icon-label">Recipes</div>
+    </div>
+    
+    <!-- Photos -->
+    <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
+        <div class="mobile-icon-circle mobile-icon-photos">
+            🖼️
+        </div>
+        <div class="mobile-icon-label">Photos</div>
+    </div>
+    
+    <!-- Profiles -->
+    <div class="mobile-icon-item" onclick="openProfileSettings()">
+        <div class="mobile-icon-circle mobile-icon-profiles">
+            👥
+        </div>
+        <div class="mobile-icon-label">Profiles</div>
+    </div>
+    
+    <!-- Sidekick (optional - remove if you don't want it) -->
+    <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
+        <div class="mobile-icon-circle mobile-icon-sidekick">
+            ✨
+            <div class="mobile-icon-badge">+</div>
+        </div>
+        <div class="mobile-icon-label">Sidekick</div>
+    </div>
+    
+</div>
+
+<!-- Today's Events Card -->
+<div class="mobile-date-card" id="mobileTodayCard">
+    <div class="mobile-date-title">
+        <span id="mobileDateTitle">Loading...</span>
+    </div>
+    <div class="mobile-date-subtitle" id="mobileDateEvents">
+        No upcoming events today 😌
+    </div>
+</div>
+
+<!-- Device Activation Card (optional - can be hidden after activation) -->
+<div class="mobile-device-card" style="display: none;" id="mobileDeviceCard">
+    <div class="mobile-device-title">Skylight is better with a device!</div>
+    <div class="mobile-device-buttons">
+        <button class="mobile-device-btn" onclick="window.open('https://www.skylightframe.com', '_blank')">
+            Shop Skylight
+        </button>
+        <button class="mobile-device-btn" onclick="alert('Activation coming soon!')">
+            Activate Device
+        </button>
+    </div>
+</div>
+```
+
+</div>
+
+<!-- Mobile Bottom Navigation -->
+
+<div class="mobile-bottom-nav" id="mobileBottomNav" style="display: none;">
+
+```
+<div class="mobile-nav-item" onclick="showMobileHome()" id="navHome">
+    <div class="mobile-nav-icon">🏠</div>
+    <div class="mobile-nav-label">Home</div>
+</div>
+
+<div class="mobile-nav-item" onclick="switchSection('calendar'); hideMobileHome();" id="navCalendar">
+    <div class="mobile-nav-icon">📅</div>
+    <div class="mobile-nav-label">Calendar</div>
+</div>
+
+<div class="mobile-nav-item" onclick="switchSection('chores'); hideMobileHome();" id="navTasks">
+    <div class="mobile-nav-icon">✓</div>
+    <div class="mobile-nav-label">Tasks</div>
+</div>
+
+<div class="mobile-nav-item" onclick="switchSection('lists'); hideMobileHome();" id="navLists">
+    <div class="mobile-nav-icon">📝</div>
+    <div class="mobile-nav-label">Lists</div>
+</div>
+
+<div class="mobile-nav-item" onclick="switchSection('rewards'); hideMobileHome();" id="navRewards">
+    <div class="mobile-nav-icon">⭐</div>
+    <div class="mobile-nav-label">Rewards</div>
+</div>
+```
+
+</div>
+
+<!-- Mobile JavaScript Functions -->
+
+<script>
+    // Initialize mobile view
+    function initMobileView() {
+        if (window.innerWidth <= 768) {
+            showMobileHome();
+            updateMobileDateCard();
+        }
+    }
+    
+    // Show mobile home page
+    function showMobileHome() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('mobileHome').style.display = 'block';
+            document.getElementById('mobileBottomNav').style.display = 'flex';
+            
+            // Hide all content sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Update active nav
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById('navHome').classList.add('active');
+            
+            updateMobileDateCard();
+        }
+    }
+    
+    // Hide mobile home page
+    function hideMobileHome() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('mobileHome').style.display = 'none';
+        }
+    }
+    
+    // Update mobile date card with today's events
+    function updateMobileDateCard() {
+        const today = new Date();
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        const dateStr = today.toLocaleDateString('en-US', options);
+        
+        const titleElement = document.getElementById('mobileDateTitle');
+        if (titleElement) {
+            titleElement.textContent = dateStr;
+        }
+        
+        // Get today's events
+        const todayStr = today.toISOString().split('T')[0];
+        const allEvents = getAllEvents();
+        const todayEvents = allEvents.filter(event => isEventOnDate(event, todayStr));
+        
+        const eventsElement = document.getElementById('mobileDateEvents');
+        if (eventsElement) {
+            if (todayEvents.length === 0) {
+                eventsElement.textContent = 'No upcoming events today 😌';
+            } else if (todayEvents.length === 1) {
+                eventsElement.textContent = `1 event today`;
+            } else {
+                eventsElement.textContent = `${todayEvents.length} events today`;
+            }
+        }
+    }
+    
+    // Override switchSection to update mobile nav
+    const originalSwitchSection = switchSection;
+    switchSection = function(section) {
+        originalSwitchSection(section);
+        
+        if (window.innerWidth <= 768) {
+            // Update bottom nav active state
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const navMap = {
+                'calendar': 'navCalendar',
+                'chores': 'navTasks',
+                'lists': 'navLists',
+                'rewards': 'navRewards'
+            };
+            
+            const navId = navMap[section];
+            if (navId) {
+                document.getElementById(navId).classList.add('active');
+            }
+        }
+    };
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('mobileBottomNav').style.display = 'flex';
+        } else {
+            document.getElementById('mobileHome').style.display = 'none';
+            document.getElementById('mobileBottomNav').style.display = 'none';
+        }
+    });
+    
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileView);
+    } else {
+        initMobileView();
+    }
+    
+    // Profile settings function (placeholder)
+    function openProfileSettings() {
+        alert('Profile settings coming soon!');
+    }
+</script>
 </body>
 </html>
