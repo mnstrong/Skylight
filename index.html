@@ -24,39 +24,39 @@
 <body>
     <div class="container">
         <div class="nav-sidebar">
-            <div class="nav-item active" onclick="switchSection('calendar')">
+            <a href="#/calendar" class="nav-item active">
                 <div class="nav-icon icon-calendar"></div>
                 <div>Calendar</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('chores')">
+            </a>
+            <a href="#/chores" class="nav-item">
                 <div class="nav-icon icon-tasks"></div>
                 <div>Chores</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('rewards')">
+            </a>
+            <a href="#/rewards" class="nav-item">
                 <div class="nav-icon icon-rewards"></div>
                 <div>Rewards</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('meals')">
+            </a>
+            <a href="#/meals" class="nav-item">
                 <div class="nav-icon icon-meals"></div>
                 <div>Meals</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('allowance')">
+            </a>
+            <a href="#/allowance" class="nav-item">
                 <div class="nav-icon icon-allowance"></div>
                 <div>Allowance</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('recipes')">
+            </a>
+            <a href="#/recipes" class="nav-item">
                 <div class="nav-icon icon-recipes"></div>
                 <div>Recipes</div>
-            </div>
-            <div class="nav-item" onclick="switchSection('lists')">
+            </a>
+            <a href="#/lists" class="nav-item">
                 <div class="nav-icon icon-lists"></div>
                 <div>Lists</div>
-            </div>
+            </a>
             <div style="flex: 1;"></div>
-            <div class="nav-item" onclick="switchSection('timer')">
+            <a href="#/timer" class="nav-item">
                 <div class="nav-icon" style="font-size: 28px;">⏱️</div>
                 <div>Timer</div>
-            </div>
+            </a>
         </div>
 
         <div class="header">
@@ -1337,6 +1337,34 @@
     </div>
 </div>
 
+<!-- Mobile Calendar Navigation (shows only on calendar view) -->
+<div class="mobile-calendar-nav" id="mobileCalendarNav">
+    <div class="mobile-calendar-nav-row">
+        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(-1)">
+            <span>←</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="goToToday()">
+            <span>📅</span>
+            <span style="font-size: 11px;">Today</span>
+        </button>
+        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(1)">
+            <span>→</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="switchView('week')">
+            <span>📊</span>
+            <span style="font-size: 11px;">Week</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="toggleCalendarFilter()">
+            <span>🔍</span>
+            <span style="font-size: 11px;">Filter</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')">
+            <span>🔎</span>
+            <span style="font-size: 11px;">Search</span>
+        </button>
+    </div>
+</div>
+
 <!-- Mobile Home Page (Icon Grid Navigation) -->
 <div class="mobile-home" id="mobileHome">
     
@@ -1430,19 +1458,6 @@
         </div>
     </div>
     
-    <!-- Device Activation Card -->
-    <div class="mobile-device-card">
-        <div class="mobile-device-title">Skylight is better with a device!</div>
-        <div class="mobile-device-buttons">
-            <button class="mobile-device-btn" onclick="window.open('https://www.skylightframe.com', '_blank')">
-                Shop Skylight
-            </button>
-            <button class="mobile-device-btn" onclick="alert('Device activation coming soon!')">
-                Activate Device
-            </button>
-        </div>
-    </div>
-    
 </div>
 
 <!-- Mobile Navigation JavaScript -->
@@ -1453,7 +1468,8 @@ let currentMobileSection = 'home';
 // Initialize mobile view on load
 function initMobile() {
     if (window.innerWidth <= 768) {
-        showMobileHome();
+        // Initialize hash routing
+        handleHashChange();
         updateMobileTodayCard();
     }
 }
@@ -1463,6 +1479,7 @@ function showMobileHome() {
     if (window.innerWidth > 768) return;
     
     document.body.classList.remove('viewing-section');
+    document.body.classList.remove('calendar-view');
     currentMobileSection = 'home';
     
     // Show home
@@ -1485,45 +1502,103 @@ function showMobileHome() {
 // Navigate to a section
 function goToSection(sectionName) {
     if (window.innerWidth > 768) {
-        // Desktop: use existing navigation
-        if (typeof switchSection === 'function') {
-            switchSection(sectionName);
+        // Desktop: use hash navigation
+        window.location.hash = '#/' + sectionName;
+        return;
+    }
+    
+    // Mobile: update hash to trigger navigation
+    window.location.hash = '#/' + sectionName;
+}
+
+// Handle hash change for routing
+function handleHashChange() {
+    const hash = window.location.hash;
+    
+    if (window.innerWidth > 768) {
+        // Desktop: use hash for navigation
+        if (hash && hash.startsWith('#/')) {
+            const section = hash.substring(2);
+            if (typeof switchSection === 'function') {
+                switchSection(section);
+            }
+        } else if (!hash || hash === '#/' || hash === '#/home') {
+            // Default to calendar
+            if (typeof switchSection === 'function') {
+                switchSection('calendar');
+            }
         }
         return;
     }
     
-    // Mobile: show section with back button
-    document.body.classList.add('viewing-section');
-    currentMobileSection = sectionName;
-    
-    // Hide home
-    const homeEl = document.getElementById('mobileHome');
-    if (homeEl) homeEl.style.display = 'none';
-    
-    // Show back button
-    document.getElementById('mobileBackBtn').style.display = 'block';
-    document.getElementById('mobileHomeIndicator').style.display = 'none';
-    
-    // Update header title
-    const titles = {
-        'calendar': 'Feb 1 - Feb 7',
-        'chores': 'Thu, Feb 5',
-        'rewards': 'Rewards',
-        'lists': 'Lists',
-        'meals': 'Meals',
-        'recipes': 'Recipes'
-    };
-    document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
-    
-    // Use existing switchSection function
-    if (typeof switchSection === 'function') {
-        switchSection(sectionName);
+    // Mobile: show section or home
+    if (!hash || hash === '#/' || hash === '#/home') {
+        showMobileHome();
+    } else if (hash.startsWith('#/')) {
+        const sectionName = hash.substring(2);
+        
+        // Mobile: show section with back button
+        document.body.classList.add('viewing-section');
+        
+        // Add calendar-view class if viewing calendar
+        if (sectionName === 'calendar') {
+            document.body.classList.add('calendar-view');
+        } else {
+            document.body.classList.remove('calendar-view');
+        }
+        
+        currentMobileSection = sectionName;
+        
+        // Hide home
+        const homeEl = document.getElementById('mobileHome');
+        if (homeEl) homeEl.style.display = 'none';
+        
+        // Show back button
+        document.getElementById('mobileBackBtn').style.display = 'block';
+        document.getElementById('mobileHomeIndicator').style.display = 'none';
+        
+        // Update header title
+        const titles = {
+            'calendar': getWeekRangeTitle(),
+            'chores': 'Thu, Feb 5',
+            'rewards': 'Rewards',
+            'lists': 'Lists',
+            'meals': 'Meals',
+            'recipes': 'Recipes'
+        };
+        document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
+        
+        // Use existing switchSection function
+        if (typeof switchSection === 'function') {
+            switchSection(sectionName);
+        }
     }
 }
 
 // Go back to mobile home
 function goToMobileHome() {
-    showMobileHome();
+    window.location.hash = '#/home';
+}
+
+// Listen for hash changes
+window.addEventListener('hashchange', handleHashChange);
+
+// Helper function to get week range title
+function getWeekRangeTitle() {
+    const today = new Date();
+    const weekStart = new Date(today);
+    const day = weekStart.getDay();
+    const diff = weekStart.getDate() - day; // Sunday is 0
+    weekStart.setDate(diff);
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    
+    const options = { month: 'short', day: 'numeric' };
+    const startStr = weekStart.toLocaleDateString('en-US', options);
+    const endStr = weekEnd.toLocaleDateString('en-US', options);
+    
+    return `${startStr} - ${endStr}`;
 }
 
 // Update today's card with events

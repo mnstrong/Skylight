@@ -424,7 +424,7 @@ let visiblePeriods = {
             
             categoryRecipes.forEach(recipe => {
                 html += `
-                    <div class="recipe-list-item" onclick="selectRecipe('${recipe.id}')">
+                    <div class="recipe-list-item" onclick="selectRecipe(${recipe.id})">
                         <span class="recipe-list-item-name">${recipe.name}</span>
                         <span class="recipe-list-item-menu">⋯</span>
                     </div>
@@ -973,7 +973,7 @@ let visiblePeriods = {
                 filteredRecipes.forEach(recipe => {
                     const isActive = recipe.id === selectedRecipeId;
                     html += `
-                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView('${recipe.id}')">
+                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView(${recipe.id})">
                             <span class="recipe-list-item-name">${recipe.name}</span>
                             <span class="recipe-list-item-menu">⋯</span>
                         </div>
@@ -1005,9 +1005,9 @@ let visiblePeriods = {
                         <div class="recipe-view-category" style="background: ${categoryColor}; color: #000;">${recipe.mealType}</div>
                     </div>
                     <div class="recipe-view-actions">
-                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe('${recipe.id}')">Plan Meal</button>
-                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView('${recipe.id}')">✏️</button>
-                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView('${recipe.id}')">🗑️</button>
+                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe(${recipe.id})">Plan Meal</button>
+                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView(${recipe.id})">✏️</button>
+                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView(${recipe.id})">🗑️</button>
                     </div>
                 </div>
             `;
@@ -1017,7 +1017,7 @@ let visiblePeriods = {
                     <div class="recipe-section">
                         <div class="recipe-section-title">INGREDIENTS</div>
                         <div class="recipe-section-content">${recipe.ingredients}</div>
-                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList('${recipe.id}')">
+                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList(${recipe.id})">
                             🛒 Add to Grocery List
                         </button>
                     </div>
@@ -1213,7 +1213,7 @@ let visiblePeriods = {
                 html += `
                     <button class="family-pill ${activeClass}" 
                             style="background: ${member.color}; color: white;" 
-                            onclick="filterListsByPerson('${member.id}')">
+                            onclick="filterListsByPerson(${member.id})">
                         ${member.emoji} ${member.name}
                     </button>
                 `;
@@ -1253,7 +1253,7 @@ let visiblePeriods = {
                 // Show list card with title and assigned person avatar
                 html += `
                     <div class="list-card">
-                        <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
+                        <div class="list-card-header" onclick="openEditListPanel(${list.id})" style="cursor: pointer;">
                             <div class="list-card-title">${list.name}</div>
                             <div class="list-card-initial" style="background: ${member.color};">${member.name.charAt(0).toUpperCase()}</div>
                         </div>
@@ -1323,7 +1323,7 @@ let visiblePeriods = {
                                  ondrop="handleListItemDrop(event)"
                                  ondragend="handleListItemDragEnd(event)"
                                  style="background: ${itemBg}; cursor: move;">
-                                <div class="list-item-text ${textClass}" onclick="openListItemDetail('${list.id}', '${item.id}')">${item.text}</div>
+                                <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
                                 ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
                                 <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
                             </div>
@@ -1338,7 +1338,7 @@ let visiblePeriods = {
                 });
                 
                 html += `
-                        <div class="list-add-section-btn" onclick="addNewSection('${list.id}')">
+                        <div class="list-add-section-btn" onclick="addNewSection(${list.id})">
                             Add section
                         </div>
                     </div>
@@ -1697,7 +1697,7 @@ let visiblePeriods = {
             
             let html = '';
             listMembers.forEach(member => {
-                html += `<div class="task-profile-item" onclick="selectAddListProfile('${member.id}')">
+                html += `<div class="task-profile-item" onclick="selectAddListProfile(${member.id})">
                     <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
@@ -2416,7 +2416,28 @@ let visiblePeriods = {
                 initializeSampleRewards();
             }
             
-            switchSection('calendar');
+            // Handle hash-based routing on desktop
+            if (window.innerWidth > 768) {
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#/')) {
+                    const section = hash.substring(2);
+                    switchSection(section);
+                } else {
+                    // Default to calendar
+                    window.location.hash = '#/calendar';
+                    switchSection('calendar');
+                }
+            } else {
+                // Mobile: don't set a default hash, let mobile home show
+                // The initMobile() function will handle routing
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#/') && hash !== '#/home') {
+                    // If there's a hash for a section, initialize that section
+                    switchSection(hash.substring(2));
+                }
+                // Otherwise mobile home will be shown by initMobile()
+            }
+            
             setInterval(updateDateTime, 1000);
             setInterval(updateWeather, 1800000); // Update every 30 minutes
             
@@ -2552,107 +2573,45 @@ let visiblePeriods = {
         // Simple initialization - uses Cloudflare Worker (keeps private key secure!)
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                console.log('🔑 Using Cloudflare Worker for Google Calendar');
-                isGoogleConnected = true;
-                loadGoogleCalendarEvents();
+                if (typeof GoogleCalendar !== 'undefined') {
+                    console.log('Initializing Google Calendar OAuth...');
+                    GoogleCalendar.init();
+                } else {
+                    console.warn('Google Calendar OAuth module not loaded');
+                }
             }, 500);
         });
 
         function connectGoogleCalendar() {
-            // Reload calendar events
-            console.log('Reloading calendar from worker...');
-            loadGoogleCalendarEvents();
+            if (typeof GoogleCalendar !== 'undefined') {
+                GoogleCalendar.connect();
+            } else {
+                console.error('Google Calendar OAuth module not loaded');
+            }
         }
 
         async function loadGoogleCalendarEvents() {
-            try {
-                console.log('📅 Loading Google Calendar events via Cloudflare Worker...');
-                googleCalendarEvents = [];
+            // This function is now handled by GoogleCalendar.init() and GoogleCalendar.loadEvents()
+            // Events are automatically loaded when connected
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                await GoogleCalendar.loadEvents();
                 
-                // Load events from 1 month ago to 2 months in the future to cover all views
-                const timeMin = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString();
-                const timeMax = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
-                
-                // Call Cloudflare Worker (it handles authentication securely)
-                const url = `${CALENDAR_WORKER_URL}?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`;
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Worker Error:', response.status, errorText);
-                    throw new Error(`Worker request failed: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const events = data.items || [];
-                
-                console.log(`✅ Loaded ${events.length} events from Google Calendar`);
-                console.log('📋 Processing events with family members:', familyMembers.map(m => `${m.name} (${m.color})`));
-                
-                events.forEach(event => {
-                    const start = event.start.dateTime || event.start.date;
-                    const startDate = new Date(start);
-                    const title = event.summary;
-                    
-                    // Parse end date for multi-day events
-                    const end = event.end.dateTime || event.end.date;
-                    const endDate = new Date(end);
-                    
-                    // For all-day events, Google Calendar's end date is exclusive (the day after)
-                    // So we need to subtract one day for all-day events
-                    let finalEndDate = endDate.toISOString().split('T')[0];
-                    if (event.end.date && !event.end.dateTime) {
-                        // All-day event - subtract one day from end
-                        const adjustedEnd = new Date(endDate);
-                        adjustedEnd.setDate(adjustedEnd.getDate() - 1);
-                        finalEndDate = adjustedEnd.toISOString().split('T')[0];
-                    }
-                    
-                    console.log(`\n📌 Processing: "${title}"`);
-                    console.log(`   Start: ${startDate.toISOString().split('T')[0]} | End: ${finalEndDate}`);
-                    
-                    // Try to auto-assign based on title
-                    let assignedMember = autoAssignEventMember(title);
-                    console.log(`   Result: member="${assignedMember}"`);
-                    
-                    const newEvent = {
-                        id: event.id + '_gcal',
-                        title: title,
-                        date: startDate.toISOString().split('T')[0],
-                        endDate: finalEndDate,
-                        time: event.start.dateTime ? startDate.toTimeString().substring(0, 5) : null,
-                        endTime: event.end.dateTime ? endDate.toTimeString().substring(0, 5) : null,
-                        notes: event.description || '',
-                        member: assignedMember || '',
-                        isGoogle: true
-                    };
-                    
-                    console.log('   Final event object:', newEvent);
-                    googleCalendarEvents.push(newEvent);
-                });
-                
-                // Re-render calendar with Google events
+                // Re-render calendar
                 if (currentView === 'month') renderCalendar();
                 else if (currentView === 'week') renderWeekView();
                 else if (currentView === 'schedule') renderScheduleView();
                 else if (currentView === 'day') renderDayView();
-                
-                console.log('✅ Google Calendar synced successfully');
-                
-            } catch (err) {
-                console.error('❌ Error loading Google Calendar events:', err);
-                console.error('Make sure your API key is valid and the calendar is shared properly');
             }
         }
 
         function getAllEvents() {
-            const allEvents = [...events, ...googleCalendarEvents];
-            console.log('📊 All events with member assignments:', allEvents.map(e => ({
-                title: e.title,
-                member: e.member,
-                isGoogle: e.isGoogle
-            })));
+            // Get events from Google Calendar if available
+            let googleEvents = [];
+            if (typeof GoogleCalendar !== 'undefined') {
+                googleEvents = GoogleCalendar.getEvents();
+            }
+            
+            const allEvents = [...events, ...googleEvents];
             return allEvents;
         }
         
@@ -3144,12 +3103,24 @@ let visiblePeriods = {
         }
 
         function renderScheduleView() {
+            console.log('🗓️ renderScheduleView called');
             const container = document.getElementById('scheduleContainer');
+            console.log('📦 scheduleContainer:', container);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
+            // On mobile, start from the current week, on desktop use currentDate
+            let startDate;
+            if (window.innerWidth <= 768) {
+                startDate = getWeekStart(today);
+                console.log('📱 Mobile: Starting from week start:', startDate);
+            } else {
+                startDate = new Date(currentDate);
+                console.log('💻 Desktop: Starting from currentDate:', startDate);
+            }
+            
             // Get the week start to calculate next week's dates
-            const weekStart = getWeekStart(currentDate);
+            const weekStart = getWeekStart(startDate);
             const nextWeekStart = new Date(weekStart);
             nextWeekStart.setDate(nextWeekStart.getDate() + 7);
             const nextWeekEnd = new Date(nextWeekStart);
@@ -3160,9 +3131,13 @@ let visiblePeriods = {
             
             let html = '';
             
-            for (let i = 0; i < scheduleDaysToShow; i++) {
-                const day = new Date(currentDate);
-                day.setDate(currentDate.getDate() + i);
+            // On mobile show only 7 days (current week), on desktop show scheduleDaysToShow
+            const daysToShow = window.innerWidth <= 768 ? 7 : scheduleDaysToShow;
+            console.log('📅 Days to show:', daysToShow);
+            
+            for (let i = 0; i < daysToShow; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
                 day.setHours(0, 0, 0, 0);
                 
                 const dateStr = day.toISOString().split('T')[0];
@@ -3200,7 +3175,8 @@ let visiblePeriods = {
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                         
-                        html += `<div class="schedule-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                        const todayClass = isToday ? 'today' : '';
+                        html += `<div class="schedule-event ${todayClass}" data-day-num="${dayNum}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                             <div class="schedule-event-content">
                                 <div class="schedule-event-time" style="color: ${color}">${event.time || 'All day'}</div>
                                 <div class="schedule-event-title">${event.title}</div>
@@ -3216,23 +3192,27 @@ let visiblePeriods = {
             }
             
             container.innerHTML = html;
+            console.log('✅ Schedule HTML set, length:', html.length);
+            console.log('📄 Container after innerHTML:', container);
         }
 
         function switchSection(section) {
             currentSection = section;
             
-            // Update nav highlighting
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            if (event && event.target) {
-                event.target.closest('.nav-item').classList.add('active');
-            } else {
-                // If no event (called programmatically), find the nav item by section name
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.textContent.toLowerCase().includes(section)) {
-                        item.classList.add('active');
-                    }
-                });
+            // Update URL hash
+            if (window.location.hash !== '#/' + section) {
+                window.history.replaceState(null, null, '#/' + section);
             }
+            
+            // Update nav highlighting
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                // Check if the nav item's href matches the current section
+                const href = item.getAttribute('href');
+                if (href === '#/' + section) {
+                    item.classList.add('active');
+                }
+            });
             
             var contentArea = document.getElementById('contentArea');
             
@@ -3267,7 +3247,17 @@ let visiblePeriods = {
                     <div class="day-view" id="dayView"></div>
                 `;
                 renderFamilyPills();
-                renderCalendar();
+                
+                // On mobile, default to schedule view, on desktop use current view
+                if (window.innerWidth <= 768) {
+                    // Use setTimeout to ensure DOM is ready
+                    setTimeout(() => {
+                        switchView('schedule');
+                    }, 10);
+                } else {
+                    renderCalendar();
+                }
+                
                 updateViewHeader();
                 // Show floating add event button
                 document.getElementById('floatingAddBtn').classList.add('active');
@@ -3762,7 +3752,7 @@ let visiblePeriods = {
                         const progressPercent = Math.min(100, (totalStarsEarned / starsRequired) * 100);
                         const canRedeem = totalStarsEarned >= starsRequired && !reward.redeemed;
                         
-                        html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
+                        html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
                             <div class="reward-icon">${reward.emoji || reward.icon || '🎁'}</div>
                             <div class="reward-title">${reward.title}</div>
                             <div class="reward-progress-container">
@@ -4092,7 +4082,7 @@ let visiblePeriods = {
                     const progressPercent = (currentStars / reward.starsNeeded) * 100;
                     const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
                     
-                    html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
+                    html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
                         <div class="reward-emoji">${reward.emoji}</div>
                         <div class="reward-title">${reward.title}</div>
                         <div class="reward-progress-container">
@@ -5948,77 +5938,28 @@ let visiblePeriods = {
             if (currentEditTaskType === 'chore') {
                 const index = chores.findIndex(c => c.id === currentEditTaskId);
                 if (index > -1) {
-                    const choreToDelete = chores[index];
-                    
                     if (option === 'all' || !chores[index].repeat) {
                         // Delete the entire task
                         chores.splice(index, 1);
-                        
-                        // Sync delete to Supabase
-                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
-                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
-                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
-                            }).catch(err => {
-                                console.error('Error deleting from Supabase:', err);
-                            });
-                        }
                     } else if (option === 'current') {
                         // For now, just mark this instance as deleted
                         // TODO: Implement proper instance tracking
                         chores.splice(index, 1);
-                        
-                        // Sync delete to Supabase
-                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
-                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
-                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
-                            }).catch(err => {
-                                console.error('Error deleting from Supabase:', err);
-                            });
-                        }
                     } else if (option === 'future') {
                         // Delete the task (future instances won't be generated)
                         chores.splice(index, 1);
-                        
-                        // Sync delete to Supabase
-                        if (typeof SupabaseAPI !== 'undefined' && choreToDelete.id) {
-                            SupabaseAPI.deleteTask(choreToDelete.id).then(() => {
-                                console.log('✓ Deleted chore from Supabase:', choreToDelete.title);
-                            }).catch(err => {
-                                console.error('Error deleting from Supabase:', err);
-                            });
-                        }
                     }
                     localStorage.setItem('chores', JSON.stringify(chores));
                 }
             } else {
                 const index = routines.findIndex(r => r.id === currentEditTaskId);
                 if (index > -1) {
-                    const routineToDelete = routines[index];
-                    
                     if (option === 'all' || !routines[index].repeat) {
                         // Delete the entire routine
                         routines.splice(index, 1);
-                        
-                        // Sync delete to Supabase
-                        if (typeof SupabaseAPI !== 'undefined' && routineToDelete.id) {
-                            SupabaseAPI.deleteTask(routineToDelete.id).then(() => {
-                                console.log('✓ Deleted routine from Supabase:', routineToDelete.title);
-                            }).catch(err => {
-                                console.error('Error deleting from Supabase:', err);
-                            });
-                        }
                     } else if (option === 'future') {
                         // Delete the routine (future instances won't be generated)
                         routines.splice(index, 1);
-                        
-                        // Sync delete to Supabase
-                        if (typeof SupabaseAPI !== 'undefined' && routineToDelete.id) {
-                            SupabaseAPI.deleteTask(routineToDelete.id).then(() => {
-                                console.log('✓ Deleted routine from Supabase:', routineToDelete.title);
-                            }).catch(err => {
-                                console.error('Error deleting from Supabase:', err);
-                            });
-                        }
                     }
                     localStorage.setItem('routines', JSON.stringify(routines));
                 }
@@ -6664,47 +6605,25 @@ function checkAllTasksComplete(memberName) {
             return events;
         }
         
-        function saveEvent() {
+        async function saveEvent() {
             const isAllDay = document.getElementById('eventAllDayToggle').checked;
             const title = document.getElementById('eventTitle').value;
             
-            console.log('Event title:', title);
-            console.log('Selected profiles:', selectedEventProfiles);
-            
-            // Auto-assign member if not manually selected
-            let assignedMembers = selectedEventProfiles.length > 0 ? selectedEventProfiles : [];
-            if (assignedMembers.length === 0) {
-                const autoAssigned = autoAssignEventMember(title);
-                if (autoAssigned) {
-                    assignedMembers = [autoAssigned];
-                }
-                console.log('Auto-assigned to:', assignedMembers);
-            }
-            
-            // Store as comma-separated string for backward compatibility
-            const memberString = assignedMembers.join(', ');
-            
-            const baseEvent = {
-                id: Date.now(),
+            const eventData = {
                 title: title,
                 date: document.getElementById('eventDate').value,
                 endDate: document.getElementById('eventEndDate').value,
                 time: isAllDay ? '' : document.getElementById('eventTime').value,
                 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
-                member: memberString,
-                members: assignedMembers, // Store array for future use
-                notes: document.getElementById('eventNotes').value
+                notes: document.getElementById('eventNotes').value,
+                isAllDay: isAllDay
             };
             
-            console.log('Saving event:', baseEvent);
+            // Create in Google Calendar if connected
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                await GoogleCalendar.create(eventData);
+            }
             
-            // Generate recurring events if needed
-            const eventsToAdd = generateRecurringEvents(baseEvent);
-            console.log('Generated events:', eventsToAdd.length);
-            
-            // Add all events
-            Array.prototype.push.apply(events, eventsToAdd);
-            localStorage.setItem('events', JSON.stringify(events));
             closeModal('eventModal');
             
             // Re-render current view
@@ -6738,56 +6657,6 @@ function checkAllTasksComplete(memberName) {
             });
         }
 
-        function showEventDetails(eventId) {
-            // Find the event
-            const event = events.find(e => e.id == eventId);
-            if (!event) {
-                console.error('Event not found:', eventId);
-                return;
-            }
-            
-            // Populate the detail panel
-            document.getElementById('eventDetailTitle').textContent = event.title || 'Event';
-            
-            // Format date and time
-            const startDate = new Date(event.date + 'T' + (event.time || '00:00'));
-            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            let dateTimeText = startDate.toLocaleDateString('en-US', dateOptions);
-            
-            if (event.time) {
-                const timeOptions = { hour: 'numeric', minute: '2-digit' };
-                dateTimeText += ' at ' + startDate.toLocaleTimeString('en-US', timeOptions);
-                
-                if (event.endTime) {
-                    const endDate = new Date(event.endDate || event.date + 'T' + event.endTime);
-                    dateTimeText += ' - ' + endDate.toLocaleTimeString('en-US', timeOptions);
-                }
-            } else {
-                dateTimeText += ' (All day)';
-            }
-            
-            document.getElementById('eventDetailDateTime').textContent = dateTimeText;
-            
-            // Show/hide reminder row (if needed)
-            const reminderRow = document.getElementById('eventDetailReminderRow');
-            if (reminderRow) {
-                reminderRow.style.display = 'none'; // Hide for now
-            }
-            
-            // Show the panel
-            document.getElementById('eventDetailPanelOverlay').classList.add('active');
-            document.getElementById('eventDetailPanel').classList.add('active');
-            
-            // Store current event ID for editing/deleting
-            window.currentEventDetailId = eventId;
-        }
-        
-        function closeEventDetailPanel() {
-            document.getElementById('eventDetailPanelOverlay').classList.remove('active');
-            document.getElementById('eventDetailPanel').classList.remove('active');
-            window.currentEventDetailId = null;
-        }
-
         function saveTask() {
             const task = {
                 id: Date.now(),
@@ -6806,6 +6675,191 @@ function checkAllTasksComplete(memberName) {
                 renderFamilyPills();
             }
             document.getElementById('taskTitle').value = '';
+        }
+        
+        // Show event details panel
+        function showEventDetails(eventId) {
+            // Try to find in Google Calendar events first
+            let event = null;
+            if (typeof GoogleCalendar !== 'undefined') {
+                const googleEvents = GoogleCalendar.getEvents();
+                event = googleEvents.find(e => e.id == eventId);
+            }
+            
+            if (!event) {
+                console.log('Event not found:', eventId);
+                return;
+            }
+            
+            // Store current event ID for editing/deleting
+            window.currentEventDetailId = eventId;
+            
+            // Populate panel with event details
+            document.getElementById('eventDetailTitle').textContent = event.title || 'Untitled';
+            
+            // Format date and time
+            let dateTimeText = '';
+            if (event.start && event.start.dateTime) {
+                const start = new Date(event.start.dateTime);
+                const end = event.end ? new Date(event.end.dateTime) : start;
+                
+                dateTimeText = start.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                if (!event.allDay) {
+                    const startTime = start.toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit' 
+                    });
+                    const endTime = end.toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit' 
+                    });
+                    dateTimeText += ` ${startTime} - ${endTime}`;
+                }
+            } else if (event.start && event.start.date) {
+                const start = new Date(event.start.date + 'T00:00:00');
+                dateTimeText = start.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) + ' (All day)';
+            }
+            
+            document.getElementById('eventDetailDateTime').textContent = dateTimeText;
+            
+            // Show the panel
+            document.getElementById('eventDetailPanel').classList.add('active');
+            document.getElementById('eventDetailOverlay').classList.add('active');
+        }
+        
+        function closeEventDetailPanel() {
+            document.getElementById('eventDetailPanel').classList.remove('active');
+            document.getElementById('eventDetailOverlay').classList.remove('active');
+            window.currentEventDetailId = null;
+        }
+        
+        // Edit event from detail panel
+        async function editEventFromDetail() {
+            const eventId = window.currentEventDetailId;
+            if (!eventId) return;
+            
+            let event = null;
+            if (typeof GoogleCalendar !== 'undefined') {
+                const googleEvents = GoogleCalendar.getEvents();
+                event = googleEvents.find(e => e.id == eventId);
+            }
+            
+            if (!event) return;
+            
+            // Close detail panel
+            closeEventDetailPanel();
+            
+            // Open event modal in edit mode
+            openModal('eventModal');
+            
+            // Pre-fill form fields
+            document.getElementById('eventTitle').value = event.title || '';
+            
+            if (event.start) {
+                if (event.start.dateTime) {
+                    // Timed event
+                    const startDate = new Date(event.start.dateTime);
+                    const endDate = event.end ? new Date(event.end.dateTime) : startDate;
+                    
+                    document.getElementById('eventDate').value = startDate.toISOString().split('T')[0];
+                    document.getElementById('eventEndDate').value = endDate.toISOString().split('T')[0];
+                    document.getElementById('eventTime').value = startDate.toTimeString().slice(0, 5);
+                    document.getElementById('eventEndTime').value = endDate.toTimeString().slice(0, 5);
+                    document.getElementById('eventAllDayToggle').checked = false;
+                } else if (event.start.date) {
+                    // All-day event
+                    const startDate = new Date(event.start.date + 'T00:00:00');
+                    const endDate = event.end ? new Date(event.end.date + 'T00:00:00') : startDate;
+                    
+                    document.getElementById('eventDate').value = event.start.date;
+                    document.getElementById('eventEndDate').value = event.end ? event.end.date : event.start.date;
+                    document.getElementById('eventAllDayToggle').checked = true;
+                }
+            }
+            
+            document.getElementById('eventNotes').value = event.description || '';
+            
+            // Change save button to update
+            const saveBtn = document.querySelector('#eventModal .save-btn');
+            if (saveBtn) {
+                saveBtn.textContent = 'Update';
+                saveBtn.onclick = () => updateEvent(eventId);
+            }
+        }
+        
+        // Update event
+        async function updateEvent(eventId) {
+            const isAllDay = document.getElementById('eventAllDayToggle').checked;
+            
+            const eventData = {
+                title: document.getElementById('eventTitle').value,
+                date: document.getElementById('eventDate').value,
+                endDate: document.getElementById('eventEndDate').value,
+                time: isAllDay ? '' : document.getElementById('eventTime').value,
+                endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
+                notes: document.getElementById('eventNotes').value,
+                isAllDay: isAllDay
+            };
+            
+            // Update in Google Calendar
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                await GoogleCalendar.update(eventId, eventData);
+            }
+            
+            closeModal('eventModal');
+            
+            // Reset save button
+            const saveBtn = document.querySelector('#eventModal .save-btn');
+            if (saveBtn) {
+                saveBtn.textContent = 'Save';
+                saveBtn.onclick = saveEvent;
+            }
+            
+            // Re-render current view
+            if (currentView === 'month') renderCalendar();
+            else if (currentView === 'week') renderWeekView();
+            else if (currentView === 'schedule') renderScheduleView();
+            else if (currentView === 'day') renderDayView();
+        }
+        
+        // Delete event from detail panel
+        async function deleteEventFromDetail() {
+            const eventId = window.currentEventDetailId;
+            if (!eventId) return;
+            
+            let event = null;
+            if (typeof GoogleCalendar !== 'undefined') {
+                const googleEvents = GoogleCalendar.getEvents();
+                event = googleEvents.find(e => e.id == eventId);
+            }
+            
+            if (!event) return;
+            
+            if (!confirm(`Delete "${event.title}"?`)) return;
+            
+            // Delete from Google Calendar
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                await GoogleCalendar.delete(eventId);
+            }
+            
+            closeEventDetailPanel();
+            
+            // Re-render current view
+            if (currentView === 'month') renderCalendar();
+            else if (currentView === 'week') renderWeekView();
+            else if (currentView === 'schedule') renderScheduleView();
+            else if (currentView === 'day') renderDayView();
         }
 
         function saveMeal() {
@@ -7444,4 +7498,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }, 500);
+});
+
+// Handle hash changes for desktop navigation
+window.addEventListener('hashchange', function() {
+    if (window.innerWidth > 768) {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#/')) {
+            const section = hash.substring(2);
+            switchSection(section);
+        }
+    }
 });

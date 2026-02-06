@@ -14,8 +14,52 @@
    ============================================ */
 @media screen and (max-width: 768px) {
     
+    /* Hide ALL desktop content by default on mobile */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Show mobile header and home by default */
+    .mobile-header {
+        display: flex !important;
+    }
+    
+    .mobile-home {
+        display: block !important;
+    }
+    
+    /* Hide desktop main container by default on mobile */
+    .container {
+        display: none !important;
+    }
+    
+    /* Show container when viewing sections on mobile */
+    body.viewing-section .container {
+        display: block !important;
+    }
+    
+    /* Hide desktop navigation sidebar */
+    .nav-sidebar {
+        display: none !important;
+    }
+    
+    /* Hide desktop header */
+    .header {
+        display: none !important;
+    }
+    
+    /* Hide desktop main content area */
+    .main-content {
+        display: none !important;
+    }
+    
     /* Hide desktop sidebar completely */
     .sidebar {
+        display: none !important;
+    }
+    
+    /* Hide desktop right panel */
+    .right-panel {
         display: none !important;
     }
     
@@ -25,6 +69,800 @@
         width: 100% !important;
         padding: 0 !important;
     }
+    
+    /* Hide all desktop content sections by default */
+    .content-section {
+        display: none !important;
+    }
+    
+    /* Hide desktop calendar components */
+    .chores-view,
+    .rewards-view,
+    .lists-view,
+    .recipes-view,
+    .meals-view {
+        display: none !important;
+    }
+    
+    /* Show views when viewing their respective sections */
+    body.viewing-section .chores-view {
+        display: block !important;
+    }
+    
+    body.viewing-section .rewards-view {
+        display: block !important;
+    }
+    
+    body.viewing-section .lists-view {
+        display: block !important;
+    }
+    
+    body.viewing-section .recipes-view {
+        display: block !important;
+    }
+    
+    body.viewing-section .meals-view {
+        display: block !important;
+    }
+    
+    /* ============================================
+       MOBILE HEADER (shows on all pages)
+       ============================================ */
+    
+    .mobile-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--mobile-header-height);
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--mobile-padding);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        z-index: 1000;
+    }
+    
+    .mobile-header-left {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #333;
+        font-size: 24px;
+    }
+    
+    .mobile-header-title {
+        flex: 1;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .mobile-header-right {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+        font-size: 20px;
+    }
+    
+    /* ============================================
+       MOBILE HOME PAGE (Icon Grid)
+       ============================================ */
+    
+    .mobile-home {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: block !important;
+        padding-top: var(--mobile-header-height);
+        background: #FAFAFA;
+        z-index: 10;
+    }
+    
+    /* Hide mobile home when viewing sections */
+    body.viewing-section .mobile-home {
+        display: none !important;
+    }
+    
+    /* Show desktop content area when viewing sections on mobile */
+    body.viewing-section .main-content {
+        display: block !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-top: var(--mobile-header-height);
+        background: #FAFAFA;
+        z-index: 10;
+    }
+    
+    body.viewing-section .content-section {
+        display: block !important;
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+    
+    /* Add padding to content area for mobile viewing */
+    body.viewing-section #contentArea {
+        padding: 20px;
+        padding-top: 10px;
+        display: block !important;
+        width: 100%;
+        min-height: 100vh;
+    }
+    
+    /* Mobile Calendar Navigation */
+    .mobile-calendar-nav {
+        display: none;
+        position: fixed;
+        top: var(--mobile-header-height);
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        z-index: 100;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    body.viewing-section .mobile-calendar-nav {
+        display: flex;
+    }
+    
+    .mobile-calendar-nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .mobile-calendar-nav-btn {
+        flex: 1;
+        padding: 10px 12px;
+        background: #F5F5F5;
+        border: none;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: background 0.2s;
+    }
+    
+    .mobile-calendar-nav-btn:active {
+        background: #E0E0E0;
+    }
+    
+    .mobile-calendar-nav-btn svg,
+    .mobile-calendar-nav-btn .icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-calendar-nav-btn.arrow {
+        flex: 0 0 50px;
+        font-size: 18px;
+    }
+    
+    .mobile-calendar-nav-btn.today {
+        flex: 1.5;
+    }
+    
+    /* Adjust content area padding when calendar nav is visible */
+    body.viewing-section.calendar-view #contentArea {
+        padding: 0 !important;
+        padding-top: 130px !important; /* mobile-header (60px) + calendar-nav (~70px) */
+    }
+    
+    /* Mobile Schedule View Styles */
+    body.viewing-section.calendar-view .schedule-view,
+    body.viewing-section.calendar-view .schedule-view.active {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+    }
+    
+    body.viewing-section.calendar-view .family-pills {
+        display: none !important;
+    }
+    
+    .schedule-view {
+        width: 100% !important;
+    }
+    
+    .schedule-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        min-height: 100px !important;
+    }
+    
+    .schedule-day-column {
+        width: 100% !important;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid #E0E0E0;
+        padding: 0 !important;
+    }
+    
+    .schedule-day-column:last-child {
+        border-bottom: none;
+    }
+    
+    .schedule-day-header {
+        display: none !important;
+    }
+    
+    .schedule-event-list {
+        padding: 0 !important;
+    }
+    
+    .schedule-event {
+        display: flex !important;
+        align-items: flex-start !important;
+        padding: 16px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        background: white !important;
+        position: relative;
+    }
+    
+    .schedule-event::before {
+        content: attr(data-day-num);
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #F5F5F5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .schedule-event.today::before {
+        background: #FF5252;
+        color: white;
+    }
+    
+    .schedule-event-content {
+        margin-left: 60px !important;
+        flex: 1 !important;
+    }
+    
+    .schedule-event-time {
+        font-size: 13px !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .schedule-event-title {
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .schedule-event-member {
+        font-size: 13px !important;
+        opacity: 0.7;
+    }
+    
+    .schedule-event-dot {
+        position: absolute !important;
+        right: 16px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: white !important;
+    }
+    
+    /* Icon grid */
+    .mobile-icon-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--mobile-icon-gap);
+        padding: 30px var(--mobile-padding);
+        background: white;
+        margin-bottom: 20px;
+    }
+    
+    .mobile-icon-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        position: relative;
+    }
+    
+    .mobile-icon-circle {
+        width: var(--mobile-icon-size);
+        height: var(--mobile-icon-size);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        transition: transform 0.2s ease;
+        position: relative;
+    }
+    
+    .mobile-icon-item:active .mobile-icon-circle {
+        transform: scale(0.95);
+    }
+    
+    /* Icon colors matching screenshot */
+    .mobile-icon-calendar { background: #FFE5E5; }
+    .mobile-icon-tasks { background: #E8F5E9; }
+    .mobile-icon-rewards { background: #FFF3E0; }
+    .mobile-icon-lists { background: #FFF9E6; }
+    .mobile-icon-meals { background: #FFE8D9; }
+    .mobile-icon-recipes { background: #E1F5FE; }
+    .mobile-icon-photos { background: #E3F2FD; }
+    .mobile-icon-profiles { background: #EEEEEE; }
+    .mobile-icon-sidekick { background: #F3E5F5; }
+    
+    /* Plus badge */
+    .mobile-icon-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 26px;
+        height: 26px;
+        background: #FFA726;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        border: 3px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-icon-label {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+        text-align: center;
+    }
+    
+    /* Today's events card (on homepage) */
+    .mobile-today-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin: 0 var(--mobile-padding) 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .mobile-today-date {
+        font-size: 26px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .mobile-today-event {
+        background: linear-gradient(135deg, #FFD7E0 0%, #FFE5EC 100%);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .mobile-today-event.color-pink {
+        background: linear-gradient(135deg, #FFD7E0 0%, #FFE5EC 100%);
+    }
+    
+    .mobile-today-event.color-peach {
+        background: linear-gradient(135deg, #FFE4D6 0%, #FFF0E6 100%);
+    }
+    
+    .mobile-event-content {
+        flex: 1;
+    }
+    
+    .mobile-event-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    
+    .mobile-event-time {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .mobile-event-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #666;
+        font-size: 16px;
+    }
+    
+    /* Device card */
+    .mobile-device-card {
+        background: #E8EBF0;
+        border-radius: 20px;
+        padding: 25px;
+        margin: 0 var(--mobile-padding) 30px;
+        text-align: center;
+    }
+    
+    .mobile-device-title {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 18px;
+    }
+    
+    .mobile-device-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .mobile-device-btn {
+        padding: 14px 28px;
+        background: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* ============================================
+       SECTION VIEWS (Calendar, Tasks, etc)
+       ============================================ */
+    
+    /* Content area padding */
+    body.viewing-section .content-area {
+        padding: var(--mobile-padding) !important;
+    }
+    
+    /* ============================================
+       CALENDAR VIEW - Mobile
+       ============================================ */
+    
+    body.viewing-section .calendar-view {
+        display: block !important;
+        background: #FAFAFA;
+    }
+    
+    .calendar-header {
+        padding: 15px var(--mobile-padding) !important;
+        background: white;
+        margin: 0 -20px 20px;
+    }
+    
+    .calendar-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .calendar-control-btn {
+        min-width: 70px;
+        padding: 10px 15px;
+        background: #F5F5F5;
+        border: none;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .calendar-control-btn.active {
+        background: #667eea;
+        color: white;
+    }
+    
+    /* Event cards in calendar schedule view */
+    .calendar-event-card {
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .event-card-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    
+    .event-card-time {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    /* ============================================
+       TASKS/CHORES VIEW - Mobile  
+       ============================================ */
+    
+    body.viewing-section .chores-view {
+        display: block !important;
+        background: #FAFAFA;
+    }
+    
+    .chores-header {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+    }
+    
+    .profile-filter {
+        min-width: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .profile-filter-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+    }
+    
+    .profile-filter-name {
+        font-size: 12px;
+        color: #666;
+    }
+    
+    /* Task group card */
+    .task-group-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .task-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .task-group-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .task-group-progress {
+        font-size: 14px;
+        color: #999;
+    }
+    
+    .task-item {
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .task-item-content {
+        flex: 1;
+    }
+    
+    .task-item-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    
+    .task-item-subtitle {
+        font-size: 13px;
+        color: #E57373;
+    }
+    
+    .task-item-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        font-size: 14px;
+        margin-left: 12px;
+    }
+    
+    .task-item-checkbox {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+        margin-left: 12px;
+    }
+    
+    /* Show other sections when viewing */
+    body.viewing-section .rewards-view,
+    body.viewing-section .lists-view,
+    body.viewing-section .recipes-view,
+    body.viewing-section .meals-view {
+        display: block !important;
+    }
+    
+    /* ============================================
+       FLOATING ACTION BUTTON
+       ============================================ */
+    
+    .floating-add-btn {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #1565C0 !important;
+        color: white !important;
+        border: none !important;
+        font-size: 28px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.4) !important;
+        cursor: pointer;
+        z-index: 999 !important;
+    }
+    
+    /* Hide FAB on home screen */
+    body:not(.viewing-section) .floating-add-btn {
+        display: none !important;
+    }
+    
+    /* ============================================
+       MODALS - Mobile
+       ============================================ */
+    
+    .modal-content {
+        width: 95% !important;
+        max-width: 500px !important;
+        max-height: 90vh !important;
+        margin: 20px auto !important;
+        border-radius: 20px !important;
+    }
+    
+    .modal-header {
+        padding: 20px !important;
+    }
+    
+    .modal-body {
+        padding: 0 20px 20px !important;
+    }
+    
+    /* ============================================
+       UTILITY CLASSES
+       ============================================ */
+    
+    .hide-on-mobile {
+        display: none !important;
+    }
+    
+    /* Touch-friendly tap targets */
+    button,
+    .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Prevent text selection */
+    .mobile-icon-item,
+    .task-item,
+    button {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* ============================================
+   TABLET (769px - 1024px)
+   ============================================ */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 200px !important;
+    }
+    
+    .main-container {
+        margin-left: 200px !important;
+    }
+    
+    .mobile-home,
+    .mobile-header {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   DESKTOP (1025px+)
+   ============================================ */
+@media screen and (min-width: 1025px) {
+    .mobile-home,
+    .mobile-header {
+        display: none !important;
+    }
+}
     
     /* ============================================
        MOBILE HEADER (shows on all pages)
