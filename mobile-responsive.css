@@ -1,0 +1,531 @@
+/* ============================================
+MOBILE RESPONSIVE STYLES
+Skylight Family Calendar - Mobile First Design
+============================================ */
+
+/* Mobile-specific variables */
+:root {
+–mobile-header-height: 60px;
+–mobile-nav-height: 70px;
+–mobile-padding: 20px;
+–mobile-icon-size: 70px;
+}
+
+/* ============================================
+MOBILE BREAKPOINT (768px and below)
+============================================ */
+@media screen and (max-width: 768px) {
+
+```
+/* Hide desktop sidebar */
+.sidebar {
+    display: none !important;
+}
+
+/* Main container - full width on mobile */
+.main-container {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* Content area adjustments */
+.content-area {
+    padding: var(--mobile-padding) !important;
+    padding-bottom: calc(var(--mobile-nav-height) + 20px) !important;
+}
+
+/* ============================================
+   MOBILE HOME PAGE
+   ============================================ */
+
+/* Mobile header */
+.mobile-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-header-height);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--mobile-padding);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+}
+
+.mobile-header-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    font-size: 24px;
+}
+
+.mobile-header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mobile-header-profile {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    font-size: 20px;
+}
+
+/* Mobile home content */
+.mobile-home {
+    display: block;
+    padding-top: var(--mobile-header-height);
+    min-height: 100vh;
+    background: #FAFAFA;
+}
+
+/* Icon grid container */
+.mobile-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    padding: var(--mobile-padding);
+    background: white;
+    margin-bottom: 20px;
+}
+
+/* Individual icon item */
+.mobile-icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+}
+
+/* Icon circle */
+.mobile-icon-circle {
+    width: var(--mobile-icon-size);
+    height: var(--mobile-icon-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: transform 0.2s ease;
+    position: relative;
+}
+
+.mobile-icon-item:active .mobile-icon-circle {
+    transform: scale(0.95);
+}
+
+/* Icon colors */
+.mobile-icon-calendar {
+    background: #FFE5E5;
+}
+
+.mobile-icon-tasks {
+    background: #E8F5E9;
+}
+
+.mobile-icon-rewards {
+    background: #FFF3E0;
+}
+
+.mobile-icon-lists {
+    background: #FFF9E6;
+}
+
+.mobile-icon-meals {
+    background: #FFE8D9;
+}
+
+.mobile-icon-recipes {
+    background: #E1F5FE;
+}
+
+.mobile-icon-photos {
+    background: #E3F2FD;
+}
+
+.mobile-icon-profiles {
+    background: #EEEEEE;
+}
+
+.mobile-icon-sidekick {
+    background: #F3E5F5;
+}
+
+/* Plus badge */
+.mobile-icon-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    background: #FFA726;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid white;
+}
+
+/* Icon label */
+.mobile-icon-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+}
+
+/* Date card */
+.mobile-date-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 var(--mobile-padding) 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-date-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.mobile-date-subtitle {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Device activation card */
+.mobile-device-card {
+    background: #F5F5F5;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 var(--mobile-padding) 20px;
+    text-align: center;
+}
+
+.mobile-device-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.mobile-device-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.mobile-device-btn {
+    padding: 12px 24px;
+    background: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.mobile-device-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================
+   MOBILE BOTTOM NAVIGATION
+   ============================================ */
+
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-nav-height);
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: #999;
+}
+
+.mobile-nav-item.active {
+    color: #667eea;
+    background: #f0f3ff;
+}
+
+.mobile-nav-icon {
+    font-size: 24px;
+}
+
+.mobile-nav-label {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* ============================================
+   CALENDAR VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.calendar-container {
+    padding: 0 !important;
+}
+
+.calendar-header {
+    padding: 15px var(--mobile-padding) !important;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.calendar-month-year {
+    font-size: 20px !important;
+}
+
+.calendar-nav-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+}
+
+.calendar-grid {
+    padding: 0 10px !important;
+}
+
+.calendar-day {
+    height: 60px !important;
+    font-size: 14px !important;
+    padding: 4px !important;
+}
+
+.day-number {
+    font-size: 14px !important;
+}
+
+.day-event-dot {
+    width: 4px !important;
+    height: 4px !important;
+}
+
+/* ============================================
+   CHORES/TASKS VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.chores-view {
+    padding-top: 10px !important;
+}
+
+.chores-header {
+    padding: 10px var(--mobile-padding) !important;
+}
+
+.chore-item {
+    margin: 0 10px 12px !important;
+    padding: 15px !important;
+}
+
+.chore-item-icon img {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+.chore-item-title {
+    font-size: 15px !important;
+}
+
+.chore-item-subtitle {
+    font-size: 12px !important;
+}
+
+.chore-item-checkbox {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* ============================================
+   MODALS - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.modal-content {
+    width: 95% !important;
+    max-width: 500px !important;
+    max-height: 85vh !important;
+    margin: 20px auto !important;
+}
+
+.modal-header {
+    padding: 20px !important;
+}
+
+.modal-body {
+    padding: 0 20px 20px !important;
+}
+
+/* ============================================
+   FLOATING ACTION BUTTON - MOBILE
+   ============================================ */
+
+.floating-add-btn {
+    bottom: calc(var(--mobile-nav-height) + 20px) !important;
+    right: 20px !important;
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 24px !important;
+}
+
+/* ============================================
+   LISTS VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.lists-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+    padding: var(--mobile-padding) !important;
+}
+
+.list-card {
+    padding: 20px !important;
+}
+
+/* ============================================
+   REWARDS VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.rewards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
+    padding: var(--mobile-padding) !important;
+}
+
+.reward-card {
+    padding: 20px !important;
+}
+
+/* ============================================
+   RECIPES VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.recipes-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+    padding: var(--mobile-padding) !important;
+}
+
+.recipe-card {
+    padding: 20px !important;
+}
+
+/* ============================================
+   MEALS VIEW - MOBILE OPTIMIZATIONS
+   ============================================ */
+
+.meal-calendar {
+    padding: var(--mobile-padding) !important;
+}
+
+.meal-day-card {
+    padding: 15px !important;
+    margin-bottom: 15px !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.hide-on-mobile {
+    display: none !important;
+}
+
+.show-on-mobile {
+    display: block !important;
+}
+
+/* Touch-friendly tap targets */
+button,
+.clickable,
+[onclick] {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Prevent text selection on double-tap */
+.mobile-icon-item,
+.mobile-nav-item,
+.chore-item,
+button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+```
+
+}
+
+/* ============================================
+TABLET BREAKPOINT (769px to 1024px)
+============================================ */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+.sidebar {
+width: 200px !important;
+}
+
+```
+.main-container {
+    margin-left: 200px !important;
+}
+
+.mobile-home,
+.mobile-header,
+.mobile-bottom-nav {
+    display: none !important;
+}
+```
+
+}
+
+/* ============================================
+DESKTOP (1025px and above)
+============================================ */
+@media screen and (min-width: 1025px) {
+.mobile-home,
+.mobile-header,
+.mobile-bottom-nav {
+display: none !important;
+}
+}
