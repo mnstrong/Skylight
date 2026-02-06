@@ -95,7 +95,6 @@ console.log('Script started loading...');
         if (needsUpdate) {
             localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
         }
-        let events = JSON.parse(localStorage.getItem('events')) || [];
         
         // Add sample events if none exist (for testing)
         if (events.length === 0) {
@@ -2613,11 +2612,7 @@ let visiblePeriods = {
         });
 
         function connectGoogleCalendar() {
-            if (typeof GoogleCalendar !== 'undefined') {
-                GoogleCalendar.connect();
-            } else {
-                console.error('Google Calendar OAuth module not loaded');
-            }
+            GoogleCalendar.connect();
         }
 
         async function loadGoogleCalendarEvents() {
@@ -6779,58 +6774,23 @@ function checkAllTasksComplete(memberName) {
         }
         
         // Edit event from detail panel
-        async function editEventFromDetail() {
-            const eventId = window.currentEventDetailId;
-            if (!eventId) return;
-            
-            let event = null;
-            if (typeof GoogleCalendar !== 'undefined') {
-                const googleEvents = GoogleCalendar.getEvents();
-                event = googleEvents.find(e => e.id == eventId);
-            }
-            
-            if (!event) return;
-            
-            // Close detail panel
-            closeEventDetailPanel();
-            
-            // Open event modal in edit mode
-            openModal('eventModal');
-            
-            // Pre-fill form fields
-            document.getElementById('eventTitle').value = event.title || '';
-            
-            if (event.start) {
-                if (event.start.dateTime) {
-                    // Timed event
-                    const startDate = new Date(event.start.dateTime);
-                    const endDate = event.end ? new Date(event.end.dateTime) : startDate;
-                    
-                    document.getElementById('eventDate').value = startDate.toISOString().split('T')[0];
-                    document.getElementById('eventEndDate').value = endDate.toISOString().split('T')[0];
-                    document.getElementById('eventTime').value = startDate.toTimeString().slice(0, 5);
-                    document.getElementById('eventEndTime').value = endDate.toTimeString().slice(0, 5);
-                    document.getElementById('eventAllDayToggle').checked = false;
-                } else if (event.start.date) {
-                    // All-day event
-                    const startDate = new Date(event.start.date + 'T00:00:00');
-                    const endDate = event.end ? new Date(event.end.date + 'T00:00:00') : startDate;
-                    
-                    document.getElementById('eventDate').value = event.start.date;
-                    document.getElementById('eventEndDate').value = event.end ? event.end.date : event.start.date;
-                    document.getElementById('eventAllDayToggle').checked = true;
-                }
-            }
-            
-            document.getElementById('eventNotes').value = event.description || '';
-            
-            // Change save button to update
-            const saveBtn = document.querySelector('#eventModal .save-btn');
-            if (saveBtn) {
-                saveBtn.textContent = 'Update';
-                saveBtn.onclick = () => updateEvent(eventId);
-            }
-        }
+async function updateEvent(eventId) {
+    const isAllDay = document.getElementById('eventAllDayToggle').checked;
+    
+    const eventData = {
+        title: document.getElementById('eventTitle').value,
+        date: document.getElementById('eventDate').value,
+        endDate: document.getElementById('eventEndDate').value,
+        time: isAllDay ? '' : document.getElementById('eventTime').value,
+        endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
+        notes: document.getElementById('eventNotes').value
+    };
+    
+    // Update in Google Calendar
+    await GoogleCalendar.update(eventId, eventData);
+    
+    closeModal('eventModal');
+}
         
         // Update event
         async function updateEvent(eventId) {
@@ -6868,26 +6828,20 @@ function checkAllTasksComplete(memberName) {
         }
         
         // Delete event from detail panel
-        async function deleteEventFromDetail() {
-            const eventId = window.currentEventDetailId;
-            if (!eventId) return;
-            
-            let event = null;
-            if (typeof GoogleCalendar !== 'undefined') {
-                const googleEvents = GoogleCalendar.getEvents();
-                event = googleEvents.find(e => e.id == eventId);
-            }
-            
-            if (!event) return;
-            
-            if (!confirm(`Delete "${event.title}"?`)) return;
-            
-            // Delete from Google Calendar
-            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+            async function deleteEventFromDetail() {
+                const eventId = window.currentEventDetailId;
+                if (!eventId) return;
+                
+                const event = GoogleCalendar.getEvents().find(e => e.id == eventId);
+                if (!event) return;
+                
+                if (!confirm(`Delete "${event.title}"?`)) return;
+                
+                // Delete from Google Calendar
                 await GoogleCalendar.delete(eventId);
+                
+                closeEventDetailPanel();
             }
-            
-            closeEventDetailPanel();
             
             // Re-render current view
             if (currentView === 'month') renderCalendar();
