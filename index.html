@@ -1439,49 +1439,50 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="auto-sync-wrapper.js"></script>
 <script src="script.js"></script>
 <script src="supabase-init.js"></script>
-<!-- ============================================
-     MOBILE HOME PAGE
-     Add this section to your index.html body
-     ============================================ -->
 
-<!-- Mobile Header (fixed top) -->
+<!-- =============================================
+     MOBILE STRUCTURE
+     Add to your index.html body
+     ============================================= -->
+
+<!-- Mobile Header (always visible on mobile) -->
 
 <div class="mobile-header">
-    <div class="mobile-header-back" onclick="window.history.back()">
+    <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">
         ←
     </div>
-    <div class="mobile-header-title">strongcalendar23</div>
-    <div class="mobile-header-profile" onclick="openProfileSettings()">
+    <div class="mobile-header-left" id="mobileHomeIndicator" style="display: block;">
+        <!-- Empty on home, back arrow on sections -->
+    </div>
+    <div class="mobile-header-title" id="mobileHeaderTitle">strongcalendar23</div>
+    <div class="mobile-header-right" onclick="openProfileSettings()">
         👤
     </div>
 </div>
 
-<!-- Mobile Home Content -->
+<!-- Mobile Home Page (Icon Grid Navigation) -->
 
-<div class="mobile-home" id="mobileHome" style="display: none;">
+<div class="mobile-home" id="mobileHome">
 
 ```
 <!-- Icon Navigation Grid -->
 <div class="mobile-icon-grid">
     
-    <!-- Calendar -->
-    <div class="mobile-icon-item" onclick="switchSection('calendar'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('calendar')">
         <div class="mobile-icon-circle mobile-icon-calendar">
             📅
         </div>
         <div class="mobile-icon-label">Calendar</div>
     </div>
     
-    <!-- Tasks -->
-    <div class="mobile-icon-item" onclick="switchSection('chores'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('chores')">
         <div class="mobile-icon-circle mobile-icon-tasks">
             ✓
         </div>
         <div class="mobile-icon-label">Tasks</div>
     </div>
     
-    <!-- Rewards -->
-    <div class="mobile-icon-item" onclick="switchSection('rewards'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('rewards')">
         <div class="mobile-icon-circle mobile-icon-rewards">
             ⭐
             <div class="mobile-icon-badge">+</div>
@@ -1489,16 +1490,14 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mobile-icon-label">Rewards</div>
     </div>
     
-    <!-- Lists -->
-    <div class="mobile-icon-item" onclick="switchSection('lists'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('lists')">
         <div class="mobile-icon-circle mobile-icon-lists">
             📝
         </div>
         <div class="mobile-icon-label">Lists</div>
     </div>
     
-    <!-- Meals -->
-    <div class="mobile-icon-item" onclick="switchSection('meals'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('meals')">
         <div class="mobile-icon-circle mobile-icon-meals">
             🍴
             <div class="mobile-icon-badge">+</div>
@@ -1506,8 +1505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mobile-icon-label">Meals</div>
     </div>
     
-    <!-- Recipes -->
-    <div class="mobile-icon-item" onclick="switchSection('recipes'); hideMobileHome();">
+    <div class="mobile-icon-item" onclick="goToSection('recipes')">
         <div class="mobile-icon-circle mobile-icon-recipes">
             📖
             <div class="mobile-icon-badge">+</div>
@@ -1515,7 +1513,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mobile-icon-label">Recipes</div>
     </div>
     
-    <!-- Photos -->
     <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
         <div class="mobile-icon-circle mobile-icon-photos">
             🖼️
@@ -1523,7 +1520,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mobile-icon-label">Photos</div>
     </div>
     
-    <!-- Profiles -->
     <div class="mobile-icon-item" onclick="openProfileSettings()">
         <div class="mobile-icon-circle mobile-icon-profiles">
             👥
@@ -1531,7 +1527,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mobile-icon-label">Profiles</div>
     </div>
     
-    <!-- Sidekick (optional - remove if you don't want it) -->
     <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
         <div class="mobile-icon-circle mobile-icon-sidekick">
             ✨
@@ -1543,23 +1538,31 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Today's Events Card -->
-<div class="mobile-date-card" id="mobileTodayCard">
-    <div class="mobile-date-title">
-        <span id="mobileDateTitle">Loading...</span>
+<div class="mobile-today-card" id="mobileTodayCard">
+    <div class="mobile-today-date" id="mobileTodayDate">
+        Thursday, February 5
     </div>
-    <div class="mobile-date-subtitle" id="mobileDateEvents">
+    
+    <!-- Today's events will be populated here -->
+    <div id="mobileTodayEvents">
+        <!-- Example event (will be populated by JS) -->
+        <!-- Shown when there are events -->
+    </div>
+    
+    <!-- No events message -->
+    <div id="mobileNoEvents" style="color: #666; font-size: 16px;">
         No upcoming events today 😌
     </div>
 </div>
 
-<!-- Device Activation Card (optional - can be hidden after activation) -->
-<div class="mobile-device-card" style="display: none;" id="mobileDeviceCard">
+<!-- Device Activation Card -->
+<div class="mobile-device-card">
     <div class="mobile-device-title">Skylight is better with a device!</div>
     <div class="mobile-device-buttons">
         <button class="mobile-device-btn" onclick="window.open('https://www.skylightframe.com', '_blank')">
             Shop Skylight
         </button>
-        <button class="mobile-device-btn" onclick="alert('Activation coming soon!')">
+        <button class="mobile-device-btn" onclick="alert('Device activation coming soon!')">
             Activate Device
         </button>
     </div>
@@ -1568,152 +1571,166 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </div>
 
-<!-- Mobile Bottom Navigation -->
-
-<div class="mobile-bottom-nav" id="mobileBottomNav" style="display: none;">
-
-```
-<div class="mobile-nav-item" onclick="showMobileHome()" id="navHome">
-    <div class="mobile-nav-icon">🏠</div>
-    <div class="mobile-nav-label">Home</div>
-</div>
-
-<div class="mobile-nav-item" onclick="switchSection('calendar'); hideMobileHome();" id="navCalendar">
-    <div class="mobile-nav-icon">📅</div>
-    <div class="mobile-nav-label">Calendar</div>
-</div>
-
-<div class="mobile-nav-item" onclick="switchSection('chores'); hideMobileHome();" id="navTasks">
-    <div class="mobile-nav-icon">✓</div>
-    <div class="mobile-nav-label">Tasks</div>
-</div>
-
-<div class="mobile-nav-item" onclick="switchSection('lists'); hideMobileHome();" id="navLists">
-    <div class="mobile-nav-icon">📝</div>
-    <div class="mobile-nav-label">Lists</div>
-</div>
-
-<div class="mobile-nav-item" onclick="switchSection('rewards'); hideMobileHome();" id="navRewards">
-    <div class="mobile-nav-icon">⭐</div>
-    <div class="mobile-nav-label">Rewards</div>
-</div>
-```
-
-</div>
-
-<!-- Mobile JavaScript Functions -->
+<!-- Mobile Navigation JavaScript -->
 
 <script>
-    // Initialize mobile view
-    function initMobileView() {
-        if (window.innerWidth <= 768) {
-            showMobileHome();
-            updateMobileDateCard();
-        }
+// Mobile navigation state
+let currentMobileSection = 'home';
+
+// Initialize mobile view on load
+function initMobile() {
+    if (window.innerWidth <= 768) {
+        showMobileHome();
+        updateMobileTodayCard();
     }
+}
+
+// Show mobile home page
+function showMobileHome() {
+    if (window.innerWidth > 768) return;
     
-    // Show mobile home page
-    function showMobileHome() {
-        if (window.innerWidth <= 768) {
-            document.getElementById('mobileHome').style.display = 'block';
-            document.getElementById('mobileBottomNav').style.display = 'flex';
-            
-            // Hide all content sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Update active nav
-            document.querySelectorAll('.mobile-nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.getElementById('navHome').classList.add('active');
-            
-            updateMobileDateCard();
-        }
-    }
+    document.body.classList.remove('viewing-section');
+    currentMobileSection = 'home';
     
-    // Hide mobile home page
-    function hideMobileHome() {
-        if (window.innerWidth <= 768) {
-            document.getElementById('mobileHome').style.display = 'none';
-        }
-    }
+    // Show home
+    const homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'block';
     
-    // Update mobile date card with today's events
-    function updateMobileDateCard() {
-        const today = new Date();
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        const dateStr = today.toLocaleDateString('en-US', options);
-        
-        const titleElement = document.getElementById('mobileDateTitle');
-        if (titleElement) {
-            titleElement.textContent = dateStr;
-        }
-        
-        // Get today's events
-        const todayStr = today.toISOString().split('T')[0];
-        const allEvents = getAllEvents();
-        const todayEvents = allEvents.filter(event => isEventOnDate(event, todayStr));
-        
-        const eventsElement = document.getElementById('mobileDateEvents');
-        if (eventsElement) {
-            if (todayEvents.length === 0) {
-                eventsElement.textContent = 'No upcoming events today 😌';
-            } else if (todayEvents.length === 1) {
-                eventsElement.textContent = `1 event today`;
-            } else {
-                eventsElement.textContent = `${todayEvents.length} events today`;
-            }
-        }
-    }
-    
-    // Override switchSection to update mobile nav
-    const originalSwitchSection = switchSection;
-    switchSection = function(section) {
-        originalSwitchSection(section);
-        
-        if (window.innerWidth <= 768) {
-            // Update bottom nav active state
-            document.querySelectorAll('.mobile-nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            const navMap = {
-                'calendar': 'navCalendar',
-                'chores': 'navTasks',
-                'lists': 'navLists',
-                'rewards': 'navRewards'
-            };
-            
-            const navId = navMap[section];
-            if (navId) {
-                document.getElementById(navId).classList.add('active');
-            }
-        }
-    };
-    
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth <= 768) {
-            document.getElementById('mobileBottomNav').style.display = 'flex';
-        } else {
-            document.getElementById('mobileHome').style.display = 'none';
-            document.getElementById('mobileBottomNav').style.display = 'none';
-        }
+    // Hide all content sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
     });
     
-    // Initialize on page load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMobileView);
-    } else {
-        initMobileView();
+    // Update header
+    document.getElementById('mobileHeaderTitle').textContent = 'strongcalendar23';
+    document.getElementById('mobileBackBtn').style.display = 'none';
+    document.getElementById('mobileHomeIndicator').style.display = 'block';
+    
+    updateMobileTodayCard();
+}
+
+// Navigate to a section
+function goToSection(sectionName) {
+    if (window.innerWidth > 768) {
+        // Desktop: use existing navigation
+        if (typeof switchSection === 'function') {
+            switchSection(sectionName);
+        }
+        return;
     }
     
-    // Profile settings function (placeholder)
-    function openProfileSettings() {
+    // Mobile: show section with back button
+    document.body.classList.add('viewing-section');
+    currentMobileSection = sectionName;
+    
+    // Hide home
+    const homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'none';
+    
+    // Show back button
+    document.getElementById('mobileBackBtn').style.display = 'block';
+    document.getElementById('mobileHomeIndicator').style.display = 'none';
+    
+    // Update header title
+    const titles = {
+        'calendar': 'Feb 1 - Feb 7',
+        'chores': 'Thu, Feb 5',
+        'rewards': 'Rewards',
+        'lists': 'Lists',
+        'meals': 'Meals',
+        'recipes': 'Recipes'
+    };
+    document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
+    
+    // Use existing switchSection function
+    if (typeof switchSection === 'function') {
+        switchSection(sectionName);
+    }
+}
+
+// Go back to mobile home
+function goToMobileHome() {
+    showMobileHome();
+}
+
+// Update today's card with events
+function updateMobileTodayCard() {
+    const today = new Date();
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    const dateStr = today.toLocaleDateString('en-US', options);
+    
+    const dateEl = document.getElementById('mobileTodayDate');
+    if (dateEl) {
+        dateEl.textContent = dateStr;
+    }
+    
+    // Get today's events
+    if (typeof getAllEvents === 'function') {
+        const todayStr = today.toISOString().split('T')[0];
+        const allEvents = getAllEvents();
+        const todayEvents = allEvents.filter(event => {
+            if (typeof isEventOnDate === 'function') {
+                return isEventOnDate(event, todayStr);
+            }
+            return event.date === todayStr;
+        });
+        
+        const eventsContainer = document.getElementById('mobileTodayEvents');
+        const noEventsEl = document.getElementById('mobileNoEvents');
+        
+        if (todayEvents.length > 0) {
+            // Show events
+            if (noEventsEl) noEventsEl.style.display = 'none';
+            if (eventsContainer) {
+                eventsContainer.innerHTML = '';
+                
+                todayEvents.slice(0, 3).forEach((event, index) => {
+                    const colorClass = index % 2 === 0 ? 'color-pink' : 'color-peach';
+                    const memberInitial = event.member ? event.member.charAt(0).toUpperCase() : '?';
+                    const timeStr = event.time || 'All day';
+                    
+                    const eventHtml = `
+                        <div class="mobile-today-event ${colorClass}" onclick="goToSection('calendar')">
+                            <div class="mobile-event-content">
+                                <div class="mobile-event-title">${event.title}</div>
+                                <div class="mobile-event-time">${timeStr}</div>
+                            </div>
+                            <div class="mobile-event-avatar">${memberInitial}</div>
+                        </div>
+                    `;
+                    eventsContainer.innerHTML += eventHtml;
+                });
+            }
+        } else {
+            // Show no events message
+            if (noEventsEl) noEventsEl.style.display = 'block';
+            if (eventsContainer) eventsContainer.innerHTML = '';
+        }
+    }
+}
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    if (window.innerWidth <= 768) {
+        if (currentMobileSection === 'home') {
+            showMobileHome();
+        }
+    }
+});
+
+// Initialize on load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobile);
+} else {
+    initMobile();
+}
+
+// Profile settings placeholder
+function openProfileSettings() {
+    if (window.innerWidth <= 768) {
         alert('Profile settings coming soon!');
     }
+}
 </script>
 </body>
 </html>
