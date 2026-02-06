@@ -17,8 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="mobile-responsive.css">
-    
+    <link rel="stylesheet" href="mobile-styles.css">
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1312,141 +1311,19 @@
             <button class="edit-save-btn" onclick="saveTimerSet()">Set Timer</button>
         </div>
     </div>
-    <!-- SYNC BUTTON FOR SKYLIGHT -->
-<!-- Add this code to your index.html right before the closing </body> tag -->
-
-<!-- Floating Sync Button -->
-<button id="manualSyncBtn" class="manual-sync-btn">
-    <span class="sync-icon">🔄</span>
-    <span class="sync-text">Sync</span>
-</button>
-
-<style>
-.manual-sync-btn {
-    position: fixed;
-    bottom: 80px; /* Above your existing + button */
-    right: 20px;
-    z-index: 9999;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Jost', sans-serif;
-    transition: all 0.3s ease;
-}
-
-.manual-sync-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.manual-sync-btn:active {
-    transform: translateY(0);
-}
-
-.manual-sync-btn.syncing {
-    pointer-events: none;
-    opacity: 0.8;
-}
-
-.manual-sync-btn.syncing .sync-icon {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.manual-sync-btn.success {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-/* Mobile styles */
-@media (max-width: 768px) {
-    .manual-sync-btn {
-        bottom: 70px;
-        right: 15px;
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-}
-</style>
-
-<script>
-// Manual sync function
-async function manualSyncData() {
-    const btn = document.getElementById('manualSyncBtn');
-    if (!btn) return;
-    
-    const icon = btn.querySelector('.sync-icon');
-    const text = btn.querySelector('.sync-text');
-    
-    // Show syncing state
-    btn.classList.add('syncing');
-    text.textContent = 'Syncing...';
-    
-    try {
-        // Reload data from Supabase
-        if (typeof SupabaseSync !== 'undefined' && SupabaseSync.initialize) {
-            await SupabaseSync.initialize();
-        }
-        
-        // Show success
-        btn.classList.remove('syncing');
-        btn.classList.add('success');
-        icon.textContent = '✓';
-        text.textContent = 'Synced!';
-        
-        // Reload page after brief delay
-        setTimeout(() => {
-            location.reload();
-        }, 500);
-        
-    } catch (error) {
-        console.error('Sync error:', error);
-        btn.classList.remove('syncing');
-        icon.textContent = '✕';
-        text.textContent = 'Error';
-        
-        // Reset after 2 seconds
-        setTimeout(() => {
-            icon.textContent = '🔄';
-            text.textContent = 'Sync';
-            btn.classList.remove('success');
-        }, 2000);
-    }
-}
-
-// Attach click handler
-document.addEventListener('DOMContentLoaded', function() {
-    const syncBtn = document.getElementById('manualSyncBtn');
-    if (syncBtn) {
-        syncBtn.addEventListener('click', manualSyncData);
-    }
-});
-</script>
 <script src="supabase-config.js"></script>
 <script src="supabase-sync.js"></script>
 <script src="auto-sync-wrapper.js"></script>
+<!-- Google Calendar OAuth Module -->
+<script src="google-calendar-oauth.js"></script>
 <script src="script.js"></script>
 <script src="supabase-init.js"></script>
-
 <!-- =============================================
      MOBILE STRUCTURE
      Add to your index.html body
      ============================================= -->
 
 <!-- Mobile Header (always visible on mobile) -->
-
 <div class="mobile-header">
     <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">
         ←
@@ -1461,118 +1338,114 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <!-- Mobile Home Page (Icon Grid Navigation) -->
-
 <div class="mobile-home" id="mobileHome">
-
-```
-<!-- Icon Navigation Grid -->
-<div class="mobile-icon-grid">
     
-    <div class="mobile-icon-item" onclick="goToSection('calendar')">
-        <div class="mobile-icon-circle mobile-icon-calendar">
-            📅
+    <!-- Icon Navigation Grid -->
+    <div class="mobile-icon-grid">
+        
+        <div class="mobile-icon-item" onclick="goToSection('calendar')">
+            <div class="mobile-icon-circle mobile-icon-calendar">
+                📅
+            </div>
+            <div class="mobile-icon-label">Calendar</div>
         </div>
-        <div class="mobile-icon-label">Calendar</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="goToSection('chores')">
-        <div class="mobile-icon-circle mobile-icon-tasks">
-            ✓
+        
+        <div class="mobile-icon-item" onclick="goToSection('chores')">
+            <div class="mobile-icon-circle mobile-icon-tasks">
+                ✓
+            </div>
+            <div class="mobile-icon-label">Tasks</div>
         </div>
-        <div class="mobile-icon-label">Tasks</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="goToSection('rewards')">
-        <div class="mobile-icon-circle mobile-icon-rewards">
-            ⭐
-            <div class="mobile-icon-badge">+</div>
+        
+        <div class="mobile-icon-item" onclick="goToSection('rewards')">
+            <div class="mobile-icon-circle mobile-icon-rewards">
+                ⭐
+                <div class="mobile-icon-badge">+</div>
+            </div>
+            <div class="mobile-icon-label">Rewards</div>
         </div>
-        <div class="mobile-icon-label">Rewards</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="goToSection('lists')">
-        <div class="mobile-icon-circle mobile-icon-lists">
-            📝
+        
+        <div class="mobile-icon-item" onclick="goToSection('lists')">
+            <div class="mobile-icon-circle mobile-icon-lists">
+                📝
+            </div>
+            <div class="mobile-icon-label">Lists</div>
         </div>
-        <div class="mobile-icon-label">Lists</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="goToSection('meals')">
-        <div class="mobile-icon-circle mobile-icon-meals">
-            🍴
-            <div class="mobile-icon-badge">+</div>
+        
+        <div class="mobile-icon-item" onclick="goToSection('meals')">
+            <div class="mobile-icon-circle mobile-icon-meals">
+                🍴
+                <div class="mobile-icon-badge">+</div>
+            </div>
+            <div class="mobile-icon-label">Meals</div>
         </div>
-        <div class="mobile-icon-label">Meals</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="goToSection('recipes')">
-        <div class="mobile-icon-circle mobile-icon-recipes">
-            📖
-            <div class="mobile-icon-badge">+</div>
+        
+        <div class="mobile-icon-item" onclick="goToSection('recipes')">
+            <div class="mobile-icon-circle mobile-icon-recipes">
+                📖
+                <div class="mobile-icon-badge">+</div>
+            </div>
+            <div class="mobile-icon-label">Recipes</div>
         </div>
-        <div class="mobile-icon-label">Recipes</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
-        <div class="mobile-icon-circle mobile-icon-photos">
-            🖼️
+        
+        <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
+            <div class="mobile-icon-circle mobile-icon-photos">
+                🖼️
+            </div>
+            <div class="mobile-icon-label">Photos</div>
         </div>
-        <div class="mobile-icon-label">Photos</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="openProfileSettings()">
-        <div class="mobile-icon-circle mobile-icon-profiles">
-            👥
+        
+        <div class="mobile-icon-item" onclick="openProfileSettings()">
+            <div class="mobile-icon-circle mobile-icon-profiles">
+                👥
+            </div>
+            <div class="mobile-icon-label">Profiles</div>
         </div>
-        <div class="mobile-icon-label">Profiles</div>
-    </div>
-    
-    <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
-        <div class="mobile-icon-circle mobile-icon-sidekick">
-            ✨
-            <div class="mobile-icon-badge">+</div>
+        
+        <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
+            <div class="mobile-icon-circle mobile-icon-sidekick">
+                ✨
+                <div class="mobile-icon-badge">+</div>
+            </div>
+            <div class="mobile-icon-label">Sidekick</div>
         </div>
-        <div class="mobile-icon-label">Sidekick</div>
+        
     </div>
     
-</div>
-
-<!-- Today's Events Card -->
-<div class="mobile-today-card" id="mobileTodayCard">
-    <div class="mobile-today-date" id="mobileTodayDate">
-        Thursday, February 5
+    <!-- Today's Events Card -->
+    <div class="mobile-today-card" id="mobileTodayCard">
+        <div class="mobile-today-date" id="mobileTodayDate">
+            Thursday, February 5
+        </div>
+        
+        <!-- Today's events will be populated here -->
+        <div id="mobileTodayEvents">
+            <!-- Example event (will be populated by JS) -->
+            <!-- Shown when there are events -->
+        </div>
+        
+        <!-- No events message -->
+        <div id="mobileNoEvents" style="color: #666; font-size: 16px;">
+            No upcoming events today 😌
+        </div>
     </div>
     
-    <!-- Today's events will be populated here -->
-    <div id="mobileTodayEvents">
-        <!-- Example event (will be populated by JS) -->
-        <!-- Shown when there are events -->
+    <!-- Device Activation Card -->
+    <div class="mobile-device-card">
+        <div class="mobile-device-title">Skylight is better with a device!</div>
+        <div class="mobile-device-buttons">
+            <button class="mobile-device-btn" onclick="window.open('https://www.skylightframe.com', '_blank')">
+                Shop Skylight
+            </button>
+            <button class="mobile-device-btn" onclick="alert('Device activation coming soon!')">
+                Activate Device
+            </button>
+        </div>
     </div>
     
-    <!-- No events message -->
-    <div id="mobileNoEvents" style="color: #666; font-size: 16px;">
-        No upcoming events today 😌
-    </div>
-</div>
-
-<!-- Device Activation Card -->
-<div class="mobile-device-card">
-    <div class="mobile-device-title">Skylight is better with a device!</div>
-    <div class="mobile-device-buttons">
-        <button class="mobile-device-btn" onclick="window.open('https://www.skylightframe.com', '_blank')">
-            Shop Skylight
-        </button>
-        <button class="mobile-device-btn" onclick="alert('Device activation coming soon!')">
-            Activate Device
-        </button>
-    </div>
-</div>
-```
-
 </div>
 
 <!-- Mobile Navigation JavaScript -->
-
 <script>
 // Mobile navigation state
 let currentMobileSection = 'home';
