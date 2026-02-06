@@ -96,6 +96,36 @@ console.log('Script started loading...');
             localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
         }
         let events = JSON.parse(localStorage.getItem('events')) || [];
+        
+        // Add sample events if none exist (for testing)
+        if (events.length === 0) {
+            console.log('📅 No events found, adding sample events for testing...');
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            // Get dates for this week
+            const getDateStr = (daysOffset) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() + daysOffset);
+                return d.toISOString().split('T')[0];
+            };
+            
+            events = [
+                { id: Date.now() + 1, title: 'Payday', date: getDateStr(0), member: 'Family', time: null },
+                { id: Date.now() + 2, title: 'Transfer half of mortgage', date: getDateStr(0), member: 'Bret', time: null },
+                { id: Date.now() + 3, title: 'Study', date: getDateStr(0), member: 'Family', time: '09:00' },
+                { id: Date.now() + 4, title: 'Check Levi 5 A Day - Math & ELA', date: getDateStr(0), member: 'Family', time: '16:00' },
+                { id: Date.now() + 5, title: 'Josh', date: getDateStr(0), member: 'Family', time: '16:00' },
+                { id: Date.now() + 6, title: 'Levi Soccer', date: getDateStr(1), member: 'Levi', time: '20:30' },
+                { id: Date.now() + 7, title: 'Rotate Bed-So much fun!!!', date: getDateStr(2), member: 'Family', time: null },
+                { id: Date.now() + 8, title: 'Santa Fe oil change', date: getDateStr(2), member: 'Bret', time: '10:00' },
+                { id: Date.now() + 9, title: 'Hortons DnD', date: getDateStr(2), member: 'Family', time: '18:00' }
+            ];
+            
+            localStorage.setItem('events', JSON.stringify(events));
+            console.log('✅ Added', events.length, 'sample events');
+        }
+        
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let chores = JSON.parse(localStorage.getItem('chores')) || [];
         let routines = JSON.parse(localStorage.getItem('routines')) || [];
@@ -2612,6 +2642,10 @@ let visiblePeriods = {
             }
             
             const allEvents = [...events, ...googleEvents];
+            console.log('📅 getAllEvents() - Local events:', events.length, 'Google events:', googleEvents.length, 'Total:', allEvents.length);
+            if (allEvents.length > 0) {
+                console.log('📅 Sample events:', allEvents.slice(0, 3));
+            }
             return allEvents;
         }
         
