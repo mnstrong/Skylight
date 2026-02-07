@@ -6848,7 +6848,7 @@ async function updateEvent(eventId) {
             else if (currentView === 'week') renderWeekView();
             else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
-        }
+
 
         function saveMeal() {
             const meal = {
