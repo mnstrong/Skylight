@@ -173,9 +173,6 @@ let visiblePeriods = {
         
         // Google Calendar - Using Cloudflare Worker (keeps private key secure!)
         const CALENDAR_WORKER_URL = 'https://skylight-calendar.mary-n-strong.workers.dev';
-        
-        let googleCalendarEvents = [];
-        let isGoogleConnected = false;
 
         
         // Meal Planning Functions
