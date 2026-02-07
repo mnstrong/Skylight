@@ -96,6 +96,9 @@ console.log('Script started loading...');
             localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
         }
         
+        // Events data
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        
         // Add sample events if none exist (for testing)
         if (events.length === 0) {
             console.log('📅 No events found, adding sample events for testing...');
