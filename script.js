@@ -2388,10 +2388,14 @@ let visiblePeriods = {
         });
         
         // Utility function to convert hex color to rgba
+        const _rgbaCache = {};
         function hexToRgba(hex, alpha) {
+            // Check cache first
+            const cacheKey = hex + '|' + alpha;
+            if (_rgbaCache[cacheKey]) return _rgbaCache[cacheKey];
+            
             // Handle null/undefined/empty
             if (!hex || hex === '') {
-                console.warn('⚠️ hexToRgba received invalid color:', hex);
                 return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
             }
             
@@ -2400,7 +2404,6 @@ let visiblePeriods = {
             
             // Validate hex format
             if (hex.length !== 6) {
-                console.warn('⚠️ Invalid hex color length:', hex);
                 return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
             }
             
@@ -2411,11 +2414,12 @@ let visiblePeriods = {
             
             // Validate RGB values
             if (isNaN(r) || isNaN(g) || isNaN(b)) {
-                console.warn('⚠️ Invalid RGB values from hex:', hex, {r, g, b});
                 return `rgba(155, 89, 182, ${alpha})`; // Default to Family purple
             }
             
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            const result = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            _rgbaCache[cacheKey] = result;
+            return result;
         }
         
         function init() {
@@ -2467,7 +2471,7 @@ let visiblePeriods = {
                 // Otherwise mobile home will be shown by initMobile()
             }
             
-            setInterval(updateDateTime, 1000);
+            setInterval(updateDateTime, 15000); // Update every 15s (only shows hours:minutes)
             setInterval(updateWeather, 1800000); // Update every 30 minutes
             
             // Check for stored auth on startup
@@ -2637,10 +2641,6 @@ let visiblePeriods = {
             }
             
             const allEvents = [...events, ...googleEvents];
-            console.log('📅 getAllEvents() - Local events:', events.length, 'Google events:', googleEvents.length, 'Total:', allEvents.length);
-            if (allEvents.length > 0) {
-                console.log('📅 Sample events:', allEvents.slice(0, 3));
-            }
             return allEvents;
         }
         
@@ -2757,7 +2757,7 @@ let visiblePeriods = {
             const daysInPrevMonth = new Date(year, month, 0).getDate();
 
             const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = `
+            let html = `
                 <div class="day-header">Sun</div>
                 <div class="day-header">Mon</div>
                 <div class="day-header">Tue</div>
@@ -2769,7 +2769,7 @@ let visiblePeriods = {
 
             for (let i = firstDay - 1; i >= 0; i--) {
                 const day = daysInPrevMonth - i;
-                grid.innerHTML += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
+                html += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
             }
 
             const today = new Date();
@@ -2786,11 +2786,9 @@ let visiblePeriods = {
 
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
-                    console.log(`Month Event: "${event.title}" | Member: "${event.member}"`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = (member && member.color) || getFamilyColor();
-                    const bgColor = hexToRgba(color, 0.25); // Android 8 compatible
-                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
+                    const bgColor = hexToRgba(color, 0.25);
                     
                     // Format time to 12-hour format
                     let timeStr = '';
@@ -2815,7 +2813,7 @@ let visiblePeriods = {
                     eventsHtml += `<div class="day-event-item" style="color: #999;">${dayEvents.length - 3} More...</div>`;
                 }
 
-                grid.innerHTML += `
+                html += `
                     <div class="day-cell ${isToday ? 'today' : ''}" onclick="showDayEvents('${dateStr}')">
                         <div class="day-number">${day}</div>
                         <div class="day-events">${eventsHtml}</div>
@@ -2825,8 +2823,9 @@ let visiblePeriods = {
 
             const remainingCells = 42 - (firstDay + daysInMonth);
             for (let day = 1; day <= remainingCells; day++) {
-                grid.innerHTML += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
+                html += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
             }
+            grid.innerHTML = html;
         }
 
         function navigateMonth(direction) {
@@ -2944,11 +2943,9 @@ let visiblePeriods = {
                 
                 // Display events
                 dayEvents.forEach(event => {
-                    console.log(`Week Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = member ? member.color : getFamilyColor();
                     const bgColor = hexToRgba(color, 0.25);
-                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color} | BgColor: ${bgColor}`);
                     
                     // Format time
                     let timeStr = '';
@@ -3132,9 +3129,7 @@ let visiblePeriods = {
         }
 
         function renderScheduleView() {
-            console.log('🗓️ renderScheduleView called');
             const container = document.getElementById('scheduleContainer');
-            console.log('📦 scheduleContainer:', container);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
@@ -3142,10 +3137,8 @@ let visiblePeriods = {
             let startDate;
             if (window.innerWidth <= 768) {
                 startDate = getWeekStart(today);
-                console.log('📱 Mobile: Starting from week start:', startDate);
             } else {
                 startDate = new Date(currentDate);
-                console.log('💻 Desktop: Starting from currentDate:', startDate);
             }
             
             // Get the week start to calculate next week's dates
@@ -3162,7 +3155,9 @@ let visiblePeriods = {
             
             // On mobile show only 7 days (current week), on desktop show scheduleDaysToShow
             const daysToShow = window.innerWidth <= 768 ? 7 : scheduleDaysToShow;
-            console.log('📅 Days to show:', daysToShow);
+            
+            // Get all events ONCE outside the loop
+            const allEvents = getAllEvents();
             
             for (let i = 0; i < daysToShow; i++) {
                 const day = new Date(startDate);
@@ -3174,7 +3169,6 @@ let visiblePeriods = {
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
                 
-                const allEvents = getAllEvents();
                 const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
                     if (!a.time) return -1;
                     if (!b.time) return 1;
@@ -3196,13 +3190,10 @@ let visiblePeriods = {
                     html += `<div style="text-align: center; color: #999; padding: 20px; font-style: italic;">No events</div>`;
                 } else {
                     html += '<div class="schedule-event-list">';
-                    console.log(`📅 Schedule view for ${dateStr}:`, dayEvents);
                     dayEvents.forEach(event => {
-                        console.log(`Schedule Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                         const member = familyMembers.find(m => m.name === event.member);
                         const color = (member && member.color) || getFamilyColor();
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                        console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                         
                         const todayClass = isToday ? 'today' : '';
                         html += `<div class="schedule-event ${todayClass}" data-day-num="${dayNum}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
@@ -3221,8 +3212,6 @@ let visiblePeriods = {
             }
             
             container.innerHTML = html;
-            console.log('✅ Schedule HTML set, length:', html.length);
-            console.log('📄 Container after innerHTML:', container);
         }
 
         function switchSection(section) {
@@ -4222,18 +4211,12 @@ let visiblePeriods = {
         let currentEditRewardId = null;
         
         function openRewardDetail(rewardId) {
-            console.log('openRewardDetail called with ID:', rewardId);
-            console.log('Current rewards:', rewards);
-            
             currentEditRewardId = rewardId;
             const reward = rewards.find(r => r.id === rewardId);
             
             if (!reward) {
-                console.error('Reward not found with ID:', rewardId);
                 return;
             }
-            
-            console.log('Found reward:', reward);
             
             // Populate edit form
             const titleInput = document.getElementById('editRewardTitle');
@@ -4241,15 +4224,12 @@ let visiblePeriods = {
             const starsInput = document.getElementById('editRewardStars');
             
             if (!titleInput || !emojiInput || !starsInput) {
-                console.error('Edit form elements not found!');
                 return;
             }
             
             titleInput.value = reward.title || '';
             emojiInput.value = reward.emoji || reward.icon || '🎁';
             starsInput.value = reward.starsNeeded || reward.stars || 25;
-            
-            console.log('Form populated');
             
             // Initialize emoji picker
             initializeEditRewardEmojiPicker();
@@ -4259,14 +4239,11 @@ let visiblePeriods = {
             const panel = document.getElementById('editRewardPanel');
             
             if (!overlay || !panel) {
-                console.error('Panel elements not found!');
                 return;
             }
             
             overlay.classList.add('active');
             panel.classList.add('active');
-            
-            console.log('Panel should be visible now');
         }
         
         function closeEditRewardPanel() {
@@ -4421,19 +4398,10 @@ let visiblePeriods = {
             const targetMember = target.dataset.member;
             const targetPeriod = target.dataset.period;
             
-            console.log('🎯 Drop Event:', {
-                draggedFromMember,
-                draggedFromPeriod,
-                targetMember,
-                targetPeriod
-            });
-            
             // Only allow reordering within same member and same period
             if (draggedRoutine && targetMember === draggedFromMember && targetPeriod === draggedFromPeriod) {
                 const draggedId = parseFloat(draggedRoutine.dataset.taskId);
                 const targetId = parseFloat(target.dataset.taskId);
-                
-                console.log('📋 IDs:', { draggedId, targetId });
                 
                 if (draggedId !== targetId) {
                     // Get all routines for this specific member and period
@@ -4442,14 +4410,9 @@ let visiblePeriods = {
                     // Sort by current sortOrder
                     allMemberRoutines.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                     
-                    console.log('👥 Before:', allMemberRoutines.map(r => ({ title: r.title, sortOrder: r.sortOrder })));
-                    
                     // Find positions
                     const oldIndex = allMemberRoutines.findIndex(r => r.id === draggedId);
                     const newIndex = allMemberRoutines.findIndex(r => r.id === targetId);
-                    
-                    console.log('📍 Indices:', { oldIndex, newIndex });
-                    console.log('🔍 Looking for IDs in:', allMemberRoutines.map(r => ({ id: r.id, title: r.title })));
                     
                     if (oldIndex !== -1 && newIndex !== -1) {
                         // Move the item
@@ -4466,17 +4429,10 @@ let visiblePeriods = {
                             }
                         });
                         
-                        console.log('👥 After:', allMemberRoutines.map(r => ({ title: r.title, sortOrder: r.sortOrder })));
-                        console.log('💾 Saving...');
-                        
                         localStorage.setItem('routines', JSON.stringify(routines));
-                        
-                        console.log('✅ Saved and re-rendering');
                         renderChoresView();
                     }
                 }
-            } else {
-                console.log('❌ Cannot drop - different member or period');
             }
             
             return false;
@@ -5558,14 +5514,10 @@ let visiblePeriods = {
         }
         
         function renderEventProfileGrid() {
-            console.log('🎨 Rendering event profile grid...');
             const grid = document.getElementById('eventProfileGrid');
             const summary = document.getElementById('eventProfileSummary');
-            console.log('Grid element:', grid);
-            console.log('Family members:', familyMembers);
             
             if (!grid) {
-                console.error('❌ eventProfileGrid element not found!');
                 return;
             }
             
@@ -5580,7 +5532,6 @@ let visiblePeriods = {
                 </div>`;
             });
             
-            console.log('Generated HTML:', html.substring(0, 200) + '...');
             grid.innerHTML = html;
             
             // Update summary text
@@ -5591,8 +5542,6 @@ let visiblePeriods = {
                     summary.textContent = '';
                 }
             }
-            
-            console.log('✅ Event profile grid rendered');
         }
         
         function toggleEventProfile(profileName) {
@@ -6225,14 +6174,13 @@ function checkAllTasksComplete(memberName) {
 }
         
         function triggerConfetti() {
-            console.log('🎉 Confetti function called!');
             // Create confetti container
             const container = document.createElement('div');
             container.className = 'confetti-container';
             document.body.appendChild(container);
             
             const colors = ['#FF6B6B', '#4ECDC4', '#D9B554', '#DDC2F0', '#95E1D3', '#F38181', '#AA96DA', '#4A90E2'];
-            const confettiCount = 200;
+            const confettiCount = 40;
             
             for (let i = 0; i < confettiCount; i++) {
                 const confetti = document.createElement('div');
@@ -6250,26 +6198,22 @@ function checkAllTasksComplete(memberName) {
                 container.appendChild(confetti);
             }
             
-            console.log(`✨ Created ${confettiCount} confetti pieces!`);
-            
             // Remove container after animation
             setTimeout(() => {
                 if (container.parentNode) {
                     container.remove();
-                    console.log('Confetti removed');
                 }
             }, 5000);
         }
         
         function triggerStarConfetti() {
-            console.log('⭐ Star confetti function called!');
             // Create star container
             const container = document.createElement('div');
             container.className = 'confetti-container';
             document.body.appendChild(container);
             
             const starColors = ['#FFD700', '#FFA500', '#FFDF00', '#FFE55C', '#FFC107', '#FFEB3B'];
-            const starCount = 100;
+            const starCount = 25;
             const starEmojis = ['⭐', '✨', '🌟', '💫'];
             
             // Get center of screen
@@ -6305,13 +6249,10 @@ function checkAllTasksComplete(memberName) {
                 container.appendChild(star);
             }
             
-            console.log(`✨ Created ${starCount} exploding stars!`);
-            
             // Remove container after animation
             setTimeout(() => {
                 if (container.parentNode) {
                     container.remove();
-                    console.log('Star confetti removed');
                 }
             }, 3000);
         }
@@ -6393,7 +6334,6 @@ function checkAllTasksComplete(memberName) {
             document.getElementById('eventModal').classList.add('active');
             document.getElementById('eventDate').valueAsDate = new Date();
             updateEventTimeVisibility();
-            console.log('Calling renderEventProfileGrid...');
             renderEventProfileGrid();
             
             // Initialize repeat options
@@ -6474,23 +6414,18 @@ function checkAllTasksComplete(memberName) {
             for (let member of familyMembers) {
                 const lowerName = member.name.toLowerCase();
                 
-                console.log('Checking member:', member.name);
-                
                 // Check for exact name match (with word boundaries)
                 const nameRegex = new RegExp(`\\b${lowerName}\\b`, 'i');
                 if (nameRegex.test(title)) {
-                    console.log('✅ Match found (exact):', member.name);
                     return member.name;
                 }
                 
                 // Check for possessive forms like "Mary's" or "Bret's"
                 if (lowerTitle.includes(lowerName + "'s") || lowerTitle.includes(lowerName + "s")) {
-                    console.log('✅ Match found (possessive):', member.name);
                     return member.name;
                 }
             }
             
-            console.log('❌ No match found');
             // No match found, return empty string (unassigned)
             return '';
         }
@@ -7159,13 +7094,10 @@ async function updateEvent(eventId) {
             if (dayEvents.length === 0) {
                 listContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 40px; font-style: italic;">No events for this day</div>';
             } else {
-                console.log('📅 Displaying day events:', dayEvents);
                 let html = '';
                 dayEvents.forEach(event => {
-                    console.log(`Event: "${event.title}" | Member: "${event.member}" | isGoogle: ${event.isGoogle}`);
                     const member = familyMembers.find(m => m.name === event.member);
                     const color = member ? member.color : getFamilyColor();
-                    console.log(`  → Found member: ${member ? member.name : 'none'} | Color: ${color}`);
                     
                     // Format time
                     let timeStr = '';
