@@ -3948,12 +3948,10 @@ let visiblePeriods = {
                                     }
                                     html += '</div>';
                                     if (chore.stars) {
-                                        html += '<div class="routine-emoji-container">';
                                         html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                                     }
                                     html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">';
                                     html += chore.completed ? '✓' : '';
-                                    html += '</div>';
                                     html += '</div>';
                                     html += '</div>';
                                 });
