@@ -55,8 +55,9 @@ async function createJWT() {
     // Convert PEM to binary
     var pemHeader = "-----BEGIN PRIVATE KEY-----";
     var pemFooter = "-----END PRIVATE KEY-----";
-    var pemContents = privateKey.substring(pemHeader.length, privateKey.length - pemFooter.length);
-    pemContents = pemContents.replace(/\s/g, '');
+    var pemContents = privateKey.substring(pemHeader.length, privateKey.lastIndexOf(pemFooter));
+    // Remove ALL whitespace including newlines, spaces, tabs
+    pemContents = pemContents.replace(/[\s\r\n]/g, '');
     
     var binaryKey = atob(pemContents);
     var binaryKeyArray = new Uint8Array(binaryKey.length);
