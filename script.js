@@ -4290,7 +4290,9 @@ let visiblePeriods = {
         window.toggleRoutine = function toggleRoutine(routineId) {
             console.log('toggleRoutine called with ID:', routineId);
             console.log('toggleRoutine function type:', typeof toggleRoutine);
-            const routine = routines.find(r => r.id === routineId);
+            // Convert to number since IDs are timestamps
+            const numericId = typeof routineId === 'string' ? parseInt(routineId) : routineId;
+            const routine = routines.find(r => r.id === numericId);
             console.log('Found routine:', routine);
             if (routine) {
                 const wasCompleted = routine.completed;
@@ -6099,7 +6101,9 @@ let visiblePeriods = {
         window.toggleChore = function toggleChore(choreId) {
             console.log('toggleChore called with ID:', choreId);
             console.log('toggleChore function type:', typeof toggleChore);
-            const chore = chores.find(c => c.id === choreId);
+            // Convert to number since IDs are timestamps
+            const numericId = typeof choreId === 'string' ? parseInt(choreId) : choreId;
+            const chore = chores.find(c => c.id === numericId);
             console.log('Found chore:', chore);
             if (chore) {
                 const wasCompleted = chore.completed;
