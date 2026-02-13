@@ -22,7 +22,7 @@
         <div class="nav-sidebar">
             <a href="#/calendar" class="nav-item active">
                 <div class="nav-icon icon-calendar"></div>
-                <div>CAAAalendar</div>
+                <div>Calendar</div>
             </a>
             <a href="#/chores" class="nav-item">
                 <div class="nav-icon icon-tasks"></div>
@@ -1148,7 +1148,7 @@
             <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
         </div>
     </div>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google Calendar OAuth uses redirect flow, no GIS library needed -->
     
     <!-- Clock Picker Modal -->
     <div class="clock-picker-modal" id="clockPickerModal" onclick="if(event.target === this) closeClockPicker()">
