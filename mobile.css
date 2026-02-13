@@ -787,8 +787,11 @@
     }
     
     /* Hide FAB on home screen */
+    @media (max-width: 768px) {
     body:not(.viewing-section) .floating-add-btn {
         display: none !important;
+    }
+}
     }
     
     /* ============================================
@@ -1322,8 +1325,11 @@
     }
     
     /* Hide FAB on home screen */
+    @media (max-width: 768px) {
     body:not(.viewing-section) .floating-add-btn {
         display: none !important;
+    }
+}
     }
     
     /* ============================================
