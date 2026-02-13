@@ -6890,14 +6890,17 @@ function checkAllTasksComplete(memberName) {
             
             // Show the panel
             document.getElementById('eventDetailPanel').classList.add('active');
-            document.getElementById('eventDetailOverlay').classList.add('active');
+            document.getElementById('eventDetailPanelOverlay').classList.add('active');
         }
         
         function closeEventDetailPanel() {
             document.getElementById('eventDetailPanel').classList.remove('active');
-            document.getElementById('eventDetailOverlay').classList.remove('active');
+            document.getElementById('eventDetailPanelOverlay').classList.remove('active');
             window.currentEventDetailId = null;
         }
+        
+        // Expose globally
+        window.closeEventDetailPanel = closeEventDetailPanel;
         
         // Edit event from detail panel
 async function updateEvent(eventId) {
