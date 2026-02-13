@@ -4309,6 +4309,9 @@ let visiblePeriods = {
             }
         }
         
+        // Expose globally so onclick can access it
+        window.toggleRoutine = toggleRoutine;
+        
         // Drag and drop variables
         let draggedRoutine = null;
         let draggedFromMember = null;
@@ -6113,6 +6116,9 @@ let visiblePeriods = {
                 }
             }
         }
+        
+        // Expose globally so onclick can access it
+        window.toggleChore = toggleChore;
         
 function checkAllTasksComplete(memberName) {
     // 1. Check Chores
