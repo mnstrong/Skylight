@@ -85,6 +85,16 @@ console.log('Script started loading...');
             { name: 'Elsie', color: '#d9aafa' }
         ];
         
+        // Deduplicate family members by name (keep first occurrence)
+        const seenNames = new Set();
+        familyMembers = familyMembers.filter(member => {
+            if (seenNames.has(member.name)) {
+                return false;
+            }
+            seenNames.add(member.name);
+            return true;
+        });
+        
         // Ensure all family members have IDs (migration for existing data)
         let needsUpdate = false;
         familyMembers.forEach((member, index) => {
@@ -95,6 +105,12 @@ console.log('Script started loading...');
         });
         if (needsUpdate) {
             localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        }
+        
+        // Save deduplicated array if we removed duplicates
+        if (seenNames.size !== JSON.parse(localStorage.getItem('familyMembers') || '[]').length) {
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+            console.log('Removed duplicate family members');
         }
         
         // Events data
