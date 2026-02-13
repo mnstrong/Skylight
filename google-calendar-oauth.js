@@ -77,8 +77,10 @@ async function loadGoogleCalendarEvents() {
     try {
         console.log('📅 Loading Google Calendar events...');
         
-        const timeMin = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString();
-        const timeMax = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
+        // Use currentDate from script.js if available, otherwise use current date
+        const refDate = window.currentDate || new Date();
+        const timeMin = new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1).toISOString();
+        const timeMax = new Date(refDate.getFullYear(), refDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
         
         const response = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?` +
@@ -295,6 +297,7 @@ window.GoogleCalendar = {
     connect: connectGoogleCalendar,
     disconnect: disconnectGoogleCalendar,
     load: loadGoogleCalendarEvents,
+    loadEvents: loadGoogleCalendarEvents,
     create: createGoogleCalendarEvent,
     update: updateGoogleCalendarEvent,
     delete: deleteGoogleCalendarEvent,

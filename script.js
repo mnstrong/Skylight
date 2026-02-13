@@ -72,6 +72,7 @@ if (!Object.assign) {
 
 console.log('Script started loading...');
         let currentDate = new Date();
+        window.currentDate = currentDate; // Expose for google-calendar-oauth.js
         let currentView = 'month';
         let currentSection = 'calendar';
         let showCompletedChores = false;
@@ -3117,6 +3118,7 @@ let visiblePeriods = {
         
         function selectDayViewDate(year, month, day) {
             currentDate = new Date(year, month, day);
+            window.currentDate = currentDate;
             renderDayView();
         }
         
