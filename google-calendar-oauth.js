@@ -115,6 +115,13 @@ function initGoogleCalendar() {
     }
 
     console.log('No valid Google token found. Use Connect button to authenticate.');
+    
+    // AUTO-CONNECT: Automatically start OAuth flow after 2 seconds
+    console.log('Auto-connecting in 2 seconds...');
+    setTimeout(function() {
+        console.log('Starting auto-connect to Google Calendar...');
+        connectGoogleCalendar();
+    }, 2000);
 }
 
 // Connect to Google Calendar — REDIRECTS the full page (no popup)
