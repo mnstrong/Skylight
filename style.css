@@ -2992,7 +2992,7 @@
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
-            height: 145px;
+            height: 125px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
