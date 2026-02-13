@@ -7,7 +7,7 @@
 // ============================================
 
 var GOOGLE_CLIENT_ID = CONFIG.GOOGLE_CLIENT_ID;
-var CALENDAR_ID = 'primary';
+var CALENDAR_ID = 'family01945926476049559832@group.calendar.google.com';
 var SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
 var googleAccessToken = null;
@@ -17,13 +17,7 @@ var googleCalendarEvents = [];
 // Build the redirect URI from current page location (strip hash/query)
 function getRedirectUri() {
     var loc = window.location;
-    // For GitHub Pages with hash routing, use the base path without index.html
-    // This ensures OAuth callback doesn't conflict with app routing
-    var path = loc.pathname;
-    if (path.endsWith('index.html')) {
-        path = path.substring(0, path.lastIndexOf('/') + 1);
-    }
-    return loc.origin + path + 'oauth-callback.html';
+    return loc.origin + loc.pathname;
 }
 
 // ============================================
@@ -111,17 +105,10 @@ function initGoogleCalendar() {
             console.log('Saved Google token expired, clearing...');
             localStorage.removeItem('google_access_token');
             localStorage.removeItem('google_token_expiry');
-            // Token expired - fall through to auto-connect below
         }
     }
 
-    // No valid token found (either missing or expired)
-    console.log('No valid Google token found.');
-    console.log('Auto-connecting in 2 seconds...');
-    setTimeout(function() {
-        console.log('Starting auto-connect to Google Calendar...');
-        connectGoogleCalendar();
-    }, 2000);
+    console.log('No valid Google token found. Use Connect button to authenticate.');
 }
 
 // Connect to Google Calendar — REDIRECTS the full page (no popup)
@@ -141,106 +128,8 @@ function connectGoogleCalendar() {
         '&include_granted_scopes=true' +
         '&prompt=consent';
 
-    // Detect if we're in a WebView (which Google blocks)
-    var isWebView = /(wv|WebView|; wv)/.test(navigator.userAgent);
-    
-    if (isWebView) {
-        // WebView detected - show manual auth instructions
-        showManualAuthDialog(authUrl);
-    } else {
-        // Regular browser - redirect normally
-        window.location.href = authUrl;
-    }
-}
-
-// Show dialog with manual auth instructions for WebView users
-function showManualAuthDialog(authUrl) {
-    var dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
-    
-    dialog.innerHTML = '<div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; max-height: 80vh; overflow-y: auto;">' +
-        '<h2 style="margin-top: 0; color: #333;">Google Auth Required</h2>' +
-        '<p style="color: #666; line-height: 1.6;">Your device browser does not support Google authentication directly. Please follow these steps:</p>' +
-        '<ol style="color: #666; line-height: 1.8; padding-left: 20px;">' +
-        '<li>Copy the link below</li>' +
-        '<li>Open Chrome browser on this tablet</li>' +
-        '<li>Paste and visit the link</li>' +
-        '<li>Sign in with Google</li>' +
-        '<li>You will be redirected back automatically</li>' +
-        '</ol>' +
-        '<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; word-wrap: break-word; font-size: 12px; font-family: monospace;">' +
-        authUrl +
-        '</div>' +
-        '<button onclick="copyAuthUrl(\'' + authUrl.replace(/'/g, "\\'") + '\'); return false;" ' +
-        'style="background: #4285f4; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; margin-bottom: 10px;">' +
-        '📋 Copy Link</button>' +
-        '<button onclick="tryOpenInExternalBrowser(\'' + authUrl.replace(/'/g, "\\'") + '\'); return false;" ' +
-        'style="background: #34a853; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; margin-bottom: 10px;">' +
-        '🌐 Try Opening in Browser</button>' +
-        '<button onclick="closeManualAuthDialog(); return false;" ' +
-        'style="background: #999; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%;">' +
-        'Cancel</button>' +
-        '</div>';
-    
-    dialog.id = 'manualAuthDialog';
-    document.body.appendChild(dialog);
-}
-
-function copyAuthUrl(url) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(function() {
-            alert('✅ Link copied! Now paste it in Chrome browser.');
-        }).catch(function() {
-            fallbackCopyAuthUrl(url);
-        });
-    } else {
-        fallbackCopyAuthUrl(url);
-    }
-}
-
-function fallbackCopyAuthUrl(url) {
-    var textArea = document.createElement('textarea');
-    textArea.value = url;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-        document.execCommand('copy');
-        alert('✅ Link copied! Now paste it in Chrome browser.');
-    } catch (err) {
-        alert('Could not copy. Please manually copy the link shown above.');
-    }
-    document.body.removeChild(textArea);
-}
-
-function tryOpenInExternalBrowser(url) {
-    window.open(url, '_system') || window.open(url, '_blank');
-    startPollingForToken();
-}
-
-function closeManualAuthDialog() {
-    var dialog = document.getElementById('manualAuthDialog');
-    if (dialog) {
-        dialog.remove();
-    }
-}
-
-function startPollingForToken() {
-    console.log('Starting to poll for auth token...');
-    var pollInterval = setInterval(function() {
-        var token = localStorage.getItem('google_access_token');
-        if (token) {
-            clearInterval(pollInterval);
-            console.log('✅ Token found! Reloading...');
-            closeManualAuthDialog();
-            window.location.reload();
-        }
-    }, 2000);
-    setTimeout(function() {
-        clearInterval(pollInterval);
-        console.log('Stopped polling for token');
-    }, 10 * 60 * 1000);
+    // Redirect the whole page
+    window.location.href = authUrl;
 }
 
 // Disconnect
