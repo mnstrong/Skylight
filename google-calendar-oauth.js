@@ -17,7 +17,13 @@ var googleCalendarEvents = [];
 // Build the redirect URI from current page location (strip hash/query)
 function getRedirectUri() {
     var loc = window.location;
-    return loc.origin + loc.pathname;
+    // For GitHub Pages with hash routing, use the base path without index.html
+    // This ensures OAuth callback doesn't conflict with app routing
+    var path = loc.pathname;
+    if (path.endsWith('index.html')) {
+        path = path.substring(0, path.lastIndexOf('/') + 1);
+    }
+    return loc.origin + path + 'oauth-callback.html';
 }
 
 // ============================================
