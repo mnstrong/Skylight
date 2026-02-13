@@ -71,19 +71,24 @@
         }
 
         function processOAuthCallback() {
-            console.log('OAuth callback page loaded');
-            console.log('Current URL:', window.location.href);
+            console.log('=== OAUTH CALLBACK DEBUG ===');
+            console.log('Full URL:', window.location.href);
+            console.log('Hash:', window.location.hash);
+            console.log('Search:', window.location.search);
             
             const hash = window.location.hash;
             
             // Check for access token in hash fragment
             if (hash && hash.indexOf('access_token=') !== -1) {
-                console.log('Found access token in URL hash');
+                console.log('✅ Found access_token in hash!');
                 
                 // Parse the hash fragment
                 const params = {};
                 const hashStr = hash.substring(1); // Remove the '#'
+                console.log('Hash string:', hashStr);
+                
                 const pairs = hashStr.split('&');
+                console.log('Hash pairs:', pairs);
                 
                 for (let i = 0; i < pairs.length; i++) {
                     const pair = pairs[i].split('=');
@@ -92,31 +97,54 @@
                     }
                 }
                 
+                console.log('Parsed params:', params);
+                
                 if (params.access_token) {
+                    console.log('✅ Access token found:', params.access_token.substring(0, 20) + '...');
+                    
                     // Calculate expiry time
                     const expiresIn = parseInt(params.expires_in) || 3600;
                     const expiryTime = Date.now() + (expiresIn * 1000);
                     
+                    console.log('Expires in:', expiresIn, 'seconds');
+                    console.log('Expiry time:', new Date(expiryTime).toLocaleString());
+                    
                     // Save token to localStorage
-                    localStorage.setItem('google_access_token', params.access_token);
-                    localStorage.setItem('google_token_expiry', expiryTime.toString());
+                    try {
+                        localStorage.setItem('google_access_token', params.access_token);
+                        localStorage.setItem('google_token_expiry', expiryTime.toString());
+                        console.log('✅ Token saved to localStorage!');
+                        
+                        // Verify it was saved
+                        const saved = localStorage.getItem('google_access_token');
+                        console.log('Verification - token in localStorage:', saved ? 'YES' : 'NO');
+                    } catch (e) {
+                        console.error('❌ Error saving to localStorage:', e);
+                        setStatus('❌ Error saving token: ' + e.message, true);
+                        return;
+                    }
                     
-                    console.log('✅ Token saved to localStorage');
-                    console.log('Token expires in:', expiresIn, 'seconds');
-                    
-                    setStatus('✅ Authentication successful! Redirecting...', false);
+                    setStatus('✅ Authentication successful! Redirecting in 3 seconds...', false);
                     
                     // Get the return route (or default to calendar)
                     const returnRoute = localStorage.getItem('google_auth_return_route') || '#/calendar';
                     localStorage.removeItem('google_auth_return_route');
                     
-                    // Redirect back to the main app
+                    console.log('Will redirect to: index.html' + returnRoute);
+                    
+                    // Redirect back to the main app after 3 seconds (so you can see the success message)
                     setTimeout(function() {
+                        console.log('Redirecting now...');
                         window.location.href = 'index.html' + returnRoute;
-                    }, 1000);
+                    }, 3000);
                     
                     return;
+                } else {
+                    console.error('❌ access_token not in parsed params');
                 }
+            } else {
+                console.log('❌ No access_token in hash');
+                console.log('Hash is:', hash || '(empty)');
             }
             
             // Check for error in URL
@@ -124,7 +152,7 @@
             const error = urlParams.get('error');
             
             if (error) {
-                console.error('OAuth error:', error);
+                console.error('❌ OAuth error in URL:', error);
                 setStatus('❌ Authentication failed: ' + error, true);
                 
                 setTimeout(function() {
@@ -133,13 +161,16 @@
                 return;
             }
             
-            // No token and no error - something went wrong
-            console.error('No access token found in callback');
-            setStatus('❌ No authentication token received', true);
+            // No token and no error - show what we got
+            console.error('❌ No token found in callback');
+            console.log('Expected format: #access_token=...&token_type=Bearer&expires_in=3600');
+            console.log('Got:', window.location.hash || '(no hash)');
+            
+            setStatus('❌ No authentication token received. Check console for details.', true);
             
             setTimeout(function() {
                 window.location.href = 'index.html#/calendar';
-            }, 3000);
+            }, 5000);
         }
 
         // Run when page loads
