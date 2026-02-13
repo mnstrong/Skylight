@@ -3896,6 +3896,7 @@ let visiblePeriods = {
                         html += '<svg class="routine-indicator-progress" viewBox="0 0 50 50" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg);">';
                         html += '<circle cx="25" cy="25" r="20" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle>';
                         html += '<circle cx="25" cy="25" r="20" fill="none" stroke="' + member.color + '" stroke-width="3" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + dashOffset + '" data-final-offset="' + dashOffset + '" data-period-id="' + member.name + '-' + period + '" class="progress-circle"></circle>';
+                        html += '</svg>';
                         html += '<div class="routine-indicator-icon' + iconClass + '">' + icon + '</div>';
                         html += '<div class="routine-indicator-label">' + period + '</div>';
                         html += '</div>';
@@ -4425,6 +4426,9 @@ let visiblePeriods = {
             // Re-render the view to reflect the change
             renderChoresView();
         }
+        
+        // Expose globally so onclick can access it
+        window.togglePeriodVisibility = togglePeriodVisibility;
         
         let currentTaskType = 'chore';
         let selectedProfiles = [];
