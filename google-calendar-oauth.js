@@ -111,12 +111,12 @@ function initGoogleCalendar() {
             console.log('Saved Google token expired, clearing...');
             localStorage.removeItem('google_access_token');
             localStorage.removeItem('google_token_expiry');
+            // Token expired - fall through to auto-connect below
         }
     }
 
-    console.log('No valid Google token found. Use Connect button to authenticate.');
-    
-    // AUTO-CONNECT: Automatically start OAuth flow after 2 seconds
+    // No valid token found (either missing or expired)
+    console.log('No valid Google token found.');
     console.log('Auto-connecting in 2 seconds...');
     setTimeout(function() {
         console.log('Starting auto-connect to Google Calendar...');
