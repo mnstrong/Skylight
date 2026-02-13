@@ -1495,12 +1495,36 @@ let visiblePeriods = {
         let touchStartX = 0;
         let touchStartY = 0;
         let currentSwipeItem = null;
+        let isDragging = false;
+        let longPressTimer = null;
+        let draggedElement = null;
+        let draggedItemData = null;
+        let touchMoveY = 0;
         
         function handleListItemTouchStart(event, listId, itemId) {
             const touch = event.touches[0];
             touchStartX = touch.clientX;
             touchStartY = touch.clientY;
+            touchMoveY = touch.clientY;
             currentSwipeItem = event.currentTarget;
+            isDragging = false;
+            
+            // Start long press timer for drag
+            longPressTimer = setTimeout(() => {
+                isDragging = true;
+                startDragging(event.currentTarget, listId, itemId);
+            }, 500); // 500ms long press
+        }
+        
+        function startDragging(element, listId, itemId) {
+            draggedElement = element;
+            draggedItemData = { listId, itemId };
+            
+            // Visual feedback
+            element.style.opacity = '0.5';
+            element.style.transform = 'scale(1.05)';
+            element.style.zIndex = '1000';
+            navigator.vibrate && navigator.vibrate(50); // Haptic feedback if available
         }
         
         function handleListItemTouchMove(event, listId, itemId) {
@@ -1509,38 +1533,125 @@ let visiblePeriods = {
             const touch = event.touches[0];
             const deltaX = touch.clientX - touchStartX;
             const deltaY = touch.clientY - touchStartY;
+            touchMoveY = touch.clientY;
             
-            // Only swipe horizontally if the movement is more horizontal than vertical
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Cancel long press if finger moves too much
+            if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+                clearTimeout(longPressTimer);
+            }
+            
+            if (isDragging) {
+                // Drag mode - move element with finger
                 event.preventDefault();
+                currentSwipeItem.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+                currentSwipeItem.style.transition = 'none';
                 
-                // Only allow left swipe (negative deltaX)
-                if (deltaX < 0) {
-                    currentSwipeItem.style.transform = `translateX(${deltaX}px)`;
-                    currentSwipeItem.style.transition = 'none';
+                // Find element under touch point
+                currentSwipeItem.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                currentSwipeItem.style.pointerEvents = 'auto';
+                
+                // Clear all highlights
+                document.querySelectorAll('.list-item').forEach(item => {
+                    item.style.borderTop = '';
+                    item.style.borderBottom = '';
+                });
+                
+                // Highlight drop target
+                if (elementBelow && elementBelow.classList.contains('list-item')) {
+                    const rect = elementBelow.getBoundingClientRect();
+                    const midpoint = rect.top + rect.height / 2;
+                    
+                    if (touch.clientY < midpoint) {
+                        elementBelow.style.borderTop = '3px solid #4A90E2';
+                    } else {
+                        elementBelow.style.borderBottom = '3px solid #4A90E2';
+                    }
+                }
+            } else {
+                // Swipe mode - only allow left swipe
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    event.preventDefault();
+                    
+                    if (deltaX < 0) {
+                        currentSwipeItem.style.transform = `translateX(${deltaX}px)`;
+                        currentSwipeItem.style.transition = 'none';
+                    }
                 }
             }
         }
         
         function handleListItemTouchEnd(event, listId, itemId) {
+            clearTimeout(longPressTimer);
+            
             if (!currentSwipeItem) return;
             
             const touch = event.changedTouches[0];
             const deltaX = touch.clientX - touchStartX;
             
-            // If swiped more than 100px to the left, delete
-            if (deltaX < -100) {
-                currentSwipeItem.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-                currentSwipeItem.style.transform = 'translateX(-100%)';
-                currentSwipeItem.style.opacity = '0';
+            if (isDragging) {
+                // Handle drop
+                event.preventDefault();
                 
-                setTimeout(() => {
-                    toggleListItem(listId, itemId);
-                }, 300);
+                // Find element at drop position
+                currentSwipeItem.style.pointerEvents = 'none';
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                currentSwipeItem.style.pointerEvents = 'auto';
+                
+                if (elementBelow && elementBelow.classList.contains('list-item')) {
+                    const targetListId = parseInt(elementBelow.dataset.listId);
+                    const targetItemId = parseInt(elementBelow.dataset.itemId);
+                    
+                    // Only reorder within same list
+                    if (targetListId === listId && targetItemId !== itemId) {
+                        const list = lists.find(l => l.id === listId);
+                        if (list) {
+                            const draggedIndex = list.items.findIndex(i => i.id === itemId);
+                            const targetIndex = list.items.findIndex(i => i.id === targetItemId);
+                            
+                            if (draggedIndex !== -1 && targetIndex !== -1) {
+                                // Reorder
+                                const [movedItem] = list.items.splice(draggedIndex, 1);
+                                list.items.splice(targetIndex, 0, movedItem);
+                                
+                                localStorage.setItem('lists', JSON.stringify(lists));
+                            }
+                        }
+                    }
+                }
+                
+                // Clear highlights
+                document.querySelectorAll('.list-item').forEach(item => {
+                    item.style.borderTop = '';
+                    item.style.borderBottom = '';
+                });
+                
+                // Reset and re-render
+                currentSwipeItem.style.opacity = '1';
+                currentSwipeItem.style.transform = '';
+                currentSwipeItem.style.transition = '';
+                currentSwipeItem.style.zIndex = '';
+                
+                isDragging = false;
+                draggedElement = null;
+                draggedItemData = null;
+                
+                renderListsColumns();
             } else {
-                // Snap back
-                currentSwipeItem.style.transition = 'transform 0.3s ease';
-                currentSwipeItem.style.transform = 'translateX(0)';
+                // Handle swipe to delete
+                if (deltaX < -100) {
+                    currentSwipeItem.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                    currentSwipeItem.style.transform = 'translateX(-100%)';
+                    currentSwipeItem.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        toggleListItem(listId, itemId);
+                    }, 300);
+                } else {
+                    // Snap back
+                    currentSwipeItem.style.transition = 'transform 0.3s ease';
+                    currentSwipeItem.style.transform = 'translateX(0)';
+                }
             }
             
             currentSwipeItem = null;
@@ -1669,6 +1780,12 @@ let visiblePeriods = {
             draggedFromList = null;
             draggedFromSection = null;
         }
+        
+        // Expose list drag functions globally
+        window.handleListItemDragStart = handleListItemDragStart;
+        window.handleListItemDragOver = handleListItemDragOver;
+        window.handleListItemDrop = handleListItemDrop;
+        window.handleListItemDragEnd = handleListItemDragEnd;
         
         // Handle dropping on a section (when section is empty or dropping at end)
         function handleSectionDragOver(event) {
