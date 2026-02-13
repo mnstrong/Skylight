@@ -3487,6 +3487,7 @@ let visiblePeriods = {
                     <div class="day-view" id="dayView"></div>
                 `;
                 renderFamilyPills();
+                renderCalendarFilterList();
                 
                 // On mobile, default to schedule view, on desktop use current view
                 if (window.innerWidth <= 768) {
@@ -6591,6 +6592,9 @@ function checkAllTasksComplete(memberName) {
             // Open event modal with today's date
             openEventModal();
         }
+        
+        // Expose globally
+        window.openEventModalForCurrentDay = openEventModalForCurrentDay;
         
         function openEventModalForDate(dateStr) {
             selectedEventProfile = ''; // Reset selection
