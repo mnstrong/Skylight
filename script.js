@@ -4288,7 +4288,10 @@ let visiblePeriods = {
         }
         
         function toggleRoutine(routineId) {
+            console.log('toggleRoutine called with ID:', routineId);
+            console.log('toggleRoutine function type:', typeof toggleRoutine);
             const routine = routines.find(r => r.id === routineId);
+            console.log('Found routine:', routine);
             if (routine) {
                 const wasCompleted = routine.completed;
                 routine.completed = !routine.completed;
@@ -4310,6 +4313,7 @@ let visiblePeriods = {
         
         // Expose globally so onclick can access it
         window.toggleRoutine = toggleRoutine;
+        console.log('window.toggleRoutine exposed:', typeof window.toggleRoutine);
         
         // Drag and drop variables
         let draggedRoutine = null;
