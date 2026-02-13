@@ -72,7 +72,7 @@ if (!Object.assign) {
 
 console.log('Script started loading...');
         let currentDate = new Date();
-        window.currentDate = currentDate; // Expose for google-calendar-oauth.js
+        window.currentDate = currentDate;
         let currentView = 'month';
         let currentSection = 'calendar';
         let showCompletedChores = false;
@@ -2475,8 +2475,7 @@ let visiblePeriods = {
             setInterval(updateDateTime, 15000); // Update every 15s (only shows hours:minutes)
             setInterval(updateWeather, 1800000); // Update every 30 minutes
             
-            // Check for stored auth on startup
-            checkStoredAuth();
+            // Google Calendar auth is handled by GoogleCalendar.init() above
         }
         
         function initializeSampleRoutines() {
@@ -2565,56 +2564,17 @@ let visiblePeriods = {
             localStorage.setItem('rewards', JSON.stringify(rewards));
         }
         
-        function checkStoredAuth() {
-            const storedToken = localStorage.getItem('googleCalendarToken');
-            const tokenExpiry = localStorage.getItem('googleCalendarTokenExpiry');
-            
-            if (storedToken && tokenExpiry) {
-                const expiryTime = parseInt(tokenExpiry);
-                const now = Date.now();
-                
-                // Check if token is still valid (with 5 minute buffer)
-                if (expiryTime > now + (5 * 60 * 1000)) {
-                    // Token is still valid, restore it
-                    console.log('Restoring saved Google Calendar session...');
-                    restoreGoogleSession(storedToken);
-                } else {
-                    // Token expired, clear it
-                    console.log('Saved token expired, clearing...');
-                    localStorage.removeItem('googleCalendarToken');
-                    localStorage.removeItem('googleCalendarTokenExpiry');
-                }
-            }
-        }
-        
-        function restoreGoogleSession(token) {
-            // Wait for gapi to be ready
-            const checkGapi = setInterval(() => {
-                if (gapiInited) {
-                    clearInterval(checkGapi);
-                    
-                    // Set the token in gapi client
-                    gapi.client.setToken({
-                        access_token: token
-                    });
-                    
-                    isGoogleConnected = true;
-                    loadGoogleCalendarEvents();
-                }
-            }, 100);
-        }
+        // Auth check and session restore is now handled by GoogleCalendar.init()
+        // in google-calendar-oauth.js (redirect-based flow, no gapi needed)
 
-        // Simple initialization - uses Cloudflare Worker (keeps private key secure!)
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                if (typeof GoogleCalendar !== 'undefined') {
-                    console.log('Initializing Google Calendar OAuth...');
-                    GoogleCalendar.init();
-                } else {
-                    console.warn('Google Calendar OAuth module not loaded');
-                }
-            }, 500);
-        });
+        // Initialize Google Calendar OAuth IMMEDIATELY (must run before hash routing
+        // so we can catch the OAuth redirect token in the URL hash)
+        if (typeof GoogleCalendar !== 'undefined') {
+            console.log('Initializing Google Calendar OAuth...');
+            GoogleCalendar.init();
+        } else {
+            console.warn('Google Calendar OAuth module not loaded');
+        }
 
         function connectGoogleCalendar() {
             GoogleCalendar.connect();
@@ -6413,6 +6373,22 @@ function checkAllTasksComplete(memberName) {
             // Check if title contains any family member's name
             const lowerTitle = title.toLowerCase();
             
+            // Custom keyword matching
+            const keywords = {
+                'Bret': ['josh', 'danny', 'mens', 'men\'s']
+            };
+            
+            // First check custom keywords
+            for (let memberName in keywords) {
+                const memberKeywords = keywords[memberName];
+                for (let keyword of memberKeywords) {
+                    if (lowerTitle.includes(keyword)) {
+                        return memberName;
+                    }
+                }
+            }
+            
+            // Then check for family member names
             for (let member of familyMembers) {
                 const lowerName = member.name.toLowerCase();
                 
