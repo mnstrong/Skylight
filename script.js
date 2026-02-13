@@ -3449,8 +3449,21 @@ let visiblePeriods = {
             
             // Show/hide chores filter section based on current section
             var choresFilterSection = document.getElementById('choresFilterSection');
-            if (choresFilterSection) {
-                choresFilterSection.style.display = section === 'chores' ? 'block' : 'none';
+            var filterList = document.getElementById('calendarFilterList');
+            var filterHeader = document.querySelector('.calendar-filter-header');
+            
+            if (section === 'chores') {
+                if (choresFilterSection) choresFilterSection.style.display = 'block';
+                if (filterList) filterList.style.display = 'none';
+                if (filterHeader) filterHeader.textContent = 'Filter Chores';
+            } else if (section === 'lists') {
+                if (choresFilterSection) choresFilterSection.style.display = 'block';
+                if (filterList) filterList.style.display = 'none';
+                if (filterHeader) filterHeader.textContent = 'Filter Lists';
+            } else {
+                if (choresFilterSection) choresFilterSection.style.display = 'none';
+                if (filterList) filterList.style.display = 'block';
+                if (filterHeader) filterHeader.textContent = 'Filter Calendar';
             }
             
             // Show relevant sections based on navigation
