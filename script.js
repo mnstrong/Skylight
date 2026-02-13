@@ -1479,9 +1479,10 @@ let visiblePeriods = {
             const list = lists.find(l => l.id === listId);
             if (!list) return;
             
-            const item = list.items.find(i => i.id === itemId);
-            if (item) {
-                item.completed = !item.completed;
+            const itemIndex = list.items.findIndex(i => i.id === itemId);
+            if (itemIndex !== -1) {
+                // Remove the item from the list
+                list.items.splice(itemIndex, 1);
                 localStorage.setItem('lists', JSON.stringify(lists));
                 renderListsColumns();
             }
