@@ -76,6 +76,7 @@ console.log('Script started loading...');
         let currentView = 'month';
         let currentSection = 'calendar';
         let showCompletedChores = false;
+        window.showCompletedListItems = false;
         let scheduleDaysToShow = 14;
         let familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
@@ -1348,6 +1349,9 @@ let visiblePeriods = {
                         // Skip empty items (section placeholders)
                         if (!item.text) return;
                         
+                        // Skip completed items if filter is off
+                        if (item.completed && !window.showCompletedListItems) return;
+                        
                         const checkedClass = item.completed ? 'checked' : '';
                         const textClass = item.completed ? 'completed' : '';
                         const itemBg = hexToRgba(member.color, 0.4);
@@ -1498,10 +1502,11 @@ let visiblePeriods = {
             const list = lists.find(l => l.id === listId);
             if (!list) return;
             
-            const itemIndex = list.items.findIndex(i => i.id === itemId);
-            if (itemIndex !== -1) {
-                // Remove the item from the list
-                list.items.splice(itemIndex, 1);
+            const item = list.items.find(i => i.id === itemId);
+            if (item) {
+                // Mark as completed instead of deleting
+                item.completed = true;
+                item.completedDate = new Date().toISOString().split('T')[0];
                 localStorage.setItem('lists', JSON.stringify(lists));
                 renderListsColumns();
             }
@@ -2370,8 +2375,42 @@ let visiblePeriods = {
                 return;
             }
             
+            // If in lists section, show lists filter
+            if (currentSection === 'lists') {
+                const dropdown = document.getElementById('calendarFilterDropdown');
+                
+                // Update the dropdown content for lists
+                const filterList = document.getElementById('calendarFilterList');
+                const choresFilterSection = document.getElementById('choresFilterSection');
+                
+                if (filterList) filterList.style.display = 'none'; // Hide member filters
+                if (choresFilterSection) {
+                    choresFilterSection.style.display = 'block';
+                    
+                    // Update checkbox for lists completed items
+                    const checkbox = document.getElementById('showCompletedChores');
+                    if (checkbox) {
+                        checkbox.checked = window.showCompletedListItems || false;
+                        // Update the label
+                        const label = choresFilterSection.querySelector('span');
+                        if (label) label.textContent = 'Show Completed';
+                    }
+                }
+                
+                dropdown.classList.toggle('active');
+                return;
+            }
+            
             // Otherwise show calendar filter dropdown
             const dropdown = document.getElementById('calendarFilterDropdown');
+            
+            // Reset to calendar view (show member filters, hide completed toggle for calendar)
+            const filterList = document.getElementById('calendarFilterList');
+            const choresFilterSection = document.getElementById('choresFilterSection');
+            
+            if (filterList) filterList.style.display = 'block';
+            if (choresFilterSection) choresFilterSection.style.display = 'none';
+            
             dropdown.classList.toggle('active');
         }
         
@@ -2394,9 +2433,20 @@ let visiblePeriods = {
         
         function toggleShowCompletedChores() {
             var checkbox = document.getElementById('showCompletedChores');
-            showCompletedChores = checkbox ? checkbox.checked : false;
-            renderChoresView();
+            
+            if (currentSection === 'lists') {
+                // For lists section
+                window.showCompletedListItems = checkbox ? checkbox.checked : false;
+                renderListsColumns();
+            } else {
+                // For chores section
+                showCompletedChores = checkbox ? checkbox.checked : false;
+                renderChoresView();
+            }
         }
+        
+        // Expose globally
+        window.toggleShowCompletedChores = toggleShowCompletedChores;
         
         function updateFilterButtonState() {
             const btn = document.getElementById('calendarFilterBtn');
