@@ -1352,7 +1352,10 @@ let visiblePeriods = {
                                  ondragover="handleListItemDragOver(event)"
                                  ondrop="handleListItemDrop(event)"
                                  ondragend="handleListItemDragEnd(event)"
-                                 style="background: ${itemBg}; cursor: move;">
+                                 ontouchstart="handleListItemTouchStart(event, ${list.id}, ${item.id})"
+                                 ontouchmove="handleListItemTouchMove(event, ${list.id}, ${item.id})"
+                                 ontouchend="handleListItemTouchEnd(event, ${list.id}, ${item.id})"
+                                 style="background: ${itemBg}; cursor: move; transition: transform 0.3s ease;">
                                 <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
                                 ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
                                 <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
@@ -1487,6 +1490,66 @@ let visiblePeriods = {
                 renderListsColumns();
             }
         }
+        
+        // Swipe to delete for list items
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let currentSwipeItem = null;
+        
+        function handleListItemTouchStart(event, listId, itemId) {
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            currentSwipeItem = event.currentTarget;
+        }
+        
+        function handleListItemTouchMove(event, listId, itemId) {
+            if (!currentSwipeItem) return;
+            
+            const touch = event.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+            
+            // Only swipe horizontally if the movement is more horizontal than vertical
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                event.preventDefault();
+                
+                // Only allow left swipe (negative deltaX)
+                if (deltaX < 0) {
+                    currentSwipeItem.style.transform = `translateX(${deltaX}px)`;
+                    currentSwipeItem.style.transition = 'none';
+                }
+            }
+        }
+        
+        function handleListItemTouchEnd(event, listId, itemId) {
+            if (!currentSwipeItem) return;
+            
+            const touch = event.changedTouches[0];
+            const deltaX = touch.clientX - touchStartX;
+            
+            // If swiped more than 100px to the left, delete
+            if (deltaX < -100) {
+                currentSwipeItem.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                currentSwipeItem.style.transform = 'translateX(-100%)';
+                currentSwipeItem.style.opacity = '0';
+                
+                setTimeout(() => {
+                    toggleListItem(listId, itemId);
+                }, 300);
+            } else {
+                // Snap back
+                currentSwipeItem.style.transition = 'transform 0.3s ease';
+                currentSwipeItem.style.transform = 'translateX(0)';
+            }
+            
+            currentSwipeItem = null;
+        }
+        
+        // Expose globally
+        window.handleListItemTouchStart = handleListItemTouchStart;
+        window.handleListItemTouchMove = handleListItemTouchMove;
+        window.handleListItemTouchEnd = handleListItemTouchEnd;
         
         // Drag and drop for list items
         let draggedListItem = null;
