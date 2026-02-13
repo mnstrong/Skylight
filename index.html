@@ -1665,9 +1665,19 @@ window.addEventListener('resize', function() {
 
 // Initialize on load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobile);
+    document.addEventListener('DOMContentLoaded', function() {
+        initMobile();
+        // Initialize Google Calendar OAuth
+        if (typeof initGoogleCalendar === 'function') {
+            initGoogleCalendar();
+        }
+    });
 } else {
     initMobile();
+    // Initialize Google Calendar OAuth
+    if (typeof initGoogleCalendar === 'function') {
+        initGoogleCalendar();
+    }
 }
 
 // Profile settings placeholder

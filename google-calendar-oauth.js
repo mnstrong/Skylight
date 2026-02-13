@@ -1,67 +1,169 @@
 // google-calendar-oauth.js
 // Google Calendar OAuth Integration with Read/Write Access
+// Uses REDIRECT flow (no popups) for tablet/kiosk compatibility
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
-const GOOGLE_CLIENT_ID = CONFIG.GOOGLE_CLIENT_ID;
-const CALENDAR_ID = 'primary'; // User's primary calendar
-const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+var GOOGLE_CLIENT_ID = CONFIG.GOOGLE_CLIENT_ID;
+var CALENDAR_ID = 'primary';
+var SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
-let googleAccessToken = null;
-let googleTokenClient = null;
-let isGoogleConnected = false;
-let googleCalendarEvents = [];
+var googleAccessToken = null;
+var isGoogleConnected = false;
+var googleCalendarEvents = [];
 
-// Initialize Google Identity Services (call this on page load)
-function initGoogleCalendar() {
-    console.log('Initializing Google Calendar OAuth...');
-    
-    // Check if already have token
-    const savedToken = sessionStorage.getItem('google_access_token');
-    if (savedToken) {
-        console.log('📝 Found saved Google token');
-        googleAccessToken = savedToken;
-        isGoogleConnected = true;
-        loadGoogleCalendarEvents();
-        return;
-    }
-    
-    // Initialize token client
-    googleTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: SCOPES,
-        callback: (response) => {
-            if (response.access_token) {
-                googleAccessToken = response.access_token;
-                sessionStorage.setItem('google_access_token', googleAccessToken);
-                isGoogleConnected = true;
-                console.log('✅ Google Calendar connected!');
-                loadGoogleCalendarEvents();
-            }
-        },
-    });
+// Build the redirect URI from current page location (strip hash/query)
+function getRedirectUri() {
+    var loc = window.location;
+    return loc.origin + loc.pathname;
 }
 
-// Connect to Google Calendar (shows popup)
-function connectGoogleCalendar() {
-    if (!googleTokenClient) {
-        console.error('Google token client not initialized');
+// ============================================
+// REDIRECT-BASED OAUTH FLOW
+// ============================================
+
+// Check if we're returning from a Google OAuth redirect.
+// Google sends the token back in the URL hash fragment:
+//   #access_token=TOKEN&token_type=Bearer&expires_in=3600&scope=...
+function checkOAuthRedirect() {
+    var hash = window.location.hash;
+
+    // Look for access_token in the hash
+    if (hash && hash.indexOf('access_token=') !== -1) {
+        console.log('Found OAuth redirect with access token');
+
+        // Parse the hash fragment
+        var params = {};
+        var hashStr = hash.substring(1); // Remove the '#'
+        var pairs = hashStr.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+            if (pair.length === 2) {
+                params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+            }
+        }
+
+        if (params.access_token) {
+            googleAccessToken = params.access_token;
+            isGoogleConnected = true;
+
+            // Calculate expiry time
+            var expiresIn = parseInt(params.expires_in) || 3600;
+            var expiryTime = Date.now() + (expiresIn * 1000);
+
+            // Save token to localStorage (survives page reloads)
+            localStorage.setItem('google_access_token', googleAccessToken);
+            localStorage.setItem('google_token_expiry', expiryTime.toString());
+
+            console.log('Google Calendar connected via redirect! Token expires in ' + expiresIn + 's');
+
+            // Restore the app's normal hash route
+            var savedRoute = localStorage.getItem('google_auth_return_route') || '#/calendar';
+            localStorage.removeItem('google_auth_return_route');
+
+            // Replace the OAuth hash with the app route
+            window.history.replaceState(null, null, savedRoute);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Initialize Google Calendar (call on page load)
+function initGoogleCalendar() {
+    console.log('Initializing Google Calendar OAuth (redirect mode)...');
+
+    // FIRST: Check if we're returning from an OAuth redirect
+    if (checkOAuthRedirect()) {
+        console.log('Returned from OAuth redirect, loading events...');
+        setTimeout(function() {
+            loadGoogleCalendarEvents();
+        }, 500);
         return;
     }
-    googleTokenClient.requestAccessToken({ prompt: '' });
+
+    // Check for a saved token that hasn't expired
+    var savedToken = localStorage.getItem('google_access_token');
+    var savedExpiry = localStorage.getItem('google_token_expiry');
+
+    if (savedToken && savedExpiry) {
+        var expiryTime = parseInt(savedExpiry);
+        var now = Date.now();
+
+        // Check if token is still valid (with 5 minute buffer)
+        if (expiryTime > now + (5 * 60 * 1000)) {
+            console.log('Found valid saved Google token');
+            googleAccessToken = savedToken;
+            isGoogleConnected = true;
+            loadGoogleCalendarEvents();
+            return;
+        } else {
+            console.log('Saved Google token expired, clearing...');
+            localStorage.removeItem('google_access_token');
+            localStorage.removeItem('google_token_expiry');
+        }
+    }
+
+    // AUTO-CONNECT: No valid token found, automatically start OAuth flow
+    console.log('No valid Google token found. Auto-connecting...');
+    setTimeout(function() {
+        connectGoogleCalendar();
+    }, 1000); // Small delay to let page finish loading
+}
+
+// Connect to Google Calendar — REDIRECTS the full page (no popup)
+function connectGoogleCalendar() {
+    console.log('Starting Google Calendar OAuth redirect...');
+
+    // Save the current hash route so we can restore it after auth
+    var currentRoute = window.location.hash || '#/calendar';
+    localStorage.setItem('google_auth_return_route', currentRoute);
+
+    // Build the OAuth authorization URL for implicit grant (token) flow
+    var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth' +
+        '?client_id=' + encodeURIComponent(GOOGLE_CLIENT_ID) +
+        '&redirect_uri=' + encodeURIComponent(getRedirectUri()) +
+        '&response_type=token' +
+        '&scope=' + encodeURIComponent(SCOPES) +
+        '&include_granted_scopes=true' +
+        '&prompt=consent';
+
+    // Redirect the whole page
+    window.location.href = authUrl;
 }
 
 // Disconnect
 function disconnectGoogleCalendar() {
     if (googleAccessToken) {
-        google.accounts.oauth2.revoke(googleAccessToken);
+        // Revoke via image request (avoids CORS)
+        var img = new Image();
+        img.src = 'https://oauth2.googleapis.com/revoke?token=' + googleAccessToken;
     }
+
     googleAccessToken = null;
     isGoogleConnected = false;
     googleCalendarEvents = [];
-    sessionStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_token_expiry');
+    localStorage.removeItem('google_auth_return_route');
+
+    console.log('Google Calendar disconnected');
+
+    // Re-render to remove Google events
+    try {
+        if (typeof currentView !== 'undefined') {
+            if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+            else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+            else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
+            else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
+        }
+    } catch (e) {
+        console.log('Could not re-render after disconnect');
+    }
 }
 
 // ============================================
@@ -73,50 +175,57 @@ async function loadGoogleCalendarEvents() {
         console.warn('No Google access token');
         return;
     }
-    
+
     try {
-        console.log('📅 Loading Google Calendar events...');
-        
-        // Use currentDate from script.js if available, otherwise use current date
-        const refDate = window.currentDate || new Date();
-        const timeMin = new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1).toISOString();
-        const timeMax = new Date(refDate.getFullYear(), refDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
-        
-        const response = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?` +
-            `timeMin=${encodeURIComponent(timeMin)}&` +
-            `timeMax=${encodeURIComponent(timeMax)}&` +
-            `singleEvents=true&` +
-            `orderBy=startTime`,
+        console.log('Loading Google Calendar events...');
+
+        var refDate = window.currentDate || new Date();
+        var timeMin = new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1).toISOString();
+        var timeMax = new Date(refDate.getFullYear(), refDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
+
+        var response = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/' + CALENDAR_ID + '/events?' +
+            'timeMin=' + encodeURIComponent(timeMin) + '&' +
+            'timeMax=' + encodeURIComponent(timeMax) + '&' +
+            'singleEvents=true&' +
+            'orderBy=startTime',
             {
                 headers: {
-                    'Authorization': `Bearer ${googleAccessToken}`
+                    'Authorization': 'Bearer ' + googleAccessToken
                 }
             }
         );
-        
+
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            throw new Error('API error: ' + response.status);
         }
-        
-        const data = await response.json();
+
+        var data = await response.json();
         googleCalendarEvents = [];
-        
-        (data.items || []).forEach(event => {
-            const start = event.start.dateTime || event.start.date;
-            const startDate = new Date(start);
-            const end = event.end.dateTime || event.end.date;
-            const endDate = new Date(end);
-            
+
+        (data.items || []).forEach(function(event) {
+            var start = event.start.dateTime || event.start.date;
+            var startDate = new Date(start);
+            var end = event.end.dateTime || event.end.date;
+            var endDate = new Date(end);
+
             // Adjust all-day event end date (Google uses exclusive end date)
-            let finalEndDate = endDate.toISOString().split('T')[0];
+            var finalEndDate = endDate.toISOString().split('T')[0];
             if (event.end.date && !event.end.dateTime) {
-                const adjustedEnd = new Date(endDate);
+                var adjustedEnd = new Date(endDate);
                 adjustedEnd.setDate(adjustedEnd.getDate() - 1);
                 finalEndDate = adjustedEnd.toISOString().split('T')[0];
             }
-            
-            const newEvent = {
+
+            // Auto-assign member if the function exists
+            var memberName = '';
+            if (typeof autoAssignEventMember === 'function') {
+                memberName = autoAssignEventMember(event.summary || '') || '';
+            } else if (typeof window.autoAssignEventMember === 'function') {
+                memberName = window.autoAssignEventMember(event.summary || '') || '';
+            }
+
+            var newEvent = {
                 id: event.id,
                 googleId: event.id,
                 title: event.summary || '(No title)',
@@ -125,25 +234,31 @@ async function loadGoogleCalendarEvents() {
                 time: event.start.dateTime ? startDate.toTimeString().substring(0, 5) : '',
                 endTime: event.end.dateTime ? endDate.toTimeString().substring(0, 5) : '',
                 notes: event.description || '',
-                member: autoAssignEventMember(event.summary || '') || '',
+                member: memberName,
                 isGoogle: true
             };
-            
+
             googleCalendarEvents.push(newEvent);
         });
-        
-        console.log(`✅ Loaded ${googleCalendarEvents.length} events`);
-        
-        // Re-render
-        if (typeof renderCalendar === 'function' && currentView === 'month') renderCalendar();
-        else if (typeof renderWeekView === 'function' && currentView === 'week') renderWeekView();
-        else if (typeof renderScheduleView === 'function' && currentView === 'schedule') renderScheduleView();
-        else if (typeof renderDayView === 'function' && currentView === 'day') renderDayView();
-        
+
+        console.log('Loaded ' + googleCalendarEvents.length + ' Google Calendar events');
+
+        // Re-render the current view
+        try {
+            if (typeof currentView !== 'undefined') {
+                if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+                else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+                else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
+                else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
+            }
+        } catch (e) {
+            console.log('Could not re-render calendar view:', e);
+        }
+
     } catch (error) {
-        console.error('Error loading events:', error);
-        if (error.message.includes('401')) {
-            console.log('Token expired, please reconnect');
+        console.error('Error loading Google Calendar events:', error);
+        if (error.message && (error.message.indexOf('401') !== -1 || error.message.indexOf('403') !== -1)) {
+            console.log('Token expired or invalid, clearing...');
             disconnectGoogleCalendar();
         }
     }
@@ -158,42 +273,41 @@ async function createGoogleCalendarEvent(eventData) {
         alert('Please connect to Google Calendar first');
         return null;
     }
-    
+
     try {
-        const event = {
+        var event = {
             summary: eventData.title,
             description: eventData.notes || '',
-            start: eventData.time ? 
-                { dateTime: `${eventData.date}T${eventData.time}:00` } :
+            start: eventData.time ?
+                { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
             end: eventData.endTime ?
-                { dateTime: `${eventData.endDate || eventData.date}T${eventData.endTime}:00` } :
+                { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' } :
                 { date: eventData.endDate || eventData.date }
         };
-        
-        const response = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events`,
+
+        var response = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/' + CALENDAR_ID + '/events',
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${googleAccessToken}`,
+                    'Authorization': 'Bearer ' + googleAccessToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(event)
             }
         );
-        
+
         if (!response.ok) {
-            throw new Error(`Create failed: ${response.status}`);
+            throw new Error('Create failed: ' + response.status);
         }
-        
-        const created = await response.json();
-        console.log('✅ Event created:', created.summary);
-        
-        // Reload events
+
+        var created = await response.json();
+        console.log('Event created:', created.summary);
+
         await loadGoogleCalendarEvents();
         return created;
-        
+
     } catch (error) {
         console.error('Error creating event:', error);
         alert('Failed to create event');
@@ -210,42 +324,41 @@ async function updateGoogleCalendarEvent(eventId, eventData) {
         alert('Please connect to Google Calendar first');
         return null;
     }
-    
+
     try {
-        const event = {
+        var event = {
             summary: eventData.title,
             description: eventData.notes || '',
-            start: eventData.time ? 
-                { dateTime: `${eventData.date}T${eventData.time}:00` } :
+            start: eventData.time ?
+                { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
             end: eventData.endTime ?
-                { dateTime: `${eventData.endDate || eventData.date}T${eventData.endTime}:00` } :
+                { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' } :
                 { date: eventData.endDate || eventData.date }
         };
-        
-        const response = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${eventId}`,
+
+        var response = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/' + CALENDAR_ID + '/events/' + eventId,
             {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${googleAccessToken}`,
+                    'Authorization': 'Bearer ' + googleAccessToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(event)
             }
         );
-        
+
         if (!response.ok) {
-            throw new Error(`Update failed: ${response.status}`);
+            throw new Error('Update failed: ' + response.status);
         }
-        
-        const updated = await response.json();
-        console.log('✅ Event updated:', updated.summary);
-        
-        // Reload events
+
+        var updated = await response.json();
+        console.log('Event updated:', updated.summary);
+
         await loadGoogleCalendarEvents();
         return updated;
-        
+
     } catch (error) {
         console.error('Error updating event:', error);
         alert('Failed to update event');
@@ -262,28 +375,27 @@ async function deleteGoogleCalendarEvent(eventId) {
         alert('Please connect to Google Calendar first');
         return false;
     }
-    
+
     try {
-        const response = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events/${eventId}`,
+        var response = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/' + CALENDAR_ID + '/events/' + eventId,
             {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${googleAccessToken}`
+                    'Authorization': 'Bearer ' + googleAccessToken
                 }
             }
         );
-        
+
         if (!response.ok) {
-            throw new Error(`Delete failed: ${response.status}`);
+            throw new Error('Delete failed: ' + response.status);
         }
-        
-        console.log('✅ Event deleted');
-        
-        // Reload events
+
+        console.log('Event deleted');
+
         await loadGoogleCalendarEvents();
         return true;
-        
+
     } catch (error) {
         console.error('Error deleting event:', error);
         alert('Failed to delete event');
@@ -301,6 +413,6 @@ window.GoogleCalendar = {
     create: createGoogleCalendarEvent,
     update: updateGoogleCalendarEvent,
     delete: deleteGoogleCalendarEvent,
-    isConnected: () => isGoogleConnected,
-    getEvents: () => googleCalendarEvents
+    isConnected: function() { return isGoogleConnected; },
+    getEvents: function() { return googleCalendarEvents; }
 };
