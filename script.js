@@ -4287,7 +4287,7 @@ let visiblePeriods = {
             });
         }
         
-        function toggleRoutine(routineId) {
+        window.toggleRoutine = function toggleRoutine(routineId) {
             console.log('toggleRoutine called with ID:', routineId);
             console.log('toggleRoutine function type:', typeof toggleRoutine);
             const routine = routines.find(r => r.id === routineId);
@@ -4309,10 +4309,8 @@ let visiblePeriods = {
                 
                 renderChoresView();
             }
-        }
+        };
         
-        // Expose globally so onclick can access it
-        window.toggleRoutine = toggleRoutine;
         console.log('window.toggleRoutine exposed:', typeof window.toggleRoutine);
         
         // Drag and drop variables
@@ -6098,7 +6096,7 @@ let visiblePeriods = {
             renderChoresView();
         }
         
-        function toggleChore(choreId) {
+        window.toggleChore = function toggleChore(choreId) {
             console.log('toggleChore called with ID:', choreId);
             console.log('toggleChore function type:', typeof toggleChore);
             const chore = chores.find(c => c.id === choreId);
@@ -6124,10 +6122,8 @@ let visiblePeriods = {
                     renderFamilyPills();
                 }
             }
-        }
+        };
         
-        // Expose globally so onclick can access it
-        window.toggleChore = toggleChore;
         console.log('window.toggleChore exposed:', typeof window.toggleChore);
         
 function checkAllTasksComplete(memberName) {
