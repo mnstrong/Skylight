@@ -6095,7 +6095,10 @@ let visiblePeriods = {
         }
         
         function toggleChore(choreId) {
+            console.log('toggleChore called with ID:', choreId);
+            console.log('toggleChore function type:', typeof toggleChore);
             const chore = chores.find(c => c.id === choreId);
+            console.log('Found chore:', chore);
             if (chore) {
                 const wasCompleted = chore.completed;
                 chore.completed = !chore.completed;
@@ -6121,6 +6124,7 @@ let visiblePeriods = {
         
         // Expose globally so onclick can access it
         window.toggleChore = toggleChore;
+        console.log('window.toggleChore exposed:', typeof window.toggleChore);
         
 function checkAllTasksComplete(memberName) {
     // 1. Check Chores
