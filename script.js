@@ -6831,19 +6831,35 @@ function checkAllTasksComplete(memberName) {
             const isAllDay = document.getElementById('eventAllDayToggle').checked;
             const title = document.getElementById('eventTitle').value;
             
-            const eventData = {
+            if (!title.trim()) {
+                alert('Please enter an event title.');
+                return;
+            }
+            
+            const baseEvent = {
+                id: Date.now(),
                 title: title,
                 date: document.getElementById('eventDate').value,
                 endDate: document.getElementById('eventEndDate').value,
                 time: isAllDay ? '' : document.getElementById('eventTime').value,
                 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
                 notes: document.getElementById('eventNotes').value,
-                isAllDay: isAllDay
+                isAllDay: isAllDay,
+                member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || '')
             };
             
-            // Create in Google Calendar if connected
+            // Generate recurring events (returns [baseEvent] if no repeat)
+            const newEvents = generateRecurringEvents(baseEvent);
+            
+            // Save all events to localStorage
+            for (const ev of newEvents) {
+                events.push(ev);
+            }
+            localStorage.setItem('events', JSON.stringify(events));
+            
+            // Also create in Google Calendar if connected
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
-                await GoogleCalendar.create(eventData);
+                await GoogleCalendar.create(baseEvent);
             }
             
             closeModal('eventModal');
