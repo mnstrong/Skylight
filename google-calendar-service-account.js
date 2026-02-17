@@ -294,6 +294,9 @@ async function createGoogleCalendarEvent(eventData) {
                 }
             })()
         };
+
+        var response = await fetch(
+            'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events',
             {
                 method: 'POST',
                 headers: {
@@ -302,7 +305,7 @@ async function createGoogleCalendarEvent(eventData) {
                 },
                 body: JSON.stringify(event)
             }
-        };
+        );
 
         if (!response.ok) {
             throw new Error('Create failed: ' + response.status);
