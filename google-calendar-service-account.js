@@ -197,14 +197,29 @@ async function loadGoogleCalendarEvents() {
                 memberName = window.autoAssignEventMember(event.summary || '') || '';
             }
 
+            // Extract time directly from the ISO string to avoid Android 8 toTimeString() timezone bugs
+            var startTime = '';
+            var endTimeStr = '';
+            if (event.start.dateTime) {
+                // dateTime looks like "2026-02-17T14:00:00-07:00" — grab HH:MM directly
+                var startRaw = event.start.dateTime;
+                var tIdx = startRaw.indexOf('T');
+                if (tIdx !== -1) startTime = startRaw.substring(tIdx + 1, tIdx + 6);
+            }
+            if (event.end.dateTime) {
+                var endRaw = event.end.dateTime;
+                var tIdx2 = endRaw.indexOf('T');
+                if (tIdx2 !== -1) endTimeStr = endRaw.substring(tIdx2 + 1, tIdx2 + 6);
+            }
+
             var newEvent = {
                 id: event.id,
                 googleId: event.id,
                 title: event.summary || '(No title)',
-                date: startDate.toISOString().split('T')[0],
+                date: event.start.dateTime ? event.start.dateTime.split('T')[0] : startDate.toISOString().split('T')[0],
                 endDate: finalEndDate,
-                time: event.start.dateTime ? startDate.toTimeString().substring(0, 5) : '',
-                endTime: event.end.dateTime ? endDate.toTimeString().substring(0, 5) : '',
+                time: startTime,
+                endTime: endTimeStr,
                 notes: event.description || '',
                 member: memberName,
                 isGoogle: true
@@ -260,13 +275,25 @@ async function createGoogleCalendarEvent(eventData) {
             start: eventData.time ?
                 { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
-            end: eventData.endTime ?
-                { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' } :
-                { date: eventData.endDate || eventData.date }
+            end: (function() {
+                if (eventData.time) {
+                    // Timed event — end must also be dateTime
+                    if (eventData.endTime) {
+                        return { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+                    } else {
+                        // No end time provided — default to 1 hour after start
+                        var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
+                        startDt.setHours(startDt.getHours() + 1);
+                        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                        var endFallback = eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00';
+                        return { dateTime: endFallback };
+                    }
+                } else {
+                    // All-day event
+                    return { date: eventData.endDate || eventData.date };
+                }
+            })()
         };
-
-        var response = await fetch(
-            'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events',
             {
                 method: 'POST',
                 headers: {
@@ -310,9 +337,20 @@ async function updateGoogleCalendarEvent(eventId, eventData) {
             start: eventData.time ?
                 { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
-            end: eventData.endTime ?
-                { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' } :
-                { date: eventData.endDate || eventData.date }
+            end: (function() {
+                if (eventData.time) {
+                    if (eventData.endTime) {
+                        return { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+                    } else {
+                        var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
+                        startDt.setHours(startDt.getHours() + 1);
+                        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                        return { dateTime: eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00' };
+                    }
+                } else {
+                    return { date: eventData.endDate || eventData.date };
+                }
+            })()
         };
 
         var response = await fetch(

@@ -157,6 +157,38 @@ async function loadAllDataFromSupabase() {
             console.log('✓ Loaded', categories.length, 'meal categories');
         }
         
+        // Load calendar events
+        const evtStart = new Date();
+        evtStart.setMonth(evtStart.getMonth() - 1);
+        const evtEnd = new Date();
+        evtEnd.setMonth(evtEnd.getMonth() + 3);
+        const calEvents = await SupabaseAPI.getCalendarEvents(evtStart, evtEnd);
+        if (calEvents && calEvents.length > 0) {
+            const formattedEvents = calEvents.map(e => {
+                const memberInfo = e.family_members;
+                // Parse start_time back into date + time fields
+                const startDt = e.start_time ? new Date(e.start_time) : null;
+                const endDt = e.end_time ? new Date(e.end_time) : null;
+                const pad = n => n < 10 ? '0' + n : '' + n;
+                return {
+                    id: e.id,
+                    title: e.title,
+                    notes: e.description || '',
+                    date: startDt ? e.start_time.split('T')[0] : '',
+                    endDate: endDt ? e.end_time.split('T')[0] : '',
+                    time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
+                    endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
+                    isAllDay: e.all_day || false,
+                    member: memberInfo ? memberInfo.name : '',
+                    googleId: e.google_event_id || null,
+                    isGoogle: false
+                };
+            });
+            localStorage.setItem('events', JSON.stringify(formattedEvents));
+            window.events = formattedEvents;
+            console.log('✓ Loaded', formattedEvents.length, 'calendar events');
+        }
+        
         console.log('✅ All data loaded from Supabase');
         
     } catch (error) {
@@ -520,7 +552,37 @@ function startPeriodicRefresh() {
             await loadListsFromSupabase();
             await loadMealPlansFromSupabase();
             
-            console.log('✅ Data refreshed from Supabase (refresh page to see changes)');
+            // Refresh calendar events
+            const evtStart = new Date();
+            evtStart.setMonth(evtStart.getMonth() - 1);
+            const evtEnd = new Date();
+            evtEnd.setMonth(evtEnd.getMonth() + 3);
+            const calEvents = await SupabaseAPI.getCalendarEvents(evtStart, evtEnd);
+            if (calEvents && calEvents.length > 0) {
+                const formattedEvents = calEvents.map(e => {
+                    const memberInfo = e.family_members;
+                    const startDt = e.start_time ? new Date(e.start_time) : null;
+                    const endDt = e.end_time ? new Date(e.end_time) : null;
+                    const pad = n => n < 10 ? '0' + n : '' + n;
+                    return {
+                        id: e.id,
+                        title: e.title,
+                        notes: e.description || '',
+                        date: startDt ? e.start_time.split('T')[0] : '',
+                        endDate: endDt ? e.end_time.split('T')[0] : '',
+                        time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
+                        endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
+                        isAllDay: e.all_day || false,
+                        member: memberInfo ? memberInfo.name : '',
+                        googleId: e.google_event_id || null,
+                        isGoogle: false
+                    };
+                });
+                localStorage.setItem('events', JSON.stringify(formattedEvents));
+                window.events = formattedEvents;
+            }
+            
+            console.log('✅ Data refreshed from Supabase');
         } catch (error) {
             console.error('Error refreshing data:', error);
         }

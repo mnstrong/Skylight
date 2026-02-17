@@ -283,6 +283,10 @@
         
         for (const event of events) {
             if (syncedEvents.has(event.id)) continue;
+            // Skip Google events (they have string IDs with no dashes being numeric-ish, 
+            // but Google IDs are long alphanumeric - skip events that are already from Google)
+            if (event.isGoogle) continue;
+            // Skip if already has a Supabase UUID
             if (typeof event.id === 'string' && event.id.includes('-')) {
                 syncedEvents.add(event.id);
                 continue;
@@ -291,16 +295,29 @@
             const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
             const memberObj = familyMembers.find(m => m.name === event.member);
             
+            // Build ISO start_time from date + time fields
+            const startTime = event.time
+                ? event.date + 'T' + event.time + ':00'
+                : event.date + 'T00:00:00';
+            
+            // Build ISO end_time from endDate + endTime fields
+            const endDate = event.endDate || event.date;
+            const endTime = event.endTime
+                ? endDate + 'T' + event.endTime + ':00'
+                : event.time
+                    ? endDate + 'T' + event.time + ':00'  // fallback: same as start
+                    : endDate + 'T00:00:00';
+            
             const supabaseEvent = {
                 title: event.title,
-                description: event.description,
-                start_time: event.start,
-                end_time: event.end,
-                all_day: event.allDay || false,
+                description: event.notes || null,
+                start_time: startTime,
+                end_time: endTime,
+                all_day: event.isAllDay || !event.time || false,
                 member_id: memberObj ? memberObj.id : null,
-                location: event.location,
-                google_event_id: event.googleEventId || null,
-                calendar_id: event.calendarId || null
+                location: event.location || null,
+                google_event_id: event.googleId || null,
+                calendar_id: null
             };
             
             try {
