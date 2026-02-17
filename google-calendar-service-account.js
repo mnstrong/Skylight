@@ -302,7 +302,7 @@ async function createGoogleCalendarEvent(eventData) {
                 },
                 body: JSON.stringify(event)
             }
-        );
+        };
 
         if (!response.ok) {
             throw new Error('Create failed: ' + response.status);
