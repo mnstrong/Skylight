@@ -3505,6 +3505,16 @@ let visiblePeriods = {
                 updateViewHeader();
                 // Show floating add event button
                 document.getElementById('floatingAddBtn').classList.add('active');
+                
+                // Refresh Google Calendar events whenever user navigates to calendar
+                if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                    GoogleCalendar.load().then(function() {
+                        if (currentView === 'month') renderCalendar();
+                        else if (currentView === 'week') renderWeekView();
+                        else if (currentView === 'schedule') renderScheduleView();
+                        else if (currentView === 'day') renderDayView();
+                    });
+                }
             } else if (section === 'chores') {
                 // Hide calendar navigation
                 document.getElementById('monthNav').style.display = 'none';

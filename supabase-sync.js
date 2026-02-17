@@ -169,7 +169,7 @@ async function loadAllDataFromSupabase() {
                 // Parse start_time back into date + time fields
                 const startDt = e.start_time ? new Date(e.start_time) : null;
                 const endDt = e.end_time ? new Date(e.end_time) : null;
-                const pad = n => n < 10 ? '0' + n : '' + n;
+                var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
                 return {
                     id: e.id,
                     title: e.title,
@@ -545,7 +545,7 @@ function startPeriodicRefresh() {
     }
     
     // Refresh every 10 seconds
-    refreshInterval = setInterval(async () => {
+    refreshInterval = setInterval(async function() {
         console.log('🔄 Checking for updates from other devices...');
         try {
             await loadTasksFromSupabase();
@@ -563,7 +563,7 @@ function startPeriodicRefresh() {
                     const memberInfo = e.family_members;
                     const startDt = e.start_time ? new Date(e.start_time) : null;
                     const endDt = e.end_time ? new Date(e.end_time) : null;
-                    const pad = n => n < 10 ? '0' + n : '' + n;
+                    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
                     return {
                         id: e.id,
                         title: e.title,
@@ -582,11 +582,16 @@ function startPeriodicRefresh() {
                 window.events = formattedEvents;
             }
             
-            console.log('✅ Data refreshed from Supabase');
+            // Also refresh Google Calendar events from the API
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                await GoogleCalendar.load();
+            }
+            
+            console.log('✅ Data refreshed from Supabase + Google Calendar');
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
-    }, 10000); // 10 seconds
+    }, 30000); // 30 seconds (was 10s - reduced frequency to avoid hammering Google API)
     
     console.log('✅ Periodic refresh started (every 10 seconds)');
 }
@@ -602,8 +607,8 @@ window.SupabaseSync = {
     syncMealPlanEntry,
     syncList,
     syncListItem,
-    isReady: () => isSupabaseReady,
-    isEnabled: () => syncEnabled
+    isReady: function() { return isSupabaseReady; },
+    isEnabled: function() { return syncEnabled; }
 };
 
 console.log('✅ Supabase sync layer loaded');
