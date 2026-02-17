@@ -269,30 +269,28 @@ async function createGoogleCalendarEvent(eventData) {
     }
 
     try {
+        // Compute end separately to avoid parser issues with IIFE in object literals
+        var endField;
+        if (eventData.time) {
+            if (eventData.endTime) {
+                endField = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+            } else {
+                var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
+                startDt.setHours(startDt.getHours() + 1);
+                var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                endField = { dateTime: eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00' };
+            }
+        } else {
+            endField = { date: eventData.endDate || eventData.date };
+        }
+
         var event = {
             summary: eventData.title,
             description: eventData.notes || '',
             start: eventData.time ?
                 { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
-            end: (function() {
-                if (eventData.time) {
-                    // Timed event — end must also be dateTime
-                    if (eventData.endTime) {
-                        return { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
-                    } else {
-                        // No end time provided — default to 1 hour after start
-                        var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
-                        startDt.setHours(startDt.getHours() + 1);
-                        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-                        var endFallback = eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00';
-                        return { dateTime: endFallback };
-                    }
-                } else {
-                    // All-day event
-                    return { date: eventData.endDate || eventData.date };
-                }
-            })()
+            end: endField
         };
 
         var response = await fetch(
@@ -334,26 +332,27 @@ async function updateGoogleCalendarEvent(eventId, eventData) {
     }
 
     try {
+        var endField2;
+        if (eventData.time) {
+            if (eventData.endTime) {
+                endField2 = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+            } else {
+                var startDt2 = new Date(eventData.date + 'T' + eventData.time + ':00');
+                startDt2.setHours(startDt2.getHours() + 1);
+                var pad2 = function(n) { return n < 10 ? '0' + n : '' + n; };
+                endField2 = { dateTime: eventData.date + 'T' + pad2(startDt2.getHours()) + ':' + pad2(startDt2.getMinutes()) + ':00' };
+            }
+        } else {
+            endField2 = { date: eventData.endDate || eventData.date };
+        }
+
         var event = {
             summary: eventData.title,
             description: eventData.notes || '',
             start: eventData.time ?
                 { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
                 { date: eventData.date },
-            end: (function() {
-                if (eventData.time) {
-                    if (eventData.endTime) {
-                        return { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
-                    } else {
-                        var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
-                        startDt.setHours(startDt.getHours() + 1);
-                        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-                        return { dateTime: eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00' };
-                    }
-                } else {
-                    return { date: eventData.endDate || eventData.date };
-                }
-            })()
+            end: endField2
         };
 
         var response = await fetch(
