@@ -48,6 +48,10 @@
                 window.mealPlan = JSON.parse(localStorage.getItem('mealPlan') || '[]');
             }
             
+            // Always reload events - critical for tablet/Android where Google auth may not be active
+            window.events = JSON.parse(localStorage.getItem('events') || '[]');
+            console.log('✅ Reloaded', window.events.length, 'events into window.events');
+            
             // After loading, render the current section to show updated data
             // Only render if we're actually on that page
             if (typeof renderSection === 'function' && typeof currentSection !== 'undefined') {

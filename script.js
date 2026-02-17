@@ -116,6 +116,7 @@ console.log('Script started loading...');
         
         // Events data
         let events = JSON.parse(localStorage.getItem('events')) || [];
+        window.events = events; // Expose globally so supabase-init can refresh it
         
         // Add sample events if none exist (for testing)
         if (events.length === 0) {
@@ -2842,14 +2843,16 @@ let visiblePeriods = {
         }
 
         function getAllEvents() {
+            // Always read from window.events (kept in sync) so Supabase/tab reloads are reflected
+            const localEvents = window.events || events;
+            
             // Get events from Google Calendar if available
             let googleEvents = [];
             if (typeof GoogleCalendar !== 'undefined') {
                 googleEvents = GoogleCalendar.getEvents();
             }
             
-            const allEvents = [...events, ...googleEvents];
-            return allEvents;
+            return [...localEvents, ...googleEvents];
         }
         
         function isEventOnDate(event, dateStr) {
@@ -6856,6 +6859,7 @@ function checkAllTasksComplete(memberName) {
                 events.push(ev);
             }
             localStorage.setItem('events', JSON.stringify(events));
+            window.events = events; // Keep window reference in sync
             
             // Also create in Google Calendar if connected
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
