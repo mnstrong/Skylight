@@ -7092,9 +7092,10 @@ function checkAllTasksComplete(memberName) {
             document.getElementById('eventModal').classList.add('active');
 
             // Switch save button to update mode
-            const saveBtn = document.querySelector('#eventModal .save-btn');
+            const saveBtn = document.getElementById('eventSaveBtn');
             if (saveBtn) {
                 saveBtn.textContent = 'Save Changes';
+                saveBtn.setAttribute('onclick', '');
                 saveBtn.onclick = function() { updateEvent(eventId); };
             }
         }
@@ -7150,10 +7151,11 @@ async function updateEvent(eventId) {
             closeModal('eventModal');
             
             // Reset save button
-            const saveBtn = document.querySelector('#eventModal .save-btn');
+            const saveBtn = document.getElementById('eventSaveBtn');
             if (saveBtn) {
-                saveBtn.textContent = 'Save';
-                saveBtn.onclick = saveEvent;
+                saveBtn.textContent = 'Add Event';
+                saveBtn.setAttribute('onclick', 'saveEvent()');
+                saveBtn.onclick = null;
             }
             
             // Re-render current view
