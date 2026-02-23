@@ -1730,6 +1730,147 @@ function openProfilePicker() {
 }
 
 
+
+// ---- Event editing — defined here for Android 8 WebView compatibility ----
+function editEventFromDetail() {
+    var eventId = window.currentEventDetailId;
+    if (!eventId) return;
+
+    // Find event — local first, then Google Calendar
+    var ev = null;
+    var localEvents = window.events || [];
+    for (var i = 0; i < localEvents.length; i++) {
+        if (localEvents[i].id == eventId) { ev = localEvents[i]; break; }
+    }
+    if (!ev && typeof GoogleCalendar !== 'undefined') {
+        var gcalEvents = GoogleCalendar.getEvents();
+        for (var j = 0; j < gcalEvents.length; j++) {
+            if (gcalEvents[j].id == eventId) { ev = gcalEvents[j]; break; }
+        }
+    }
+    if (!ev) return;
+
+    // Close detail panel
+    if (typeof closeEventDetailPanel === 'function') closeEventDetailPanel();
+
+    // Normalise fields — handle local format (date/time) and GCal format (start.dateTime)
+    var evDate = ev.date || '';
+    var evEndDate = ev.endDate || '';
+    var evTime = ev.time || '';
+    var evEndTime = ev.endTime || '';
+    var evNotes = ev.notes || ev.description || '';
+    var evIsAllDay = ev.isAllDay;
+
+    if (!evDate && ev.start) {
+        if (ev.start.dateTime) {
+            var sd = new Date(ev.start.dateTime);
+            evDate = sd.toISOString().split('T')[0];
+            evTime = sd.toTimeString().slice(0, 5);
+            evIsAllDay = false;
+        } else if (ev.start.date) {
+            evDate = ev.start.date;
+            evIsAllDay = true;
+        }
+    }
+    if (!evEndDate && ev.end) {
+        if (ev.end.dateTime) {
+            var ed = new Date(ev.end.dateTime);
+            evEndDate = ed.toISOString().split('T')[0];
+            evEndTime = ed.toTimeString().slice(0, 5);
+        } else if (ev.end.date) {
+            evEndDate = ev.end.date;
+        }
+    }
+    if (evIsAllDay === undefined || evIsAllDay === null) evIsAllDay = !evTime;
+
+    // Populate form
+    document.getElementById('eventTitle').value = ev.title || ev.summary || '';
+    document.getElementById('eventDate').value = evDate;
+    document.getElementById('eventEndDate').value = evEndDate;
+    document.getElementById('eventNotes').value = evNotes;
+    document.getElementById('eventAllDayToggle').checked = evIsAllDay;
+    if (!evIsAllDay) {
+        document.getElementById('eventTime').value = evTime;
+        document.getElementById('eventEndTime').value = evEndTime;
+    }
+    if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
+
+    // Set member
+    if (typeof selectedEventProfiles !== 'undefined') {
+        selectedEventProfile = ev.member || '';
+        selectedEventProfiles = ev.member ? [ev.member] : [];
+    }
+    if (typeof renderEventProfileGrid === 'function') renderEventProfileGrid();
+
+    // Open modal
+    document.getElementById('eventPanelOverlay').classList.add('active');
+    document.getElementById('eventModal').classList.add('active');
+
+    // Set edit flag and button text
+    window._editingEventId = eventId;
+    var btn = document.getElementById('eventSaveBtn');
+    if (btn) btn.textContent = 'Save Changes';
+}
+
+function updateEvent(eventId) {
+    var isAllDay = document.getElementById('eventAllDayToggle').checked;
+    var member = '';
+    if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) {
+        member = selectedEventProfiles[0];
+    } else if (typeof selectedEventProfile !== 'undefined') {
+        member = selectedEventProfile;
+    }
+
+    var eventData = {
+        title: document.getElementById('eventTitle').value,
+        date: document.getElementById('eventDate').value,
+        endDate: document.getElementById('eventEndDate').value,
+        time: isAllDay ? '' : document.getElementById('eventTime').value,
+        endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
+        notes: document.getElementById('eventNotes').value,
+        isAllDay: isAllDay,
+        member: member
+    };
+
+    // Update local events
+    var evs = window.events || [];
+    var found = false;
+    for (var i = 0; i < evs.length; i++) {
+        if (evs[i].id == eventId) {
+            for (var k in eventData) { evs[i][k] = eventData[k]; }
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
+        window.events = evs;
+    }
+
+    // Clear flag and reset button before closing
+    window._editingEventId = null;
+    var btn = document.getElementById('eventSaveBtn');
+    if (btn) btn.textContent = 'Add Event';
+
+    // Close modal
+    if (typeof closeModal === 'function') closeModal('eventModal');
+
+    // Re-render
+    if (typeof currentView !== 'undefined') {
+        if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+        else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+        else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
+        else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
+    }
+
+    // GCal update (fire and forget)
+    try {
+        if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+            GoogleCalendar.update(eventId, eventData);
+        }
+    } catch(e) {}
+}
+
 // Profile settings placeholder
 function openProfileSettings() {
     if (window.innerWidth <= 768) {
