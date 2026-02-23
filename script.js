@@ -2620,11 +2620,31 @@ let visiblePeriods = {
         }
         
         function isEventVisible(event) {
-            // If no member assigned, always show
-            if (!event.member) return true;
+            // Check if event's assigned member is in active filter
+            if (event.member && calendarFilterActive.includes(event.member)) return true;
             
-            // Check if event's member is in active filter
-            return calendarFilterActive.includes(event.member);
+            // If no assigned member, show unless a filter is narrowing to specific people
+            if (!event.member) {
+                // If all members are active (no filtering), show unassigned events
+                const allActive = calendarFilterActive.length === familyMembers.length;
+                if (allActive) return true;
+                // If filtering, check if any active member's name appears in notes
+                if (event.notes) {
+                    return calendarFilterActive.some(function(name) {
+                        return event.notes.toLowerCase().indexOf(name.toLowerCase()) !== -1;
+                    });
+                }
+                return false;
+            }
+
+            // Event has an assigned member not in filter — still show if notes mention an active member
+            if (event.notes) {
+                return calendarFilterActive.some(function(name) {
+                    return event.notes.toLowerCase().indexOf(name.toLowerCase()) !== -1;
+                });
+            }
+
+            return false;
         }
         
         // Close filter dropdown when clicking outside
