@@ -3904,7 +3904,7 @@ let visiblePeriods = {
                 const progressPercent = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 
                 return `
-                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}">
+                    <div class="family-pill" style="background-color: ${hexToRgba(member.color, 0.125)}; color: ${member.color}; cursor: pointer;" onclick="openProfileDashboard('${member.name}')">
                         <div class="family-pill-progress" style="background: ${member.color}; width: ${progressPercent}%"></div>
                         <div class="family-pill-content">
                             <div class="family-pill-avatar" style="background: ${member.color}">
