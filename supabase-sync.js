@@ -60,6 +60,11 @@ async function loadAllDataFromSupabase() {
             localStorage.setItem('familyMembers', JSON.stringify(formattedMembers));
             window.familyMembers = formattedMembers;
             console.log('✓ Loaded', members.length, 'family members');
+            
+            // Re-initialize calendar filter so new members are visible
+            if (typeof initCalendarFilter === 'function') {
+                initCalendarFilter();
+            }
         } else {
             // Try to get from localStorage if Supabase has none
             const localMembers = localStorage.getItem('familyMembers');
@@ -170,12 +175,16 @@ async function loadAllDataFromSupabase() {
                 const startDt = e.start_time ? new Date(e.start_time) : null;
                 const endDt = e.end_time ? new Date(e.end_time) : null;
                 var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                var localDate = function(dt) {
+                    if (!dt) return '';
+                    return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+                };
                 return {
                     id: e.id,
                     title: e.title,
                     notes: e.description || '',
-                    date: startDt ? e.start_time.split('T')[0] : '',
-                    endDate: endDt ? e.end_time.split('T')[0] : '',
+                    date: startDt ? localDate(startDt) : '',
+                    endDate: endDt ? localDate(endDt) : '',
                     time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
                     endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                     isAllDay: e.all_day || false,
@@ -564,12 +573,16 @@ function startPeriodicRefresh() {
                     const startDt = e.start_time ? new Date(e.start_time) : null;
                     const endDt = e.end_time ? new Date(e.end_time) : null;
                     var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                    var localDateStr = function(dt) {
+                        if (!dt) return '';
+                        return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+                    };
                     return {
                         id: e.id,
                         title: e.title,
                         notes: e.description || '',
-                        date: startDt ? e.start_time.split('T')[0] : '',
-                        endDate: endDt ? e.end_time.split('T')[0] : '',
+                        date: startDt ? localDateStr(startDt) : '',
+                        endDate: endDt ? localDateStr(endDt) : '',
                         time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
                         endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                         isAllDay: e.all_day || false,
@@ -580,9 +593,20 @@ function startPeriodicRefresh() {
                 });
                 localStorage.setItem('events', JSON.stringify(formattedEvents));
                 window.events = formattedEvents;
+                
+                // Re-render the calendar view with the updated events
+                try {
+                    if (typeof currentView !== 'undefined' && typeof currentSection !== 'undefined' && currentSection === 'calendar') {
+                        if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+                        else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+                        else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
+                        else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
+                    }
+                } catch(e) {}
             }
             
             // Also refresh Google Calendar events from the API
+            // (GoogleCalendar.load() handles its own re-render internally)
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
                 await GoogleCalendar.load();
             }
