@@ -78,7 +78,7 @@ console.log('Script started loading...');
         let showCompletedChores = false;
         window.showCompletedListItems = false;
         let scheduleDaysToShow = 14;
-        let familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
+        let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
             { name: 'Mary', color: '#54eef3' },
             { name: 'Bret', color: '#43AEDE' },
@@ -105,12 +105,12 @@ console.log('Script started loading...');
             }
         });
         if (needsUpdate) {
-            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
         }
         
         // Save deduplicated array if we removed duplicates
         if (seenNames.size !== JSON.parse(localStorage.getItem('familyMembers') || '[]').length) {
-            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
             console.log('Removed duplicate family members');
         }
         
@@ -2547,7 +2547,7 @@ let visiblePeriods = {
             member.color = newColor;
             
             // Update localStorage
-            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
             
             // Update all references in other data
             updateMemberReferences(oldName, newName);
@@ -2923,7 +2923,7 @@ let visiblePeriods = {
                 const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA'];
                 const color = colors[familyMembers.length % colors.length];
                 familyMembers.push({ name, color });
-                localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+                localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
                 if (currentSection === 'calendar') {
                     renderFamilyPills();
                 }

@@ -1700,7 +1700,7 @@ if (document.readyState === 'loading') {
 
 // Profile picker — defined here so it's available immediately on page load
 function openProfilePicker() {
-    var members = (typeof familyMembers !== 'undefined' ? familyMembers : [])
+    var members = (window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]'))
         .filter(function(m) { return !m.isGoogleCalendar; });
     if (members.length === 0) return;
 

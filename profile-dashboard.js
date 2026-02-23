@@ -151,7 +151,7 @@ function blobBg(color, opacity) {
 
 // ---- Main render ----
 function openProfileDashboard(memberName) {
-    var members = typeof familyMembers !== 'undefined' ? familyMembers : [];
+    var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var member = members.find(function(m) { return m.name === memberName; });
     if (!member) return;
 
@@ -419,7 +419,7 @@ function attachProfileDashboardTriggers() {
         el.dataset.pdbAttached = '1';
         el.addEventListener('click', function() {
             var name = el.textContent.trim();
-            var members = typeof familyMembers !== 'undefined' ? familyMembers : [];
+            var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
             var match = members.find(function(m) { return name.indexOf(m.name) !== -1; });
             if (match) openProfileDashboard(match.name);
         });
