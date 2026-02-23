@@ -1,31 +1,3 @@
-// ---- Profile Picker modal ----
-function openProfilePicker() {
-    var members = (typeof familyMembers !== 'undefined' ? familyMembers : [])
-        .filter(function(m) { return !m.isGoogleCalendar; });
-    if (members.length === 0) return;
-
-    // Toggle off if already open
-    var existing = document.getElementById('profilePickerMount');
-    if (existing) { existing.remove(); return; }
-
-    var buttonsHtml = members.map(function(m) {
-        return '<button class="ppick-btn" onclick="document.getElementById(\'profilePickerMount\').remove();openProfileDashboard(\''+m.name+'\')" style="--pmc:'+m.color+'">'
-            + '<span class="ppick-avatar">'+m.name.charAt(0).toUpperCase()+'</span>'
-            + m.name + '</button>';
-    }).join('');
-
-    var html = '<div id="profilePickerMount" class="ppick-overlay" onclick="this.remove()">'
-        + '<div class="ppick-modal" onclick="event.stopPropagation()">'
-        + '<div class="ppick-title">Whose dashboard?</div>'
-        + '<div class="ppick-list">'+buttonsHtml+'</div>'
-        + '<button class="ppick-cancel" onclick="document.getElementById(\'profilePickerMount\').remove()">Cancel</button>'
-        + '</div></div>';
-
-    var el = document.createElement('div');
-    el.innerHTML = html;
-    document.body.appendChild(el.firstChild);
-}
-
 // ============================================================
 // SKYLIGHT — PROFILE DASHBOARD
 // ============================================================
