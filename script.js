@@ -2890,19 +2890,23 @@ let visiblePeriods = {
             return familyProfile ? familyProfile.color : '#9B59B6';
         }
 
-        function getEventColor(event) {
-            // Use assigned member color if available
+        function getEventMember(event) {
+            // Returns the resolved member object for an event (assigned or from notes)
             if (event.member) {
                 const m = familyMembers.find(m => m.name === event.member);
-                if (m) return m.color;
+                if (m) return m;
             }
-            // Fall back to first member name found in notes
             if (event.notes) {
                 const notesLower = event.notes.toLowerCase();
                 const match = familyMembers.find(m => !m.isGoogleCalendar && m.name !== 'Family' && notesLower.indexOf(m.name.toLowerCase()) !== -1);
-                if (match) return match.color;
+                if (match) return match;
             }
-            return getFamilyColor();
+            return null;
+        }
+
+        function getEventColor(event) {
+            const m = getEventMember(event);
+            return m ? m.color : getFamilyColor();
         }
 
         function updateDateTime() {
@@ -3032,7 +3036,7 @@ let visiblePeriods = {
 
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
-                    const member = familyMembers.find(m => m.name === event.member);
+                    const member = getEventMember(event);
                     const color = getEventColor(event);
                     const bgColor = hexToRgba(color, 0.25);
                     
@@ -3189,7 +3193,7 @@ let visiblePeriods = {
                 
                 // Display events
                 dayEvents.forEach(event => {
-                    const member = familyMembers.find(m => m.name === event.member);
+                    const member = getEventMember(event);
                     const color = getEventColor(event);
                     const bgColor = hexToRgba(color, 0.25);
                     
@@ -3287,7 +3291,7 @@ let visiblePeriods = {
             } else {
                 html += '<div class="day-view-events">';
                 dayEvents.forEach(event => {
-                    const member = familyMembers.find(m => m.name === event.member);
+                    const member = getEventMember(event);
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
@@ -3438,7 +3442,7 @@ let visiblePeriods = {
                 } else {
                     html += '<div class="schedule-event-list">';
                     dayEvents.forEach(event => {
-                        const member = familyMembers.find(m => m.name === event.member);
+                        const member = getEventMember(event);
                         const color = getEventColor(event);
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         
@@ -6980,9 +6984,11 @@ function checkAllTasksComplete(memberName) {
         
         // Show event details panel
         function showEventDetails(eventId) {
-            // Try to find in Google Calendar events first
-            let event = null;
-            if (typeof GoogleCalendar !== 'undefined') {
+            // Try local events first
+            let event = (window.events || []).find(e => e.id == eventId);
+            
+            // Fall back to Google Calendar events
+            if (!event && typeof GoogleCalendar !== 'undefined') {
                 const googleEvents = GoogleCalendar.getEvents();
                 event = googleEvents.find(e => e.id == eventId);
             }
@@ -7047,6 +7053,52 @@ function checkAllTasksComplete(memberName) {
         
         // Expose globally
         window.closeEventDetailPanel = closeEventDetailPanel;
+
+        function editEventFromDetail() {
+            const eventId = window.currentEventDetailId;
+            if (!eventId) return;
+
+            // Find the event in local or Google Calendar
+            let event = (window.events || []).find(e => e.id == eventId);
+            if (!event && typeof GoogleCalendar !== 'undefined') {
+                event = GoogleCalendar.getEvents().find(e => e.id == eventId);
+            }
+            if (!event) return;
+
+            // Close detail panel
+            closeEventDetailPanel();
+
+            // Populate event modal with existing data
+            document.getElementById('eventTitle').value = event.title || '';
+            document.getElementById('eventDate').value = event.date || '';
+            document.getElementById('eventEndDate').value = event.endDate || '';
+            document.getElementById('eventNotes').value = event.notes || '';
+
+            const isAllDay = event.isAllDay || !event.time;
+            document.getElementById('eventAllDayToggle').checked = isAllDay;
+            if (!isAllDay) {
+                document.getElementById('eventTime').value = event.time || '';
+                document.getElementById('eventEndTime').value = event.endTime || '';
+            }
+            updateEventTimeVisibility();
+
+            // Set member selection
+            selectedEventProfile = event.member || '';
+            selectedEventProfiles = event.member ? [event.member] : [];
+            renderEventProfileGrid();
+
+            // Open modal
+            document.getElementById('eventPanelOverlay').classList.add('active');
+            document.getElementById('eventModal').classList.add('active');
+
+            // Switch save button to update mode
+            const saveBtn = document.querySelector('#eventModal .save-btn');
+            if (saveBtn) {
+                saveBtn.textContent = 'Save Changes';
+                saveBtn.onclick = function() { updateEvent(eventId); };
+            }
+        }
+        window.editEventFromDetail = editEventFromDetail;
         
         // Edit event from detail panel
 async function updateEvent(eventId) {
@@ -7078,10 +7130,19 @@ async function updateEvent(eventId) {
                 time: isAllDay ? '' : document.getElementById('eventTime').value,
                 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
                 notes: document.getElementById('eventNotes').value,
-                isAllDay: isAllDay
+                isAllDay: isAllDay,
+                member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || '')
             };
             
-            // Update in Google Calendar
+            // Update local events
+            const localIdx = events.findIndex(e => e.id == eventId);
+            if (localIdx !== -1) {
+                events[localIdx] = Object.assign({}, events[localIdx], eventData);
+                localStorage.setItem('events', JSON.stringify(events));
+                window.events = events;
+            }
+            
+            // Also update in Google Calendar if connected
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
                 await GoogleCalendar.update(eventId, eventData);
             }
@@ -7436,7 +7497,7 @@ async function updateEvent(eventId) {
             } else {
                 let html = '';
                 dayEvents.forEach(event => {
-                    const member = familyMembers.find(m => m.name === event.member);
+                    const member = getEventMember(event);
                     const color = getEventColor(event);
                     
                     // Format time
