@@ -35,6 +35,15 @@ function formatTime(timeStr) {
     return h + ':' + m + ' ' + ampm;
 }
 
+
+// Check if a member is referenced in an event (by member field or notes)
+function eventBelongsToMember(e, memberName) {
+    if (!e.member && !e.notes) return false;
+    if (e.member === memberName) return true;
+    if (e.notes && e.notes.toLowerCase().indexOf(memberName.toLowerCase()) !== -1) return true;
+    return false;
+}
+
 // Get member's events for today
 function getDashboardTodayEvents(memberName) {
     try {
@@ -44,7 +53,7 @@ function getDashboardTodayEvents(memberName) {
             var onDate = typeof isEventOnDate === 'function'
                 ? isEventOnDate(e, todayStr)
                 : (e.date === todayStr);
-            return onDate && (!e.member || e.member === memberName || e.member === 'Family');
+            return onDate && eventBelongsToMember(e, memberName);
         }).sort(function(a, b) {
             return (a.time || '').localeCompare(b.time || '');
         });
@@ -66,7 +75,7 @@ function getDashboardUpcomingEvents(memberName) {
                 var onDate = typeof isEventOnDate === 'function'
                     ? isEventOnDate(e, ds)
                     : (e.date === ds);
-                if (onDate && (!e.member || e.member === memberName || e.member === 'Family')) {
+                if (onDate && eventBelongsToMember(e, memberName)) {
                     upcoming.push(Object.assign({}, e, { _dateStr: ds }));
                 }
             });
