@@ -6,11 +6,17 @@
 // ============================================
 // Replace these with your actual Supabase credentials
 // Find these in: Supabase Dashboard > Settings > API
-const SUPABASE_URL = 'https://ddlnphwpthvcqysscstc.supabase.co'; // e.g., 'https://xxxxx.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkbG5waHdwdGh2Y3F5c3Njc3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNjUyMDEsImV4cCI6MjA4NTY0MTIwMX0.Bdyz_60mX97oT06F76poUmHTVHcHU0MD-7XGh7rOH0M';
+var SUPABASE_URL = 'https://ddlnphwpthvcqysscstc.supabase.co'; // e.g., 'https://xxxxx.supabase.co'
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkbG5waHdwdGh2Y3F5c3Njc3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNjUyMDEsImV4cCI6MjA4NTY0MTIwMX0.Bdyz_60mX97oT06F76poUmHTVHcHU0MD-7XGh7rOH0M';
 
 // Initialize Supabase client (using a different variable name to avoid conflict)
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Guard against supabase library failing to load (e.g. Android 8 WebView compatibility)
+if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    console.error('❌ Supabase library failed to load. Check CDN URL and browser compatibility.');
+    window.SupabaseAPI = null;
+    throw new Error('Supabase library not available');
+}
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================
 // FAMILY MEMBERS

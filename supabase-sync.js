@@ -44,6 +44,13 @@ async function initializeSupabaseSync() {
 async function loadAllDataFromSupabase() {
     if (!syncEnabled) return;
     
+    // Guard: if supabase-config.js failed to load the library, SupabaseAPI won't be defined
+    if (typeof SupabaseAPI === 'undefined' || !SupabaseAPI) {
+        console.error('❌ SupabaseAPI not available — Supabase library may not have loaded correctly.');
+        syncEnabled = false;
+        return;
+    }
+    
     console.log('📥 Loading data from Supabase...');
     
     try {
