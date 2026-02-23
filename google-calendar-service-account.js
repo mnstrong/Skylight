@@ -182,7 +182,7 @@ async function loadGoogleCalendarEvents() {
 
         var refDate = window.currentDate || new Date();
         var timeMin = new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1).toISOString();
-        var timeMax = new Date(refDate.getFullYear(), refDate.getMonth() + 2, 0, 23, 59, 59).toISOString();
+        var timeMax = new Date(refDate.getFullYear() + 1, refDate.getMonth(), 0, 23, 59, 59).toISOString();
 
         var response = await fetch(
             'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(CALENDAR_ID) + '/events?' +
