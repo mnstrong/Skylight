@@ -166,7 +166,7 @@ async function loadAllDataFromSupabase() {
         const evtStart = new Date();
         evtStart.setMonth(evtStart.getMonth() - 1);
         const evtEnd = new Date();
-        evtEnd.setMonth(evtEnd.getMonth() + 3);
+        evtEnd.setFullYear(evtEnd.getFullYear() + 1);
         const calEvents = await SupabaseAPI.getCalendarEvents(evtStart, evtEnd);
         if (calEvents && calEvents.length > 0) {
             const formattedEvents = calEvents.map(e => {
@@ -565,7 +565,7 @@ function startPeriodicRefresh() {
             const evtStart = new Date();
             evtStart.setMonth(evtStart.getMonth() - 1);
             const evtEnd = new Date();
-            evtEnd.setMonth(evtEnd.getMonth() + 3);
+            evtEnd.setFullYear(evtEnd.getFullYear() + 1);
             const calEvents = await SupabaseAPI.getCalendarEvents(evtStart, evtEnd);
             if (calEvents && calEvents.length > 0) {
                 const formattedEvents = calEvents.map(e => {
