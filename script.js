@@ -6897,7 +6897,7 @@ function checkAllTasksComplete(memberName) {
             // If we're editing an existing event, route to updateEvent instead
             if (window._editingEventId) {
                 var editId = window._editingEventId;
-                window._editingEventId = null; // clear BEFORE calling to prevent any re-entry
+                window._editingEventId = null;
                 updateEvent(editId);
                 return;
             }
@@ -7049,8 +7049,31 @@ function checkAllTasksComplete(memberName) {
                 }) + ' (All day)';
             }
             
+            // Handle local event format (event.date / event.time)
+            if (!dateTimeText && event.date) {
+                var d = new Date(event.date + 'T12:00:00');
+                dateTimeText = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                if (event.time) {
+                    var parts = event.time.split(':');
+                    var h = parseInt(parts[0]);
+                    var m = parts[1];
+                    var ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12 || 12;
+                    dateTimeText += ' at ' + h + ':' + m + ' ' + ampm;
+                }
+            }
+
             document.getElementById('eventDetailDateTime').textContent = dateTimeText;
-            
+
+            // Show notes if present
+            var notesEl = document.getElementById('eventDetailNotes');
+            var notesRow = document.getElementById('eventDetailNotesRow');
+            if (notesEl) {
+                var notes = event.notes || (event.description) || '';
+                notesEl.textContent = notes || 'No notes';
+                if (notesRow) notesRow.style.display = notes ? 'block' : 'none';
+            }
+
             // Show the panel
             document.getElementById('eventDetailPanel').classList.add('active');
             document.getElementById('eventDetailPanelOverlay').classList.add('active');
@@ -7079,17 +7102,46 @@ function checkAllTasksComplete(memberName) {
             // Close detail panel
             closeEventDetailPanel();
 
-            // Populate event modal with existing data
-            document.getElementById('eventTitle').value = event.title || '';
-            document.getElementById('eventDate').value = event.date || '';
-            document.getElementById('eventEndDate').value = event.endDate || '';
-            document.getElementById('eventNotes').value = event.notes || '';
+            // Normalise event fields — handle both local format and Google Calendar format
+            var evDate = event.date || '';
+            var evEndDate = event.endDate || '';
+            var evTime = event.time || '';
+            var evEndTime = event.endTime || '';
+            var evNotes = event.notes || event.description || '';
+            var evIsAllDay = event.isAllDay;
 
-            const isAllDay = event.isAllDay || !event.time;
-            document.getElementById('eventAllDayToggle').checked = isAllDay;
-            if (!isAllDay) {
-                document.getElementById('eventTime').value = event.time || '';
-                document.getElementById('eventEndTime').value = event.endTime || '';
+            if (!evDate && event.start) {
+                if (event.start.dateTime) {
+                    var sd = new Date(event.start.dateTime);
+                    evDate = sd.toISOString().split('T')[0];
+                    evTime = sd.toTimeString().slice(0, 5);
+                    evIsAllDay = false;
+                } else if (event.start.date) {
+                    evDate = event.start.date;
+                    evIsAllDay = true;
+                }
+            }
+            if (!evEndDate && event.end) {
+                if (event.end.dateTime) {
+                    var ed = new Date(event.end.dateTime);
+                    evEndDate = ed.toISOString().split('T')[0];
+                    evEndTime = ed.toTimeString().slice(0, 5);
+                } else if (event.end.date) {
+                    evEndDate = event.end.date;
+                }
+            }
+            if (evIsAllDay === undefined) evIsAllDay = !evTime;
+
+            // Populate event modal with existing data
+            document.getElementById('eventTitle').value = event.title || event.summary || '';
+            document.getElementById('eventDate').value = evDate;
+            document.getElementById('eventEndDate').value = evEndDate;
+            document.getElementById('eventNotes').value = evNotes;
+
+            document.getElementById('eventAllDayToggle').checked = evIsAllDay;
+            if (!evIsAllDay) {
+                document.getElementById('eventTime').value = evTime;
+                document.getElementById('eventEndTime').value = evEndTime;
             }
             updateEventTimeVisibility();
 
@@ -7134,23 +7186,23 @@ function checkAllTasksComplete(memberName) {
                 localStorage.setItem('events', JSON.stringify(events));
                 window.events = events;
             }
-            
+
             // Clear edit flag and reset button BEFORE closing modal
             window._editingEventId = null;
             var saveBtn = document.getElementById('eventSaveBtn');
             if (saveBtn) saveBtn.textContent = 'Add Event';
-            
+
             closeModal('eventModal');
-            
+
             // Re-render current view
             if (currentView === 'month') renderCalendar();
             else if (currentView === 'week') renderWeekView();
             else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
-            
-            // Fire-and-forget Google Calendar update
+
+            // Fire-and-forget Google Calendar update (handles GCal events)
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
-                GoogleCalendar.update(eventId, eventData);
+                GoogleCalendar.update(eventId, eventData).catch(function() {});
             }
         }
         
