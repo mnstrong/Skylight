@@ -6894,6 +6894,12 @@ function checkAllTasksComplete(memberName) {
         }
         
         async function saveEvent() {
+            // If we're editing an existing event, route to updateEvent instead
+            if (window._editingEventId) {
+                updateEvent(window._editingEventId);
+                return;
+            }
+
             const isAllDay = document.getElementById('eventAllDayToggle').checked;
             const title = document.getElementById('eventTitle').value;
             
@@ -6952,6 +6958,9 @@ function checkAllTasksComplete(memberName) {
             selectedEventProfiles = [];
             selectedRepeatFrequency = 'weekly';
             selectedRepeatEndType = 'on';
+            window._editingEventId = null;
+            var saveBtn = document.getElementById('eventSaveBtn');
+            if (saveBtn) saveBtn.textContent = 'Add Event';
             
             // Reset active states
             document.querySelectorAll('[data-repeat]').forEach(item => {
@@ -7091,34 +7100,12 @@ function checkAllTasksComplete(memberName) {
             document.getElementById('eventPanelOverlay').classList.add('active');
             document.getElementById('eventModal').classList.add('active');
 
-            // Switch save button to update mode
+            // Signal to saveEvent that we're in edit mode
+            window._editingEventId = eventId;
             const saveBtn = document.getElementById('eventSaveBtn');
-            if (saveBtn) {
-                saveBtn.textContent = 'Save Changes';
-                saveBtn.setAttribute('onclick', '');
-                saveBtn.onclick = function() { updateEvent(eventId); };
-            }
+            if (saveBtn) saveBtn.textContent = 'Save Changes';
         }
         window.editEventFromDetail = editEventFromDetail;
-        
-        // Edit event from detail panel
-async function updateEvent(eventId) {
-    const isAllDay = document.getElementById('eventAllDayToggle').checked;
-    
-    const eventData = {
-        title: document.getElementById('eventTitle').value,
-        date: document.getElementById('eventDate').value,
-        endDate: document.getElementById('eventEndDate').value,
-        time: isAllDay ? '' : document.getElementById('eventTime').value,
-        endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
-        notes: document.getElementById('eventNotes').value
-    };
-    
-    // Update in Google Calendar
-    await GoogleCalendar.update(eventId, eventData);
-    
-    closeModal('eventModal');
-}
         
         // Update event
         async function updateEvent(eventId) {
@@ -7150,13 +7137,10 @@ async function updateEvent(eventId) {
             
             closeModal('eventModal');
             
-            // Reset save button
-            const saveBtn = document.getElementById('eventSaveBtn');
-            if (saveBtn) {
-                saveBtn.textContent = 'Add Event';
-                saveBtn.setAttribute('onclick', 'saveEvent()');
-                saveBtn.onclick = null;
-            }
+            // Clear edit mode flag and reset button
+            window._editingEventId = null;
+            var saveBtn = document.getElementById('eventSaveBtn');
+            if (saveBtn) saveBtn.textContent = 'Add Event';
             
             // Re-render current view
             if (currentView === 'month') renderCalendar();
