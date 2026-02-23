@@ -48,7 +48,15 @@
                 <div class="nav-icon icon-lists"></div>
                 <div>Lists</div>
             </a>
+            <a href="#/habits" class="nav-item">
+                <div class="nav-icon" style="font-size: 28px;">🌱</div>
+                <div>Habits</div>
+            </a>
             <div style="flex: 1;"></div>
+            <a href="#" class="nav-item" onclick="event.preventDefault();openProfilePicker()">
+                <div class="nav-icon" style="font-size: 28px;">👤</div>
+                <div>Profile</div>
+            </a>
             <a href="#/timer" class="nav-item">
                 <div class="nav-icon" style="font-size: 28px;">⏱️</div>
                 <div>Timer</div>
@@ -1412,6 +1420,14 @@
             <div class="mobile-icon-label">Recipes</div>
         </div>
         
+        <div class="mobile-icon-item" onclick="goToSection('habits')">
+            <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #EEF2FF, #FDF0FF);">🌱</div>
+            <div class="mobile-icon-label">Habits</div>
+        </div>
+        <div class="mobile-icon-item" onclick="openProfilePicker()">
+            <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #F0F8FF, #E8F4FF);">👤</div>
+            <div class="mobile-icon-label">Profile</div>
+        </div>
         <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
             <div class="mobile-icon-circle mobile-icon-photos">
                 🖼️
@@ -1560,7 +1576,8 @@ function handleHashChange() {
             'rewards': 'Rewards',
             'lists': 'Lists',
             'meals': 'Meals',
-            'recipes': 'Recipes'
+            'recipes': 'Recipes',
+            'habits': 'Habits'
         };
         document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
         
@@ -1677,6 +1694,28 @@ if (document.readyState === 'loading') {
     if (typeof initGoogleCalendar === 'function') {
         initGoogleCalendar();
     }
+}
+
+// Profile picker
+function openProfilePicker() {
+    var members = typeof familyMembers !== 'undefined' ? familyMembers.filter(function(m) { return !m.isGoogleCalendar; }) : [];
+    if (members.length === 0) return;
+    // Remove any existing picker
+    var existing = document.getElementById('profilePickerMount');
+    if (existing) { existing.remove(); return; }
+    var html = '<div id="profilePickerMount" style="position:fixed;inset:0;background:rgba(20,20,40,0.45);backdrop-filter:blur(6px);z-index:7500;display:flex;align-items:center;justify-content:center;" onclick="this.remove()">'
+        + '<div style="background:#fff;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:14px;min-width:280px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);" onclick="event.stopPropagation()">'
+        + '<div style="font-family:Jost,sans-serif;font-size:18px;font-weight:700;color:#2d2d3a;text-align:center;">Whose dashboard?</div>';
+    members.forEach(function(m) {
+        html += '<button style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:' + (m.color + '18') + ';border:2px solid ' + (m.color + '44') + ';border-radius:16px;cursor:pointer;font-family:Jost,sans-serif;font-size:16px;font-weight:700;color:#2d2d3a;width:100%;" onclick="document.getElementById('profilePickerMount').remove();openProfileDashboard(''+m.name+'')">'
+            + '<span style="width:40px;height:40px;border-radius:50%;background:'+m.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800;flex-shrink:0;">' + m.name.charAt(0).toUpperCase() + '</span>'
+            + m.name + '</button>';
+    });
+    html += '<button style="margin-top:4px;padding:10px;background:#E8EBF0;border:none;border-radius:12px;font-family:Jost,sans-serif;font-size:14px;font-weight:600;color:#5C6370;cursor:pointer;" onclick="document.getElementById('profilePickerMount').remove()">Cancel</button>'
+        + '</div></div>';
+    var el = document.createElement('div');
+    el.innerHTML = html;
+    document.body.appendChild(el.firstChild);
 }
 
 // Profile settings placeholder

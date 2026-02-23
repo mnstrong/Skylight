@@ -3591,6 +3591,20 @@ let visiblePeriods = {
                     <div id="listsColumnsContainer" class="chores-columns"></div>
                 `;
                 renderListsColumns();
+            } else if (section === 'habits') {
+                document.getElementById('monthNav').style.display = 'none';
+                document.getElementById('todayNav').style.display = 'none';
+                document.getElementById('mainViewSelector').style.display = 'none';
+                document.getElementById('floatingAddTaskBtn').classList.add('active');
+                
+                contentArea.innerHTML = '<div class="habits-container" id="habitsContainer"></div>';
+                if (typeof renderHabitsView === 'function') renderHabitsView();
+                
+                var fab = document.getElementById('floatingAddTaskBtn');
+                if (fab) fab.onclick = function() {
+                    if (currentSection === 'habits') openAddHabitModal(null);
+                    else handleFloatingAdd();
+                };
             } else if (section === 'timer') {
                 document.getElementById('monthNav').style.display = 'none';
                 document.getElementById('todayNav').style.display = 'none';
@@ -4101,7 +4115,7 @@ let visiblePeriods = {
                 
                 html += `<div class="chore-person-card" style="background: ${columnBg};">
                     <div class="chore-person-header">
-                        <div class="chore-person-avatar" style="background: ${member.color}">
+                        <div class="chore-person-avatar" style="background: ${member.color}; cursor: pointer;" onclick="openProfileDashboard('${member.name}')" title="View ${member.name}'s dashboard">
                             ${member.name.charAt(0).toUpperCase()}
                         </div>
                         <div class="chore-person-info">

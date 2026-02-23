@@ -1,0 +1,758 @@
+/* ============================================================
+   SKYLIGHT HABIT TRACKER — Streaks-inspired styles
+   ============================================================ */
+
+/* ---- Layout: horizontal columns ---- */
+.habits-container {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.habits-columns-wrap {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 24px 20px;
+}
+
+.habits-column {
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 16px;
+    border-right: 1.5px solid #F0F1F5;
+}
+
+.habits-column:last-child {
+    border-right: none;
+}
+
+/* ---- Column header ---- */
+.habits-col-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #F0F1F5;
+}
+
+.habits-col-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Jost", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.habits-col-name {
+    font-family: "Jost", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #2d2d3a;
+    flex: 1;
+}
+
+.habits-col-badge {
+    font-family: "Jost", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* ---- Empty state ---- */
+.habits-col-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 30px 10px;
+    color: #bbbbc8;
+}
+
+.habits-col-empty-text {
+    font-family: "Jost", sans-serif;
+    font-size: 14px;
+    color: #bbbbc8;
+    text-align: center;
+}
+
+.habits-col-add-btn {
+    font-family: "Jost", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #8888aa;
+    background: #F5F6FA;
+    border: 1.5px dashed #D5D9E0;
+    border-radius: 12px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.habits-col-add-btn:hover {
+    background: #EEEEF8;
+    border-color: #bbbbd8;
+}
+
+/* ---- Habit circle grid ---- */
+.habits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    flex: 1;
+}
+
+/* ---- Individual habit circle ---- */
+.habit-circle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    position: relative;
+    padding: 8px 4px 6px;
+    border-radius: 16px;
+    transition: transform 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.habit-circle-wrap:hover {
+    background: #F5F6FA;
+    transform: scale(1.03);
+}
+
+.habit-circle-wrap:active {
+    transform: scale(0.97);
+}
+
+.habit-circle-done {
+    background: #F8FFF8;
+}
+
+.habit-circle-add-slot {
+    opacity: 0.6;
+}
+
+.habit-circle-add-slot:hover {
+    opacity: 1;
+    background: #F5F6FA;
+}
+
+/* Ring container — handles the pop animation on completion */
+.habit-ring-container {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+
+.habit-circle-done .habit-ring-container {
+    transform: scale(1.04);
+}
+
+.habit-ring-arc {
+    transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* Labels */
+.habit-circle-label {
+    font-family: "Jost", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a4a5a;
+    text-align: center;
+    line-height: 1.2;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.habit-circle-streak {
+    font-family: "Jost", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #c07038;
+    background: #fff4e8;
+    padding: 1px 7px;
+    border-radius: 20px;
+}
+
+/* ••• info button — shows on hover */
+.habit-info-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    color: #8888aa;
+    padding: 2px 5px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.habit-circle-wrap:hover .habit-info-btn {
+    opacity: 1;
+}
+
+/* ---- Stats bar at bottom of column ---- */
+.habits-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #F5F6FA;
+    border-radius: 14px;
+    padding: 10px 8px;
+    margin-top: auto;
+}
+
+.hstat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.hstat-val {
+    font-family: "Jost", sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #2d2d3a;
+    line-height: 1;
+}
+
+.hstat-lbl {
+    font-family: "Jost", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: #9999aa;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.hstat-sep {
+    width: 1px;
+    height: 28px;
+    background: #E0E2EA;
+}
+
+/* ---- Global empty state ---- */
+.habits-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 10px;
+    color: #aaa;
+}
+
+.habits-empty-icon { font-size: 48px; }
+
+.habits-empty-text {
+    font-family: "Jost", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #9999aa;
+}
+
+/* ============================================================
+   STATS PANEL
+   ============================================================ */
+.hstats-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 40, 0.4);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 9999;
+    animation: hFadeIn 0.2s ease;
+}
+
+@keyframes hFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.hstats-panel {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 28px 28px 0 0;
+    overflow: hidden;
+    animation: hSlideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes hSlideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.hstats-header {
+    background: var(--mc, #a8d8f0);
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.hstats-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2px;
+    transition: background 0.15s;
+}
+
+.hstats-close:hover { background: rgba(255,255,255,0.4); }
+
+.hstats-hero-ring {
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+}
+
+.hstats-hero-name {
+    font-family: "Jost", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.hstats-hero-sub {
+    font-family: "Jost", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+}
+
+.hstats-body {
+    padding: 20px 24px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Stats row */
+.hstats-row {
+    display: flex;
+    gap: 8px;
+}
+
+.hstats-stat {
+    flex: 1;
+    background: #F5F6FA;
+    border-radius: 14px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.hstats-stat-val {
+    font-family: "Jost", sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #2d2d3a;
+    line-height: 1;
+}
+
+.hstats-stat-lbl {
+    font-family: "Jost", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: #9999aa;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* 30-day dot grid */
+.hstats-section-label {
+    font-family: "Jost", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9999aa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hstats-dot-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+}
+
+.hstats-dot {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: #E8EBF0;
+    transition: background 0.2s;
+}
+
+.hstats-dot-done {
+    background: #a8d8f0; /* overridden inline */
+}
+
+.hstats-dot-today {
+    box-shadow: 0 0 0 2px #8888cc;
+}
+
+/* Buttons */
+.hstats-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.hstats-toggle-btn {
+    flex: 1;
+    padding: 14px;
+    background: var(--mc, #a8d8f0);
+    border: none;
+    border-radius: 14px;
+    font-family: "Jost", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.hstats-toggle-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.hstats-toggle-done {
+    background: #7caa7c !important;
+}
+
+.hstats-edit-row {
+    display: flex;
+    gap: 10px;
+}
+
+.hstats-edit-btn, .hstats-delete-btn {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 12px;
+    font-family: "Jost", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.hstats-edit-btn {
+    background: #E8EBF0;
+    color: #4a4a5a;
+}
+
+.hstats-edit-btn:hover { background: #D5D9E0; }
+
+.hstats-delete-btn {
+    background: #FEF0F0;
+    color: #cc4444;
+}
+
+.hstats-delete-btn:hover { background: #fde0e0; }
+
+/* ============================================================
+   ADD/EDIT MODAL
+   ============================================================ */
+.hmodal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 40, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: hFadeIn 0.2s ease;
+    padding: 20px;
+}
+
+.hmodal {
+    background: #fff;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: hModalIn 0.28s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 24px 60px rgba(40,40,80,0.2);
+}
+
+@keyframes hModalIn {
+    from { transform: scale(0.92) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.hmodal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px 0;
+    flex-shrink: 0;
+}
+
+.hmodal-header h3 {
+    font-family: "Jost", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d2d3a;
+}
+
+.hmodal-close {
+    background: #E8EBF0;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    color: #5C6370;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2px;
+    transition: background 0.15s;
+}
+
+.hmodal-close:hover { background: #D5D9E0; }
+
+.hmodal-body {
+    padding: 18px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hmodal-label {
+    font-family: "Jost", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #5C6370;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.hmodal-member-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.hmodal-member-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px 6px 8px;
+    background: #F5F6FA;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-family: "Jost", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a4a5a;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.hmodal-member-btn:hover {
+    background: #EEEEF8;
+}
+
+.hmodal-member-btn.selected {
+    border-color: var(--mc, #a8d8f0);
+    background: color-mix(in srgb, var(--mc, #a8d8f0) 12%, white);
+}
+
+.hmodal-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--mc, #aaa);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.hmodal-input {
+    font-family: "Jost", sans-serif;
+    font-size: 16px;
+    color: #2d2d3a;
+    background: #F5F6FA;
+    border: 1.5px solid #E8EBF0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.hmodal-input:focus {
+    border-color: #c4b8f0;
+    background: #fff;
+}
+
+.hmodal-emoji-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.hmodal-emoji-btn {
+    background: #F5F6FA;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 5px 7px;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.15s;
+}
+
+.hmodal-emoji-btn:hover { background: #EEEEF8; transform: scale(1.1); }
+
+.hmodal-emoji-btn.selected {
+    background: #EEF2FF;
+    border-color: #c4b8f0;
+}
+
+.hmodal-emoji-input {
+    text-align: center;
+    font-size: 18px;
+    padding: 8px;
+}
+
+.hmodal-footer {
+    display: flex;
+    gap: 10px;
+    padding: 0 24px 22px;
+    flex-shrink: 0;
+}
+
+.hmodal-cancel {
+    flex: 1;
+    padding: 13px;
+    background: #E8EBF0;
+    border: none;
+    border-radius: 14px;
+    font-family: "Jost", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #5C6370;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.hmodal-cancel:hover { background: #D5D9E0; }
+
+.hmodal-save {
+    flex: 2;
+    padding: 13px;
+    background: linear-gradient(135deg, #b8a8f0, #a8d8f0);
+    border: none;
+    border-radius: 14px;
+    font-family: "Jost", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 4px 14px rgba(160,130,230,0.3);
+}
+
+.hmodal-save:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+    .habits-columns-wrap {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+        padding: 12px;
+        gap: 16px;
+    }
+
+    .habits-column {
+        min-width: unset;
+        max-width: unset;
+        border-right: none;
+        border-bottom: 1.5px solid #F0F1F5;
+        padding: 0 0 16px 0;
+    }
+
+    .habits-column:last-child { border-bottom: none; }
+
+    .habits-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .habit-ring-container { width: 72px; height: 72px; }
+    .habit-ring-container svg { width: 72px !important; height: 72px !important; }
+
+    .hstats-panel { border-radius: 24px 24px 0 0; }
+
+    .hstats-dot-grid { grid-template-columns: repeat(10, 1fr); }
+}
