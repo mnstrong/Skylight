@@ -55,10 +55,7 @@
                 <div>Habits</div>
             </a>
             <div style="flex: 1;"></div>
-            <a href="#" class="nav-item" onclick="event.preventDefault();openProfilePicker()">
-                <div class="nav-icon" style="font-size: 28px;">👤</div>
-                <div>Profile</div>
-            </a>
+
             <a href="#/timer" class="nav-item">
                 <div class="nav-icon" style="font-size: 28px;">⏱️</div>
                 <div>Timer</div>
@@ -1428,10 +1425,7 @@
             <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #EEF2FF, #FDF0FF);">🌱</div>
             <div class="mobile-icon-label">Habits</div>
         </div>
-        <div class="mobile-icon-item" onclick="openProfilePicker()">
-            <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #F0F8FF, #E8F4FF);">👤</div>
-            <div class="mobile-icon-label">Profile</div>
-        </div>
+
         <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
             <div class="mobile-icon-circle mobile-icon-photos">
                 🖼️
@@ -1704,8 +1698,14 @@ if (document.readyState === 'loading') {
 
 // Profile picker — defined here so it's available immediately on page load
 function openProfilePicker() {
+    var seen = {};
     var members = (window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]'))
-        .filter(function(m) { return !m.isGoogleCalendar; });
+        .filter(function(m) {
+            if (m.isGoogleCalendar || m.name === 'Family') return false;
+            if (seen[m.name]) return false;
+            seen[m.name] = true;
+            return true;
+        });
     if (members.length === 0) return;
 
     var existing = document.getElementById('profilePickerMount');
