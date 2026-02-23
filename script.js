@@ -2890,6 +2890,21 @@ let visiblePeriods = {
             return familyProfile ? familyProfile.color : '#9B59B6';
         }
 
+        function getEventColor(event) {
+            // Use assigned member color if available
+            if (event.member) {
+                const m = familyMembers.find(m => m.name === event.member);
+                if (m) return m.color;
+            }
+            // Fall back to first member name found in notes
+            if (event.notes) {
+                const notesLower = event.notes.toLowerCase();
+                const match = familyMembers.find(m => !m.isGoogleCalendar && m.name !== 'Family' && notesLower.indexOf(m.name.toLowerCase()) !== -1);
+                if (match) return match.color;
+            }
+            return getFamilyColor();
+        }
+
         function updateDateTime() {
             const now = new Date();
             const dateOptions = { month: 'long', day: 'numeric' };
@@ -3018,7 +3033,7 @@ let visiblePeriods = {
                 let eventsHtml = '';
                 dayEvents.slice(0, 3).forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = (member && member.color) || getFamilyColor();
+                    const color = getEventColor(event);
                     const bgColor = hexToRgba(color, 0.25);
                     
                     // Format time to 12-hour format
@@ -3175,7 +3190,7 @@ let visiblePeriods = {
                 // Display events
                 dayEvents.forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member ? member.color : getFamilyColor();
+                    const color = getEventColor(event);
                     const bgColor = hexToRgba(color, 0.25);
                     
                     // Format time
@@ -3273,7 +3288,7 @@ let visiblePeriods = {
                 html += '<div class="day-view-events">';
                 dayEvents.forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = (member && member.color) || getFamilyColor();
+                    const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
                     html += `<div class="day-view-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
@@ -3424,7 +3439,7 @@ let visiblePeriods = {
                     html += '<div class="schedule-event-list">';
                     dayEvents.forEach(event => {
                         const member = familyMembers.find(m => m.name === event.member);
-                        const color = (member && member.color) || getFamilyColor();
+                        const color = getEventColor(event);
                         const initial = member ? member.name.charAt(0).toUpperCase() : '';
                         
                         const todayClass = isToday ? 'today' : '';
@@ -7422,7 +7437,7 @@ async function updateEvent(eventId) {
                 let html = '';
                 dayEvents.forEach(event => {
                     const member = familyMembers.find(m => m.name === event.member);
-                    const color = member ? member.color : getFamilyColor();
+                    const color = getEventColor(event);
                     
                     // Format time
                     let timeStr = '';
