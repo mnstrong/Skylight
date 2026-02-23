@@ -19,6 +19,35 @@ var isGoogleConnected = false;
 var googleCalendarEvents = [];
 
 // ============================================
+// TIMEZONE HELPER
+// ============================================
+
+// Returns the local timezone offset string like "-07:00" or "+05:30"
+function getLocalTimezoneOffset() {
+    var offsetMinutes = new Date().getTimezoneOffset(); // e.g. 420 for UTC-7
+    var sign = offsetMinutes <= 0 ? '+' : '-';
+    var abs = Math.abs(offsetMinutes);
+    var hours = Math.floor(abs / 60);
+    var mins = abs % 60;
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    return sign + pad(hours) + ':' + pad(mins);
+}
+
+// Parse HH:MM from a Google Calendar dateTime string, respecting timezone
+// Google returns either "2026-02-17T21:00:00Z" or "2026-02-17T14:00:00-07:00"
+function extractLocalTime(dateTimeStr) {
+    if (!dateTimeStr) return '';
+    var tIdx = dateTimeStr.indexOf('T');
+    if (tIdx === -1) return '';
+    // Use Date to parse so timezone offset is handled correctly
+    var d = new Date(dateTimeStr);
+    var h = d.getHours();
+    var m = d.getMinutes();
+    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+    return pad(h) + ':' + pad(m);
+}
+
+// ============================================
 // JWT TOKEN GENERATION
 // ============================================
 
@@ -197,26 +226,15 @@ async function loadGoogleCalendarEvents() {
                 memberName = window.autoAssignEventMember(event.summary || '') || '';
             }
 
-            // Extract time directly from the ISO string to avoid Android 8 toTimeString() timezone bugs
-            var startTime = '';
-            var endTimeStr = '';
-            if (event.start.dateTime) {
-                // dateTime looks like "2026-02-17T14:00:00-07:00" — grab HH:MM directly
-                var startRaw = event.start.dateTime;
-                var tIdx = startRaw.indexOf('T');
-                if (tIdx !== -1) startTime = startRaw.substring(tIdx + 1, tIdx + 6);
-            }
-            if (event.end.dateTime) {
-                var endRaw = event.end.dateTime;
-                var tIdx2 = endRaw.indexOf('T');
-                if (tIdx2 !== -1) endTimeStr = endRaw.substring(tIdx2 + 1, tIdx2 + 6);
-            }
+            // Extract local time from Google's dateTime (handles both Z and offset formats)
+            var startTime = extractLocalTime(event.start.dateTime);
+            var endTimeStr = extractLocalTime(event.end.dateTime);
 
             var newEvent = {
                 id: event.id,
                 googleId: event.id,
                 title: event.summary || '(No title)',
-                date: event.start.dateTime ? event.start.dateTime.split('T')[0] : startDate.toISOString().split('T')[0],
+                date: event.start.dateTime ? (function() { var d = new Date(event.start.dateTime); var pad = function(n) { return n < 10 ? '0' + n : '' + n; }; return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); })() : startDate.toISOString().split('T')[0],
                 endDate: finalEndDate,
                 time: startTime,
                 endTime: endTimeStr,
@@ -269,16 +287,17 @@ async function createGoogleCalendarEvent(eventData) {
     }
 
     try {
-        // Compute end separately to avoid parser issues with IIFE in object literals
+        // Build end field before constructing object (avoids IIFE-in-object Android 8 parse bug)
         var endField;
         if (eventData.time) {
             if (eventData.endTime) {
-                endField = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+                endField = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' + getLocalTimezoneOffset() };
             } else {
                 var startDt = new Date(eventData.date + 'T' + eventData.time + ':00');
                 startDt.setHours(startDt.getHours() + 1);
-                var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-                endField = { dateTime: eventData.date + 'T' + pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) + ':00' };
+                var padH = startDt.getHours() < 10 ? '0' + startDt.getHours() : '' + startDt.getHours();
+                var padM = startDt.getMinutes() < 10 ? '0' + startDt.getMinutes() : '' + startDt.getMinutes();
+                endField = { dateTime: eventData.date + 'T' + padH + ':' + padM + ':00' + getLocalTimezoneOffset() };
             }
         } else {
             endField = { date: eventData.endDate || eventData.date };
@@ -288,7 +307,7 @@ async function createGoogleCalendarEvent(eventData) {
             summary: eventData.title,
             description: eventData.notes || '',
             start: eventData.time ?
-                { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
+                { dateTime: eventData.date + 'T' + eventData.time + ':00' + getLocalTimezoneOffset() } :
                 { date: eventData.date },
             end: endField
         };
@@ -335,12 +354,13 @@ async function updateGoogleCalendarEvent(eventId, eventData) {
         var endField2;
         if (eventData.time) {
             if (eventData.endTime) {
-                endField2 = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' };
+                endField2 = { dateTime: (eventData.endDate || eventData.date) + 'T' + eventData.endTime + ':00' + getLocalTimezoneOffset() };
             } else {
                 var startDt2 = new Date(eventData.date + 'T' + eventData.time + ':00');
                 startDt2.setHours(startDt2.getHours() + 1);
-                var pad2 = function(n) { return n < 10 ? '0' + n : '' + n; };
-                endField2 = { dateTime: eventData.date + 'T' + pad2(startDt2.getHours()) + ':' + pad2(startDt2.getMinutes()) + ':00' };
+                var padH2 = startDt2.getHours() < 10 ? '0' + startDt2.getHours() : '' + startDt2.getHours();
+                var padM2 = startDt2.getMinutes() < 10 ? '0' + startDt2.getMinutes() : '' + startDt2.getMinutes();
+                endField2 = { dateTime: eventData.date + 'T' + padH2 + ':' + padM2 + ':00' + getLocalTimezoneOffset() };
             }
         } else {
             endField2 = { date: eventData.endDate || eventData.date };
@@ -350,7 +370,7 @@ async function updateGoogleCalendarEvent(eventId, eventData) {
             summary: eventData.title,
             description: eventData.notes || '',
             start: eventData.time ?
-                { dateTime: eventData.date + 'T' + eventData.time + ':00' } :
+                { dateTime: eventData.date + 'T' + eventData.time + ':00' + getLocalTimezoneOffset() } :
                 { date: eventData.date },
             end: endField2
         };
