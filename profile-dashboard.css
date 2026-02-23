@@ -682,3 +682,100 @@
 
     .pdb-stars-big { font-size: 36px; }
 }
+
+/* ============================================================
+   PROFILE PICKER
+   ============================================================ */
+.ppick-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,20,40,0.45);
+    backdrop-filter: blur(6px);
+    z-index: 9500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: hFadeIn 0.18s ease;
+}
+
+.ppick-modal {
+    background: #fff;
+    border-radius: 28px;
+    padding: 26px 24px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 280px;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 24px 60px rgba(20,20,60,0.22);
+    animation: hModalIn 0.28s cubic-bezier(.34,1.56,.64,1);
+}
+
+.ppick-title {
+    font-family: "Jost", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d2d3a;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.ppick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ppick-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 18px;
+    background: color-mix(in srgb, var(--pmc, #aaa) 10%, white);
+    border: 2px solid color-mix(in srgb, var(--pmc, #aaa) 30%, white);
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: "Jost", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d2d3a;
+    width: 100%;
+    transition: background 0.15s, transform 0.15s;
+    text-align: left;
+}
+
+.ppick-btn:hover {
+    background: color-mix(in srgb, var(--pmc, #aaa) 18%, white);
+    transform: translateY(-1px);
+}
+
+.ppick-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--pmc, #aaa);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.ppick-cancel {
+    margin-top: 4px;
+    padding: 11px;
+    background: #E8EBF0;
+    border: none;
+    border-radius: 12px;
+    font-family: "Jost", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5C6370;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.ppick-cancel:hover { background: #D5D9E0; }
