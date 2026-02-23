@@ -7094,26 +7094,43 @@ function checkAllTasksComplete(memberName) {
         // updateEvent moved to index.html inline script for Android 8 compatibility
 
         // Delete event from detail panel
-            async function deleteEventFromDetail() {
-                const eventId = window.currentEventDetailId;
-                if (!eventId) return;
-                
-                const event = GoogleCalendar.getEvents().find(e => e.id == eventId);
-                if (!event) return;
-                
-                if (!confirm(`Delete "${event.title}"?`)) return;
-                
-                // Delete from Google Calendar
-                await GoogleCalendar.delete(eventId);
-                
-                closeEventDetailPanel();
+        async function deleteEventFromDetail() {
+            var eventId = window.currentEventDetailId;
+            if (!eventId) return;
+
+            // Try local first, then GCal
+            var ev = (window.events || []).find(function(e) { return e.id == eventId; });
+            var title = ev ? ev.title : 'this event';
+            if (!ev && typeof GoogleCalendar !== 'undefined') {
+                var gcEv = GoogleCalendar.getEvents().find(function(e) { return e.id == eventId; });
+                if (gcEv) title = gcEv.title || title;
             }
-            
+
+            if (!confirm('Delete "' + title + '"?')) return;
+
+            // Remove from local events
+            if (ev) {
+                var idx = events.findIndex(function(e) { return e.id == eventId; });
+                if (idx > -1) {
+                    events.splice(idx, 1);
+                    localStorage.setItem('events', JSON.stringify(events));
+                    window.events = events;
+                }
+            }
+
+            // Also remove from GCal if connected
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                try { GoogleCalendar.delete(eventId); } catch(e) {}
+            }
+
+            closeEventDetailPanel();
+
             // Re-render current view
             if (currentView === 'month') renderCalendar();
             else if (currentView === 'week') renderWeekView();
             else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
+        }
 
 
         function saveMeal() {
