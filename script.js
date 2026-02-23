@@ -6896,7 +6896,9 @@ function checkAllTasksComplete(memberName) {
         async function saveEvent() {
             // If we're editing an existing event, route to updateEvent instead
             if (window._editingEventId) {
-                updateEvent(window._editingEventId);
+                var editId = window._editingEventId;
+                window._editingEventId = null; // clear BEFORE calling to prevent any re-entry
+                updateEvent(editId);
                 return;
             }
 
@@ -7108,10 +7110,10 @@ function checkAllTasksComplete(memberName) {
         window.editEventFromDetail = editEventFromDetail;
         
         // Update event
-        async function updateEvent(eventId) {
-            const isAllDay = document.getElementById('eventAllDayToggle').checked;
+        function updateEvent(eventId) {
+            var isAllDay = document.getElementById('eventAllDayToggle').checked;
             
-            const eventData = {
+            var eventData = {
                 title: document.getElementById('eventTitle').value,
                 date: document.getElementById('eventDate').value,
                 endDate: document.getElementById('eventEndDate').value,
@@ -7122,31 +7124,34 @@ function checkAllTasksComplete(memberName) {
                 member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || '')
             };
             
-            // Update local events
-            const localIdx = events.findIndex(e => e.id == eventId);
+            // Update local events synchronously
+            var localIdx = -1;
+            for (var i = 0; i < events.length; i++) {
+                if (events[i].id == eventId) { localIdx = i; break; }
+            }
             if (localIdx !== -1) {
                 events[localIdx] = Object.assign({}, events[localIdx], eventData);
                 localStorage.setItem('events', JSON.stringify(events));
                 window.events = events;
             }
             
-            // Also update in Google Calendar if connected
-            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
-                await GoogleCalendar.update(eventId, eventData);
-            }
-            
-            closeModal('eventModal');
-            
-            // Clear edit mode flag and reset button
+            // Clear edit flag and reset button BEFORE closing modal
             window._editingEventId = null;
             var saveBtn = document.getElementById('eventSaveBtn');
             if (saveBtn) saveBtn.textContent = 'Add Event';
+            
+            closeModal('eventModal');
             
             // Re-render current view
             if (currentView === 'month') renderCalendar();
             else if (currentView === 'week') renderWeekView();
             else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
+            
+            // Fire-and-forget Google Calendar update
+            if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
+                GoogleCalendar.update(eventId, eventData);
+            }
         }
         
         // Delete event from detail panel
