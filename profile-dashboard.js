@@ -193,7 +193,17 @@ function openProfileDashboard(memberName) {
     html += '<div class="pdb-container" id="profileDashContainer">';
 
     // ---- HERO HEADER ----
-    html += '<div class="pdb-hero" style="background: linear-gradient(135deg, ' + mc + 'dd 0%, ' + mc + '88 50%, ' + mc + '33 100%)">';
+    // Convert hex color to rgba for Android 8 compatibility (no 8-digit hex support)
+    function hexToRgbaLocal(hex, alpha) {
+        var r = parseInt(hex.slice(1,3), 16);
+        var g = parseInt(hex.slice(3,5), 16);
+        var b = parseInt(hex.slice(5,7), 16);
+        return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    }
+    var mcA87 = hexToRgbaLocal(mc, 0.87);
+    var mcA53 = hexToRgbaLocal(mc, 0.53);
+    var mcA20 = hexToRgbaLocal(mc, 0.20);
+    html += '<div class="pdb-hero" style="background: linear-gradient(135deg, ' + mcA87 + ' 0%, ' + mcA53 + ' 50%, ' + mcA20 + ' 100%)">';
     html += '<div class="pdb-hero-deco"></div>';
     html += '<button class="pdb-close" onclick="closeProfileDashboard()">×</button>';
     html += '<div class="pdb-hero-content">';
