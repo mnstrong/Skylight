@@ -424,26 +424,22 @@ async function syncListItem(listId, item, operation = 'update') {
 
 function setupRealtimeListeners() {
     if (!syncEnabled) return;
-    
-    console.log('🎧 Setting up real-time listeners...');
-    
-    // Listen for task changes
-    SupabaseAPI.subscribeToTasks((payload) => {
-        console.log('📨 Task changed:', payload);
-        handleTaskChange(payload);
-    });
-    
-    // Listen for meal plan changes
-    SupabaseAPI.subscribeToMealPlans((payload) => {
-        console.log('📨 Meal plan changed:', payload);
-        handleMealPlanChange(payload);
-    });
-    
-    // Listen for list changes
-    SupabaseAPI.subscribeToLists((payload) => {
-        console.log('📨 List changed:', payload);
-        handleListChange(payload);
-    });
+    // Realtime uses WebSockets which can fail on older WebViews (Android 8).
+    // The periodic refresh handles cross-device sync as a fallback.
+    try {
+        console.log('Setting up real-time listeners...');
+        SupabaseAPI.subscribeToTasks(function(payload) {
+            handleTaskChange(payload);
+        });
+        SupabaseAPI.subscribeToMealPlans(function(payload) {
+            handleMealPlanChange(payload);
+        });
+        SupabaseAPI.subscribeToLists(function(payload) {
+            handleListChange(payload);
+        });
+    } catch (e) {
+        console.warn('Real-time listeners unavailable. Falling back to polling.');
+    }
 }
 
 function handleTaskChange(payload) {
