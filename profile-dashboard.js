@@ -38,6 +38,57 @@ function formatTime(timeStr) {
 }
 
 
+// Build mini calendar HTML for the dashboard
+function buildMiniCalHTML(member) {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth();
+    var today = now.getDate();
+
+    // Gather event dates for this month
+    var allEvents = typeof getAllEvents === 'function' ? getAllEvents() : (window.events || []);
+    var eventDays = {};
+    allEvents.forEach(function(e) {
+        if (!e.date) return;
+        var d = new Date(e.date + 'T12:00:00');
+        if (d.getFullYear() === year && d.getMonth() === month) {
+            eventDays[d.getDate()] = true;
+        }
+    });
+
+    var monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    var firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    var html = '<div class="pdb-card pdb-card-mini-cal">';
+    html += '<div class="pdb-mini-cal-header">';
+    html += '<div class="pdb-mini-cal-month">' + monthName + '</div>';
+    html += '<button class="pdb-mini-cal-link" onclick="closeProfileDashboard();switchSection(\'calendar\')">View →</button>';
+    html += '</div>';
+    html += '<div class="pdb-mini-cal-grid">';
+
+    // Day-of-week headers
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function(d) {
+        html += '<div class="pdb-mini-cal-dow">' + d + '</div>';
+    });
+
+    // Empty cells before first day
+    for (var i = 0; i < firstDay; i++) {
+        html += '<div class="pdb-mini-cal-day other-month"></div>';
+    }
+
+    // Day cells
+    for (var d = 1; d <= daysInMonth; d++) {
+        var cls = 'pdb-mini-cal-day';
+        if (d === today) cls += ' today';
+        else if (eventDays[d]) cls += ' has-event';
+        html += '<div class="' + cls + '">' + d + '</div>';
+    }
+
+    html += '</div></div>';
+    return html;
+}
+
 // Check if a member is referenced in an event (by member field or notes)
 function eventBelongsToMember(e, memberName) {
     if (!e.member && !e.notes) return false;
@@ -250,6 +301,9 @@ function openProfileDashboard(memberName) {
         html += '</div>';
     }
     html += '</div>'; // schedule card
+
+    // ---- MINI CALENDAR card ----
+    html += buildMiniCalHTML(member);
 
     // ---- WEATHER card ----
     html += '<div class="pdb-card pdb-card-weather" id="pdbWeatherCard" style="background: linear-gradient(135deg, #fff8e8, #ffecc0)">';
