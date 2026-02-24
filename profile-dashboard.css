@@ -221,6 +221,9 @@ margin-right: -14px;
 }
 .pdb-grid > .pdb-card {
 width: calc(25% - 10.5px);
+max-width: calc(25% - 10.5px);
+min-width: 0;
+box-sizing: border-box;
 margin-right: 14px;
 margin-bottom: 14px;
 }
@@ -754,6 +757,9 @@ padding: 14px 14px 40px;
 }
 .pdb-grid > .pdb-card {
 width: calc(25% - 9px);
+max-width: calc(25% - 9px);
+min-width: 0;
+box-sizing: border-box;
 margin-right: 12px;
 margin-bottom: 12px;
 }
@@ -877,6 +883,8 @@ transition: background 0.15s;
 
 /* –– MINI CALENDAR widget –– */
 .pdb-card-mini-cal {
+  overflow: hidden;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #f0f4ff, #e4eaff);
   min-height: 150px;
   align-items: stretch;
@@ -929,8 +937,8 @@ transition: background 0.15s;
   color: #3a4070;
   line-height: 22px;
   border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   margin: 0 auto;
   cursor: default;
 }
