@@ -1,3 +1,5 @@
+// profile-dashboard.js
+console.log("[PDB] profile-dashboard.js executing...");
 // ============================================================
 // SKYLIGHT — PROFILE DASHBOARD
 // ============================================================
@@ -461,6 +463,8 @@ function attachProfileDashboardTriggers() {
 })();
 
 // Expose functions to window for inline onclick handlers (required on Android 8)
+console.log("[PDB] Assigning to window...");
 window.openProfileDashboard = openProfileDashboard;
 window.closeProfileDashboard = closeProfileDashboard;
 window.attachProfileDashboardTriggers = attachProfileDashboardTriggers;
+console.log("[PDB] window.openProfileDashboard is:", typeof window.openProfileDashboard);
