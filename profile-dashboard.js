@@ -160,10 +160,12 @@ function blobBg(color, opacity) {
 
 // ---- Main render ----
 function openProfileDashboard(memberName) {
+    console.log('[PDB] openProfileDashboard called with:', memberName);
     var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    console.log('[PDB] members found:', members.length);
     var member = members.find(function(m) { return m.name === memberName; });
-    // If member not found in cache, create a minimal placeholder so the modal still opens
     if (!member) {
+        console.log('[PDB] member not in cache, using fallback');
         member = { name: memberName, color: '#a8d8f0' };
     }
 
@@ -385,14 +387,17 @@ function openProfileDashboard(memberName) {
     html += '</div>'; // pdb-container
     html += '</div>'; // pdb-overlay
 
+    console.log('[PDB] HTML built, length:', html.length);
     var el = document.createElement('div');
     el.id = 'profileDashboardMount';
     el.innerHTML = html;
     document.body.appendChild(el);
+    console.log('[PDB] Mount appended to body');
 
     // Animate in
     setTimeout(function() {
         var overlay = document.getElementById('profileDashOverlay');
+        console.log('[PDB] overlay found:', !!overlay);
         if (overlay) overlay.classList.add('pdb-visible');
     }, 10);
 
