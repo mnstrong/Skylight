@@ -451,3 +451,8 @@ function attachProfileDashboardTriggers() {
         observer.observe(document.getElementById('contentArea') || document.body, { childList: true, subtree: true });
     });
 })();
+
+// Expose functions to window for inline onclick handlers (required on Android 8)
+window.openProfileDashboard = openProfileDashboard;
+window.closeProfileDashboard = closeProfileDashboard;
+window.attachProfileDashboardTriggers = attachProfileDashboardTriggers;
