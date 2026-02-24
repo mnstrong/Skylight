@@ -199,16 +199,26 @@ async function loadGoogleCalendarEvents() {
         var data = await response.json();
         googleCalendarEvents = [];
 
+        // Helper: extract local YYYY-MM-DD from a Date object (avoids UTC offset bugs)
+        function localDateStr(d) {
+            var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        }
+
         (data.items || []).forEach(function(event) {
             var start = event.start.dateTime || event.start.date;
             var startDate = new Date(start);
             var end = event.end.dateTime || event.end.date;
             var endDate = new Date(end);
 
-            // Adjust all-day event end date (Google uses exclusive end date)
-            // Use UTC methods to avoid timezone-offset bugs (e.g. Phoenix UTC-7)
-            var finalEndDate = endDate.toISOString().split('T')[0];
-            if (event.end.date && !event.end.dateTime) {
+            // For timed events use local date (avoids UTC offset shifting date e.g. 6pm Phoenix = next day UTC)
+            // For all-day events (date-only strings) subtract 1 day since Google end dates are exclusive
+            var finalEndDate;
+            if (event.end.dateTime) {
+                // Timed event: use local date
+                finalEndDate = localDateStr(endDate);
+            } else {
+                // All-day event: end.date is exclusive, subtract 1 day in UTC
                 var adjustedEnd = new Date(endDate);
                 adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() - 1);
                 finalEndDate = adjustedEnd.toISOString().split('T')[0];
@@ -226,7 +236,7 @@ async function loadGoogleCalendarEvents() {
                 id: event.id,
                 googleId: event.id,
                 title: event.summary || '(No title)',
-                date: startDate.toISOString().split('T')[0],
+                date: event.start.dateTime ? localDateStr(startDate) : startDate.toISOString().split('T')[0],
                 endDate: finalEndDate,
                 time: event.start.dateTime ? startDate.toTimeString().substring(0, 5) : '',
                 endTime: event.end.dateTime ? endDate.toTimeString().substring(0, 5) : '',
