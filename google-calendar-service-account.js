@@ -211,10 +211,11 @@ async function loadGoogleCalendarEvents() {
             var endDate = new Date(end);
 
             // Adjust all-day event end date (Google uses exclusive end date)
+            // Use UTC methods to avoid timezone-offset bugs (e.g. Phoenix UTC-7)
             var finalEndDate = endDate.toISOString().split('T')[0];
             if (event.end.date && !event.end.dateTime) {
                 var adjustedEnd = new Date(endDate);
-                adjustedEnd.setDate(adjustedEnd.getDate() - 1);
+                adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() - 1);
                 finalEndDate = adjustedEnd.toISOString().split('T')[0];
             }
 
