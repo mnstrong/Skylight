@@ -18,9 +18,7 @@ if (!window.supabase || typeof window.supabase.createClient !== 'function') {
 }
 var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     realtime: {
-        params: {
-            apikey: SUPABASE_ANON_KEY
-        }
+        enabled: false
     }
 });
 
@@ -577,45 +575,12 @@ async function addAllowanceTransaction(transaction) {
 // ============================================
 // REAL-TIME SUBSCRIPTIONS
 // ============================================
-function subscribeToCalendarEvents(callback) {
-    return supabaseClient
-        .channel('calendar_events_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'calendar_events' }, 
-            callback
-        )
-        .subscribe();
-}
-
-function subscribeToTasks(callback) {
-    return supabaseClient
-        .channel('tasks_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'tasks' }, 
-            callback
-        )
-        .subscribe();
-}
-
-function subscribeToMealPlans(callback) {
-    return supabaseClient
-        .channel('meal_plans_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'meal_plans' }, 
-            callback
-        )
-        .subscribe();
-}
-
-function subscribeToLists(callback) {
-    return supabaseClient
-        .channel('list_items_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'list_items' }, 
-            callback
-        )
-        .subscribe();
-}
+// Realtime subscriptions disabled - WebSockets not supported on Android 8.
+// Cross-device sync is handled by periodic polling instead.
+function subscribeToCalendarEvents(callback) { return null; }
+function subscribeToTasks(callback) { return null; }
+function subscribeToMealPlans(callback) { return null; }
+function subscribeToLists(callback) { return null; }
 
 // ============================================
 // EXPORT ALL FUNCTIONS
