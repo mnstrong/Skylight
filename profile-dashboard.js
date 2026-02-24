@@ -278,6 +278,9 @@ function openProfileDashboard(memberName) {
     // ---- GRID ----
     html += '<div class="pdb-grid">';
 
+    // ---- MINI CALENDAR card (first) ----
+    html += buildMiniCalHTML(member);
+
     // ---- TODAY'S SCHEDULE card ----
     html += '<div class="pdb-card pdb-card-wide pdb-card-schedule">';
     html += '<div class="pdb-card-deco" style="background:' + blobBg(mc, 0.12) + ';background-size:cover;background-position:center"></div>';
@@ -301,9 +304,6 @@ function openProfileDashboard(memberName) {
         html += '</div>';
     }
     html += '</div>'; // schedule card
-
-    // ---- MINI CALENDAR card ----
-    html += buildMiniCalHTML(member);
 
     // ---- WEATHER card ----
     html += '<div class="pdb-card pdb-card-weather" id="pdbWeatherCard" style="background: linear-gradient(135deg, #fff8e8, #ffecc0)">';
