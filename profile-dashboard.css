@@ -217,15 +217,15 @@ max-width: 1400px;
 margin: 0 auto;
 width: 100%;
 box-sizing: border-box;
-margin-right: -14px;
+gap: 14px;
 }
 .pdb-grid > .pdb-card {
 width: calc(25% - 10.5px);
 max-width: calc(25% - 10.5px);
 min-width: 0;
 box-sizing: border-box;
-margin-right: 14px;
-margin-bottom: 14px;
+margin-right: 0;
+margin-bottom: 0;
 }
 .pdb-grid > .pdb-card-wide {
 width: 100%;
@@ -755,13 +755,16 @@ MOBILE
 .pdb-grid {
 padding: 14px 14px 40px;
 }
+.pdb-grid {
+gap: 12px;
+}
 .pdb-grid > .pdb-card {
 width: calc(25% - 9px);
 max-width: calc(25% - 9px);
 min-width: 0;
 box-sizing: border-box;
-margin-right: 12px;
-margin-bottom: 12px;
+margin-right: 0;
+margin-bottom: 0;
 }
 .pdb-grid > .pdb-card-wide {
 width: 100%;
@@ -883,74 +886,91 @@ transition: background 0.15s;
 
 /* –– MINI CALENDAR widget –– */
 .pdb-card-mini-cal {
-  overflow: hidden;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #f0f4ff, #e4eaff);
-  min-height: 150px;
-  align-items: stretch;
-  gap: 6px;
-  padding: 14px;
-  border: none;
+overflow: hidden;
+box-sizing: border-box;
+background: white;
+min-height: 150px;
+align-items: stretch;
+padding: 16px;
+border: none;
 }
 .pdb-mini-cal-header {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-box-align: center;
-  align-items: center;
-  -webkit-box-pack: justify;
-  justify-content: space-between;
-  margin-bottom: 6px;
+display: -webkit-box;
+display: -webkit-flex;
+display: flex;
+-webkit-box-align: center;
+align-items: center;
+-webkit-box-pack: justify;
+justify-content: space-between;
+margin-bottom: 10px;
 }
 .pdb-mini-cal-month {
-  font-family: "Jost", sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: #3a4070;
+font-family: "Jost", sans-serif;
+font-size: 15px;
+font-weight: 600;
+color: #222;
 }
 .pdb-mini-cal-link {
-  font-family: "Jost", sans-serif;
-  font-size: 11px;
-  color: #6070c0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+font-family: "Jost", sans-serif;
+font-size: 11px;
+color: #667eea;
+background: none;
+border: none;
+cursor: pointer;
+padding: 0;
 }
 .pdb-mini-cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  text-align: center;
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+text-align: center;
 }
 .pdb-mini-cal-dow {
-  font-family: "Jost", sans-serif;
-  font-size: 9px;
-  font-weight: 600;
-  color: #8090b0;
-  text-transform: uppercase;
-  padding-bottom: 2px;
+font-family: "Jost", sans-serif;
+font-size: 10px;
+font-weight: 600;
+color: #999;
+text-align: center;
+padding: 4px 0;
 }
 .pdb-mini-cal-day {
-  font-family: "Jost", sans-serif;
-  font-size: 11px;
-  color: #3a4070;
-  line-height: 22px;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  margin: 0 auto;
-  cursor: default;
+font-family: "Jost", sans-serif;
+font-size: 12px;
+color: #333;
+aspect-ratio: 1;
+display: -webkit-box;
+display: -webkit-flex;
+display: flex;
+-webkit-box-align: center;
+align-items: center;
+-webkit-box-pack: center;
+justify-content: center;
+border-radius: 50%;
+cursor: pointer;
+position: relative;
+transition: background 0.15s;
+}
+.pdb-mini-cal-day:hover {
+background: rgba(102,126,234,0.1);
 }
 .pdb-mini-cal-day.today {
-  background: #5060c0;
-  color: #fff;
-  font-weight: 700;
+background: #FF6B6B;
+color: #fff;
+font-weight: 700;
 }
-.pdb-mini-cal-day.has-event {
-  background: rgba(80,96,192,0.15);
-  font-weight: 600;
+.pdb-mini-cal-day.has-event::after {
+content: '';
+position: absolute;
+bottom: 2px;
+left: 50%;
+transform: translateX(-50%);
+width: 4px;
+height: 4px;
+background: #667eea;
+border-radius: 50%;
+}
+.pdb-mini-cal-day.today.has-event::after {
+background: white;
 }
 .pdb-mini-cal-day.other-month {
-  color: #b0bcd8;
+opacity: 0.3;
 }
