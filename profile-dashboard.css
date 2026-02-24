@@ -157,7 +157,7 @@ flex: 1;
 
 .pdb-greeting {
 font-family: “Jost”, sans-serif;
-font-size: 14px;
+font-size: 54px;
 font-weight: 500;
 color: rgba(255,255,255,0.8);
 letter-spacing: 0.3px;
@@ -165,7 +165,7 @@ letter-spacing: 0.3px;
 
 .pdb-hero-name {
 font-family: “Jost”, sans-serif;
-font-size: 32px;
+font-size: 42px;
 font-weight: 800;
 color: #fff;
 line-height: 1.1;
@@ -174,7 +174,7 @@ text-shadow: 0 2px 10px rgba(0,0,0,0.1);
 
 .pdb-hero-date {
 font-family: “Jost”, sans-serif;
-font-size: 13px;
+font-size: 23px;
 color: rgba(255,255,255,0.75);
 font-weight: 500;
 margin-top: 3px;
@@ -874,3 +874,75 @@ cursor: pointer;
 transition: background 0.15s;
 }
 .ppick-cancel:hover { background: #D5D9E0; }
+
+/* –– MINI CALENDAR widget –– */
+.pdb-card-mini-cal {
+  background: linear-gradient(135deg, #f0f4ff, #e4eaff);
+  min-height: 150px;
+  align-items: stretch;
+  gap: 6px;
+  padding: 14px;
+  border: none;
+}
+.pdb-mini-cal-header {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.pdb-mini-cal-month {
+  font-family: "Jost", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #3a4070;
+}
+.pdb-mini-cal-link {
+  font-family: "Jost", sans-serif;
+  font-size: 11px;
+  color: #6070c0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.pdb-mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+.pdb-mini-cal-dow {
+  font-family: "Jost", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: #8090b0;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+}
+.pdb-mini-cal-day {
+  font-family: "Jost", sans-serif;
+  font-size: 11px;
+  color: #3a4070;
+  line-height: 22px;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  cursor: default;
+}
+.pdb-mini-cal-day.today {
+  background: #5060c0;
+  color: #fff;
+  font-weight: 700;
+}
+.pdb-mini-cal-day.has-event {
+  background: rgba(80,96,192,0.15);
+  font-weight: 600;
+}
+.pdb-mini-cal-day.other-month {
+  color: #b0bcd8;
+}
