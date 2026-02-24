@@ -162,7 +162,10 @@ function blobBg(color, opacity) {
 function openProfileDashboard(memberName) {
     var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var member = members.find(function(m) { return m.name === memberName; });
-    if (!member) return;
+    // If member not found in cache, create a minimal placeholder so the modal still opens
+    if (!member) {
+        member = { name: memberName, color: '#a8d8f0' };
+    }
 
     var mc = member.color || '#a8d8f0';
     var mcLight = mc + '22';
