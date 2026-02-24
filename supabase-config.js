@@ -16,7 +16,13 @@ if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     window.SupabaseAPI = null;
     throw new Error('Supabase library not available');
 }
-var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    realtime: {
+        params: {
+            apikey: SUPABASE_ANON_KEY
+        }
+    }
+});
 
 // ============================================
 // FAMILY MEMBERS
