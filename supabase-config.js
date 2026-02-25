@@ -11,11 +11,14 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 // Initialize Supabase client (using a different variable name to avoid conflict)
 // Guard against supabase library failing to load (e.g. Android 8 WebView compatibility)
+// IMPORTANT: Do NOT throw here — that stops all subsequent scripts from loading.
+// Instead wrap everything in an if/else so the rest of the app runs in offline mode.
 if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-    console.error('❌ Supabase library failed to load. Check CDN URL and browser compatibility.');
+    console.error('❌ Supabase library failed to load. Running in offline mode.');
     window.SupabaseAPI = null;
-    throw new Error('Supabase library not available');
-}
+    window.supabaseClient = null;
+} else { (function() {
+
 var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     realtime: {
         enabled: false
@@ -647,3 +650,5 @@ window.SupabaseAPI = {
     subscribeToMealPlans,
     subscribeToLists
 };
+
+}); } // end else block - closes the (function() { and the if/else
