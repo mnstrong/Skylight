@@ -1542,33 +1542,48 @@ function listsCloseEditSheet() {
 
 function listsRenderEditProfileGrid() {
   var grid = document.getElementById('listsEditProfileGrid');
-  // Get family members from desktop app if available, else skip profile section
   var members = [];
   if (window.familyMembers && window.familyMembers.length) {
     members = window.familyMembers.filter(function(m){ return !m.isGoogleCalendar; });
   } else {
-    try {
-      var stored = JSON.parse(localStorage.getItem('familyMembers') || '[]');
-      members = stored.filter(function(m){ return !m.isGoogleCalendar; });
-    } catch(e){}
-  }
-  if (!members.length) {
-    grid.innerHTML = '<div style="color:#8E8E93;font-size:14px;">No profiles set up yet.</div>';
-    return;
+    try { members = JSON.parse(localStorage.getItem('familyMembers') || '[]').filter(function(m){ return !m.isGoogleCalendar; }); } catch(e){}
   }
   grid.innerHTML = '';
-  // "None" option
-  var noneBtn = document.createElement('div');
+  if (!members.length) {
+    grid.textContent = 'No profiles set up yet.';
+    grid.style.color = '#8E8E93';
+    grid.style.fontSize = '14px';
+    return;
+  }
+
+  function makeAvatar(initial, color, active) {
+    var av = document.createElement('div');
+    av.style.cssText = 'width:44px;height:44px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 4px;font-family:Jost,sans-serif;transition:all 0.15s;border:3px solid '+(active ? '#14607A' : 'transparent')+';opacity:'+(active ? '1' : '0.75')+';box-shadow:'+(active ? '0 0 0 2px #fff,0 0 0 4px #14607A' : 'none')+';';
+    av.textContent = initial;
+    return av;
+  }
+  function makeLabel(text, active) {
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:11px;text-align:center;color:'+(active ? '#14607A' : '#8E8E93')+';font-weight:'+(active ? '600' : '400')+';max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Jost,sans-serif;';
+    lbl.textContent = text;
+    return lbl;
+  }
+
+  // None option
+  var noneWrap = document.createElement('div');
+  noneWrap.style.cssText = 'cursor:pointer;';
   var noneActive = listsEditSelectedProfile === null;
-  noneBtn.innerHTML = '<div style="width:44px;height:44px;border-radius:50%;background:'+(noneActive?'#14607A':'#E5E5EA')+';display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 4px;border:3px solid '+(noneActive?'#14607A':'transparent')+';transition:all 0.15s;">—</div><div style="font-size:11px;text-align:center;color:'+(noneActive?'#14607A':'#8E8E93')+';font-weight:'+(noneActive?'600':'400')+';">None</div>';
-  noneBtn.style.cssText = 'cursor:pointer;';
-  noneBtn.onclick = function(){ listsEditSelectedProfile = null; listsRenderEditProfileGrid(); };
-  grid.appendChild(noneBtn);
+  noneWrap.appendChild(makeAvatar('—', noneActive ? '#14607A' : '#E5E5EA', noneActive));
+  noneWrap.appendChild(makeLabel('None', noneActive));
+  noneWrap.onclick = function(){ listsEditSelectedProfile = null; listsRenderEditProfileGrid(); };
+  grid.appendChild(noneWrap);
+
   members.forEach(function(m) {
     var isActive = listsEditSelectedProfile === m.id || listsEditSelectedProfile === m.name;
     var wrap = document.createElement('div');
     wrap.style.cssText = 'cursor:pointer;';
-    wrap.innerHTML = '<div style="width:44px;height:44px;border-radius:50%;background:'+m.color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 4px;border:3px solid '+(isActive?'#14607A':'transparent')+';transition:all 0.15s;opacity:'+(isActive?'1':'0.7')+';box-shadow:'+(isActive?'0 0 0 2px #fff,0 0 0 4px #14607A':'none')+';font-family:'Jost',sans-serif;">'+m.name.charAt(0).toUpperCase()+'</div><div style="font-size:11px;text-align:center;color:'+(isActive?'#14607A':'#8E8E93')+';font-weight:'+(isActive?'600':'400')+';max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+listsEsc(m.name)+'</div>';
+    wrap.appendChild(makeAvatar(m.name.charAt(0).toUpperCase(), m.color, isActive));
+    wrap.appendChild(makeLabel(m.name, isActive));
     wrap.onclick = function(){ listsEditSelectedProfile = m.id; listsRenderEditProfileGrid(); };
     grid.appendChild(wrap);
   });
