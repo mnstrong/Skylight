@@ -20,7 +20,6 @@
     <script>/* globalThis polyfill for Android 8 / Chrome <71 */
     (function() { if (typeof globalThis === 'undefined') { Object.defineProperty(Object.prototype, '__magic__', { get: function() { return this; }, configurable: true }); __magic__.globalThis = __magic__; delete Object.prototype.__magic__; } }());
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 </head>
 <body>
     <div class="container">
