@@ -483,7 +483,7 @@ let visiblePeriods = {
             
             categoryRecipes.forEach(recipe => {
                 html += `
-                    <div class="recipe-list-item" onclick="selectRecipe(${recipe.id})">
+                    <div class="recipe-list-item" onclick="selectRecipe('${recipe.id}')">
                         <span class="recipe-list-item-name">${recipe.name}</span>
                         <span class="recipe-list-item-menu">⋯</span>
                     </div>
@@ -1032,7 +1032,7 @@ let visiblePeriods = {
                 filteredRecipes.forEach(recipe => {
                     const isActive = recipe.id === selectedRecipeId;
                     html += `
-                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView(${recipe.id})">
+                        <div class="recipe-list-item ${isActive ? 'active' : ''}" onclick="selectRecipeView('${recipe.id}')">
                             <span class="recipe-list-item-name">${recipe.name}</span>
                             <span class="recipe-list-item-menu">⋯</span>
                         </div>
@@ -1064,9 +1064,9 @@ let visiblePeriods = {
                         <div class="recipe-view-category" style="background: ${categoryColor}; color: #000;">${recipe.mealType}</div>
                     </div>
                     <div class="recipe-view-actions">
-                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe(${recipe.id})">Plan Meal</button>
-                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView(${recipe.id})">✏️</button>
-                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView(${recipe.id})">🗑️</button>
+                        <button class="recipe-action-btn recipe-plan-btn" onclick="planMealFromRecipe('${recipe.id}')">Plan Meal</button>
+                        <button class="recipe-action-btn recipe-edit-btn" onclick="editRecipeFromView('${recipe.id}')">✏️</button>
+                        <button class="recipe-action-btn recipe-delete-btn" onclick="deleteRecipeFromView('${recipe.id}')">🗑️</button>
                     </div>
                 </div>
             `;
@@ -1076,7 +1076,7 @@ let visiblePeriods = {
                     <div class="recipe-section">
                         <div class="recipe-section-title">INGREDIENTS</div>
                         <div class="recipe-section-content">${recipe.ingredients}</div>
-                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList(${recipe.id})">
+                        <button class="recipe-grocery-btn" onclick="addRecipeToGroceryList('${recipe.id}')">
                             🛒 Add to Grocery List
                         </button>
                     </div>
@@ -1272,7 +1272,7 @@ let visiblePeriods = {
                 html += `
                     <button class="family-pill ${activeClass}" 
                             style="background: ${member.color}; color: white;" 
-                            onclick="filterListsByPerson(${member.id})">
+                            onclick="filterListsByPerson('${member.id}')">
                         ${member.emoji} ${member.name}
                     </button>
                 `;
@@ -1314,7 +1314,7 @@ let visiblePeriods = {
                 // Show list card with title and assigned person avatar
                 html += `
                     <div class="list-card">
-                        <div class="list-card-header" onclick="openEditListPanel(${list.id})" style="cursor: pointer;">
+                        <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
                             <div class="list-card-title">${list.name}</div>
                             <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
                         </div>
@@ -1390,9 +1390,9 @@ let visiblePeriods = {
                                  ontouchmove="handleListItemTouchMove(event, ${list.id}, ${item.id})"
                                  ontouchend="handleListItemTouchEnd(event, ${list.id}, ${item.id})"
                                  style="background: ${itemBg}; cursor: move; transition: transform 0.3s ease;">
-                                <div class="list-item-text ${textClass}" onclick="openListItemDetail(${list.id}, ${item.id})">${item.text}</div>
-                                ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail(${list.id}, ${item.id})">${assignedInitial}</div>` : ''}
-                                <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem(${list.id}, ${item.id})"></div>
+                                <div class="list-item-text ${textClass}" onclick="openListItemDetail('${list.id}', '${item.id}')">${item.text}</div>
+                                ${assignedMember ? `<div class="list-item-avatar" style="background: ${assignedColor}" onclick="event.stopPropagation(); openListItemDetail('${list.id}', '${item.id}')">${assignedInitial}</div>` : ''}
+                                <div class="list-item-checkbox ${checkedClass}" onclick="event.stopPropagation(); toggleListItem('${list.id}', '${item.id}')"></div>
                             </div>
                         `;
                     });
@@ -1405,7 +1405,7 @@ let visiblePeriods = {
                 });
                 
                 html += `
-                        <div class="list-add-section-btn" onclick="addNewSection(${list.id})">
+                        <div class="list-add-section-btn" onclick="addNewSection('${list.id}')">
                             Add section
                         </div>
                     </div>
@@ -1943,7 +1943,7 @@ let visiblePeriods = {
             
             let html = '';
             listMembers.forEach(member => {
-                html += `<div class="task-profile-item" onclick="selectAddListProfile(${member.id})">
+                html += `<div class="task-profile-item" onclick="selectAddListProfile('${member.id}')">
                     <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
@@ -4072,7 +4072,7 @@ let visiblePeriods = {
                         const progressPercent = Math.min(100, (totalStarsEarned / starsRequired) * 100);
                         const canRedeem = totalStarsEarned >= starsRequired && !reward.redeemed;
                         
-                        html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
+                        html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
                             <div class="reward-icon">${reward.emoji || reward.icon || '🎁'}</div>
                             <div class="reward-title">${reward.title}</div>
                             <div class="reward-progress-container">
@@ -4089,7 +4089,7 @@ let visiblePeriods = {
                         if (reward.redeemed) {
                             html += `<div style="text-align: center; color: #666; font-style: italic; padding: 10px;">Redeemed! 🎉</div>`;
                         } else if (canRedeem) {
-                            html += `<button class="reward-redeem-btn" style="background: ${member.color}" onclick="event.stopPropagation(); redeemReward(${reward.id}, '${member.name}')">
+                            html += `<button class="reward-redeem-btn" style="background: ${member.color}" onclick="event.stopPropagation(); redeemReward('${reward.id}', '${member.name}')">
                                 Redeem <span>⭐</span> ${starsRequired}
                             </button>`;
                         } else {
@@ -4401,7 +4401,7 @@ let visiblePeriods = {
                     const progressPercent = (currentStars / reward.starsNeeded) * 100;
                     const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
                     
-                    html += `<div class="reward-card" onclick="openRewardDetail(${reward.id})" style="cursor: pointer;">
+                    html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
                         <div class="reward-emoji">${reward.emoji}</div>
                         <div class="reward-title">${reward.title}</div>
                         <div class="reward-progress-container">
@@ -4414,7 +4414,7 @@ let visiblePeriods = {
                             </div>
                         </div>
                         ${canRedeem ? 
-                            `<button class="reward-redeem-btn" style="background: ${member.color};" onclick="event.stopPropagation(); redeemReward(${reward.id})">
+                            `<button class="reward-redeem-btn" style="background: ${member.color};" onclick="event.stopPropagation(); redeemReward('${reward.id}')">
                                 Redeem ⭐ ${reward.starsNeeded}
                             </button>` :
                             reward.redeemed ?
