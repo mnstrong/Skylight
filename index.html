@@ -1321,7 +1321,33 @@ function listsSaveLocal() { try { localStorage.setItem('lists', JSON.stringify(l
 
 function listsRenderLists() {
   var c = document.getElementById('listCardsContainer');
-  if (!listsMemo.length) { c.innerHTML = '<div style="text-align:center;padding:48px 24px;color:#8E8E93;font-size:16px">No lists yet.<br>Tap + to create one.</div>'; return; }
+  if (!listsMemo.length) {
+    c.innerHTML = [
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px;text-align:center;">',
+        '<div style="margin-bottom:28px;">',
+          '<svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">',
+            '<rect x="18" y="18" width="74" height="82" rx="10" fill="#EEF3F8" stroke="#C8D8E8" stroke-width="2"/>',
+            '<rect x="38" y="10" width="34" height="18" rx="6" fill="#C8D8E8"/>',
+            '<rect x="43" y="14" width="24" height="10" rx="4" fill="#F2F6FA"/>',
+            '<rect x="30" y="42" width="14" height="14" rx="4" fill="#14607A" opacity="0.9"/>',
+            '<polyline points="33,49 36,52 41,45" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+            '<rect x="50" y="45" width="26" height="5" rx="2.5" fill="#C8D8E8"/>',
+            '<rect x="30" y="63" width="14" height="14" rx="4" fill="#14607A" opacity="0.6"/>',
+            '<polyline points="33,70 36,73 41,66" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+            '<rect x="50" y="66" width="20" height="5" rx="2.5" fill="#C8D8E8"/>',
+            '<rect x="30" y="84" width="14" height="14" rx="4" fill="none" stroke="#C8D8E8" stroke-width="2" stroke-dasharray="3 2"/>',
+            '<rect x="50" y="87" width="30" height="5" rx="2.5" fill="#E4EDF5"/>',
+          '</svg>',
+        '</div>',
+        '<div style="font-family:Jost,sans-serif;font-size:22px;font-weight:700;color:#1C3A4A;margin-bottom:10px;letter-spacing:-0.3px;">No lists yet</div>',
+        '<div style="font-family:Jost,sans-serif;font-size:15px;color:#8E9BAA;line-height:1.5;margin-bottom:36px;max-width:220px;">Stay organized \u2014 create your first shopping, to-do, or grocery list.</div>',
+        '<button onclick="listsShowAddList()" style="font-family:Jost,sans-serif;font-size:16px;font-weight:600;color:#fff;background:#14607A;border:none;border-radius:14px;padding:14px 32px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(20,96,122,0.28);" ontouchstart="this.style.transform='scale(0.96)'" ontouchend="this.style.transform=''">',
+          '<span style="font-size:20px;line-height:1;">+</span> New List',
+        '</button>',
+      '</div>'
+    ].join('');
+    return;
+  }
   c.innerHTML = '';
   listsMemo.forEach(function(list) {
     var card = document.createElement('div');
