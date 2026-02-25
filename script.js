@@ -1,4 +1,15 @@
-// Polyfills for Android 8 compatibility
+// Polyfills for Android 8 / older browser compatibility
+// globalThis polyfill (needed by some libraries; moved from inline HTML script)
+if (typeof globalThis === 'undefined') {
+    Object.defineProperty(Object.prototype, '__magic__', {
+        get: function() { return this; }, configurable: true
+    });
+    /* jshint ignore:start */
+    __magic__.globalThis = __magic__;
+    /* jshint ignore:end */
+    delete Object.prototype.__magic__;
+}
+
 if (!String.prototype.padStart) {
     String.prototype.padStart = function padStart(targetLength, padString) {
         targetLength = targetLength >> 0;
