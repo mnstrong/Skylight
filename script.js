@@ -1291,10 +1291,12 @@ let visiblePeriods = {
             
             filteredLists.forEach(list => {
                 const member = familyMembers.find(m => m.id === list.assignedTo);
-                if (!member) return;
+                // Lists created on mobile may have no assignedTo — show them anyway
+                const memberColor = member ? member.color : '#8E8E93';
+                const memberInitial = member ? member.name.charAt(0).toUpperCase() : '?';
                 
                 // Convert hex color to rgba with 20% opacity for column background
-                const columnBg = hexToRgba(member.color, 0.2);
+                const columnBg = hexToRgba(memberColor, 0.2);
                 
                 html += `<div class="chore-column" style="background: ${columnBg}">`;
                 
@@ -1303,7 +1305,7 @@ let visiblePeriods = {
                     <div class="list-card">
                         <div class="list-card-header" onclick="openEditListPanel(${list.id})" style="cursor: pointer;">
                             <div class="list-card-title">${list.name}</div>
-                            <div class="list-card-initial" style="background: ${member.color};">${member.name.charAt(0).toUpperCase()}</div>
+                            <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
                         </div>
                 `;
                 
@@ -1355,7 +1357,7 @@ let visiblePeriods = {
                         
                         const checkedClass = item.completed ? 'checked' : '';
                         const textClass = item.completed ? 'completed' : '';
-                        const itemBg = hexToRgba(member.color, 0.4);
+                        const itemBg = hexToRgba(memberColor, 0.4);
                         
                         // Get assigned member for this item
                         const assignedMember = item.assignedTo ? familyMembers.find(m => m.name === item.assignedTo) : null;
