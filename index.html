@@ -1293,12 +1293,25 @@ async function listsLoadLists() {
   document.getElementById('listCardsContainer').innerHTML =
     '<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading\u2026</div>';
   if (!listsHasAPI()) {
-    try { var s = localStorage.getItem('lists'); listsMemo = s ? JSON.parse(s) : []; listsMemo.forEach(function(l){ if(typeof l.color==='string') l.color=listsColorFromStr(l.color); if(!l.items) l.items=[]; }); } catch(e){ listsMemo=[]; }
+    try {
+      var s = localStorage.getItem('lists');
+      listsMemo = s ? JSON.parse(s) : [];
+      listsMemo.forEach(function(l){
+        if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
+        if(!l.items) l.items=[];
+        if(!('assignedTo' in l)) l.assignedTo = null;
+        // normalize done→completed for items created by old mobile code
+        l.items.forEach(function(it){
+          if('done' in it && !('completed' in it)) { it.completed = it.done; delete it.done; }
+          if(!it.section) it.section = 'Items';
+        });
+      });
+    } catch(e){ listsMemo=[]; }
     listsRenderLists(); return;
   }
   try {
     var data = await window.SupabaseAPI.getLists() || [];
-    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, done:it.checked||false }; }) }; });
+    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', assignedTo: row.assignedTo || null, items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items' }; }) }; });
     listsSaveLocal();
   } catch(err) { console.error('listsLoadLists:',err); listsShowToast('Could not load lists'); listsMemo=[]; }
   listsRenderLists();
@@ -1314,7 +1327,7 @@ function listsRenderLists() {
     var card = document.createElement('div');
     card.className = 'list-card';
     card.style.background = list.color.card;
-    var unchecked = list.items.filter(function(i){ return !i.done; }).length;
+    var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
     card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'');
     card.onclick = function(){ listsOpenList(list.id); };
     c.appendChild(card);
@@ -1325,13 +1338,13 @@ function listsRenderDetailItems() {
   var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
   if (!list) return;
   var c = document.getElementById('listsDetailItemList');
-  var items = listsShowCompleted ? list.items : list.items.filter(function(i){ return !i.done; });
+  var items = listsShowCompleted ? list.items : list.items.filter(function(i){ return !i.completed; });
   if (!items.length) { c.innerHTML = '<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>'; return; }
   c.innerHTML = '';
   items.forEach(function(item) {
     var row = document.createElement('div');
     row.className = 'list-item-row';
-    row.innerHTML = '<div class="item-check '+(item.done?'checked':'')+'">'+( item.done?'✓':'' )+'</div><span class="item-text '+(item.done?'done':'')+'">'+listsEsc(item.text)+'</span>';
+    row.innerHTML = '<div class="item-check '+(item.completed?'checked':'')+'">'+( item.completed?'✓':'' )+'</div><span class="item-text '+(item.completed?'done':'')+'">'+listsEsc(item.text)+'</span>';
     row.onclick = function(){ listsToggleItem(item.id); };
     c.appendChild(row);
   });
@@ -1389,11 +1402,11 @@ async function listsAddNewList() {
   if (listsHasAPI()) {
     try {
       var row = await window.SupabaseAPI.addList({ name:title, color:listsColorToStr(color), icon:listsSelectedType });
-      if (row) { listsMemo.push({ id:row.id, name:title, color:color, type:listsSelectedType, items:[] }); listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created!'); }
+      if (row) { listsMemo.push({ id:row.id, name:title, color:color, type:listsSelectedType, assignedTo:null, items:[] }); listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created!'); }
       else { listsShowToast('Failed to create list'); }
     } catch(err) { console.error(err); listsShowToast('Error creating list'); }
   } else {
-    listsMemo.push({ id:Date.now(), name:title, color:color, type:listsSelectedType, items:[] });
+    listsMemo.push({ id:Date.now(), name:title, color:color, type:listsSelectedType, assignedTo:null, items:[] });
     listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created (offline)');
   }
   btn.disabled = false; btn.textContent = 'Add';
@@ -1404,11 +1417,11 @@ async function listsToggleItem(itemId) {
   if (!list) return;
   var item = list.items.find(function(i){ return i.id===itemId; });
   if (!item) return;
-  item.done = !item.done;
+  item.completed = !item.completed;
   listsRenderDetailItems(); listsRenderLists(); listsSaveLocal();
   if (listsHasAPI()) {
-    try { await window.SupabaseAPI.updateListItem(itemId, { checked:item.done }); }
-    catch(err) { console.error(err); item.done=!item.done; listsRenderDetailItems(); listsRenderLists(); listsSaveLocal(); listsShowToast('Sync failed'); }
+    try { await window.SupabaseAPI.updateListItem(itemId, { checked:item.completed }); }
+    catch(err) { console.error(err); item.completed=!item.completed; listsRenderDetailItems(); listsRenderLists(); listsSaveLocal(); listsShowToast('Sync failed'); }
   }
 }
 
@@ -1423,11 +1436,11 @@ async function listsAddItemToList() {
   if (listsHasAPI()) {
     try {
       var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
-      if (row) { list.items.push({ id:row.id, text:text, done:false }); listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists(); }
+      if (row) { list.items.push({ id:row.id, text:text, completed:false, section:'Items' }); listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists(); }
       else { listsShowToast('Failed to add item'); }
     } catch(err) { console.error(err); listsShowToast('Error adding item'); }
   } else {
-    list.items.push({ id:Date.now(), text:text, done:false });
+    list.items.push({ id:Date.now(), text:text, completed:false, section:'Items' });
     listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists();
   }
   btn.disabled = false;
