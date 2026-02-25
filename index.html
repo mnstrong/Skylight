@@ -71,8 +71,9 @@
                     <div class="date-weather-line">
                         <span id="dateDisplay"></span>
                         <span class="time-line" id="timeDisplay"></span>
-                        <span class="weather-inline" id="weatherDisplay">Loading...</span>                    </div>
+                        <span class="weather-inline" id="weatherDisplay">Loading...</span>
                     </div>
+                </div>
             </div>
             <div class="header-right">
                 <select class="view-selector" id="mainViewSelector" onchange="switchViewFromDropdown(this.value)">
@@ -86,9 +87,7 @@
                     <span>Filter</span>
                     <div class="calendar-filter-dropdown" id="calendarFilterDropdown" onclick="event.stopPropagation()">
                         <div class="calendar-filter-header">Filter Calendar</div>
-                        <div id="calendarFilterList">
-                            <!-- Filter items will be populated here -->
-                        </div>
+                        <div id="calendarFilterList"></div>
                         <div id="choresFilterSection" style="display: none;">
                             <div class="calendar-filter-divider"></div>
                             <label class="calendar-filter-item">
@@ -145,13 +144,10 @@
             </div>
             
             <div class="calendar-grid" id="calendarGrid"></div>
-            
             <div class="week-view" id="weekView"></div>
-            
             <div class="schedule-view" id="scheduleView">
                 <div class="schedule-container" id="scheduleContainer"></div>
             </div>
-            
             <div class="day-view" id="dayView"></div>
         </div>
 
@@ -166,19 +162,16 @@
     </div>
 
     <button class="floating-add-btn" id="floatingAddBtn" onclick="openEventModalForCurrentDay()">+</button>
-    
     <button class="floating-add-task-btn" id="floatingAddTaskBtn" onclick="handleFloatingAdd()">+</button>
 
-    <!-- Add Task Side Panel (replaces centered modal) -->
+    <!-- Add Task Side Panel -->
     <div class="edit-panel-overlay" id="taskChorePanelOverlay" onclick="closeModal('taskChoreModal')"></div>
     <div class="edit-side-panel" id="taskChoreModal">
         <div class="edit-panel-header">
             <button class="edit-panel-back" onclick="closeModal('taskChoreModal')">←</button>
             <div class="edit-panel-title">Add task</div>
         </div>
-        
         <div class="edit-panel-body">
-            <!-- Title -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -188,8 +181,6 @@
                 </div>
                 <input type="text" class="edit-form-input" id="taskChoreTitle" placeholder="Task title" style="margin-top: 10px;">
             </div>
-            
-            <!-- Emoji -->
             <div class="edit-form-group emoji-picker-container">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -201,14 +192,11 @@
                     <input type="text" class="edit-form-input" id="taskChoreEmoji" placeholder="Select emoji" readonly style="color: transparent; text-shadow: 0 0 0 #000; cursor: pointer;" onclick="toggleTaskEmojiPicker(event)">
                     <span id="taskChoreEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
                 </div>
-                
                 <div class="emoji-picker-dropdown" id="taskEmojiPickerDropdown">
                     <input type="text" class="emoji-search-input" id="taskEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterTaskEmojis()" onclick="event.stopPropagation()">
                     <div class="emoji-picker-grid" id="taskEmojiPickerGrid"></div>
                 </div>
             </div>
-            
-            <!-- Profiles -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -216,22 +204,15 @@
                         <span>Profiles</span>
                     </div>
                 </div>
-                <div class="edit-profile-grid" id="taskProfileGrid" style="margin-top: 10px;">
-                    <!-- Profiles will be populated here -->
-                </div>
+                <div class="edit-profile-grid" id="taskProfileGrid" style="margin-top: 10px;"></div>
             </div>
-            
-            <!-- Chore/Routine Toggle -->
             <div class="edit-form-group">
                 <div style="display: flex;">
                     <button class="routine-choice-btn" id="choreTypeBtn" onclick="setTaskType('chore')">Chore</button>
                     <button class="routine-choice-btn active" id="routineTypeBtn" onclick="setTaskType('routine')">Routine</button>
                 </div>
             </div>
-            
-            <!-- CHORE-SPECIFIC FIELDS -->
             <div id="choreFields" style="display: none;">
-                <!-- Date -->
                 <div class="edit-form-group">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -245,8 +226,6 @@
                     </div>
                     <input type="date" class="edit-form-input" id="taskChoreDateValue" style="margin-top: 10px; display: none;">
                 </div>
-                
-                <!-- Time -->
                 <div class="edit-form-group">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -260,8 +239,6 @@
                     </div>
                     <input type="time" class="edit-form-input" id="taskChoreTimeValue" style="margin-top: 10px; display: none;">
                 </div>
-                
-                <!-- Repeats -->
                 <div class="edit-form-group">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -274,9 +251,7 @@
                         </label>
                     </div>
                 </div>
-                
                 <div id="taskChoreRepeatDetails" style="display: none;">
-                    <!-- Repeat Frequency -->
                     <div class="edit-form-group">
                         <div class="edit-toggle-row" style="padding: 10px 0;">
                             <div class="edit-toggle-label">
@@ -291,8 +266,6 @@
                             <button class="routine-choice-btn" id="choreRepeatMonth" onclick="setChoreRepeatUnit('month')">Month</button>
                         </div>
                     </div>
-                    
-                    <!-- Days of Week (only shown when repeat unit is week) -->
                     <div class="edit-form-group" id="choreRepeatDays" style="display: none;">
                         <div class="edit-toggle-row" style="padding: 10px 0;">
                             <div class="edit-toggle-label">
@@ -310,8 +283,6 @@
                             <button type="button" class="day-btn-new" data-day="6" onclick="toggleChoreDayNew(6)">Sa</button>
                         </div>
                     </div>
-                    
-                    <!-- Repeats Until -->
                     <div class="edit-form-group">
                         <div class="edit-toggle-row" style="padding: 10px 0;">
                             <div class="edit-toggle-label">
@@ -327,10 +298,7 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- ROUTINE-SPECIFIC FIELDS -->
             <div id="routineFields">
-                <!-- Every (Repeat frequency) -->
                 <div class="edit-form-group">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -344,8 +312,6 @@
                         <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
                     </div>
                 </div>
-                
-                <!-- On (Days of week) -->
                 <div class="edit-form-group" id="taskRepeatDays">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -363,8 +329,6 @@
                         <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
                     </div>
                 </div>
-                
-                <!-- In the (Time of day) -->
                 <div class="edit-form-group">
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
@@ -379,8 +343,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Stars (for both chores and routines) -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -390,7 +352,6 @@
                 </div>
                 <input type="number" class="edit-form-input" id="taskStars" placeholder="0" min="0" style="margin-top: 10px;">
             </div>
-            
             <button class="edit-save-btn" onclick="saveTaskChore()">Add</button>
         </div>
     </div>
@@ -402,23 +363,19 @@
             <button class="edit-panel-back" onclick="closeModal('eventModal')">←</button>
             <div class="edit-panel-title">Add Event</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Title</label>
                 <input type="text" class="edit-form-input" id="eventTitle" placeholder="Event title">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Start Date</label>
                 <input type="date" class="edit-form-input" id="eventDate">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">End Date (Optional)</label>
                 <input type="date" class="edit-form-input" id="eventEndDate">
             </div>
-            
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
                     <div class="edit-toggle-label">
@@ -431,44 +388,34 @@
                     </label>
                 </div>
             </div>
-            
             <div id="eventTimeSection" style="display: none;">
                 <div class="edit-form-group">
                     <label class="edit-form-label">Start Time</label>
                     <input type="time" class="edit-form-input" id="eventTime">
                 </div>
-                
                 <div class="edit-form-group">
                     <label class="edit-form-label">End Time</label>
                     <input type="time" class="edit-form-input" id="eventEndTime">
                 </div>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Assigned To</label>
                 <div id="eventProfileSummary" style="color: #999; font-size: 14px; margin-bottom: 8px; min-height: 20px;"></div>
-                <div class="edit-profile-grid" id="eventProfileGrid">
-                    <!-- Profiles will be populated here -->
-                </div>
+                <div class="edit-profile-grid" id="eventProfileGrid"></div>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Notes (Optional)</label>
                 <textarea class="edit-form-input" id="eventNotes" placeholder="Add notes..." rows="4" style="resize: vertical;"></textarea>
             </div>
-            
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
-                    <div class="edit-toggle-label">
-                        <span>Repeats</span>
-                    </div>
+                    <div class="edit-toggle-label"><span>Repeats</span></div>
                     <label class="task-toggle">
                         <input type="checkbox" id="eventRepeatToggle" onchange="toggleRepeatSection()">
                         <span class="task-toggle-slider"></span>
                     </label>
                 </div>
             </div>
-            
             <div id="repeatOptionsSection" style="display: none;">
                 <div class="edit-form-group">
                     <label class="edit-form-label">Repeat Frequency</label>
@@ -491,19 +438,15 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="edit-form-group">
                     <div class="edit-toggle-row">
-                        <div class="edit-toggle-label">
-                            <span>Repeats until</span>
-                        </div>
+                        <div class="edit-toggle-label"><span>Repeats until</span></div>
                         <label class="task-toggle">
                             <input type="checkbox" id="eventRepeatUntilToggle" onchange="toggleRepeatUntilSection()">
                             <span class="task-toggle-slider"></span>
                         </label>
                     </div>
                 </div>
-                
                 <div id="repeatUntilSection" style="display: none;">
                     <div class="edit-form-group">
                         <label class="edit-form-label">End Type</label>
@@ -518,19 +461,16 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="edit-form-group" id="repeatEndDateGroup" style="display: none;">
                         <label class="edit-form-label">End Date</label>
                         <input type="date" class="edit-form-input" id="repeatEndDate">
                     </div>
-                    
                     <div class="edit-form-group" id="repeatCountGroup" style="display: none;">
                         <label class="edit-form-label">Number of Occurrences</label>
                         <input type="number" class="edit-form-input" id="repeatCount" min="1" value="10">
                     </div>
                 </div>
             </div>
-            
             <button class="edit-save-btn" id="eventSaveBtn" onclick="saveEvent()">Add Event</button>
         </div>
     </div>
@@ -564,13 +504,11 @@
                 <button class="task-modal-back" onclick="closeModal('rewardModal')">←</button>
                 <h2>Add Reward</h2>
             </div>
-            
             <div class="task-modal-body">
                 <div class="task-form-group">
                     <label class="task-form-icon">≡</label>
                     <input type="text" id="rewardTitle" placeholder="Reward Title" class="task-input">
                 </div>
-                
                 <div class="task-form-group emoji-picker-container">
                     <label class="task-form-icon">😊</label>
                     <div style="position: relative; flex: 1;">
@@ -578,26 +516,21 @@
                         <span id="rewardEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
                     </div>
                     <button class="task-dropdown-btn" onclick="toggleRewardEmojiPicker(event)">▼</button>
-                    
                     <div class="emoji-picker-dropdown" id="rewardEmojiPickerDropdown">
                         <input type="text" class="emoji-search-input" id="rewardEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterRewardEmojis()" onclick="event.stopPropagation()">
                         <div class="emoji-picker-grid" id="rewardEmojiPickerGrid"></div>
                     </div>
                 </div>
-                
                 <div class="task-form-group">
                     <label class="task-form-icon">👥</label>
                     <div class="task-form-label">Profile</div>
                 </div>
-                
                 <div class="task-profile-grid" id="rewardProfileGrid"></div>
-                
                 <div class="task-form-group">
                     <label class="task-form-icon">⭐</label>
                     <div class="task-form-label">Stars Required</div>
                     <input type="number" id="rewardStars" value="25" min="1" class="task-input-small" style="width: 80px;">
                 </div>
-                
                 <button class="task-submit-btn" onclick="saveReward()">Add Reward</button>
             </div>
         </div>
@@ -607,40 +540,26 @@
     <div class="task-detail-modal" id="taskDetailModal" onclick="handleModalBackdropClick(event, 'taskDetailModal')">
         <div class="task-detail-content" onclick="event.stopPropagation()">
             <div class="task-detail-title" id="detailTaskTitle">Task Title</div>
-            
             <div class="task-detail-actions">
-                <button class="task-detail-btn task-detail-edit" onclick="openEditPanelFromDetail()">
-                    ✏️ Edit
-                </button>
-                <button class="task-detail-btn task-detail-delete" onclick="deleteCurrentTask()">
-                    🗑️ Delete
-                </button>
+                <button class="task-detail-btn task-detail-edit" onclick="openEditPanelFromDetail()">✏️ Edit</button>
+                <button class="task-detail-btn task-detail-delete" onclick="deleteCurrentTask()">🗑️ Delete</button>
             </div>
-            
             <div class="task-detail-info">
                 <div class="task-detail-row" id="detailTaskDate">
                     <div class="task-detail-icon">📅</div>
                     <span id="detailDateText">Tuesday, April 1, 8:00 PM</span>
                 </div>
-                
                 <div class="task-detail-row" id="detailTaskRepeat" style="display: none;">
                     <div class="task-detail-icon">🔄</div>
                     <span id="detailRepeatText">Weekly on Tue</span>
                 </div>
-                
                 <div class="task-detail-row">
                     <div class="task-detail-icon">👥</div>
                     <div class="task-detail-label">Assigned To</div>
                 </div>
-                
-                <div class="task-detail-assigned" id="detailAssignedTo">
-                    <!-- Assigned members will be populated here -->
-                </div>
+                <div class="task-detail-assigned" id="detailAssignedTo"></div>
             </div>
-            
-            <button class="task-detail-complete-btn" id="detailCompleteBtn" onclick="toggleCurrentTask()">
-                Mark as Complete
-            </button>
+            <button class="task-detail-complete-btn" id="detailCompleteBtn" onclick="toggleCurrentTask()">Mark as Complete</button>
         </div>
     </div>
     
@@ -651,13 +570,11 @@
             <button class="edit-panel-back" onclick="closeEditPanel()">←</button>
             <div class="edit-panel-title">Edit Task</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Title</label>
                 <input type="text" class="edit-form-input" id="editTaskTitle" placeholder="Task title">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Emoji (Optional)</label>
                 <div style="display: flex; align-items: center;">
@@ -669,21 +586,16 @@
                     <div class="emoji-picker-grid" id="editEmojiPickerGrid"></div>
                 </div>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Profiles</label>
-                <div class="edit-profile-grid" id="editProfileGrid">
-                    <!-- Profiles will be populated here -->
-                </div>
+                <div class="edit-profile-grid" id="editProfileGrid"></div>
             </div>
-            
             <div class="edit-form-group">
                 <div class="edit-type-toggle">
                     <button class="edit-type-btn active" id="editChoreTypeBtn" onclick="setEditTaskType('chore')">Chore</button>
                     <button class="edit-type-btn" id="editRoutineTypeBtn" onclick="setEditTaskType('routine')">Routine</button>
                 </div>
             </div>
-            
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
                     <div class="edit-toggle-label">
@@ -697,7 +609,6 @@
                 </div>
                 <input type="date" class="edit-form-input" id="editTaskDate" style="margin-top: 10px;">
             </div>
-            
             <div class="edit-form-group">
                 <div class="edit-toggle-row">
                     <div class="edit-toggle-label">
@@ -711,16 +622,13 @@
                 </div>
                 <input type="time" class="edit-form-input" id="editTaskTime" style="margin-top: 10px; display: none;">
             </div>
-            
             <div class="edit-form-group" id="editStarsSection">
                 <label class="edit-form-label">Stars</label>
                 <input type="number" class="edit-form-input" id="editTaskStars" value="5" min="0">
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditedTask()">Save</button>
             <button class="edit-delete-btn" onclick="deleteCurrentTask()">
-                <span>🗑️</span>
-                <span>Delete Task</span>
+                <span>🗑️</span><span>Delete Task</span>
             </button>
         </div>
     </div>
@@ -732,10 +640,7 @@
             <button class="edit-panel-back" onclick="closeMealSelector()">←</button>
             <div class="edit-panel-title" id="mealSelectorTitle">Select Meal</div>
         </div>
-        
-        <div id="mealSelectorList" class="edit-panel-body" style="padding: 0;">
-            <!-- Recipe list will be populated here -->
-        </div>
+        <div id="mealSelectorList" class="edit-panel-body" style="padding: 0;"></div>
     </div>
     
     <!-- Add Recipe Side Panel -->
@@ -745,7 +650,6 @@
             <button class="edit-panel-back" onclick="closeAddRecipePanel()">←</button>
             <div class="edit-panel-title">Add Recipe</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Import from URL (Optional)</label>
@@ -755,14 +659,11 @@
                 </div>
                 <div id="importStatus" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
             </div>
-            
             <div style="text-align: center; margin: 15px 0; color: #999; font-size: 14px;">— OR —</div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Recipe Name</label>
                 <input type="text" class="edit-form-input" id="addRecipeName" placeholder="Enter recipe name">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Meal Type</label>
                 <select class="edit-form-input" id="addRecipeMealType">
@@ -772,42 +673,35 @@
                     <option value="Snack">Snack</option>
                 </select>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Ingredients</label>
                 <textarea class="edit-form-input" id="addRecipeIngredients" rows="4" placeholder="List ingredients..."></textarea>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Instructions</label>
                 <textarea class="edit-form-input" id="addRecipeInstructions" rows="4" placeholder="Cooking instructions..."></textarea>
             </div>
-            
             <button class="edit-save-btn" onclick="saveNewRecipe()">Save Recipe</button>
         </div>
     </div>
     
-    <!-- Add List Side Panel -->
+    <!-- Add List Side Panel (desktop) -->
     <div class="edit-panel-overlay" id="addListPanelOverlay" onclick="closeAddListPanel()"></div>
     <div class="edit-side-panel" id="addListPanel">
         <div class="edit-panel-header">
             <button class="edit-panel-back" onclick="closeAddListPanel()">←</button>
             <div class="edit-panel-title">Add List</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">List Name</label>
                 <input type="text" class="edit-form-input" id="addListName" placeholder="Enter list name">
             </div>
-            
             <div class="task-form-group">
                 <label class="task-form-icon">👥</label>
                 <div class="task-form-label">Assigned To</div>
             </div>
-            
             <div class="task-profile-grid" id="addListProfileGrid"></div>
-            
             <button class="edit-save-btn" onclick="saveNewList()">Create List</button>
         </div>
     </div>
@@ -819,9 +713,7 @@
             <button class="edit-panel-back" onclick="closeAddListItemPanel()">←</button>
             <div class="edit-panel-title">Add Item</div>
         </div>
-        
         <div class="edit-panel-body">
-            <!-- Title -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -831,8 +723,6 @@
                 </div>
                 <input type="text" class="edit-form-input" id="listItemTitle" placeholder="Item name" style="margin-top: 10px;">
             </div>
-            
-            <!-- Emoji -->
             <div class="edit-form-group emoji-picker-container">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -844,14 +734,11 @@
                     <input type="text" class="edit-form-input" id="listItemEmoji" placeholder="Select emoji" readonly style="color: transparent; text-shadow: 0 0 0 #000; cursor: pointer;" onclick="toggleListItemEmojiPicker(event)">
                     <span id="listItemEmojiDisplay" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; pointer-events: none;"></span>
                 </div>
-                
                 <div class="emoji-picker-dropdown" id="listItemEmojiPickerDropdown">
                     <input type="text" class="emoji-search-input" id="listItemEmojiSearchInput" placeholder="Search emojis..." onkeyup="filterListItemEmojis()" onclick="event.stopPropagation()">
                     <div class="emoji-picker-grid" id="listItemEmojiPickerGrid"></div>
                 </div>
             </div>
-            
-            <!-- List Selection -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -863,8 +750,6 @@
                     <option value="">Select a list...</option>
                 </select>
             </div>
-            
-            <!-- Profile Assignment -->
             <div class="edit-form-group">
                 <div class="edit-toggle-row" style="padding: 10px 0;">
                     <div class="edit-toggle-label">
@@ -872,11 +757,8 @@
                         <span>Assigned To (optional)</span>
                     </div>
                 </div>
-                <div class="edit-profile-grid" id="listItemProfileGrid" style="margin-top: 10px;">
-                    <!-- Profiles will be populated here -->
-                </div>
+                <div class="edit-profile-grid" id="listItemProfileGrid" style="margin-top: 10px;"></div>
             </div>
-            
             <button class="edit-save-btn" onclick="saveNewListItem()">Add Item</button>
         </div>
     </div>
@@ -898,30 +780,21 @@
             <div class="meal-detail-header">
                 <div class="meal-detail-title" id="mealDetailTitle">Recipe Name</div>
                 <div class="meal-detail-actions">
-                    <button class="meal-detail-btn meal-detail-edit" onclick="editMealFromDetail()">
-                        ✏️ Edit
-                    </button>
-                    <button class="meal-detail-btn meal-detail-delete" onclick="deleteMealFromDetail()">
-                        🗑️ Delete
-                    </button>
+                    <button class="meal-detail-btn meal-detail-edit" onclick="editMealFromDetail()">✏️ Edit</button>
+                    <button class="meal-detail-btn meal-detail-delete" onclick="deleteMealFromDetail()">🗑️ Delete</button>
                 </div>
             </div>
-            
             <div class="meal-detail-info">
-                <div class="meal-detail-info-row">
-                    📅 <span id="mealDetailDate">Date</span>
-                </div>
+                <div class="meal-detail-info-row">📅 <span id="mealDetailDate">Date</span></div>
                 <div class="meal-detail-info-row">
                     <span id="mealDetailCategoryDot" style="width: 12px; height: 12px; border-radius: 50%; background: #999; display: inline-block;"></span>
                     <span id="mealDetailCategory">Category</span>
                 </div>
             </div>
-            
             <div class="meal-detail-section">
                 <div class="meal-detail-section-title">INGREDIENTS:</div>
                 <div class="meal-detail-text" id="mealDetailIngredients">Ingredients will appear here</div>
             </div>
-            
             <div class="meal-detail-section">
                 <div class="meal-detail-section-title">INSTRUCTIONS:</div>
                 <div class="meal-detail-text" id="mealDetailInstructions">Instructions will appear here</div>
@@ -933,29 +806,20 @@
     <div class="task-detail-modal" id="listItemDetailModal" onclick="if(event.target === this) closeListItemDetail()">
         <div class="task-detail-content" onclick="event.stopPropagation()">
             <div class="task-detail-title" id="listItemDetailTitle">Item</div>
-            
             <div class="task-detail-actions">
-                <button class="task-detail-btn task-detail-edit" onclick="editListItemFromDetail()">
-                    ✏️ Edit
-                </button>
-                <button class="task-detail-btn task-detail-delete" onclick="deleteListItemFromDetail()">
-                    🗑️ Delete
-                </button>
+                <button class="task-detail-btn task-detail-edit" onclick="editListItemFromDetail()">✏️ Edit</button>
+                <button class="task-detail-btn task-detail-delete" onclick="deleteListItemFromDetail()">🗑️ Delete</button>
             </div>
-            
             <div class="task-detail-info">
                 <div class="task-detail-row">
                     <div class="task-detail-icon">📋</div>
                     <div class="task-detail-label">List:</div>
                     <span id="listItemDetailListName">List Name</span>
                 </div>
-                
                 <div class="task-detail-row">
                     <div class="task-detail-icon">👥</div>
                     <div class="task-detail-label">Assigned To:</div>
-                    <div class="task-detail-assigned" id="listItemDetailAssignedTo">
-                        <!-- Assigned member will be populated here -->
-                    </div>
+                    <div class="task-detail-assigned" id="listItemDetailAssignedTo"></div>
                 </div>
             </div>
         </div>
@@ -968,19 +832,16 @@
             <button class="edit-panel-back" onclick="closeEventDetailPanel()">←</button>
             <div class="edit-panel-title">Event Details</div>
         </div>
-        
         <div class="edit-panel-body">
             <div style="margin-bottom: 30px;">
                 <div style="font-size: 24px; font-weight: 600; color: #000; margin-bottom: 20px;" id="eventDetailTitle">Event Title</div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;">
                     <div class="task-detail-icon">📅</div>
                     <div style="flex: 1;">
-                        <div style="color: #666; font-size: 14px;">Date & Time</div>
+                        <div style="color: #666; font-size: 14px;">Date &amp; Time</div>
                         <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailDateTime">Monday, January 20, 2026 at 3:00 PM</div>
                     </div>
                 </div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailReminderRow">
                     <div class="task-detail-icon">🔔</div>
                     <div style="flex: 1;">
@@ -988,17 +849,13 @@
                         <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailReminder">15 minutes before</div>
                     </div>
                 </div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailMemberRow">
                     <div class="task-detail-icon">👤</div>
                     <div style="flex: 1;">
                         <div style="color: #666; font-size: 14px;">Assigned To</div>
-                        <div class="task-detail-assigned" id="eventDetailMember">
-                            <!-- Member will be populated here -->
-                        </div>
+                        <div class="task-detail-assigned" id="eventDetailMember"></div>
                     </div>
                 </div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailCalendarRow">
                     <div class="task-detail-icon">📆</div>
                     <div style="flex: 1;">
@@ -1006,7 +863,6 @@
                         <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailCalendar">Google Calendar</div>
                     </div>
                 </div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailInviteesRow">
                     <div class="task-detail-icon">👥</div>
                     <div style="flex: 1;">
@@ -1014,7 +870,6 @@
                         <div style="color: #000; font-size: 16px; font-weight: 500;" id="eventDetailInvitees">None</div>
                     </div>
                 </div>
-                
                 <div class="task-detail-row" style="margin-bottom: 15px;" id="eventDetailNotesRow">
                     <div class="task-detail-icon">📝</div>
                     <div style="flex: 1;">
@@ -1023,11 +878,9 @@
                     </div>
                 </div>
             </div>
-            
             <button class="edit-save-btn" onclick="editEventFromDetail()" id="eventDetailEditBtn">Edit Event</button>
             <button class="edit-delete-btn" onclick="deleteEventFromDetail()" id="eventDetailDeleteBtn">
-                <span>🗑️</span>
-                <span>Delete Event</span>
+                <span>🗑️</span><span>Delete Event</span>
             </button>
         </div>
     </div>
@@ -1039,19 +892,15 @@
             <button class="edit-panel-back" onclick="closeEditListPanel()">←</button>
             <div class="edit-panel-title">Edit List</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">List Name</label>
                 <input type="text" class="edit-form-input" id="editListName" placeholder="List name">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Assigned To</label>
-                <select class="edit-form-input" id="editListAssignedTo">
-                </select>
+                <select class="edit-form-input" id="editListAssignedTo"></select>
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditedList()">Save</button>
             <button class="edit-delete-btn" onclick="deleteList()">Delete List</button>
         </div>
@@ -1064,18 +913,15 @@
             <button class="edit-panel-back" onclick="closeEditListItemPanel()">←</button>
             <div class="edit-panel-title">Edit Item</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Item Text</label>
                 <input type="text" class="edit-form-input" id="editListItemText" placeholder="Item text">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Assign To (Optional)</label>
                 <div id="editListItemMemberGrid" class="task-profile-grid"></div>
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditedListItem()">Save</button>
         </div>
     </div>
@@ -1087,13 +933,11 @@
             <button class="edit-panel-back" onclick="closeEditRewardPanel()">←</button>
             <div class="edit-panel-title">Edit Reward</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Title</label>
                 <input type="text" class="edit-form-input" id="editRewardTitle" placeholder="Reward title">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Emoji (Optional)</label>
                 <div style="display: flex; align-items: center;">
@@ -1105,16 +949,13 @@
                     <div class="emoji-picker-grid" id="editRewardEmojiPickerGrid"></div>
                 </div>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Stars Required</label>
                 <input type="number" class="edit-form-input" id="editRewardStars" value="25" min="1">
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditedReward()">Save</button>
             <button class="edit-delete-btn" onclick="deleteCurrentReward()">
-                <span>🗑️</span>
-                <span>Delete Reward</span>
+                <span>🗑️</span><span>Delete Reward</span>
             </button>
         </div>
     </div>
@@ -1123,25 +964,20 @@
     <div class="task-detail-modal" id="editProfileModal" onclick="if(event.target === this) closeEditProfileModal()">
         <div class="task-detail-content" onclick="event.stopPropagation()">
             <div class="task-detail-title">Edit Profile</div>
-            
             <div class="edit-form-group" style="margin-top: 30px;">
                 <label class="edit-form-label">Name</label>
                 <input type="text" class="edit-form-input" id="editProfileName" placeholder="Profile name">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Color</label>
                 <div class="color-picker-container">
                     <button class="color-picker-nav" onclick="scrollColorPicker(-1)">‹</button>
                     <div class="color-picker-scroll" id="colorPickerScroll">
-                        <div class="color-picker-grid" id="colorPickerGrid">
-                            <!-- Colors will be populated here -->
-                        </div>
+                        <div class="color-picker-grid" id="colorPickerGrid"></div>
                     </div>
                     <button class="color-picker-nav" onclick="scrollColorPicker(1)">›</button>
                 </div>
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditedProfile()">Save Changes</button>
             <button class="task-detail-btn" style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #666;" onclick="closeEditProfileModal()">Cancel</button>
         </div>
@@ -1158,7 +994,6 @@
             <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
         </div>
     </div>
-    <!-- Google Calendar OAuth uses redirect flow, no GIS library needed -->
     
     <!-- Clock Picker Modal -->
     <div class="clock-picker-modal" id="clockPickerModal" onclick="if(event.target === this) closeClockPicker()">
@@ -1170,13 +1005,10 @@
                     <button class="clock-period-btn" id="clockPM" onclick="setClockPeriod('PM')">PM</button>
                 </div>
             </div>
-            
             <div class="clock-picker-face" id="clockFace">
                 <div class="clock-center-dot"></div>
                 <div class="clock-hand" id="clockHand"></div>
-                <!-- Numbers will be populated by JavaScript -->
             </div>
-            
             <div class="clock-picker-actions">
                 <button class="clock-picker-btn clock-picker-cancel" onclick="closeClockPicker()">Cancel</button>
                 <button class="clock-picker-btn clock-picker-confirm" onclick="confirmClockTime()">OK</button>
@@ -1191,11 +1023,7 @@
                 <div class="day-events-date" id="dayEventsDate">March 31</div>
                 <div class="day-events-count" id="dayEventsCount">1 event</div>
             </div>
-            
-            <div class="day-events-list" id="dayEventsList">
-                <!-- Events will be populated by JavaScript -->
-            </div>
-            
+            <div class="day-events-list" id="dayEventsList"></div>
             <div class="day-events-footer">
                 <button class="day-events-btn day-events-close" onclick="closeDayEventsModal()">Close</button>
                 <button class="day-events-btn day-events-add" onclick="addEventFromDayModal()">+ Add Event</button>
@@ -1210,10 +1038,7 @@
             <div class="meal-filter-title">Meal Categories</div>
             <button class="meal-filter-close" onclick="closeMealFilterModal()">✕</button>
         </div>
-        
-        <div class="meal-filter-body" id="mealFilterBody">
-            <!-- Categories will be rendered here -->
-        </div>
+        <div class="meal-filter-body" id="mealFilterBody"></div>
     </div>
 
     <!-- Edit Meal Category Modal -->
@@ -1223,21 +1048,17 @@
             <button class="edit-panel-back" onclick="closeEditMealCategory()">←</button>
             <div class="edit-panel-title">Edit Category</div>
         </div>
-        
         <div class="edit-category-body">
             <input type="hidden" id="editCategoryIndex">
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Title</label>
                 <input type="text" class="edit-form-input" id="editCategoryName" placeholder="Category name">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Color</label>
                 <input type="hidden" id="editCategoryColor">
                 <div class="color-picker-grid" id="editCategoryColorGrid"></div>
             </div>
-            
             <button class="edit-save-btn" onclick="saveEditMealCategory()">Save</button>
         </div>
     </div>
@@ -1247,20 +1068,11 @@
     <div class="delete-options-modal" id="deleteOptionsModal">
         <div class="delete-options-title">Delete Task</div>
         <div class="delete-options-message" id="deleteOptionsMessage">Choose what to delete:</div>
-        
         <div class="delete-options-buttons">
-            <button class="delete-option-btn" id="deleteCurrentBtn" onclick="confirmDelete('current')">
-                Delete this task only
-            </button>
-            <button class="delete-option-btn" id="deleteFutureBtn" onclick="confirmDelete('future')">
-                Delete all future tasks
-            </button>
-            <button class="delete-option-btn" id="deleteAllBtn" onclick="confirmDelete('all')">
-                Delete all tasks
-            </button>
-            <button class="delete-cancel-btn" onclick="closeDeleteOptions()">
-                Cancel
-            </button>
+            <button class="delete-option-btn" id="deleteCurrentBtn" onclick="confirmDelete('current')">Delete this task only</button>
+            <button class="delete-option-btn" id="deleteFutureBtn" onclick="confirmDelete('future')">Delete all future tasks</button>
+            <button class="delete-option-btn" id="deleteAllBtn" onclick="confirmDelete('all')">Delete all tasks</button>
+            <button class="delete-cancel-btn" onclick="closeDeleteOptions()">Cancel</button>
         </div>
     </div>
 
@@ -1271,7 +1083,6 @@
             <button class="edit-panel-back" onclick="closeAllowanceModal()">←</button>
             <div class="edit-panel-title">Add Transaction</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Type</label>
@@ -1280,17 +1091,14 @@
                     <button class="allowance-type-btn" id="spendTypeBtn" onclick="setTransactionType('spend')">Spend</button>
                 </div>
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Amount</label>
                 <input type="number" class="edit-form-input" id="allowanceAmount" placeholder="5.00" step="0.01" min="0">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Description</label>
                 <input type="text" class="edit-form-input" id="allowanceDescription" placeholder="What is this for?">
             </div>
-            
             <button class="edit-save-btn" id="allowanceSaveBtn" onclick="saveAllowanceTransaction()">Save</button>
         </div>
     </div>
@@ -1302,404 +1110,574 @@
             <button class="edit-panel-back" onclick="closeTimerSetModal()">←</button>
             <div class="edit-panel-title">Set Timer</div>
         </div>
-        
         <div class="edit-panel-body">
             <div class="edit-form-group">
                 <label class="edit-form-label">Hours</label>
                 <input type="number" class="edit-form-input" id="timerSetHours" placeholder="0" min="0" max="23" value="0">
             </div>
-            
             <div class="edit-form-group">
                 <label class="edit-form-label">Minutes</label>
                 <input type="number" class="edit-form-input" id="timerSetMinutes" placeholder="0" min="0" max="59" value="5">
             </div>
-            
             <button class="edit-save-btn" onclick="saveTimerSet()">Set Timer</button>
         </div>
     </div>
+
+    <!-- =============================================
+         MOBILE LISTS VIEW
+         ============================================= -->
+    <div id="mobileListsUI" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:50; font-family:'Jost',sans-serif;">
+
+      <div class="lists-toast" id="listsToast"></div>
+
+      <!-- SCREEN 1: LISTS OVERVIEW -->
+      <div class="lists-screen active" id="listsScreen">
+        <div class="lists-header">
+          <button class="lists-header-back" onclick="hideMobileLists()">←</button>
+          <div class="lists-header-title">Lists</div>
+        </div>
+        <div class="lists-scroll-content">
+          <div id="listCardsContainer">
+            <div style="text-align:center;padding:48px 24px;color:#8E8E93">
+              <div class="lists-spinner"></div>Loading…
+            </div>
+          </div>
+        </div>
+        <button class="lists-fab" onclick="listsShowAddList()">+</button>
+      </div>
+
+      <!-- SCREEN 2: ADD LIST -->
+      <div class="lists-screen" id="addListScreen">
+        <div class="lists-header">
+          <button class="lists-header-back" onclick="listsShowScreen('listsScreen')">←</button>
+          <div class="lists-header-title">Add List</div>
+        </div>
+        <div class="lists-scroll-content" style="padding-top:8px;">
+          <div class="lists-form-section">
+            <div class="lists-form-row">
+              <span class="lists-form-icon">☰</span>
+              <input class="lists-form-input" id="newListTitle" type="text" placeholder="Title">
+            </div>
+          </div>
+          <div class="list-type-section">
+            <div class="list-type-label">
+              <span class="list-type-label-icon">🗒️</span>
+              <span>List type</span>
+            </div>
+            <div class="type-btns">
+              <button class="type-btn active" data-type="todo"    onclick="listsSelectType(this)">To Do</button>
+              <button class="type-btn"        data-type="grocery" onclick="listsSelectType(this)">Grocery</button>
+              <button class="type-btn"        data-type="other"   onclick="listsSelectType(this)">Other</button>
+            </div>
+          </div>
+          <div class="lists-color-picker-section">
+            <div class="lists-color-picker-header">
+              <div class="lists-color-picker-label"><span>🎨</span><span>Color</span></div>
+              <span class="lists-color-picker-toggle">∧</span>
+            </div>
+            <div class="lists-color-grid" id="listsColorGrid"></div>
+          </div>
+          <button class="add-list-btn" id="addListBtn" onclick="listsAddNewList()">Add</button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: LIST DETAIL -->
+      <div class="lists-screen" id="listDetailScreen">
+        <div class="list-detail-header">
+          <button class="lists-header-back" onclick="listsShowScreen('listsScreen')">←</button>
+          <div class="lists-header-title" id="listsDetailTitle">List Name</div>
+          <button class="lists-header-more" onclick="listsShowToast('List options coming soon')">···</button>
+        </div>
+        <div class="detail-action-row">
+          <div class="detail-action-item">
+            <button class="detail-action-btn" onclick="listsToggleSelectMode(this)">✓</button>
+            <div class="detail-action-label">Select</div>
+          </div>
+          <div class="detail-action-item">
+            <button class="detail-action-btn active" id="listsCompletedToggleBtn" onclick="listsToggleShowCompleted()">👁</button>
+            <div class="detail-action-label">Completed</div>
+          </div>
+        </div>
+        <input class="add-item-field" placeholder="Add item" onclick="listsOpenAddItemSheet()" readonly>
+        <div class="detail-scroll" id="listsDetailItemList"></div>
+        <button class="lists-fab" onclick="listsOpenAddItemSheet()">+</button>
+      </div>
+
+      <!-- Add item bottom sheet -->
+      <div class="lists-bottom-sheet-overlay" id="listsSheetOverlay" onclick="listsCloseAddItemSheet()"></div>
+      <div class="lists-bottom-sheet" id="listsAddItemSheet">
+        <div class="lists-sheet-handle"></div>
+        <input class="lists-sheet-input" id="listsSheetItemInput" type="text" placeholder="New item…">
+        <button class="lists-sheet-add-btn" id="listsSheetAddBtn" onclick="listsAddItemToList()">Add Item</button>
+      </div>
+
+    </div>
+
 <script src="supabase-config.js"></script>
 <script src="supabase-sync.js"></script>
 <script src="auto-sync-wrapper.js"></script>
-<!-- Google Calendar OAuth Module -->
 <script src="google-calendar-service-account.js"></script>
-    <script src="script.js"></script>
+<script src="script.js"></script>
 <script src="supabase-init.js"></script>
 <script src="habits.js"></script>
 <script src="profile-dashboard.js"></script>
+
+<!-- Mobile Lists UI Logic -->
+<script>
+// =============================================
+//  MOBILE LISTS UI — integrated into Skylight
+// =============================================
+
+(function() {
+    var _origSwitchSection = window.switchSection;
+    window.switchSection = function(section) {
+        if (section === 'lists' && window.innerWidth <= 768) {
+            listsShowUI();
+            return;
+        }
+        if (_origSwitchSection) _origSwitchSection.call(this, section);
+    };
+})();
+
+function listsShowUI() {
+    document.getElementById('mobileListsUI').style.display = 'block';
+    listsLoadLists();
+}
+
+function hideMobileLists() {
+    document.getElementById('mobileListsUI').style.display = 'none';
+    window.location.hash = '#/home';
+}
+
+var LISTS_COLORS = [
+  { bg: '#14607A', card: '#DDE9F0', name: 'Teal' },
+  { bg: '#1A73B5', card: '#D9E8F5', name: 'Blue' },
+  { bg: '#2AAAC0', card: '#D5F0F5', name: 'Cyan' },
+  { bg: '#6AAFC8', card: '#DDF0F8', name: 'Sky' },
+  { bg: '#8BBAC8', card: '#E2EFF5', name: 'Mist' },
+  { bg: '#7B3FA5', card: '#EDE0F5', name: 'Purple' },
+  { bg: '#B07FC8', card: '#F0E5F8', name: 'Lavender' },
+  { bg: '#1C6B5C', card: '#D5EDE8', name: 'Dark Teal' },
+  { bg: '#2E7D32', card: '#DAEEDA', name: 'Green' },
+  { bg: '#8BC34A', card: '#EBF5D8', name: 'Lime' },
+  { bg: '#C62828', card: '#F5DADA', name: 'Red' },
+  { bg: '#E8849A', card: '#F8E5EA', name: 'Pink' },
+  { bg: '#E86050', card: '#F8E2DE', name: 'Coral' },
+  { bg: '#C0521A', card: '#F0E0D4', name: 'Orange' },
+  { bg: '#E0A060', card: '#F5EAD8', name: 'Peach' },
+  { bg: '#F4C430', card: '#FBF2CE', name: 'Yellow' },
+  { bg: '#F0E080', card: '#FAF6D8', name: 'Lemon' },
+  { bg: '#996515', card: '#EEE0C5', name: 'Brown' },
+  { bg: '#D4A840', card: '#F5E8C8', name: 'Gold' },
+  { bg: '#FF6BFE', card: '#FAE0FF', name: 'Rainbow' },
+];
+
+function listsColorToStr(c) { return c.bg + '|' + c.card; }
+function listsColorFromStr(str) {
+  if (!str) return LISTS_COLORS[1];
+  if (str.indexOf('|') !== -1) { var p = str.split('|'); return { bg: p[0], card: p[1] }; }
+  return LISTS_COLORS.find(function(c) { return c.bg === str; }) || LISTS_COLORS[1];
+}
+
+var listsMemo = [];
+var listsCurrentListId = null;
+var listsSelectedColorIdx = 0;
+var listsSelectedType = 'todo';
+var listsShowCompleted = true;
+
+function listsHasAPI() {
+  return typeof window.SupabaseAPI !== 'undefined' && window.SupabaseAPI !== null;
+}
+
+async function listsLoadLists() {
+  document.getElementById('listCardsContainer').innerHTML =
+    '<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading\u2026</div>';
+  if (!listsHasAPI()) {
+    try { var s = localStorage.getItem('lists'); listsMemo = s ? JSON.parse(s) : []; listsMemo.forEach(function(l){ if(typeof l.color==='string') l.color=listsColorFromStr(l.color); if(!l.items) l.items=[]; }); } catch(e){ listsMemo=[]; }
+    listsRenderLists(); return;
+  }
+  try {
+    var data = await window.SupabaseAPI.getLists() || [];
+    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, done:it.checked||false }; }) }; });
+    listsSaveLocal();
+  } catch(err) { console.error('listsLoadLists:',err); listsShowToast('Could not load lists'); listsMemo=[]; }
+  listsRenderLists();
+}
+
+function listsSaveLocal() { try { localStorage.setItem('lists', JSON.stringify(listsMemo)); } catch(e){} }
+
+function listsRenderLists() {
+  var c = document.getElementById('listCardsContainer');
+  if (!listsMemo.length) { c.innerHTML = '<div style="text-align:center;padding:48px 24px;color:#8E8E93;font-size:16px">No lists yet.<br>Tap + to create one.</div>'; return; }
+  c.innerHTML = '';
+  listsMemo.forEach(function(list) {
+    var card = document.createElement('div');
+    card.className = 'list-card';
+    card.style.background = list.color.card;
+    var unchecked = list.items.filter(function(i){ return !i.done; }).length;
+    card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'');
+    card.onclick = function(){ listsOpenList(list.id); };
+    c.appendChild(card);
+  });
+}
+
+function listsRenderDetailItems() {
+  var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
+  if (!list) return;
+  var c = document.getElementById('listsDetailItemList');
+  var items = listsShowCompleted ? list.items : list.items.filter(function(i){ return !i.done; });
+  if (!items.length) { c.innerHTML = '<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>'; return; }
+  c.innerHTML = '';
+  items.forEach(function(item) {
+    var row = document.createElement('div');
+    row.className = 'list-item-row';
+    row.innerHTML = '<div class="item-check '+(item.done?'checked':'')+'">'+( item.done?'✓':'' )+'</div><span class="item-text '+(item.done?'done':'')+'">'+listsEsc(item.text)+'</span>';
+    row.onclick = function(){ listsToggleItem(item.id); };
+    c.appendChild(row);
+  });
+}
+
+function listsRenderColorGrid() {
+  var grid = document.getElementById('listsColorGrid');
+  grid.innerHTML = '';
+  LISTS_COLORS.forEach(function(c, i) {
+    var wrap = document.createElement('div');
+    wrap.className = 'lists-color-dot-wrap';
+    if (i === 0) {
+      wrap.innerHTML = '<div class="lists-color-selected-box" onclick="listsSelectColor(0)"><div class="lists-color-dot '+(listsSelectedColorIdx===0?'selected':'')+'" style="background:'+c.bg+'"></div></div>';
+    } else {
+      wrap.innerHTML = '<div class="lists-color-dot '+(listsSelectedColorIdx===i?'selected':'')+'" style="background:'+c.bg+'" onclick="listsSelectColor('+i+')"></div>';
+    }
+    grid.appendChild(wrap);
+  });
+}
+
+function listsSelectColor(idx) { listsSelectedColorIdx = idx; listsRenderColorGrid(); }
+function listsSelectType(btn) {
+  document.querySelectorAll('#addListScreen .type-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  listsSelectedType = btn.dataset.type;
+}
+
+function listsOpenList(id) {
+  listsCurrentListId = id;
+  var list = listsMemo.find(function(l){ return l.id===id; });
+  if (!list) return;
+  document.getElementById('listsDetailTitle').textContent = list.name;
+  document.getElementById('listDetailScreen').style.background = list.color.card;
+  document.querySelector('#listDetailScreen .list-detail-header').style.background = 'transparent';
+  listsShowCompleted = true;
+  document.getElementById('listsCompletedToggleBtn').classList.add('active');
+  listsRenderDetailItems();
+  listsShowScreen('listDetailScreen');
+}
+
+function listsShowAddList() {
+  listsSelectedColorIdx = 0; listsSelectedType = 'todo';
+  document.getElementById('newListTitle').value = '';
+  document.querySelectorAll('#addListScreen .type-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });
+  listsRenderColorGrid();
+  listsShowScreen('addListScreen');
+}
+
+async function listsAddNewList() {
+  var title = document.getElementById('newListTitle').value.trim();
+  if (!title) { listsShowToast('Please enter a title'); return; }
+  var btn = document.getElementById('addListBtn');
+  btn.disabled = true; btn.textContent = 'Adding\u2026';
+  var color = LISTS_COLORS[listsSelectedColorIdx];
+  if (listsHasAPI()) {
+    try {
+      var row = await window.SupabaseAPI.addList({ name:title, color:listsColorToStr(color), icon:listsSelectedType });
+      if (row) { listsMemo.push({ id:row.id, name:title, color:color, type:listsSelectedType, items:[] }); listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created!'); }
+      else { listsShowToast('Failed to create list'); }
+    } catch(err) { console.error(err); listsShowToast('Error creating list'); }
+  } else {
+    listsMemo.push({ id:Date.now(), name:title, color:color, type:listsSelectedType, items:[] });
+    listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created (offline)');
+  }
+  btn.disabled = false; btn.textContent = 'Add';
+}
+
+async function listsToggleItem(itemId) {
+  var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
+  if (!list) return;
+  var item = list.items.find(function(i){ return i.id===itemId; });
+  if (!item) return;
+  item.done = !item.done;
+  listsRenderDetailItems(); listsRenderLists(); listsSaveLocal();
+  if (listsHasAPI()) {
+    try { await window.SupabaseAPI.updateListItem(itemId, { checked:item.done }); }
+    catch(err) { console.error(err); item.done=!item.done; listsRenderDetailItems(); listsRenderLists(); listsSaveLocal(); listsShowToast('Sync failed'); }
+  }
+}
+
+async function listsAddItemToList() {
+  var input = document.getElementById('listsSheetItemInput');
+  var text = input.value.trim();
+  if (!text) return;
+  var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
+  if (!list) return;
+  var btn = document.getElementById('listsSheetAddBtn');
+  btn.disabled = true;
+  if (listsHasAPI()) {
+    try {
+      var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
+      if (row) { list.items.push({ id:row.id, text:text, done:false }); listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists(); }
+      else { listsShowToast('Failed to add item'); }
+    } catch(err) { console.error(err); listsShowToast('Error adding item'); }
+  } else {
+    list.items.push({ id:Date.now(), text:text, done:false });
+    listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists();
+  }
+  btn.disabled = false;
+}
+
+function listsOpenAddItemSheet() {
+  document.getElementById('listsSheetOverlay').classList.add('active');
+  document.getElementById('listsAddItemSheet').classList.add('active');
+  setTimeout(function(){ document.getElementById('listsSheetItemInput').focus(); }, 300);
+}
+function listsCloseAddItemSheet() {
+  document.getElementById('listsSheetOverlay').classList.remove('active');
+  document.getElementById('listsAddItemSheet').classList.remove('active');
+}
+function listsToggleSelectMode(btn) { btn.classList.toggle('active'); }
+function listsToggleShowCompleted() {
+  listsShowCompleted = !listsShowCompleted;
+  document.getElementById('listsCompletedToggleBtn').classList.toggle('active', listsShowCompleted);
+  listsRenderDetailItems();
+}
+function listsShowScreen(id) {
+  document.querySelectorAll('#mobileListsUI .lists-screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+function listsShowToast(msg) {
+  var t = document.getElementById('listsToast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function listsEsc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var si = document.getElementById('listsSheetItemInput');
+  if (si) si.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddItemToList(); } });
+  var ti = document.getElementById('newListTitle');
+  if (ti) ti.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddNewList(); } });
+});
+</script>
+
 <!-- =============================================
      MOBILE STRUCTURE
-     Add to your index.html body
      ============================================= -->
 
-<!-- Mobile Header (always visible on mobile) -->
+<!-- Mobile Header -->
 <div class="mobile-header">
-    <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">
-        ←
-    </div>
-    <div class="mobile-header-left" id="mobileHomeIndicator" style="display: block;">
-        <!-- Empty on home, back arrow on sections -->
-    </div>
+    <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">←</div>
+    <div class="mobile-header-left" id="mobileHomeIndicator" style="display: block;"></div>
     <div class="mobile-header-title" id="mobileHeaderTitle">strongcalendar23</div>
-    <div class="mobile-header-right" onclick="openProfileSettings()">
-        👤
-    </div>
+    <div class="mobile-header-right" onclick="openProfileSettings()">👤</div>
 </div>
 
-<!-- Mobile Calendar Navigation (shows only on calendar view) -->
+<!-- Mobile Calendar Navigation -->
 <div class="mobile-calendar-nav" id="mobileCalendarNav">
     <div class="mobile-calendar-nav-row">
-        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(-1)">
-            <span>←</span>
-        </button>
-        <button class="mobile-calendar-nav-btn" onclick="goToToday()">
-            <span>📅</span>
-            <span style="font-size: 11px;">Today</span>
-        </button>
-        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(1)">
-            <span>→</span>
-        </button>
-        <button class="mobile-calendar-nav-btn" onclick="switchView('week')">
-            <span>📊</span>
-            <span style="font-size: 11px;">Week</span>
-        </button>
-        <button class="mobile-calendar-nav-btn" onclick="toggleCalendarFilter()">
-            <span>🔍</span>
-            <span style="font-size: 11px;">Filter</span>
-        </button>
-        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')">
-            <span>🔎</span>
-            <span style="font-size: 11px;">Search</span>
-        </button>
+        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(-1)"><span>←</span></button>
+        <button class="mobile-calendar-nav-btn" onclick="goToToday()"><span>📅</span><span style="font-size: 11px;">Today</span></button>
+        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(1)"><span>→</span></button>
+        <button class="mobile-calendar-nav-btn" onclick="switchView('week')"><span>📊</span><span style="font-size: 11px;">Week</span></button>
+        <button class="mobile-calendar-nav-btn" onclick="toggleCalendarFilter()"><span>🔍</span><span style="font-size: 11px;">Filter</span></button>
+        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')"><span>🔎</span><span style="font-size: 11px;">Search</span></button>
     </div>
 </div>
 
-<!-- Mobile Home Page (Icon Grid Navigation) -->
+<!-- Mobile Home Page -->
 <div class="mobile-home" id="mobileHome">
-    
-    <!-- Icon Navigation Grid -->
     <div class="mobile-icon-grid">
-        
         <div class="mobile-icon-item" onclick="goToSection('calendar')">
-            <div class="mobile-icon-circle mobile-icon-calendar">
-                📅
-            </div>
+            <div class="mobile-icon-circle mobile-icon-calendar">📅</div>
             <div class="mobile-icon-label">Calendar</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('chores')">
-            <div class="mobile-icon-circle mobile-icon-tasks">
-                ✓
-            </div>
+            <div class="mobile-icon-circle mobile-icon-tasks">✓</div>
             <div class="mobile-icon-label">Tasks</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('rewards')">
-            <div class="mobile-icon-circle mobile-icon-rewards">
-                ⭐
-                <div class="mobile-icon-badge">+</div>
-            </div>
+            <div class="mobile-icon-circle mobile-icon-rewards">⭐<div class="mobile-icon-badge">+</div></div>
             <div class="mobile-icon-label">Rewards</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('lists')">
-            <div class="mobile-icon-circle mobile-icon-lists">
-                📝
-            </div>
+            <div class="mobile-icon-circle mobile-icon-lists">📝</div>
             <div class="mobile-icon-label">Lists</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('meals')">
-            <div class="mobile-icon-circle mobile-icon-meals">
-                🍴
-                <div class="mobile-icon-badge">+</div>
-            </div>
+            <div class="mobile-icon-circle mobile-icon-meals">🍴<div class="mobile-icon-badge">+</div></div>
             <div class="mobile-icon-label">Meals</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('recipes')">
-            <div class="mobile-icon-circle mobile-icon-recipes">
-                📖
-                <div class="mobile-icon-badge">+</div>
-            </div>
+            <div class="mobile-icon-circle mobile-icon-recipes">📖<div class="mobile-icon-badge">+</div></div>
             <div class="mobile-icon-label">Recipes</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="goToSection('habits')">
             <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #EEF2FF, #FDF0FF);">🌱</div>
             <div class="mobile-icon-label">Habits</div>
         </div>
-
         <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
-            <div class="mobile-icon-circle mobile-icon-photos">
-                🖼️
-            </div>
+            <div class="mobile-icon-circle mobile-icon-photos">🖼️</div>
             <div class="mobile-icon-label">Photos</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="openProfileSettings()">
-            <div class="mobile-icon-circle mobile-icon-profiles">
-                👥
-            </div>
+            <div class="mobile-icon-circle mobile-icon-profiles">👥</div>
             <div class="mobile-icon-label">Profiles</div>
         </div>
-        
         <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
-            <div class="mobile-icon-circle mobile-icon-sidekick">
-                ✨
-                <div class="mobile-icon-badge">+</div>
-            </div>
+            <div class="mobile-icon-circle mobile-icon-sidekick">✨<div class="mobile-icon-badge">+</div></div>
             <div class="mobile-icon-label">Sidekick</div>
         </div>
-        
     </div>
     
-    <!-- Today's Events Card -->
     <div class="mobile-today-card" id="mobileTodayCard">
-        <div class="mobile-today-date" id="mobileTodayDate">
-            Thursday, February 5
-        </div>
-        
-        <!-- Today's events will be populated here -->
-        <div id="mobileTodayEvents">
-            <!-- Example event (will be populated by JS) -->
-            <!-- Shown when there are events -->
-        </div>
-        
-        <!-- No events message -->
-        <div id="mobileNoEvents" style="color: #666; font-size: 16px;">
-            No upcoming events today 😌
-        </div>
+        <div class="mobile-today-date" id="mobileTodayDate">Thursday, February 5</div>
+        <div id="mobileTodayEvents"></div>
+        <div id="mobileNoEvents" style="color: #666; font-size: 16px;">No upcoming events today 😌</div>
     </div>
-    
 </div>
 
 <!-- Mobile Navigation JavaScript -->
 <script>
-// Mobile navigation state
-let currentMobileSection = 'home';
+var currentMobileSection = 'home';
 
-// Initialize mobile view on load
 function initMobile() {
     if (window.innerWidth <= 768) {
-        // Initialize hash routing
         handleHashChange();
         updateMobileTodayCard();
     }
 }
 
-// Show mobile home page
 function showMobileHome() {
     if (window.innerWidth > 768) return;
-    
     document.body.classList.remove('viewing-section');
     document.body.classList.remove('calendar-view');
     currentMobileSection = 'home';
-    
-    // Show home
-    const homeEl = document.getElementById('mobileHome');
+    var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'block';
-    
-    // Hide all content sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
-    });
-    
-    // Update header
+    document.querySelectorAll('.content-section').forEach(function(section) { section.style.display = 'none'; });
     document.getElementById('mobileHeaderTitle').textContent = 'strongcalendar23';
     document.getElementById('mobileBackBtn').style.display = 'none';
     document.getElementById('mobileHomeIndicator').style.display = 'block';
-    
     updateMobileTodayCard();
 }
 
-// Navigate to a section
 function goToSection(sectionName) {
-    if (window.innerWidth > 768) {
-        // Desktop: use hash navigation
-        window.location.hash = '#/' + sectionName;
-        return;
-    }
-    
-    // Mobile: update hash to trigger navigation
+    if (window.innerWidth > 768) { window.location.hash = '#/' + sectionName; return; }
     window.location.hash = '#/' + sectionName;
 }
 
-// Handle hash change for routing
 function handleHashChange() {
-    const hash = window.location.hash;
-    
+    var hash = window.location.hash;
     if (window.innerWidth > 768) {
-        // Desktop: use hash for navigation
         if (hash && hash.startsWith('#/')) {
-            const section = hash.substring(2);
-            if (typeof switchSection === 'function') {
-                switchSection(section);
-            }
+            var section = hash.substring(2);
+            if (typeof switchSection === 'function') switchSection(section);
         } else if (!hash || hash === '#/' || hash === '#/home') {
-            // Default to calendar
-            if (typeof switchSection === 'function') {
-                switchSection('calendar');
-            }
+            if (typeof switchSection === 'function') switchSection('calendar');
         }
         return;
     }
-    
-    // Mobile: show section or home
     if (!hash || hash === '#/' || hash === '#/home') {
+        // Hide lists UI if open
+        var lui = document.getElementById('mobileListsUI');
+        if (lui) lui.style.display = 'none';
         showMobileHome();
     } else if (hash.startsWith('#/')) {
-        const sectionName = hash.substring(2);
-        
-        // Mobile: show section with back button
-        document.body.classList.add('viewing-section');
-        
-        // Add calendar-view class if viewing calendar
-        if (sectionName === 'calendar') {
-            document.body.classList.add('calendar-view');
-        } else {
-            document.body.classList.remove('calendar-view');
+        var sectionName = hash.substring(2);
+        // Lists handled by the lists UI overlay, not the section system
+        if (sectionName === 'lists') {
+            listsShowUI();
+            // Still update header
+            document.getElementById('mobileBackBtn').style.display = 'block';
+            document.getElementById('mobileHomeIndicator').style.display = 'none';
+            document.getElementById('mobileHeaderTitle').textContent = 'Lists';
+            return;
         }
-        
+        document.body.classList.add('viewing-section');
+        if (sectionName === 'calendar') document.body.classList.add('calendar-view');
+        else document.body.classList.remove('calendar-view');
         currentMobileSection = sectionName;
-        
-        // Hide home
-        const homeEl = document.getElementById('mobileHome');
+        var homeEl = document.getElementById('mobileHome');
         if (homeEl) homeEl.style.display = 'none';
-        
-        // Show back button
         document.getElementById('mobileBackBtn').style.display = 'block';
         document.getElementById('mobileHomeIndicator').style.display = 'none';
-        
-        // Update header title
-        const titles = {
-            'calendar': getWeekRangeTitle(),
-            'chores': 'Thu, Feb 5',
-            'rewards': 'Rewards',
-            'lists': 'Lists',
-            'meals': 'Meals',
-            'recipes': 'Recipes',
-            'habits': 'Habits'
-        };
+        var titles = { 'calendar': getWeekRangeTitle(), 'chores': 'Thu, Feb 5', 'rewards': 'Rewards', 'meals': 'Meals', 'recipes': 'Recipes', 'habits': 'Habits' };
         document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
-        
-        // Use existing switchSection function
-        if (typeof switchSection === 'function') {
-            switchSection(sectionName);
-        }
+        if (typeof switchSection === 'function') switchSection(sectionName);
     }
 }
 
-// Go back to mobile home
-function goToMobileHome() {
-    window.location.hash = '#/home';
-}
+function goToMobileHome() { window.location.hash = '#/home'; }
 
-// Listen for hash changes
 window.addEventListener('hashchange', handleHashChange);
 
-// Helper function to get week range title
 function getWeekRangeTitle() {
-    const today = new Date();
-    const weekStart = new Date(today);
-    const day = weekStart.getDay();
-    const diff = weekStart.getDate() - day; // Sunday is 0
+    var today = new Date();
+    var weekStart = new Date(today);
+    var diff = weekStart.getDate() - weekStart.getDay();
     weekStart.setDate(diff);
-    
-    const weekEnd = new Date(weekStart);
+    var weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    
-    const options = { month: 'short', day: 'numeric' };
-    const startStr = weekStart.toLocaleDateString('en-US', options);
-    const endStr = weekEnd.toLocaleDateString('en-US', options);
-    
-    return `${startStr} - ${endStr}`;
+    var opts = { month: 'short', day: 'numeric' };
+    return weekStart.toLocaleDateString('en-US', opts) + ' - ' + weekEnd.toLocaleDateString('en-US', opts);
 }
 
-// Update today's card with events
 function updateMobileTodayCard() {
-    const today = new Date();
-    const options = { weekday: 'long', month: 'long', day: 'numeric' };
-    const dateStr = today.toLocaleDateString('en-US', options);
-    
-    const dateEl = document.getElementById('mobileTodayDate');
-    if (dateEl) {
-        dateEl.textContent = dateStr;
-    }
-    
-    // Get today's events
+    var today = new Date();
+    var dateEl = document.getElementById('mobileTodayDate');
+    if (dateEl) dateEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     if (typeof getAllEvents === 'function') {
-        const todayStr = today.toISOString().split('T')[0];
-        const allEvents = getAllEvents();
-        const todayEvents = allEvents.filter(event => {
-            if (typeof isEventOnDate === 'function') {
-                return isEventOnDate(event, todayStr);
-            }
+        var todayStr = today.toISOString().split('T')[0];
+        var allEvents = getAllEvents();
+        var todayEvents = allEvents.filter(function(event) {
+            if (typeof isEventOnDate === 'function') return isEventOnDate(event, todayStr);
             return event.date === todayStr;
         });
-        
-        const eventsContainer = document.getElementById('mobileTodayEvents');
-        const noEventsEl = document.getElementById('mobileNoEvents');
-        
+        var eventsContainer = document.getElementById('mobileTodayEvents');
+        var noEventsEl = document.getElementById('mobileNoEvents');
         if (todayEvents.length > 0) {
-            // Show events
             if (noEventsEl) noEventsEl.style.display = 'none';
             if (eventsContainer) {
                 eventsContainer.innerHTML = '';
-                
-                todayEvents.slice(0, 3).forEach((event, index) => {
-                    const colorClass = index % 2 === 0 ? 'color-pink' : 'color-peach';
-                    const memberInitial = event.member ? event.member.charAt(0).toUpperCase() : '?';
-                    const timeStr = event.time || 'All day';
-                    
-                    const eventHtml = `
-                        <div class="mobile-today-event ${colorClass}" onclick="goToSection('calendar')">
-                            <div class="mobile-event-content">
-                                <div class="mobile-event-title">${event.title}</div>
-                                <div class="mobile-event-time">${timeStr}</div>
-                            </div>
-                            <div class="mobile-event-avatar">${memberInitial}</div>
-                        </div>
-                    `;
-                    eventsContainer.innerHTML += eventHtml;
+                todayEvents.slice(0, 3).forEach(function(event, index) {
+                    var colorClass = index % 2 === 0 ? 'color-pink' : 'color-peach';
+                    var memberInitial = event.member ? event.member.charAt(0).toUpperCase() : '?';
+                    var timeStr = event.time || 'All day';
+                    eventsContainer.innerHTML += '<div class="mobile-today-event ' + colorClass + '" onclick="goToSection(\'calendar\')">' +
+                        '<div class="mobile-event-content"><div class="mobile-event-title">' + event.title + '</div>' +
+                        '<div class="mobile-event-time">' + timeStr + '</div></div>' +
+                        '<div class="mobile-event-avatar">' + memberInitial + '</div></div>';
                 });
             }
         } else {
-            // Show no events message
             if (noEventsEl) noEventsEl.style.display = 'block';
             if (eventsContainer) eventsContainer.innerHTML = '';
         }
     }
 }
 
-// Handle window resize
 window.addEventListener('resize', function() {
-    if (window.innerWidth <= 768) {
-        if (currentMobileSection === 'home') {
-            showMobileHome();
-        }
-    }
+    if (window.innerWidth <= 768 && currentMobileSection === 'home') showMobileHome();
 });
 
-// Initialize on load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initMobile();
-        // Initialize Google Calendar OAuth
-        if (typeof initGoogleCalendar === 'function') {
-            initGoogleCalendar();
-        }
+        if (typeof initGoogleCalendar === 'function') initGoogleCalendar();
     });
 } else {
     initMobile();
-    // Initialize Google Calendar OAuth
-    if (typeof initGoogleCalendar === 'function') {
-        initGoogleCalendar();
-    }
+    if (typeof initGoogleCalendar === 'function') initGoogleCalendar();
 }
 
-
-
-// Profile picker — defined here so it's available immediately on page load
 function openProfilePicker() {
     var seen = {};
     var members = (window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]'))
@@ -1710,106 +1688,50 @@ function openProfilePicker() {
             return true;
         });
     if (members.length === 0) return;
-
     var existing = document.getElementById('profilePickerMount');
     if (existing) { existing.remove(); return; }
-
     var buttonsHtml = members.map(function(m) {
-        return '<button class="ppick-btn" onclick="document.getElementById(\'profilePickerMount\').remove();openProfileDashboard(\''+m.name+'\')" style="--pmc:'+m.color+'">'
-            + '<span class="ppick-avatar">'+m.name.charAt(0).toUpperCase()+'</span>'
-            + m.name + '</button>';
+        return '<button class="ppick-btn" onclick="document.getElementById(\'profilePickerMount\').remove();openProfileDashboard(\''+m.name+'\')" style="--pmc:'+m.color+'"><span class="ppick-avatar">'+m.name.charAt(0).toUpperCase()+'</span>'+m.name+'</button>';
     }).join('');
-
-    var html = '<div id="profilePickerMount" class="ppick-overlay" onclick="this.remove()">'
-        + '<div class="ppick-modal" onclick="event.stopPropagation()">'
-        + '<div class="ppick-title">Whose dashboard?</div>'
-        + '<div class="ppick-list">'+buttonsHtml+'</div>'
-        + '<button class="ppick-cancel" onclick="document.getElementById(\'profilePickerMount\').remove()">Cancel</button>'
-        + '</div></div>';
-
+    var html = '<div id="profilePickerMount" class="ppick-overlay" onclick="this.remove()"><div class="ppick-modal" onclick="event.stopPropagation()"><div class="ppick-title">Whose dashboard?</div><div class="ppick-list">'+buttonsHtml+'</div><button class="ppick-cancel" onclick="document.getElementById(\'profilePickerMount\').remove()">Cancel</button></div></div>';
     var el = document.createElement('div');
     el.innerHTML = html;
     document.body.appendChild(el.firstChild);
 }
 
-
-
-// ---- Event editing — defined here for Android 8 WebView compatibility ----
 function editEventFromDetail() {
     var eventId = window.currentEventDetailId;
     if (!eventId) return;
-
-    // Find event — local first, then Google Calendar
     var ev = null;
     var localEvents = window.events || [];
-    for (var i = 0; i < localEvents.length; i++) {
-        if (localEvents[i].id == eventId) { ev = localEvents[i]; break; }
-    }
+    for (var i = 0; i < localEvents.length; i++) { if (localEvents[i].id == eventId) { ev = localEvents[i]; break; } }
     if (!ev && typeof GoogleCalendar !== 'undefined') {
         var gcalEvents = GoogleCalendar.getEvents();
-        for (var j = 0; j < gcalEvents.length; j++) {
-            if (gcalEvents[j].id == eventId) { ev = gcalEvents[j]; break; }
-        }
+        for (var j = 0; j < gcalEvents.length; j++) { if (gcalEvents[j].id == eventId) { ev = gcalEvents[j]; break; } }
     }
     if (!ev) return;
-
-    // Close detail panel
     if (typeof closeEventDetailPanel === 'function') closeEventDetailPanel();
-
-    // Normalise fields — handle local format (date/time) and GCal format (start.dateTime)
-    var evDate = ev.date || '';
-    var evEndDate = ev.endDate || '';
-    var evTime = ev.time || '';
-    var evEndTime = ev.endTime || '';
-    var evNotes = ev.notes || ev.description || '';
-    var evIsAllDay = ev.isAllDay;
-
+    var evDate = ev.date || '', evEndDate = ev.endDate || '', evTime = ev.time || '', evEndTime = ev.endTime || '', evNotes = ev.notes || ev.description || '', evIsAllDay = ev.isAllDay;
     if (!evDate && ev.start) {
-        if (ev.start.dateTime) {
-            var sd = new Date(ev.start.dateTime);
-            evDate = sd.toISOString().split('T')[0];
-            evTime = sd.toTimeString().slice(0, 5);
-            evIsAllDay = false;
-        } else if (ev.start.date) {
-            evDate = ev.start.date;
-            evIsAllDay = true;
-        }
+        if (ev.start.dateTime) { var sd = new Date(ev.start.dateTime); evDate = sd.toISOString().split('T')[0]; evTime = sd.toTimeString().slice(0,5); evIsAllDay = false; }
+        else if (ev.start.date) { evDate = ev.start.date; evIsAllDay = true; }
     }
     if (!evEndDate && ev.end) {
-        if (ev.end.dateTime) {
-            var ed = new Date(ev.end.dateTime);
-            evEndDate = ed.toISOString().split('T')[0];
-            evEndTime = ed.toTimeString().slice(0, 5);
-        } else if (ev.end.date) {
-            evEndDate = ev.end.date;
-        }
+        if (ev.end.dateTime) { var ed = new Date(ev.end.dateTime); evEndDate = ed.toISOString().split('T')[0]; evEndTime = ed.toTimeString().slice(0,5); }
+        else if (ev.end.date) { evEndDate = ev.end.date; }
     }
     if (evIsAllDay === undefined || evIsAllDay === null) evIsAllDay = !evTime;
-
-    // Populate form
     document.getElementById('eventTitle').value = ev.title || ev.summary || '';
     document.getElementById('eventDate').value = evDate;
     document.getElementById('eventEndDate').value = evEndDate;
     document.getElementById('eventNotes').value = evNotes;
     document.getElementById('eventAllDayToggle').checked = evIsAllDay;
-    if (!evIsAllDay) {
-        document.getElementById('eventTime').value = evTime;
-        document.getElementById('eventEndTime').value = evEndTime;
-    }
+    if (!evIsAllDay) { document.getElementById('eventTime').value = evTime; document.getElementById('eventEndTime').value = evEndTime; }
     if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
-
-    // Set member
-    if (typeof selectedEventProfiles !== 'undefined') {
-        selectedEventProfile = ev.member || '';
-        selectedEventProfiles = ev.member ? [ev.member] : [];
-    }
+    if (typeof selectedEventProfiles !== 'undefined') { selectedEventProfile = ev.member || ''; selectedEventProfiles = ev.member ? [ev.member] : []; }
     if (typeof renderEventProfileGrid === 'function') renderEventProfileGrid();
-
-    // Open modal
     document.getElementById('eventPanelOverlay').classList.add('active');
     document.getElementById('eventModal').classList.add('active');
-
-    // Set edit flag and button text
     window._editingEventId = eventId;
     var btn = document.getElementById('eventSaveBtn');
     if (btn) btn.textContent = 'Save Changes';
@@ -1818,67 +1740,28 @@ function editEventFromDetail() {
 function updateEvent(eventId) {
     var isAllDay = document.getElementById('eventAllDayToggle').checked;
     var member = '';
-    if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) {
-        member = selectedEventProfiles[0];
-    } else if (typeof selectedEventProfile !== 'undefined') {
-        member = selectedEventProfile;
-    }
-
-    var eventData = {
-        title: document.getElementById('eventTitle').value,
-        date: document.getElementById('eventDate').value,
-        endDate: document.getElementById('eventEndDate').value,
-        time: isAllDay ? '' : document.getElementById('eventTime').value,
-        endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
-        notes: document.getElementById('eventNotes').value,
-        isAllDay: isAllDay,
-        member: member
-    };
-
-    // Update local events
+    if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
+    else if (typeof selectedEventProfile !== 'undefined') member = selectedEventProfile;
+    var eventData = { title: document.getElementById('eventTitle').value, date: document.getElementById('eventDate').value, endDate: document.getElementById('eventEndDate').value, time: isAllDay?'':document.getElementById('eventTime').value, endTime: isAllDay?'':document.getElementById('eventEndTime').value, notes: document.getElementById('eventNotes').value, isAllDay: isAllDay, member: member };
     var evs = window.events || [];
     var found = false;
-    for (var i = 0; i < evs.length; i++) {
-        if (evs[i].id == eventId) {
-            for (var k in eventData) { evs[i][k] = eventData[k]; }
-            found = true;
-            break;
-        }
-    }
-    if (found) {
-        try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
-        window.events = evs;
-    }
-
-    // Clear flag and reset button before closing
+    for (var i = 0; i < evs.length; i++) { if (evs[i].id == eventId) { for (var k in eventData) evs[i][k] = eventData[k]; found = true; break; } }
+    if (found) { try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e){} window.events = evs; }
     window._editingEventId = null;
     var btn = document.getElementById('eventSaveBtn');
     if (btn) btn.textContent = 'Add Event';
-
-    // Close modal
     if (typeof closeModal === 'function') closeModal('eventModal');
-
-    // Re-render
     if (typeof currentView !== 'undefined') {
-        if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
-        else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
-        else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
-        else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
+        if (currentView==='month' && typeof renderCalendar==='function') renderCalendar();
+        else if (currentView==='week' && typeof renderWeekView==='function') renderWeekView();
+        else if (currentView==='schedule' && typeof renderScheduleView==='function') renderScheduleView();
+        else if (currentView==='day' && typeof renderDayView==='function') renderDayView();
     }
-
-    // GCal update (fire and forget)
-    try {
-        if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
-            GoogleCalendar.update(eventId, eventData);
-        }
-    } catch(e) {}
+    try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) GoogleCalendar.update(eventId, eventData); } catch(e){}
 }
 
-// Profile settings placeholder
 function openProfileSettings() {
-    if (window.innerWidth <= 768) {
-        alert('Profile settings coming soon!');
-    }
+    if (window.innerWidth <= 768) alert('Profile settings coming soon!');
 }
 </script>
 </body>
