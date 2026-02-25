@@ -1185,8 +1185,8 @@
       <div class="lists-screen" id="listDetailScreen">
         <div class="list-detail-header">
           <button class="lists-header-back" onclick="listsShowScreen('listsScreen')">←</button>
-          <div class="lists-header-title" id="listsDetailTitle">List Name</div>
-          <button class="lists-header-more" onclick="listsShowToast('List options coming soon')">···</button>
+          <div class="lists-header-title" id="listsDetailTitle" onclick="listsOpenEditSheet()" style="cursor:pointer;text-decoration:none;" title="Edit list">List Name</div>
+          <button class="lists-header-more" onclick="listsOpenEditSheet()">···</button>
         </div>
         <div class="detail-action-row">
           <div class="detail-action-item">
@@ -1209,6 +1209,27 @@
         <div class="lists-sheet-handle"></div>
         <input class="lists-sheet-input" id="listsSheetItemInput" type="text" placeholder="New item…">
         <button class="lists-sheet-add-btn" id="listsSheetAddBtn" onclick="listsAddItemToList()">Add Item</button>
+      </div>
+
+      <!-- Edit list bottom sheet -->
+      <div class="lists-bottom-sheet-overlay" id="listsEditSheetOverlay" onclick="listsCloseEditSheet()"></div>
+      <div class="lists-bottom-sheet" id="listsEditSheet" style="padding-bottom:env(safe-area-inset-bottom,16px);">
+        <div class="lists-sheet-handle"></div>
+        <div style="font-family:'Jost',sans-serif;padding:0 20px 20px;">
+          <div style="font-size:13px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">List Name</div>
+          <input class="lists-sheet-input" id="listsEditNameInput" type="text" placeholder="List name" style="margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:600;color:#8E8E93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Assigned To</div>
+          <div id="listsEditProfileGrid" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;"></div>
+          <button onclick="listsSaveEdit()" style="
+            width:100%;font-family:'Jost',sans-serif;font-size:16px;font-weight:600;
+            color:#fff;background:#14607A;border:none;border-radius:14px;
+            padding:15px;cursor:pointer;margin-bottom:10px;
+            box-shadow:0 4px 14px rgba(20,96,122,0.25);">Save Changes</button>
+          <button onclick="listsDeleteList()" style="
+            width:100%;font-family:'Jost',sans-serif;font-size:16px;font-weight:600;
+            color:#C62828;background:#FFF0F0;border:none;border-radius:14px;
+            padding:15px;cursor:pointer;">🗑️ Delete List</button>
+        </div>
       </div>
 
     </div>
@@ -1498,6 +1519,98 @@ function listsShowToast(msg) {
 }
 function listsEsc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Edit list sheet ----
+var listsEditSelectedProfile = null; // null = unassigned
+
+function listsOpenEditSheet() {
+  var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
+  if (!list) return;
+  document.getElementById('listsEditNameInput').value = list.name;
+  listsEditSelectedProfile = list.assignedTo || null;
+  listsRenderEditProfileGrid();
+  document.getElementById('listsEditSheetOverlay').classList.add('active');
+  document.getElementById('listsEditSheet').classList.add('active');
+  setTimeout(function(){ document.getElementById('listsEditNameInput').focus(); }, 300);
+}
+
+function listsCloseEditSheet() {
+  document.getElementById('listsEditSheetOverlay').classList.remove('active');
+  document.getElementById('listsEditSheet').classList.remove('active');
+}
+
+function listsRenderEditProfileGrid() {
+  var grid = document.getElementById('listsEditProfileGrid');
+  // Get family members from desktop app if available, else skip profile section
+  var members = [];
+  if (window.familyMembers && window.familyMembers.length) {
+    members = window.familyMembers.filter(function(m){ return !m.isGoogleCalendar; });
+  } else {
+    try {
+      var stored = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+      members = stored.filter(function(m){ return !m.isGoogleCalendar; });
+    } catch(e){}
+  }
+  if (!members.length) {
+    grid.innerHTML = '<div style="color:#8E8E93;font-size:14px;">No profiles set up yet.</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  // "None" option
+  var noneBtn = document.createElement('div');
+  var noneActive = listsEditSelectedProfile === null;
+  noneBtn.innerHTML = '<div style="width:44px;height:44px;border-radius:50%;background:'+(noneActive?'#14607A':'#E5E5EA')+';display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 4px;border:3px solid '+(noneActive?'#14607A':'transparent')+';transition:all 0.15s;">—</div><div style="font-size:11px;text-align:center;color:'+(noneActive?'#14607A':'#8E8E93')+';font-weight:'+(noneActive?'600':'400')+';">None</div>';
+  noneBtn.style.cssText = 'cursor:pointer;';
+  noneBtn.onclick = function(){ listsEditSelectedProfile = null; listsRenderEditProfileGrid(); };
+  grid.appendChild(noneBtn);
+  members.forEach(function(m) {
+    var isActive = listsEditSelectedProfile === m.id || listsEditSelectedProfile === m.name;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'cursor:pointer;';
+    wrap.innerHTML = '<div style="width:44px;height:44px;border-radius:50%;background:'+m.color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 4px;border:3px solid '+(isActive?'#14607A':'transparent')+';transition:all 0.15s;opacity:'+(isActive?'1':'0.7')+';box-shadow:'+(isActive?'0 0 0 2px #fff,0 0 0 4px #14607A':'none')+';font-family:'Jost',sans-serif;">'+m.name.charAt(0).toUpperCase()+'</div><div style="font-size:11px;text-align:center;color:'+(isActive?'#14607A':'#8E8E93')+';font-weight:'+(isActive?'600':'400')+';max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+listsEsc(m.name)+'</div>';
+    wrap.onclick = function(){ listsEditSelectedProfile = m.id; listsRenderEditProfileGrid(); };
+    grid.appendChild(wrap);
+  });
+}
+
+async function listsSaveEdit() {
+  var newName = document.getElementById('listsEditNameInput').value.trim();
+  if (!newName) { listsShowToast('Please enter a name'); return; }
+  var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
+  if (!list) return;
+  list.name = newName;
+  list.assignedTo = listsEditSelectedProfile;
+  listsSaveLocal();
+  // Update header title live
+  document.getElementById('listsDetailTitle').textContent = newName;
+  listsRenderLists();
+  listsCloseEditSheet();
+  if (listsHasAPI() && typeof window.SupabaseAPI.updateList === 'function') {
+    try {
+      await window.SupabaseAPI.updateList(listsCurrentListId, { name: newName, icon: list.type, color: listsColorToStr(list.color) });
+    } catch(err) { console.error('listsSaveEdit:', err); listsShowToast('Saved locally, sync failed'); }
+  }
+  listsShowToast('List updated');
+}
+
+async function listsDeleteList() {
+  var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
+  var listName = list ? list.name : 'this list';
+  if (!confirm('Delete "' + listName + '" and all its items?')) return;
+  var idx = listsMemo.findIndex(function(l){ return l.id === listsCurrentListId; });
+  if (idx > -1) listsMemo.splice(idx, 1);
+  listsSaveLocal();
+  listsCloseEditSheet();
+  listsShowScreen('listsScreen');
+  listsRenderLists();
+  if (listsHasAPI() && typeof window.SupabaseAPI.deleteList === 'function') {
+    try {
+      await window.SupabaseAPI.deleteList(listsCurrentListId);
+    } catch(err) { console.error('listsDeleteList:', err); listsShowToast('Deleted locally, sync failed'); }
+  }
+  listsShowToast('List deleted');
+  listsCurrentListId = null;
 }
 document.addEventListener('DOMContentLoaded', function() {
   var si = document.getElementById('listsSheetItemInput');
