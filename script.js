@@ -7884,7 +7884,7 @@ async function listsLoadLists() {
   }
   try {
     var data = await window.SupabaseAPI.getLists() || [];
-    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', assignedTo: row.assignedTo || null, items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items' }; }) }; });
+    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', assignedTo: row.assigned_to || row.assignedTo || null, items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items', displayOrder: it.display_order != null ? it.display_order : 9999 }; }).sort(function(a,b){ return a.displayOrder - b.displayOrder; }) }; });
     listsSaveLocal();
   } catch(err) { console.error('listsLoadLists:',err); listsShowToast('Could not load lists'); listsMemo=[]; }
   listsRenderLists();
@@ -7927,26 +7927,159 @@ function listsRenderLists() {
     card.className = 'list-card';
     card.style.background = list.color.card;
     var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
-    card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'');
+    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return m.id === list.assignedTo || m.name === list.assignedTo; }) : null;
+    var avatarHtml = assignedMember ? '<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">'+assignedMember.name.charAt(0).toUpperCase()+'</span>' : '';
+    card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'')+avatarHtml;
     card.onclick = function(){ listsOpenList(list.id); };
     c.appendChild(card);
   });
 }
+
+// ── drag-to-reorder state ──────────────────────────────────────────────────
+var _listsDragItem = null;       // the DOM row being dragged
+var _listsDragItemId = null;     // its item id
+var _listsDragOver = null;       // current drop-target row
+var _listsDragLongPress = null;  // long-press timer handle
 
 function listsRenderDetailItems() {
   var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
   if (!list) return;
   var c = document.getElementById('listsDetailItemList');
   var items = listsShowCompleted ? list.items : list.items.filter(function(i){ return !i.completed; });
-  if (!items.length) { c.innerHTML = '<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>'; return; }
+  if (!items.length) {
+    c.innerHTML = '<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>';
+    return;
+  }
   c.innerHTML = '';
-  items.forEach(function(item) {
+  items.forEach(function(item, idx) {
     var row = document.createElement('div');
     row.className = 'list-item-row';
-    row.innerHTML = '<div class="item-check '+(item.completed?'checked':'')+'">'+( item.completed?'✓':'' )+'</div><span class="item-text '+(item.completed?'done':'')+'">'+listsEsc(item.text)+'</span>';
-    row.onclick = function(){ listsToggleItem(item.id); };
+    row.dataset.itemId = item.id;
+    row.innerHTML =
+      '<div class="list-drag-handle">⠿</div>' +
+      '<div class="item-check '+(item.completed?'checked':'')+'">'+(item.completed?'✓':'')+'</div>' +
+      '<span class="item-text '+(item.completed?'done':'')+'" style="flex:1">'+listsEsc(item.text)+'</span>';
+
+    // Tap on text/check area toggles completion
+    row.addEventListener('click', function(e) {
+      if (_listsDragItem) return; // suppress click after drag
+      if (!e.target.classList.contains('list-drag-handle')) listsToggleItem(item.id);
+    });
+
+    // Long-press on drag handle to start drag
+    var handle = row.querySelector('.list-drag-handle');
+
+    // Touch drag
+    handle.addEventListener('touchstart', function(e) {
+      var touch = e.touches[0];
+      var startY = touch.clientY;
+      _listsDragLongPress = setTimeout(function() {
+        navigator.vibrate && navigator.vibrate(40);
+        listsStartDrag(row, item.id);
+      }, 400);
+      handle.addEventListener('touchmove', function onTMove(e2) {
+        if (Math.abs(e2.touches[0].clientY - startY) > 8) clearTimeout(_listsDragLongPress);
+      }, { once: true });
+    }, { passive: true });
+
+    handle.addEventListener('touchmove', function(e) {
+      if (!_listsDragItem) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      listsOnDragMove(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    handle.addEventListener('touchend', function(e) {
+      clearTimeout(_listsDragLongPress);
+      if (_listsDragItem) listsEndDrag();
+    });
+
+    // Mouse drag (desktop fallback)
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      listsStartDrag(row, item.id);
+      function onMove(e2) { listsOnDragMove(e2.clientX, e2.clientY); }
+      function onUp()   { listsEndDrag(); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
     c.appendChild(row);
   });
+}
+
+function listsStartDrag(row, itemId) {
+  _listsDragItem = row;
+  _listsDragItemId = itemId;
+  row.classList.add('dragging');
+}
+
+function listsOnDragMove(x, y) {
+  if (!_listsDragItem) return;
+  // Find the row under the pointer (excluding the dragged row itself)
+  _listsDragItem.style.pointerEvents = 'none';
+  var el = document.elementFromPoint(x, y);
+  _listsDragItem.style.pointerEvents = '';
+  var targetRow = el ? el.closest('.list-item-row') : null;
+
+  // Clear previous indicator
+  if (_listsDragOver && _listsDragOver !== targetRow) {
+    _listsDragOver.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+  if (targetRow && targetRow !== _listsDragItem) {
+    var rect = targetRow.getBoundingClientRect();
+    var isTop = y < rect.top + rect.height / 2;
+    targetRow.classList.toggle('drag-over-top', isTop);
+    targetRow.classList.toggle('drag-over-bottom', !isTop);
+    _listsDragOver = targetRow;
+  } else {
+    _listsDragOver = null;
+  }
+}
+
+async function listsEndDrag() {
+  if (!_listsDragItem) return;
+  var draggedId = _listsDragItemId;
+  var targetRow = _listsDragOver;
+
+  // Clean up styles
+  _listsDragItem.classList.remove('dragging');
+  if (_listsDragOver) _listsDragOver.classList.remove('drag-over-top', 'drag-over-bottom');
+
+  _listsDragItem = null;
+  _listsDragItemId = null;
+  _listsDragOver = null;
+
+  if (!targetRow) return; // dropped on nothing — no change
+
+  var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
+  if (!list) return;
+
+  var fromIdx = list.items.findIndex(function(i){ return i.id === draggedId; });
+  var toItemId = targetRow.dataset.itemId;
+  var toIdx = list.items.findIndex(function(i){ return String(i.id) === String(toItemId); });
+  if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+  // Reorder in listsMemo
+  var moved = list.items.splice(fromIdx, 1)[0];
+  // Recalculate toIdx after splice
+  toIdx = list.items.findIndex(function(i){ return String(i.id) === String(toItemId); });
+  var insertAt = targetRow.classList.contains('drag-over-top') ? toIdx : toIdx + 1;
+  list.items.splice(insertAt < 0 ? 0 : insertAt, 0, moved);
+
+  // Assign displayOrder values
+  list.items.forEach(function(it, i){ it.displayOrder = i; });
+
+  listsSaveLocal();
+  listsRenderDetailItems();
+
+  // Persist to Supabase
+  if (listsHasAPI()) {
+    list.items.forEach(function(it) {
+      window.SupabaseAPI.updateListItem(it.id, { display_order: it.displayOrder })
+        .catch(function(err){ console.error('reorder sync:', err); });
+    });
+  }
 }
 
 function listsRenderColorGrid() {
@@ -8172,7 +8305,7 @@ async function listsSaveEdit() {
   listsCloseEditSheet();
   if (listsHasAPI() && typeof window.SupabaseAPI.updateList === 'function') {
     try {
-      await window.SupabaseAPI.updateList(listsCurrentListId, { name: newName, icon: list.type, color: listsColorToStr(list.color) });
+      await window.SupabaseAPI.updateList(listsCurrentListId, { name: newName, icon: list.type, color: listsColorToStr(list.color), assigned_to: listsEditSelectedProfile });
     } catch(err) { console.error('listsSaveEdit:', err); listsShowToast('Saved locally, sync failed'); }
   }
   listsShowToast('List updated');
