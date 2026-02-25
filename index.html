@@ -1544,41 +1544,58 @@ function listsRenderEditProfileGrid() {
   grid.innerHTML = '';
   if (!members.length) {
     grid.textContent = 'No profiles set up yet.';
-    grid.style.color = '#8E8E93';
-    grid.style.fontSize = '14px';
     return;
   }
 
-  function makeAvatar(initial, color, active) {
+  function addProfile(initial, color, label, isActive, clickFn) {
+    var wrap = document.createElement('div');
+    wrap.style.cursor = 'pointer';
+    wrap.style.textAlign = 'center';
+
     var av = document.createElement('div');
-    av.style.cssText = 'width:44px;height:44px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;margin:0 auto 4px;font-family:Jost,sans-serif;transition:all 0.15s;border:3px solid '+(active ? '#14607A' : 'transparent')+';opacity:'+(active ? '1' : '0.75')+';box-shadow:'+(active ? '0 0 0 2px #fff,0 0 0 4px #14607A' : 'none')+';';
     av.textContent = initial;
-    return av;
-  }
-  function makeLabel(text, active) {
+    av.style.width = '44px';
+    av.style.height = '44px';
+    av.style.borderRadius = '50%';
+    av.style.background = color;
+    av.style.display = 'flex';
+    av.style.alignItems = 'center';
+    av.style.justifyContent = 'center';
+    av.style.fontSize = '18px';
+    av.style.fontWeight = '700';
+    av.style.color = '#fff';
+    av.style.margin = '0 auto 4px';
+    av.style.border = isActive ? '3px solid #14607A' : '3px solid transparent';
+    av.style.opacity = isActive ? '1' : '0.75';
+
     var lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:11px;text-align:center;color:'+(active ? '#14607A' : '#8E8E93')+';font-weight:'+(active ? '600' : '400')+';max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Jost,sans-serif;';
-    lbl.textContent = text;
-    return lbl;
+    lbl.textContent = label;
+    lbl.style.fontSize = '11px';
+    lbl.style.color = isActive ? '#14607A' : '#8E8E93';
+    lbl.style.fontWeight = isActive ? '600' : '400';
+    lbl.style.maxWidth = '50px';
+    lbl.style.overflow = 'hidden';
+    lbl.style.textOverflow = 'ellipsis';
+    lbl.style.whiteSpace = 'nowrap';
+
+    wrap.appendChild(av);
+    wrap.appendChild(lbl);
+    wrap.onclick = clickFn;
+    grid.appendChild(wrap);
   }
 
-  // None option
-  var noneWrap = document.createElement('div');
-  noneWrap.style.cssText = 'cursor:pointer;';
   var noneActive = listsEditSelectedProfile === null;
-  noneWrap.appendChild(makeAvatar('—', noneActive ? '#14607A' : '#E5E5EA', noneActive));
-  noneWrap.appendChild(makeLabel('None', noneActive));
-  noneWrap.onclick = function(){ listsEditSelectedProfile = null; listsRenderEditProfileGrid(); };
-  grid.appendChild(noneWrap);
+  addProfile('_', noneActive ? '#14607A' : '#E5E5EA', 'None', noneActive, function() {
+    listsEditSelectedProfile = null;
+    listsRenderEditProfileGrid();
+  });
 
   members.forEach(function(m) {
     var isActive = listsEditSelectedProfile === m.id || listsEditSelectedProfile === m.name;
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'cursor:pointer;';
-    wrap.appendChild(makeAvatar(m.name.charAt(0).toUpperCase(), m.color, isActive));
-    wrap.appendChild(makeLabel(m.name, isActive));
-    wrap.onclick = function(){ listsEditSelectedProfile = m.id; listsRenderEditProfileGrid(); };
-    grid.appendChild(wrap);
+    addProfile(m.name.charAt(0).toUpperCase(), m.color, m.name, isActive, function() {
+      listsEditSelectedProfile = m.id;
+      listsRenderEditProfileGrid();
+    });
   });
 }
 
