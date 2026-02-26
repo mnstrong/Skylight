@@ -7875,7 +7875,8 @@ async function listsLoadLists() {
     '<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading\u2026</div>';
   if (!listsHasAPI()) {
     try {
-      var s = localStorage.getItem('lists');
+      // Prefer mobile-specific key; fall back to shared 'lists' (written by desktop/sync)
+      var s = localStorage.getItem('lists_mobile') || localStorage.getItem('lists');
       listsMemo = s ? JSON.parse(s) : [];
       listsMemo.forEach(function(l){
         if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
@@ -7902,7 +7903,7 @@ async function listsLoadLists() {
   listsRenderLists();
 }
 
-function listsSaveLocal() { try { localStorage.setItem('lists', JSON.stringify(listsMemo)); } catch(e){} }
+function listsSaveLocal() { try { localStorage.setItem('lists_mobile', JSON.stringify(listsMemo)); } catch(e){} }
 
 function listsRenderLists() {
   var c = document.getElementById('listCardsContainer');
@@ -7942,7 +7943,7 @@ function listsRenderLists() {
                (typeof list.color === 'string') ? list.color + '22' : '#E8F0F5';
     card.style.background = cardBg;
     var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
-    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return m.name === list.assignedTo; }) : null;
+    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return String(m.id) === String(list.assignedTo) || m.name === list.assignedTo; }) : null;
     var avatarHtml = assignedMember ? '<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">'+assignedMember.name.charAt(0).toUpperCase()+'</span>' : '';
     card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'')+avatarHtml;
     card.onclick = function(){ listsOpenList(list.id); };
@@ -8232,7 +8233,7 @@ function listsOpenEditSheet() {
   var _at = list.assignedTo || null;
   if (_at) {
     var _members = window.familyMembers || [];
-    var _m = _members.find(function(m){ return m.name === _at || (m.id && String(m.id) === String(_at)); });
+    var _m = _members.find(function(m){ return String(m.id) === String(_at) || m.name === _at; });
     listsEditSelectedProfile = _m ? _m.name : null;
     if (_m && list.assignedTo !== _m.name) { list.assignedTo = _m.name; } // normalize stored value
   } else {
@@ -8300,6 +8301,8 @@ function listsRenderEditProfileGrid() {
     grid.appendChild(wrap);
   }
 
+  // Ensure listsEditSelectedProfile is a string for reliable comparison
+  if (listsEditSelectedProfile != null) listsEditSelectedProfile = String(listsEditSelectedProfile);
   var noneActive = listsEditSelectedProfile === null;
   addProfile('_', noneActive ? '#14607A' : '#E5E5EA', 'None', noneActive, function() {
     listsEditSelectedProfile = null;
@@ -8307,8 +8310,9 @@ function listsRenderEditProfileGrid() {
   });
 
   members.forEach(function(m) {
-    var memberKey = m.name; // always use name as key — ids may be absent
-    var isActive = listsEditSelectedProfile === memberKey;
+    // Use Supabase UUID if available, otherwise name (for offline/default members)
+    var memberKey = (m.id != null && m.id !== undefined) ? String(m.id) : m.name;
+    var isActive = listsEditSelectedProfile === memberKey || listsEditSelectedProfile === m.name;
     addProfile(m.name.charAt(0).toUpperCase(), m.color, m.name, isActive, function() {
       listsEditSelectedProfile = memberKey;
       listsRenderEditProfileGrid();
