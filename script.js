@@ -1160,7 +1160,7 @@ let visiblePeriods = {
                 groceryList = {
                     id: Date.now(),
                     name: 'Grocery List',
-                    assignedTo: member.id,
+                    assignedTo: member.id || member.name,
                     items: []
                 };
                 lists.push(groceryList);
@@ -1295,13 +1295,13 @@ let visiblePeriods = {
             // Filter lists by selected person
             let filteredLists = lists;
             if (selectedListsPerson !== 'all') {
-                filteredLists = lists.filter(list => list.assignedTo === selectedListsPerson);
+                filteredLists = lists.filter(list => String(list.assignedTo) === String(selectedListsPerson));
             }
             
             let html = '';
             
             filteredLists.forEach(list => {
-                const member = familyMembers.find(m => m.id === list.assignedTo);
+                const member = listsFindMember(list);
                 // Lists created on mobile may have no assignedTo — show them anyway
                 const memberColor = member ? member.color : '#8E8E93';
                 const memberInitial = member ? member.name.charAt(0).toUpperCase() : '?';
@@ -1921,7 +1921,7 @@ let visiblePeriods = {
                 return;
             }
             
-            const member = familyMembers.find(m => m.id === selectedAddListProfile);
+            const member = familyMembers.find(m => (m.id != null && m.id === selectedAddListProfile) || m.name === selectedAddListProfile);
             
             const newList = {
                 id: Date.now(),
@@ -1951,8 +1951,8 @@ let visiblePeriods = {
             
             let html = '';
             listMembers.forEach(member => {
-                html += `<div class="task-profile-item" onclick="selectAddListProfile('${member.id}')">
-                    <div class="task-profile-avatar" id="add-list-avatar-${member.id}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
+                html += `<div class="task-profile-item" onclick="selectAddListProfile('${member.id || member.name}')">
+                    <div class="task-profile-avatar" id="add-list-avatar-${member.id || member.name}" style="background: ${member.color}; box-shadow: 0 0 0 5px ${member.color}80">
                         ${member.name.charAt(0).toUpperCase()}
                     </div>
                     <div class="task-profile-name">${member.name}</div>
@@ -1985,7 +1985,7 @@ let visiblePeriods = {
             const item = list.items.find(i => i.id === itemId);
             if (!item) return;
             
-            const member = familyMembers.find(m => m.id === list.assignedTo);
+            const member = listsFindMember(list);
             
             // Populate detail modal
             document.getElementById('listItemDetailTitle').textContent = item.text;
@@ -2102,7 +2102,7 @@ let visiblePeriods = {
             let html = '<option value="">Select a list...</option>';
             
             lists.forEach(list => {
-                const member = familyMembers.find(m => m.id === list.assignedTo);
+                const member = listsFindMember(list);
                 html += `<option value="${list.id}">${list.name}${member ? ' (' + member.name + ')' : ''}</option>`;
             });
             
@@ -2251,7 +2251,7 @@ let visiblePeriods = {
             // Populate assigned to dropdown
             const select = document.getElementById('editListAssignedTo');
             select.innerHTML = familyMembers.map(m => 
-                `<option value="${m.id}" ${m.id === list.assignedTo ? 'selected' : ''}>${m.name}</option>`
+                `<option value="${m.id || m.name}" ${(m.id != null && m.id === list.assignedTo) || m.name === list.assignedTo ? 'selected' : ''}>${m.name}</option>`
             ).join('');
             
             document.getElementById('editListPanelOverlay').classList.add('active');
@@ -2632,9 +2632,9 @@ let visiblePeriods = {
             
             // Update lists
             lists.forEach(list => {
-                if (familyMembers.find(m => m.id === list.assignedTo && m.name === oldName)) {
+                if (familyMembers.find(m => ((m.id != null && m.id === list.assignedTo) || m.name === list.assignedTo) && m.name === oldName)) {
                     const member = familyMembers.find(m => m.name === newName);
-                    if (member) list.assignedTo = member.id;
+                    if (member) list.assignedTo = member.id || member.name;
                 }
             });
             localStorage.setItem('lists', JSON.stringify(lists));
@@ -7897,13 +7897,48 @@ async function listsLoadLists() {
   }
   try {
     var data = await window.SupabaseAPI.getLists() || [];
-    listsMemo = data.map(function(row){ return { id:row.id, name:row.name, color:listsColorFromStr(row.color), type:row.icon||'todo', assignedTo: row.assigned_to || row.assignedTo || null, items:(row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items', displayOrder: it.display_order != null ? it.display_order : 9999 }; }).sort(function(a,b){ return a.displayOrder - b.displayOrder; }) }; });
+    listsMemo = data.map(function(row){
+      var colorObj = listsColorFromStr(row.color);
+      var assignedTo = row.assigned_to || row.assignedTo || null;
+      // If no assignedTo, derive from color (desktop stores member color as list color)
+      if (!assignedTo && row.color) {
+        var colorHex = row.color.split('|')[0]; // bg color
+        var matchedMember = (window.familyMembers || []).find(function(m){ return m.color === colorHex; });
+        if (matchedMember) assignedTo = matchedMember.id || matchedMember.name;
+      }
+      return {
+        id: row.id, name: row.name, color: colorObj, type: row.icon||'todo',
+        assignedTo: assignedTo,
+        items: (row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items', displayOrder: it.display_order != null ? it.display_order : 9999 }; }).sort(function(a,b){ return a.displayOrder - b.displayOrder; })
+      };
+    });
     listsSaveLocal();
   } catch(err) { console.error('listsLoadLists:',err); listsShowToast('Could not load lists'); listsMemo=[]; }
   listsRenderLists();
 }
 
 function listsSaveLocal() { try { localStorage.setItem('lists_mobile', JSON.stringify(listsMemo)); } catch(e){} }
+
+
+// Find the family member assigned to a list.
+// Lists store assignedTo (id/name) locally, but Supabase only has list.color = member.color.
+function listsFindMember(list) {
+  var members = window.familyMembers || [];
+  // Try assignedTo first (local/mobile data)
+  if (list.assignedTo) {
+    var m = members.find(function(m) {
+      return (m.id != null && String(m.id) === String(list.assignedTo)) || m.name === list.assignedTo;
+    });
+    if (m) return m;
+  }
+  // Fall back to color match (desktop/Supabase data)
+  if (list.color) {
+    var colorHex = (typeof list.color === 'object') ? list.color.bg : list.color;
+    var m2 = members.find(function(m) { return m.color === colorHex; });
+    if (m2) return m2;
+  }
+  return null;
+}
 
 function listsRenderLists() {
   var c = document.getElementById('listCardsContainer');
@@ -7943,7 +7978,7 @@ function listsRenderLists() {
                (typeof list.color === 'string') ? list.color + '22' : '#E8F0F5';
     card.style.background = cardBg;
     var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
-    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return String(m.id) === String(list.assignedTo) || m.name === list.assignedTo; }) : null;
+    var assignedMember = listsFindMember(list);
     var avatarHtml = assignedMember ? '<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">'+assignedMember.name.charAt(0).toUpperCase()+'</span>' : '';
     card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'')+avatarHtml;
     card.onclick = function(){ listsOpenList(list.id); };
