@@ -144,7 +144,16 @@ async function loadAllDataFromSupabase() {
                 name: list.name,
                 color: list.color,
                 icon: list.icon,
-                assignedTo: list.assigned_to || null,
+                assignedTo: (function() {
+                  if (list.assigned_to) return list.assigned_to;
+                  // Derive from color: desktop stores member.color as list.color
+                  var colorHex = list.color ? list.color.split('|')[0] : null;
+                  if (colorHex && window.familyMembers) {
+                    var m = window.familyMembers.find(function(m){ return m.color === colorHex; });
+                    if (m) return m.id || m.name;
+                  }
+                  return null;
+                })(),
                 items: list.list_items ? list.list_items.map(item => ({
                     id: item.id,
                     text: item.text,
@@ -527,7 +536,15 @@ async function loadListsFromSupabase() {
             name: list.name,
             color: list.color,
             icon: list.icon,
-            assignedTo: list.assigned_to || null,
+            assignedTo: (function() {
+              if (list.assigned_to) return list.assigned_to;
+              var colorHex = list.color ? list.color.split('|')[0] : null;
+              if (colorHex && window.familyMembers) {
+                var m = window.familyMembers.find(function(m){ return m.color === colorHex; });
+                if (m) return m.id || m.name;
+              }
+              return null;
+            })(),
             items: list.list_items ? list.list_items.map(item => ({
                 id: item.id,
                 text: item.text,
