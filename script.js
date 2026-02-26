@@ -8385,12 +8385,22 @@ async function listsDeleteList() {
   listsCloseEditSheet();
   listsShowScreen('listsScreen');
   listsRenderLists();
-  if (listsHasAPI() && typeof window.SupabaseAPI.deleteList === 'function') {
+  if (listsHasAPI()) {
     try {
-      await window.SupabaseAPI.deleteList(listsCurrentListId);
-    } catch(err) { console.error('listsDeleteList:', err); listsShowToast('Deleted locally, sync failed'); }
+      // Delete all items first (in case DB lacks CASCADE)
+      if (list && list.items && list.items.length > 0 && typeof window.SupabaseAPI.deleteListItem === 'function') {
+        await Promise.all(list.items.map(function(it){ return window.SupabaseAPI.deleteListItem(it.id).catch(function(){}); }));
+      }
+      var deleted = await window.SupabaseAPI.deleteList(listsCurrentListId);
+      if (!deleted) listsShowToast('List deleted locally (sync may have failed)');
+      else listsShowToast('List deleted');
+    } catch(err) {
+      console.error('listsDeleteList:', err);
+      listsShowToast('List deleted locally (sync failed)');
+    }
+  } else {
+    listsShowToast('List deleted');
   }
-  listsShowToast('List deleted');
   listsCurrentListId = null;
 }
 document.addEventListener('DOMContentLoaded', function() {
