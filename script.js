@@ -8387,19 +8387,28 @@ async function listsDeleteList() {
   listsRenderLists();
   if (listsHasAPI()) {
     try {
-      // Delete all items first (in case DB lacks CASCADE)
+      // Delete all items first (foreign key / CASCADE safety)
       if (list && list.items && list.items.length > 0 && typeof window.SupabaseAPI.deleteListItem === 'function') {
-        await Promise.all(list.items.map(function(it){ return window.SupabaseAPI.deleteListItem(it.id).catch(function(){}); }));
+        var itemResults = await Promise.all(list.items.map(function(it){
+          return window.SupabaseAPI.deleteListItem(it.id).catch(function(e){ return false; });
+        }));
+        console.log('Item deletes:', itemResults);
       }
-      var deleted = await window.SupabaseAPI.deleteList(listsCurrentListId);
-      if (!deleted) listsShowToast('List deleted locally (sync may have failed)');
-      else listsShowToast('List deleted');
+      var listId = listsCurrentListId;
+      console.log('Deleting list id:', listId);
+      var deleted = await window.SupabaseAPI.deleteList(listId);
+      console.log('deleteList result:', deleted);
+      if (!deleted) {
+        listsShowToast('⚠️ Delete may have failed — check console');
+      } else {
+        listsShowToast('List deleted');
+      }
     } catch(err) {
-      console.error('listsDeleteList:', err);
-      listsShowToast('List deleted locally (sync failed)');
+      console.error('listsDeleteList error:', err);
+      listsShowToast('Delete failed: ' + (err.message || err));
     }
   } else {
-    listsShowToast('List deleted');
+    listsShowToast('List deleted (offline)');
   }
   listsCurrentListId = null;
 }
