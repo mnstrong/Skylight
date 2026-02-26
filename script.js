@@ -7873,11 +7873,15 @@ async function listsLoadLists() {
         if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
         if(!l.items) l.items=[];
         if(!('assignedTo' in l)) l.assignedTo = null;
-        // normalize done→completed for items created by old mobile code
+        // normalize: supabase-sync writes 'checked', mobile uses 'completed'
         l.items.forEach(function(it){
           if('done' in it && !('completed' in it)) { it.completed = it.done; delete it.done; }
+          if('checked' in it && !('completed' in it)) { it.completed = it.checked; }
           if(!it.section) it.section = 'Items';
+          if(it.displayOrder == null) it.displayOrder = 9999;
         });
+        // sort by displayOrder
+        l.items.sort(function(a,b){ return a.displayOrder - b.displayOrder; });
       });
     } catch(e){ listsMemo=[]; }
     listsRenderLists(); return;
@@ -7925,9 +7929,12 @@ function listsRenderLists() {
   listsMemo.forEach(function(list) {
     var card = document.createElement('div');
     card.className = 'list-card';
-    card.style.background = list.color.card;
+    var cardBg = (list.color && list.color.card) ? list.color.card :
+               (list.color && list.color.bg) ? list.color.bg + '22' :
+               (typeof list.color === 'string') ? list.color + '22' : '#E8F0F5';
+    card.style.background = cardBg;
     var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
-    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return m.id === list.assignedTo || m.name === list.assignedTo; }) : null;
+    var assignedMember = list.assignedTo ? (window.familyMembers || []).find(function(m){ return m.name === list.assignedTo; }) : null;
     var avatarHtml = assignedMember ? '<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">'+assignedMember.name.charAt(0).toUpperCase()+'</span>' : '';
     card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'')+avatarHtml;
     card.onclick = function(){ listsOpenList(list.id); };
@@ -8213,7 +8220,16 @@ function listsOpenEditSheet() {
   var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
   if (!list) return;
   document.getElementById('listsEditNameInput').value = list.name;
-  listsEditSelectedProfile = list.assignedTo || null;
+  // Normalize assignedTo to member name (in case it was saved as ID by old code)
+  var _at = list.assignedTo || null;
+  if (_at) {
+    var _members = window.familyMembers || [];
+    var _m = _members.find(function(m){ return m.name === _at || (m.id && String(m.id) === String(_at)); });
+    listsEditSelectedProfile = _m ? _m.name : null;
+    if (_m && list.assignedTo !== _m.name) { list.assignedTo = _m.name; } // normalize stored value
+  } else {
+    listsEditSelectedProfile = null;
+  }
   listsRenderEditProfileGrid();
   document.getElementById('listsEditSheetOverlay').classList.add('active');
   document.getElementById('listsEditSheet').classList.add('active');
@@ -8283,9 +8299,10 @@ function listsRenderEditProfileGrid() {
   });
 
   members.forEach(function(m) {
-    var isActive = listsEditSelectedProfile === m.id || listsEditSelectedProfile === m.name;
+    var memberKey = m.name; // always use name as key — ids may be absent
+    var isActive = listsEditSelectedProfile === memberKey;
     addProfile(m.name.charAt(0).toUpperCase(), m.color, m.name, isActive, function() {
-      listsEditSelectedProfile = m.id;
+      listsEditSelectedProfile = memberKey;
       listsRenderEditProfileGrid();
     });
   });
