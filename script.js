@@ -1412,6 +1412,14 @@ let visiblePeriods = {
                 </div>`;
             });
             
+            // Add "New List" button as the last column
+            html += `
+                <div class="chore-column lists-add-column" style="background:rgba(0,0,0,0.03); border:2px dashed rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; min-height:120px; cursor:pointer;" onclick="openAddListPanel()">
+                    <div style="text-align:center; color:rgba(0,0,0,0.35); pointer-events:none;">
+                        <div style="font-size:32px; line-height:1; margin-bottom:8px;">+</div>
+                        <div style="font-size:13px; font-weight:500;">New List</div>
+                    </div>
+                </div>`;
             container.innerHTML = html;
         }
         
@@ -1419,7 +1427,7 @@ let visiblePeriods = {
             const text = inputElement.value.trim();
             if (!text) return;
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             const newItem = {
@@ -1438,7 +1446,7 @@ let visiblePeriods = {
             const text = inputElement.value.trim();
             if (!text) return;
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             const newItem = {
@@ -1474,7 +1482,7 @@ let visiblePeriods = {
                 return;
             }
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             // Check if section already exists
@@ -1513,7 +1521,7 @@ let visiblePeriods = {
         }
         
         function toggleListItem(listId, itemId) {
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             const item = list.items.find(i => i.id === itemId);
@@ -1634,12 +1642,12 @@ let visiblePeriods = {
                 currentSwipeItem.style.pointerEvents = 'auto';
                 
                 if (elementBelow && elementBelow.classList.contains('list-item')) {
-                    const targetListId = parseInt(elementBelow.dataset.listId);
-                    const targetItemId = parseInt(elementBelow.dataset.itemId);
+                    const targetListId = elementBelow.dataset.listId;
+                    const targetItemId = elementBelow.dataset.itemId;
                     
                     // Only reorder within same list
-                    if (targetListId === listId && targetItemId !== itemId) {
-                        const list = lists.find(l => l.id === listId);
+                    if (String(targetListId) === String(listId) && String(targetItemId) !== String(itemId)) {
+                        const list = lists.find(l => String(l.id) === String(listId));
                         if (list) {
                             const draggedIndex = list.items.findIndex(i => i.id === itemId);
                             const targetIndex = list.items.findIndex(i => i.id === targetItemId);
@@ -1705,7 +1713,7 @@ let visiblePeriods = {
         function handleListItemDragStart(event) {
             event.stopPropagation();
             draggedListItem = event.currentTarget;
-            draggedFromList = parseInt(draggedListItem.dataset.listId);
+            draggedFromList = draggedListItem.dataset.listId;
             draggedFromSection = draggedListItem.dataset.section;
             
             draggedListItem.style.opacity = '0.4';
@@ -1971,7 +1979,7 @@ let visiblePeriods = {
             currentEditListId = listId;
             currentEditListItemId = itemId;
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             const item = list.items.find(i => i.id === itemId);
@@ -2196,7 +2204,7 @@ let visiblePeriods = {
         
         function saveNewListItem() {
             const title = document.getElementById('listItemTitle').value.trim();
-            const listId = parseInt(document.getElementById('listItemListSelect').value);
+            const listId = document.getElementById('listItemListSelect').value;
             
             if (!title) {
                 alert('Please enter an item name');
@@ -2208,7 +2216,7 @@ let visiblePeriods = {
                 return;
             }
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) {
                 alert('List not found');
                 return;
@@ -2234,7 +2242,7 @@ let visiblePeriods = {
         function openEditListPanel(listId) {
             currentEditListId = listId;
             
-            const list = lists.find(l => l.id === listId);
+            const list = lists.find(l => String(l.id) === String(listId));
             if (!list) return;
             
             // Populate form
