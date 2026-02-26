@@ -8522,7 +8522,27 @@ function handleHashChange() {
     }
 }
 
-function goToMobileHome() { window.location.hash = '#/home'; }
+function goToMobileHome() {
+    // If the mobile lists UI is open, handle back within it first
+    var listsUI = document.getElementById('mobileListsUI');
+    if (listsUI && listsUI.style.display !== 'none') {
+        // Check which screen is active
+        var detailActive = document.getElementById('listDetailScreen') && 
+                           document.getElementById('listDetailScreen').classList.contains('active');
+        var addActive = document.getElementById('addListScreen') && 
+                        document.getElementById('addListScreen').classList.contains('active');
+        if (detailActive || addActive) {
+            // Go back to the lists overview, not home
+            listsShowScreen('listsScreen');
+            listsCurrentListId = null;
+            return;
+        }
+        // Already on lists overview — go home
+        hideMobileLists();
+        return;
+    }
+    window.location.hash = '#/home';
+}
 
 window.addEventListener('hashchange', handleHashChange);
 
