@@ -2291,31 +2291,45 @@ let visiblePeriods = {
             
             const listToDelete = lists.find(l => l.id === currentEditListId);
             const index = lists.findIndex(l => l.id === currentEditListId);
-            if (index > -1) {
-                lists.splice(index, 1);
-                localStorage.setItem('lists', JSON.stringify(lists));
-                // Register in session tracker so periodic sync doesn't re-add it
-                if (!window._deletedListIds) window._deletedListIds = new Set();
-                window._deletedListIds.add(String(currentEditListId));
-                closeEditListPanel();
-                renderListsColumns();
-            }
-            // Delete from Supabase
-            if (typeof window.SupabaseAPI !== 'undefined') {
+            if (index === -1) return;
+
+            // Register in session tracker so periodic sync doesn't re-add it
+            if (!window._deletedListIds) window._deletedListIds = new Set();
+            window._deletedListIds.add(String(currentEditListId));
+
+            lists.splice(index, 1);
+            // Save WITHOUT triggering auto-sync-wrapper (which only does 'add', never 'delete')
+            const originalSetItem = Object.getOwnPropertyDescriptor(Storage.prototype, 'setItem') ? 
+                Storage.prototype.setItem : localStorage.__proto__.setItem;
+            // Use the SupabaseSync delete path directly
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function' && listToDelete) {
+                console.log('[DELETE] Calling SupabaseSync.syncList delete for:', listToDelete.name, currentEditListId);
                 try {
-                    // Delete items first (foreign key safety)
-                    if (listToDelete && listToDelete.items && listToDelete.items.length > 0) {
+                    await window.SupabaseSync.syncList(listToDelete, 'delete');
+                    console.log('[DELETE] SupabaseSync delete complete');
+                } catch(err) {
+                    console.error('[DELETE] SupabaseSync.syncList error:', err);
+                }
+            } else if (typeof window.SupabaseAPI !== 'undefined') {
+                console.log('[DELETE] Calling SupabaseAPI.deleteList for id:', currentEditListId);
+                try {
+                    if (listToDelete && listToDelete.items) {
                         await Promise.all(listToDelete.items.map(it =>
                             window.SupabaseAPI.deleteListItem(it.id).catch(() => {})
                         ));
                     }
                     const deleted = await window.SupabaseAPI.deleteList(currentEditListId);
-                    console.log('[DELETE] deleteList result:', deleted, 'id:', currentEditListId);
-                    if (!deleted) console.warn('[DELETE] Supabase delete may have failed - check RLS policies');
+                    console.log('[DELETE] result:', deleted);
                 } catch(err) {
-                    console.error('[DELETE] Supabase deleteList error:', err);
+                    console.error('[DELETE] SupabaseAPI error:', err);
                 }
+            } else {
+                console.warn('[DELETE] No Supabase connection available');
             }
+
+            localStorage.setItem('lists', JSON.stringify(lists));
+            closeEditListPanel();
+            renderListsColumns();
         }
         
         let selectedListItemMember = null;
@@ -8408,31 +8422,23 @@ async function listsDeleteList() {
   listsCloseEditSheet();
   listsShowScreen('listsScreen');
   listsRenderLists();
-  if (listsHasAPI()) {
+  // Use SupabaseSync.syncList('delete') — same path auto-sync-wrapper uses for adds
+  if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function' && list) {
     try {
-      // Delete all items first (foreign key / CASCADE safety)
-      if (list && list.items && list.items.length > 0 && typeof window.SupabaseAPI.deleteListItem === 'function') {
-        var itemResults = await Promise.all(list.items.map(function(it){
-          return window.SupabaseAPI.deleteListItem(it.id).catch(function(e){ return false; });
-        }));
-        console.log('Item deletes:', itemResults);
-      }
-      var listId = listsCurrentListId;
-      console.log('Deleting list id:', listId);
-      var deleted = await window.SupabaseAPI.deleteList(listId);
-      console.log('deleteList result:', deleted);
-      if (!deleted) {
-        listsShowToast('⚠️ Delete may have failed — check console');
-      } else {
-        listsShowToast('List deleted');
-      }
-    } catch(err) {
-      console.error('listsDeleteList error:', err);
-      listsShowToast('Delete failed: ' + (err.message || err));
-    }
-  } else {
-    listsShowToast('List deleted (offline)');
+      console.log('[DELETE mobile] syncList delete:', list.name, listsCurrentListId);
+      await window.SupabaseSync.syncList(list, 'delete');
+      console.log('[DELETE mobile] done');
+    } catch(err) { console.error('[DELETE mobile] error:', err); }
+  } else if (listsHasAPI() && list) {
+    try {
+      if (list.items) await Promise.all(list.items.map(function(it){
+        return window.SupabaseAPI.deleteListItem(it.id).catch(function(){});
+      }));
+      var deleted = await window.SupabaseAPI.deleteList(listsCurrentListId);
+      console.log('[DELETE mobile] API result:', deleted);
+    } catch(err) { console.error('[DELETE mobile] API error:', err); }
   }
+  listsShowToast('List deleted');
   listsCurrentListId = null;
 }
 document.addEventListener('DOMContentLoaded', function() {
