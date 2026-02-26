@@ -540,7 +540,12 @@ async function loadListsFromSupabase() {
         
         // Refresh UI if on lists section
         if (typeof renderSection === 'function' && currentSection === 'lists') {
-            renderSection('lists');
+            if (window.innerWidth <= 768 && typeof listsLoadLists === 'function') {
+                // Mobile: refresh the mobile overlay
+                listsLoadLists();
+            } else {
+                renderSection('lists');
+            }
         }
     }
 }
