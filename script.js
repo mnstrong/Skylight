@@ -2286,15 +2286,35 @@ let visiblePeriods = {
             renderListsColumns();
         }
         
-        function deleteList() {
+        async function deleteList() {
             if (!confirm('Are you sure you want to delete this list and all its items?')) return;
             
+            const listToDelete = lists.find(l => l.id === currentEditListId);
             const index = lists.findIndex(l => l.id === currentEditListId);
             if (index > -1) {
                 lists.splice(index, 1);
                 localStorage.setItem('lists', JSON.stringify(lists));
+                // Register in session tracker so periodic sync doesn't re-add it
+                if (!window._deletedListIds) window._deletedListIds = new Set();
+                window._deletedListIds.add(String(currentEditListId));
                 closeEditListPanel();
                 renderListsColumns();
+            }
+            // Delete from Supabase
+            if (typeof window.SupabaseAPI !== 'undefined') {
+                try {
+                    // Delete items first (foreign key safety)
+                    if (listToDelete && listToDelete.items && listToDelete.items.length > 0) {
+                        await Promise.all(listToDelete.items.map(it =>
+                            window.SupabaseAPI.deleteListItem(it.id).catch(() => {})
+                        ));
+                    }
+                    const deleted = await window.SupabaseAPI.deleteList(currentEditListId);
+                    console.log('[DELETE] deleteList result:', deleted, 'id:', currentEditListId);
+                    if (!deleted) console.warn('[DELETE] Supabase delete may have failed - check RLS policies');
+                } catch(err) {
+                    console.error('[DELETE] Supabase deleteList error:', err);
+                }
             }
         }
         
