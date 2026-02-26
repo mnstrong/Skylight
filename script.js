@@ -8376,8 +8376,10 @@ async function listsSaveEdit() {
 }
 
 async function listsDeleteList() {
+  console.log('[DELETE] listsDeleteList called, listsCurrentListId=', listsCurrentListId);
   var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
   var listName = list ? list.name : 'this list';
+  console.log('[DELETE] list found:', list ? list.name : 'NOT FOUND', 'hasAPI:', listsHasAPI());
   if (!confirm('Delete "' + listName + '" and all its items?')) return;
   var idx = listsMemo.findIndex(function(l){ return l.id === listsCurrentListId; });
   if (idx > -1) listsMemo.splice(idx, 1);
