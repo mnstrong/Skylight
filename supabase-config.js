@@ -42,7 +42,7 @@ function _sbRequest(method, table, opts) {
         'Accept':        'application/json'
     };
 
-    if (method === 'POST' || method === 'PATCH') {
+    if (method === 'POST' || method === 'PATCH' || method === 'DELETE') {
         headers['Prefer'] = 'return=representation';
     }
 
@@ -320,7 +320,12 @@ function deleteList(id) {
     return _sbRequest('DELETE', 'lists', {
         filters: [{ col: 'id', op: 'eq', val: id }]
     }).then(function(r) {
-        if (r.error) { console.error('Error deleting list:', r.error); return false; }
+        if (r.error) { console.error('Error deleting list:', r.error, 'id:', id); return false; }
+        // If RLS blocks the delete, Supabase returns 200 with empty array
+        if (Array.isArray(r.data) && r.data.length === 0) {
+            console.warn('deleteList: returned empty array — RLS may be blocking delete for id:', id);
+            return false;
+        }
         return true;
     });
 }
@@ -350,7 +355,11 @@ function deleteListItem(id) {
     return _sbRequest('DELETE', 'list_items', {
         filters: [{ col: 'id', op: 'eq', val: id }]
     }).then(function(r) {
-        if (r.error) { console.error('Error deleting list item:', r.error); return false; }
+        if (r.error) { console.error('Error deleting list item:', r.error, 'id:', id); return false; }
+        if (Array.isArray(r.data) && r.data.length === 0) {
+            console.warn('deleteListItem: empty array — RLS may be blocking delete for id:', id);
+            return false;
+        }
         return true;
     });
 }
