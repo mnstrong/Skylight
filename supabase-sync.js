@@ -144,12 +144,15 @@ async function loadAllDataFromSupabase() {
                 name: list.name,
                 color: list.color,
                 icon: list.icon,
+                assignedTo: list.assigned_to || null,
                 items: list.list_items ? list.list_items.map(item => ({
                     id: item.id,
                     text: item.text,
                     checked: item.checked,
-                    displayOrder: item.display_order
-                })) : []
+                    completed: item.checked || false,
+                    displayOrder: item.display_order,
+                    section: item.section || 'Items'
+                })).sort((a,b) => (a.displayOrder||0) - (b.displayOrder||0)) : []
             }));
             localStorage.setItem('lists', JSON.stringify(formattedLists));
             window.lists = formattedLists;
@@ -524,6 +527,7 @@ async function loadListsFromSupabase() {
             name: list.name,
             color: list.color,
             icon: list.icon,
+            assignedTo: list.assigned_to || null,
             items: list.list_items ? list.list_items.map(item => ({
                 id: item.id,
                 text: item.text,
