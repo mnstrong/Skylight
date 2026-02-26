@@ -139,7 +139,8 @@ async function loadAllDataFromSupabase() {
         // Load lists
         const allLists = await SupabaseAPI.getLists();
         if (allLists) {
-            const formattedLists = allLists.map(list => ({
+            const survivingInitial = allLists.filter(list => !window._deletedListIds.has(String(list.id)));
+            const formattedLists = survivingInitial.map(list => ({
                 id: list.id,
                 name: list.name,
                 color: list.color,
@@ -528,10 +529,15 @@ async function loadMealPlansFromSupabase() {
     }
 }
 
+// Track lists deleted this session so the periodic sync doesn't re-add them
+window._deletedListIds = window._deletedListIds || new Set();
+
 async function loadListsFromSupabase() {
     const allLists = await SupabaseAPI.getLists();
     if (allLists) {
-        const formattedLists = allLists.map(list => ({
+        // Filter out any lists deleted this session
+        const survivingLists = allLists.filter(list => !window._deletedListIds.has(String(list.id)));
+        const formattedLists = survivingLists.map(list => ({
             id: list.id,
             name: list.name,
             color: list.color,
