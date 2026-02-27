@@ -3233,26 +3233,48 @@
            TIME GRID (Schedule View)
            ============================================ */
         .sg-wrapper {
-            display: flex;
             height: calc(100vh - 120px);
             min-height: 500px;
             overflow: hidden;
             font-family: 'Jost', sans-serif;
         }
 
+        .sg-scroll-area {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #CBD5E0 #F7FAFC;
+        }
+
+        .sg-scroll-area::-webkit-scrollbar { width: 6px; height: 6px; }
+        .sg-scroll-area::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+
+        .sg-days-row {
+            display: flex;
+            min-width: 100%;
+            align-items: stretch;
+        }
+
+        /* Hours column - sticky on the left */
         .sg-hours-col {
-            width: 52px;
+            width: 48px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             border-right: 1px solid #e8e8e8;
             background: white;
-            z-index: 2;
+            position: sticky;
+            left: 0;
+            z-index: 5;
         }
 
         .sg-hours-spacer {
-            height: 88px; /* matches header + meal bar area */
+            height: 56px;
             flex-shrink: 0;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
         }
 
         .sg-hour-label {
@@ -3260,36 +3282,14 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
-            padding-right: 8px;
-            padding-top: 4px;
-            font-size: 11px;
+            padding-right: 6px;
+            padding-top: 2px;
+            font-size: 10px;
             font-weight: 500;
-            color: #999;
+            color: #aaa;
             flex-shrink: 0;
-            transform: translateY(-9px);
-        }
-
-        .sg-days-scroll {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #CBD5E0 #F7FAFC;
-        }
-
-        .sg-days-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .sg-days-scroll::-webkit-scrollbar-thumb {
-            background: #CBD5E0;
-            border-radius: 10px;
-        }
-
-        .sg-days-row {
-            display: flex;
-            min-width: 100%;
+            transform: translateY(-7px);
+            background: white;
         }
 
         .sg-day-col {
@@ -3298,11 +3298,10 @@
             border-right: 1px solid #e8e8e8;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-        .sg-day-col:last-child {
-            border-right: none;
-        }
+        .sg-day-col:last-child { border-right: none; }
 
         .sg-day-header {
             height: 56px;
@@ -3318,26 +3317,9 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .sg-day-title {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .sg-day-name {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #888;
-            letter-spacing: 0.5px;
-        }
-
-        .sg-day-num {
-            font-size: 22px;
-            font-weight: 700;
-            color: #222;
-            line-height: 1;
-        }
+        .sg-day-title { display: flex; align-items: center; gap: 4px; }
+        .sg-day-name { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+        .sg-day-num { font-size: 22px; font-weight: 700; color: #222; line-height: 1; }
 
         .sg-day-title.today .sg-day-num {
             background: #FF6B6B;
@@ -3351,17 +3333,9 @@
             font-size: 15px;
         }
 
-        .sg-day-header .schedule-add-btn {
-            font-size: 11px;
-            padding: 2px 6px;
-            opacity: 0.5;
-        }
+        .sg-day-header .schedule-add-btn { font-size: 11px; padding: 2px 6px; opacity: 0.5; }
+        .sg-day-header .schedule-add-btn:hover { opacity: 1; }
 
-        .sg-day-header .schedule-add-btn:hover {
-            opacity: 1;
-        }
-
-        /* Meal bar */
         .sg-meal-bar {
             display: flex;
             flex-direction: column;
@@ -3369,9 +3343,6 @@
             padding: 4px 6px;
             flex-shrink: 0;
             background: white;
-            position: sticky;
-            top: 56px;
-            z-index: 3;
             border-bottom: 1px solid #f0f0f0;
         }
 
@@ -3387,23 +3358,10 @@
             overflow: hidden;
         }
 
-        .sg-meal-emoji {
-            font-size: 13px;
-            flex-shrink: 0;
-        }
+        .sg-meal-emoji { font-size: 13px; flex-shrink: 0; }
+        .sg-meal-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .sg-meal-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Time grid body */
-        .sg-time-grid {
-            position: relative;
-            flex: 1;
-            cursor: pointer;
-        }
+        .sg-time-grid { position: relative; cursor: pointer; }
 
         .sg-hour-line {
             position: absolute;
@@ -3414,7 +3372,6 @@
             pointer-events: none;
         }
 
-        /* All-day events */
         .sg-allday-event {
             margin: 2px 4px;
             padding: 3px 7px;
@@ -3428,7 +3385,6 @@
             overflow: hidden;
         }
 
-        /* Timed events */
         .sg-event {
             position: absolute;
             border-radius: 8px;
@@ -3439,9 +3395,7 @@
             box-sizing: border-box;
         }
 
-        .sg-event:hover {
-            filter: brightness(0.93);
-        }
+        .sg-event:hover { filter: brightness(0.93); }
 
         .sg-event-title {
             font-size: 12px;
@@ -3454,12 +3408,7 @@
             -webkit-box-orient: vertical;
         }
 
-        .sg-event-time {
-            font-size: 11px;
-            font-weight: 500;
-            margin-top: 2px;
-            opacity: 0.8;
-        }
+        .sg-event-time { font-size: 11px; font-weight: 500; margin-top: 2px; opacity: 0.8; }
 
         .sg-event-avatar {
             position: absolute;
@@ -3476,7 +3425,6 @@
             justify-content: center;
         }
 
-        /* Current time indicator */
         .sg-current-time {
             position: absolute;
             left: 0;
@@ -3496,11 +3444,7 @@
             margin-left: -1px;
         }
 
-        .sg-current-time-line {
-            flex: 1;
-            height: 2px;
-            background: #FF6B6B;
-        }
+        .sg-current-time-line { flex: 1; height: 2px; background: #FF6B6B; }
 
         /* ============================================ */
 
