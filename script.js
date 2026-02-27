@@ -3655,12 +3655,17 @@ let visiblePeriods = {
 
                 // All-day events
                 allDayEvents.forEach(ev => {
-                    const color = getEventColor(ev);
-                    const member = getEventMember(ev);
-                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                    daysHtml += `<div class="sg-allday-event" style="background:${hexToRgba(color,0.3)};border-left:3px solid ${color};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
-                        <span>${ev.title}</span>
-                        ${initial ? `<span class="sg-event-avatar" style="background:${color}">${initial}</span>` : ''}
+                    const members = getEventMembers(ev);
+                    const color = members.length > 0 ? members[0].color : getFamilyColor();
+                    const bgStyle = members.length >= 2
+                        ? `linear-gradient(135deg, ${hexToRgba(members[0].color, 0.35)} 50%, ${hexToRgba(members[1].color, 0.35)} 50%)`
+                        : hexToRgba(color, 0.3);
+                    const avatarsHtml = members.slice(0, 2).map(m =>
+                        `<span class="sg-allday-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</span>`
+                    ).join('');
+                    daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};border-left:3px solid ${color};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
+                        <span class="sg-allday-title">${ev.title}</span>
+                        ${avatarsHtml ? `<div class="sg-allday-avatars">${avatarsHtml}</div>` : ''}
                     </div>`;
                 });
 
