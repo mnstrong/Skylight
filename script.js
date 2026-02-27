@@ -3453,27 +3453,107 @@ let visiblePeriods = {
             if (window.innerWidth <= 768) {
                 startDate = getWeekStart(today);
             } else {
-                startDate = new Date(currentDate);
+                startDate = getWeekStart(new Date(currentDate));
             }
             
-            // Get the week start to calculate next week's dates
-            const weekStart = getWeekStart(startDate);
-            const nextWeekStart = new Date(weekStart);
-            nextWeekStart.setDate(nextWeekStart.getDate() + 7);
-            const nextWeekEnd = new Date(nextWeekStart);
-            nextWeekEnd.setDate(nextWeekEnd.getDate() + 6);
-            
-            const nextWeekStartStr = nextWeekStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-            const nextWeekEndStr = nextWeekEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-            
-            let html = '';
-            
-            // On mobile show only 7 days (current week), on desktop show scheduleDaysToShow
-            const daysToShow = window.innerWidth <= 768 ? 7 : scheduleDaysToShow;
+            // On mobile show only 7 days (current week), on desktop show 7 days (week)
+            const daysToShow = 7;
             
             // Get all events ONCE outside the loop
             const allEvents = getAllEvents();
-            
+
+            // Time grid settings
+            const START_HOUR = 6;   // 6 AM
+            const END_HOUR = 22;    // 10 PM
+            const TOTAL_HOURS = END_HOUR - START_HOUR;
+            const HOUR_HEIGHT = 60; // px per hour
+            const GRID_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT;
+
+            // Helper: parse time string "HH:MM" to minutes from midnight
+            function parseTimeToMinutes(t) {
+                if (!t) return null;
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
+            }
+
+            // Helper: minutes from midnight to px offset from grid top
+            function minutesToPx(mins) {
+                const startMins = START_HOUR * 60;
+                return ((mins - startMins) / 60) * HOUR_HEIGHT;
+            }
+
+            // Helper: event duration in px
+            function durationToPx(startMins, endMins) {
+                const dur = Math.max(endMins - startMins, 30); // min 30 min height
+                return (dur / 60) * HOUR_HEIGHT;
+            }
+
+            // Overlap layout: assign columns to overlapping events
+            function layoutEvents(events) {
+                // Only timed events
+                const timed = events.filter(e => e.time);
+                // Sort by start time
+                timed.sort((a, b) => a.time.localeCompare(b.time));
+
+                const columns = []; // each column is array of events
+                const eventLayouts = new Map();
+
+                timed.forEach(ev => {
+                    const startMins = parseTimeToMinutes(ev.time);
+                    const endMins = ev.endTime ? parseTimeToMinutes(ev.endTime) : startMins + 60;
+                    
+                    // Find the first column where this event doesn't overlap
+                    let placed = false;
+                    for (let ci = 0; ci < columns.length; ci++) {
+                        const col = columns[ci];
+                        const lastEv = col[col.length - 1];
+                        const lastEnd = lastEv.endTime ? parseTimeToMinutes(lastEv.endTime) : parseTimeToMinutes(lastEv.time) + 60;
+                        if (startMins >= lastEnd) {
+                            col.push(ev);
+                            eventLayouts.set(ev.id, { col: ci, totalCols: 1 });
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed) {
+                        columns.push([ev]);
+                        eventLayouts.set(ev.id, { col: columns.length - 1, totalCols: 1 });
+                    }
+                });
+
+                // Second pass: for each event, find max overlapping columns
+                timed.forEach(ev => {
+                    const startMins = parseTimeToMinutes(ev.time);
+                    const endMins = ev.endTime ? parseTimeToMinutes(ev.endTime) : startMins + 60;
+                    let maxCol = 0;
+                    timed.forEach(other => {
+                        if (other.id === ev.id) return;
+                        const oStart = parseTimeToMinutes(other.time);
+                        const oEnd = other.endTime ? parseTimeToMinutes(other.endTime) : oStart + 60;
+                        // Check overlap
+                        if (startMins < oEnd && endMins > oStart) {
+                            const oLayout = eventLayouts.get(other.id);
+                            if (oLayout) maxCol = Math.max(maxCol, oLayout.col);
+                        }
+                    });
+                    const layout = eventLayouts.get(ev.id);
+                    if (layout) layout.totalCols = maxCol + 1;
+                });
+
+                return eventLayouts;
+            }
+
+            // Build hour labels column HTML
+            let hoursHtml = `<div class="sg-hours-col">`;
+            hoursHtml += `<div class="sg-hours-spacer"></div>`; // space for day header + meal bar
+            for (let h = START_HOUR; h <= END_HOUR; h++) {
+                const label = h === 0 ? '12 AM' : h < 12 ? `${h} am` : h === 12 ? '12 pm' : `${h - 12} pm`;
+                hoursHtml += `<div class="sg-hour-label">${label}</div>`;
+            }
+            hoursHtml += `</div>`;
+
+            // Build day columns
+            let daysHtml = '';
             for (let i = 0; i < daysToShow; i++) {
                 const day = new Date(startDate);
                 day.setDate(startDate.getDate() + i);
@@ -3484,49 +3564,131 @@ let visiblePeriods = {
                 const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
                 const dayNum = day.getDate();
                 
-                const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
-                    if (!a.time) return -1;
-                    if (!b.time) return 1;
-                    return a.time.localeCompare(b.time);
-                });
+                const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e));
+                const timedEvents = dayEvents.filter(e => e.time).sort((a, b) => a.time.localeCompare(b.time));
+                const allDayEvents = dayEvents.filter(e => !e.time);
 
-                html += `<div class="schedule-day-column">`;
-                
-                // Header with day title and add button
-                html += `<div class="schedule-day-header">
-                    <div class="schedule-day-title ${isToday ? 'today' : ''}">
-                        <div class="week-day-name">${dayName}</div>
-                        <div class="week-day-number">${dayNum}</div>
+                // Get meals for this day
+                const dayMeals = mealPlan.filter(m => m.date === dateStr);
+
+                // Overlap layout
+                const layouts = layoutEvents(timedEvents);
+
+                daysHtml += `<div class="sg-day-col">`;
+
+                // Day header
+                daysHtml += `<div class="sg-day-header">
+                    <div class="sg-day-title ${isToday ? 'today' : ''}">
+                        <span class="sg-day-name">${dayName}</span>
+                        <span class="sg-day-num">${dayNum}</span>
                     </div>
-                    <button class="schedule-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add Event</button>
+                    <button class="schedule-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add</button>
                 </div>`;
-                
-                if (dayEvents.length === 0) {
-                    html += `<div style="text-align: center; color: #999; padding: 20px; font-style: italic;">No events</div>`;
-                } else {
-                    html += '<div class="schedule-event-list">';
-                    dayEvents.forEach(event => {
-                        const member = getEventMember(event);
-                        const color = getEventColor(event);
-                        const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                        
-                        const todayClass = isToday ? 'today' : '';
-                        html += `<div class="schedule-event ${todayClass}" data-day-num="${dayNum}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
-                            <div class="schedule-event-content">
-                                <div class="schedule-event-time" style="color: ${color}">${event.time || 'All day'}</div>
-                                <div class="schedule-event-title">${event.title}</div>
-                                ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
-                            </div>
-                            ${initial ? `<div class="schedule-event-dot" style="background: ${color}">${initial}</div>` : ''}
+
+                // Meal banner(s) at top
+                if (dayMeals.length > 0) {
+                    daysHtml += `<div class="sg-meal-bar">`;
+                    dayMeals.forEach(meal => {
+                        const cat = mealCategories.find(c => c.name === meal.mealType) || { color: '#FFD9A3' };
+                        const mealEmoji = meal.mealType === 'Breakfast' ? '🌅' : meal.mealType === 'Lunch' ? '☀️' : meal.mealType === 'Dinner' ? '🍽️' : '🍎';
+                        daysHtml += `<div class="sg-meal-pill" style="background:${cat.color};" onclick="event.stopPropagation()">
+                            <span class="sg-meal-emoji">${mealEmoji}</span>
+                            <span class="sg-meal-name">${meal.recipeName || meal.name || 'Meal'}</span>
                         </div>`;
                     });
-                    html += '</div>';
+                    daysHtml += `</div>`;
                 }
-                
-                html += '</div>';
+
+                // Time grid
+                daysHtml += `<div class="sg-time-grid" style="height:${GRID_HEIGHT}px;" onclick="openEventModalForDate('${dateStr}')">`;
+
+                // Hour lines
+                for (let h = 0; h < TOTAL_HOURS; h++) {
+                    daysHtml += `<div class="sg-hour-line" style="top:${h * HOUR_HEIGHT}px"></div>`;
+                }
+
+                // All-day events
+                allDayEvents.forEach(ev => {
+                    const color = getEventColor(ev);
+                    const member = getEventMember(ev);
+                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                    daysHtml += `<div class="sg-allday-event" style="background:${hexToRgba(color,0.3)};border-left:3px solid ${color};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
+                        <span>${ev.title}</span>
+                        ${initial ? `<span class="sg-event-avatar" style="background:${color}">${initial}</span>` : ''}
+                    </div>`;
+                });
+
+                // Timed events
+                timedEvents.forEach(ev => {
+                    const startMins = parseTimeToMinutes(ev.time);
+                    if (startMins === null) return;
+                    const endMins = ev.endTime ? parseTimeToMinutes(ev.endTime) : startMins + 60;
+                    const top = minutesToPx(startMins);
+                    const height = durationToPx(startMins, endMins);
+                    
+                    // Skip events outside visible range
+                    if (top > GRID_HEIGHT || top + height < 0) return;
+
+                    const color = getEventColor(ev);
+                    const member = getEventMember(ev);
+                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                    
+                    const layout = layouts.get(ev.id) || { col: 0, totalCols: 1 };
+                    const widthPct = 100 / layout.totalCols;
+                    const leftPct = layout.col * widthPct;
+
+                    const startH = Math.floor(startMins / 60);
+                    const startM = startMins % 60;
+                    const endH = Math.floor(endMins / 60);
+                    const endM = endMins % 60;
+                    const fmt = (h, m) => {
+                        const period = h >= 12 ? 'PM' : 'AM';
+                        const dh = h % 12 || 12;
+                        return m === 0 ? `${dh} ${period}` : `${dh}:${String(m).padStart(2,'0')} ${period}`;
+                    };
+                    const timeLabel = `${fmt(startH, startM)} – ${fmt(endH, endM)}`;
+
+                    daysHtml += `<div class="sg-event" style="
+                        top:${Math.max(0,top)}px;
+                        height:${height}px;
+                        left:${leftPct}%;
+                        width:${widthPct - 1}%;
+                        background:${hexToRgba(color, 0.28)};
+                        border-left:3px solid ${color};
+                    " onclick="event.stopPropagation();showEventDetails('${ev.id}')">
+                        <div class="sg-event-title">${ev.title}</div>
+                        ${height > 35 ? `<div class="sg-event-time" style="color:${color}">${timeLabel}</div>` : ''}
+                        ${initial ? `<span class="sg-event-avatar" style="background:${color}">${initial}</span>` : ''}
+                    </div>`;
+                });
+
+                // Current time indicator
+                if (isToday) {
+                    const now = new Date();
+                    const nowMins = now.getHours() * 60 + now.getMinutes();
+                    const nowTop = minutesToPx(nowMins);
+                    if (nowTop >= 0 && nowTop <= GRID_HEIGHT) {
+                        daysHtml += `<div class="sg-current-time" style="top:${nowTop}px">
+                            <div class="sg-current-time-dot"></div>
+                            <div class="sg-current-time-line"></div>
+                        </div>`;
+                    }
+                }
+
+                daysHtml += `</div>`; // end sg-time-grid
+                daysHtml += `</div>`; // end sg-day-col
             }
-            
-            container.innerHTML = html;
+
+            container.innerHTML = `<div class="sg-wrapper">${hoursHtml}<div class="sg-days-scroll"><div class="sg-days-row">${daysHtml}</div></div></div>`;
+
+            // Auto-scroll to current time or 8am
+            setTimeout(() => {
+                const now = new Date();
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                const scrollTo = minutesToPx(nowMins) - 80;
+                const gridWrapper = container.querySelector('.sg-days-scroll');
+                if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
+            }, 50);
         }
 
         function switchSection(section) {
