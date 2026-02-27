@@ -2944,23 +2944,31 @@ let visiblePeriods = {
             const merged = [];
             const seen = new Map(); // key -> index in merged
 
-            allRaw.forEach(ev => {
-                const key = `${ev.title}__${ev.date}__${ev.time || ''}__${ev.endTime || ''}`;
+            allRaw.forEach(function(ev) {
+                var key = (ev.title || '') + '__' + (ev.date || '') + '__' + (ev.time || '') + '__' + (ev.endTime || '');
                 if (seen.has(key)) {
-                    const existing = merged[seen.get(key)];
+                    var existing = merged[seen.get(key)];
                     // Merge members
-                    const existingMembers = existing.members && existing.members.length > 0
+                    var existingMembers = (existing.members && existing.members.length > 0)
                         ? existing.members
                         : (existing.member ? [existing.member] : []);
-                    const newMember = ev.member;
-                    if (newMember && !existingMembers.includes(newMember)) {
+                    var newMember = ev.member;
+                    if (newMember && existingMembers.indexOf(newMember) === -1) {
                         existingMembers.push(newMember);
+                    }
+                    // Also merge any members array from the duplicate
+                    if (ev.members && ev.members.length > 0) {
+                        ev.members.forEach(function(name) {
+                            if (name && existingMembers.indexOf(name) === -1) {
+                                existingMembers.push(name);
+                            }
+                        });
                     }
                     existing.members = existingMembers;
                     existing.member = existingMembers[0] || '';
                 } else {
                     // Normalize members array
-                    const clone = Object.assign({}, ev);
+                    var clone = Object.assign({}, ev);
                     if (!clone.members || clone.members.length === 0) {
                         clone.members = clone.member ? [clone.member] : [];
                     }
@@ -2989,16 +2997,23 @@ let visiblePeriods = {
 
         function getEventMembers(event) {
             // Returns array of resolved member objects for an event
-            const names = (event.members && event.members.length > 0) ? event.members : (event.member ? [event.member] : []);
-            const resolved = names.map(name => familyMembers.find(m => m.name === name)).filter(Boolean);
+            var names = [];
+            if (event.members && event.members.length > 0) {
+                names = event.members;
+            } else if (event.member) {
+                names = [event.member];
+            }
+            var resolved = names.map(function(name) {
+                return familyMembers.find(function(m) { return m.name === name; });
+            }).filter(Boolean);
             if (resolved.length > 0) return resolved;
             // Fallback: check notes using whole-word match to avoid partial name matches
             if (event.notes) {
-                const notesLower = event.notes.toLowerCase();
-                const match = familyMembers.find(m => {
+                var notesLower = event.notes.toLowerCase();
+                var match = familyMembers.find(function(m) {
                     if (m.isGoogleCalendar || m.name === 'Family') return false;
-                    const nameLower = m.name.toLowerCase();
-                    return new RegExp('\\b' + nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(notesLower);
+                    var nameLower = m.name.toLowerCase();
+                    return new RegExp('\b' + nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\$&') + '\b').test(notesLower);
                 });
                 if (match) return [match];
             }
