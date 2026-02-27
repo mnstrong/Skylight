@@ -2684,11 +2684,12 @@ let visiblePeriods = {
         }
         
         function isEventVisible(event) {
-            // Check if event's assigned member is in active filter
-            if (event.member && calendarFilterActive.includes(event.member)) return true;
+            // Check if event's assigned member(s) are in active filter
+            const memberList = (event.members && event.members.length > 0) ? event.members : (event.member ? [event.member] : []);
+            if (memberList.length > 0 && memberList.some(m => calendarFilterActive.includes(m))) return true;
             
             // If no assigned member, show unless a filter is narrowing to specific people
-            if (!event.member) {
+            if (memberList.length === 0) {
                 // If all members are active (no filtering), show unassigned events
                 const allActive = calendarFilterActive.length === familyMembers.length;
                 if (allActive) return true;
@@ -2952,6 +2953,20 @@ let visiblePeriods = {
             // Get the Family profile color as the default for unassigned events
             const familyProfile = familyMembers.find(m => m.name === 'Family');
             return familyProfile ? familyProfile.color : '#9B59B6';
+        }
+
+        function getEventMembers(event) {
+            // Returns array of resolved member objects for an event
+            const names = (event.members && event.members.length > 0) ? event.members : (event.member ? [event.member] : []);
+            const resolved = names.map(name => familyMembers.find(m => m.name === name)).filter(Boolean);
+            if (resolved.length > 0) return resolved;
+            // Fallback: check notes
+            if (event.notes) {
+                const notesLower = event.notes.toLowerCase();
+                const match = familyMembers.find(m => !m.isGoogleCalendar && m.name !== 'Family' && notesLower.indexOf(m.name.toLowerCase()) !== -1);
+                if (match) return [match];
+            }
+            return [];
         }
 
         function getEventMember(event) {
@@ -3628,10 +3643,7 @@ let visiblePeriods = {
                     // Skip events outside visible range
                     if (top > GRID_HEIGHT || top + height < 0) return;
 
-                    const color = getEventColor(ev);
-                    const member = getEventMember(ev);
-                    const initial = member ? member.name.charAt(0).toUpperCase() : '';
-                    
+                    const members = getEventMembers(ev);
                     const layout = layouts.get(ev.id) || { col: 0, totalCols: 1 };
                     const widthPct = 100 / layout.totalCols;
                     const leftPct = layout.col * widthPct;
@@ -3647,17 +3659,37 @@ let visiblePeriods = {
                     };
                     const timeLabel = `${fmt(startH, startM)} – ${fmt(endH, endM)}`;
 
+                    // Build background and border based on number of members
+                    let bgStyle, borderStyle, timeColor;
+                    if (members.length >= 2) {
+                        const c1 = members[0].color;
+                        const c2 = members[1].color;
+                        bgStyle = `background: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
+                        borderStyle = `border-left: 3px solid ${c1}`;
+                        timeColor = c1;
+                    } else {
+                        const color = members.length === 1 ? members[0].color : getFamilyColor();
+                        bgStyle = `background: ${hexToRgba(color, 0.28)}`;
+                        borderStyle = `border-left: 3px solid ${color}`;
+                        timeColor = color;
+                    }
+
+                    // Build avatars for all members
+                    const avatarsHtml = members.slice(0, 2).map((m, i) =>
+                        `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
+                    ).join('');
+
                     daysHtml += `<div class="sg-event" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
                         width:${widthPct - 1}%;
-                        background:${hexToRgba(color, 0.28)};
-                        border-left:3px solid ${color};
+                        ${bgStyle};
+                        ${borderStyle};
                     " onclick="event.stopPropagation();showEventDetails('${ev.id}')">
                         <div class="sg-event-title">${ev.title}</div>
-                        ${height > 35 ? `<div class="sg-event-time" style="color:${color}">${timeLabel}</div>` : ''}
-                        ${initial ? `<span class="sg-event-avatar" style="background:${color}">${initial}</span>` : ''}
+                        ${height > 35 ? `<div class="sg-event-time" style="color:${timeColor}">${timeLabel}</div>` : ''}
+                        ${avatarsHtml}
                     </div>`;
                 });
 
@@ -7146,7 +7178,8 @@ function checkAllTasksComplete(memberName) {
                 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
                 notes: document.getElementById('eventNotes').value,
                 isAllDay: isAllDay,
-                member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || '')
+                member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || ''),
+                members: selectedEventProfiles.length > 0 ? [...selectedEventProfiles] : (selectedEventProfile ? [selectedEventProfile] : [])
             };
             
             // Generate recurring events (returns [baseEvent] if no repeat)
@@ -8849,7 +8882,7 @@ function updateEvent(eventId) {
     var member = '';
     if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
     else if (typeof selectedEventProfile !== 'undefined') member = selectedEventProfile;
-    var eventData = { title: document.getElementById('eventTitle').value, date: document.getElementById('eventDate').value, endDate: document.getElementById('eventEndDate').value, time: isAllDay?'':document.getElementById('eventTime').value, endTime: isAllDay?'':document.getElementById('eventEndTime').value, notes: document.getElementById('eventNotes').value, isAllDay: isAllDay, member: member };
+    var eventData = { title: document.getElementById('eventTitle').value, date: document.getElementById('eventDate').value, endDate: document.getElementById('eventEndDate').value, time: isAllDay?'':document.getElementById('eventTime').value, endTime: isAllDay?'':document.getElementById('eventEndTime').value, notes: document.getElementById('eventNotes').value, isAllDay: isAllDay, member: member, members: (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) ? [...selectedEventProfiles] : (member ? [member] : []) };
     var evs = window.events || [];
     var found = false;
     for (var i = 0; i < evs.length; i++) { if (evs[i].id == eventId) { for (var k in eventData) evs[i][k] = eventData[k]; found = true; break; } }
