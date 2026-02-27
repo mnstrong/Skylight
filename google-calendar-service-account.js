@@ -210,13 +210,20 @@ async function loadGoogleCalendarEvents() {
             var end = event.end.dateTime || event.end.date;
             var endDate = new Date(end);
 
-            // Adjust all-day event end date (Google uses exclusive end date)
-            // Use UTC methods to avoid timezone-offset bugs (e.g. Phoenix UTC-7)
-            var finalEndDate = endDate.toISOString().split('T')[0];
+            // Compute finalEndDate using LOCAL date to avoid UTC offset shifting the day
+            var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+            var localEndDate = function(d) {
+                return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+            };
+            var finalEndDate;
             if (event.end.date && !event.end.dateTime) {
+                // All-day: Google end date is exclusive, subtract 1 day using UTC to avoid DST issues
                 var adjustedEnd = new Date(endDate);
                 adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() - 1);
                 finalEndDate = adjustedEnd.toISOString().split('T')[0];
+            } else {
+                // Timed event: use local date so Phoenix UTC-7 events don't bleed into next day
+                finalEndDate = localEndDate(endDate);
             }
 
             // Auto-assign member if the function exists
