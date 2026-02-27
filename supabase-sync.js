@@ -432,6 +432,65 @@ async function syncListItem(listId, item, operation = 'update') {
 }
 
 // ============================================
+// CALENDAR EVENT SYNC
+// ============================================
+
+async function syncCalendarEvent(event, operation) {
+    operation = operation || 'update';
+    if (!syncEnabled || !isSupabaseReady) return;
+
+    try {
+        // Resolve family_member_id from member name using loaded familyMembers
+        var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        var memberName = event.member || '';
+        var memberObj = null;
+        for (var mi = 0; mi < members.length; mi++) {
+            if (members[mi].name === memberName) { memberObj = members[mi]; break; }
+        }
+        var familyMemberId = memberObj ? (memberObj.id || null) : null;
+
+        // Build ISO datetime strings from date + time fields
+        function buildDateTime(dateStr, timeStr) {
+            if (!dateStr) return null;
+            if (!timeStr) return dateStr; // all-day: date only
+            return dateStr + 'T' + timeStr + ':00';
+        }
+
+        var startTime = buildDateTime(event.date, event.isAllDay ? null : event.time);
+        var endTime   = buildDateTime(
+            event.endDate || event.date,
+            event.isAllDay ? null : (event.endTime || event.time)
+        );
+
+        var dbEvent = {
+            title:            event.title || '',
+            description:      event.notes || '',
+            start_time:       startTime,
+            end_time:         endTime,
+            all_day:          event.isAllDay ? true : false,
+            family_member_id: familyMemberId,
+            google_event_id:  event.googleId || null
+        };
+
+        if (operation === 'add') {
+            var newRow = await SupabaseAPI.addCalendarEvent(dbEvent);
+            if (newRow) {
+                event.id = newRow.id;
+                console.log('✓ Calendar event added to Supabase:', event.title);
+            }
+        } else if (operation === 'update') {
+            await SupabaseAPI.updateCalendarEvent(event.id, dbEvent);
+            console.log('✓ Calendar event updated in Supabase:', event.title);
+        } else if (operation === 'delete') {
+            await SupabaseAPI.deleteCalendarEvent(event.id);
+            console.log('✓ Calendar event deleted from Supabase:', event.title);
+        }
+    } catch (error) {
+        console.error('Error syncing calendar event:', error);
+    }
+}
+
+// ============================================
 // REAL-TIME LISTENERS
 // ============================================
 
@@ -666,6 +725,7 @@ window.SupabaseSync = {
     syncMealPlanEntry,
     syncList,
     syncListItem,
+    syncCalendarEvent,
     isReady: function() { return isSupabaseReady; },
     isEnabled: function() { return syncEnabled; }
 };
