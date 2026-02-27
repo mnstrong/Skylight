@@ -8250,9 +8250,11 @@ async function listsAddItemToList() {
   if (!list) return;
   var btn = document.getElementById('listsSheetAddBtn');
   btn.disabled = true;
+  console.log('[ADD ITEM] listId:', listsCurrentListId, 'hasAPI:', listsHasAPI(), 'text:', text);
   if (listsHasAPI()) {
     try {
       var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
+      console.log('[ADD ITEM] Supabase result:', row);
       if (row) { list.items.push({ id:row.id, text:text, completed:false, section:'Items' }); listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists(); }
       else { listsShowToast('Failed to add item'); }
     } catch(err) { console.error(err); listsShowToast('Error adding item'); }
