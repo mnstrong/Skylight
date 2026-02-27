@@ -3513,8 +3513,8 @@ let visiblePeriods = {
             const allEvents = getAllEvents();
 
             // Time grid settings
-            const START_HOUR = 6;   // 6 AM
-            const END_HOUR = 22;    // 10 PM
+            const START_HOUR = 0;   // Midnight - ensures no early events are cut off
+            const END_HOUR = 23;    // 11 PM
             const TOTAL_HOURS = END_HOUR - START_HOUR;
             const HOUR_HEIGHT = 60; // px per hour
             const GRID_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT;
