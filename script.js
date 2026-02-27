@@ -7252,6 +7252,13 @@ function checkAllTasksComplete(memberName) {
             }
             localStorage.setItem('events', JSON.stringify(events));
             window.events = events; // Keep window reference in sync
+
+            // Sync to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncCalendarEvent === 'function') {
+                for (const ev of newEvents) {
+                    try { await window.SupabaseSync.syncCalendarEvent(ev, 'add'); } catch(e) {}
+                }
+            }
             
             // Also create in Google Calendar if connected
             if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) {
@@ -7437,6 +7444,12 @@ function checkAllTasksComplete(memberName) {
                     localStorage.setItem('events', JSON.stringify(events));
                     window.events = events;
                 }
+                // Sync delete to Supabase
+                try {
+                    if (window.SupabaseSync && typeof window.SupabaseSync.syncCalendarEvent === 'function') {
+                        window.SupabaseSync.syncCalendarEvent(ev, 'delete');
+                    }
+                } catch(e) {}
             }
 
             // Also remove from GCal if connected
@@ -8929,7 +8942,12 @@ function editEventFromDetail() {
     document.getElementById('eventAllDayToggle').checked = evIsAllDay;
     if (!evIsAllDay) { document.getElementById('eventTime').value = evTime; document.getElementById('eventEndTime').value = evEndTime; }
     if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
-    if (typeof selectedEventProfiles !== 'undefined') { selectedEventProfile = ev.member || ''; selectedEventProfiles = ev.member ? [ev.member] : []; }
+    if (typeof selectedEventProfiles !== 'undefined') {
+        selectedEventProfile = ev.member || '';
+        // Load the full members array so all assigned profiles are pre-selected
+        var evMembers = (ev.members && ev.members.length > 0) ? ev.members : (ev.member ? [ev.member] : []);
+        selectedEventProfiles = evMembers.slice();
+    }
     if (typeof renderEventProfileGrid === 'function') renderEventProfileGrid();
     document.getElementById('eventPanelOverlay').classList.add('active');
     document.getElementById('eventModal').classList.add('active');
@@ -8943,22 +8961,53 @@ function updateEvent(eventId) {
     var member = '';
     if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
     else if (typeof selectedEventProfile !== 'undefined') member = selectedEventProfile;
-    var eventData = { title: document.getElementById('eventTitle').value, date: document.getElementById('eventDate').value, endDate: document.getElementById('eventEndDate').value, time: isAllDay?'':document.getElementById('eventTime').value, endTime: isAllDay?'':document.getElementById('eventEndTime').value, notes: document.getElementById('eventNotes').value, isAllDay: isAllDay, member: member, members: (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) ? [...selectedEventProfiles] : (member ? [member] : []) };
+    var membersArr = (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) ? selectedEventProfiles.slice() : (member ? [member] : []);
+    var eventData = {
+        title: document.getElementById('eventTitle').value,
+        date: document.getElementById('eventDate').value,
+        endDate: document.getElementById('eventEndDate').value,
+        time: isAllDay ? '' : document.getElementById('eventTime').value,
+        endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
+        notes: document.getElementById('eventNotes').value,
+        isAllDay: isAllDay,
+        member: member,
+        members: membersArr
+    };
     var evs = window.events || [];
     var found = false;
-    for (var i = 0; i < evs.length; i++) { if (evs[i].id == eventId) { for (var k in eventData) evs[i][k] = eventData[k]; found = true; break; } }
-    if (found) { try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e){} window.events = evs; }
+    var updatedEvent = null;
+    for (var i = 0; i < evs.length; i++) {
+        if (evs[i].id == eventId) {
+            for (var k in eventData) evs[i][k] = eventData[k];
+            updatedEvent = evs[i];
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
+        window.events = evs;
+
+        // Sync to Supabase
+        try {
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncCalendarEvent === 'function') {
+                window.SupabaseSync.syncCalendarEvent(updatedEvent, 'update');
+            }
+        } catch(syncErr) {
+            console.warn('[updateEvent] Supabase sync error:', syncErr);
+        }
+    }
     window._editingEventId = null;
     var btn = document.getElementById('eventSaveBtn');
     if (btn) btn.textContent = 'Add Event';
     if (typeof closeModal === 'function') closeModal('eventModal');
     if (typeof currentView !== 'undefined') {
-        if (currentView==='month' && typeof renderCalendar==='function') renderCalendar();
-        else if (currentView==='week' && typeof renderWeekView==='function') renderWeekView();
-        else if (currentView==='schedule' && typeof renderScheduleView==='function') renderScheduleView();
-        else if (currentView==='day' && typeof renderDayView==='function') renderDayView();
+        if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+        else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+        else if (currentView === 'schedule' && typeof renderScheduleView === 'function') renderScheduleView();
+        else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
     }
-    try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) GoogleCalendar.update(eventId, eventData); } catch(e){}
+    try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) GoogleCalendar.update(eventId, eventData); } catch(e) {}
 }
 
 function openProfileSettings() {
