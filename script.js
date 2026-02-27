@@ -2992,10 +2992,14 @@ let visiblePeriods = {
             const names = (event.members && event.members.length > 0) ? event.members : (event.member ? [event.member] : []);
             const resolved = names.map(name => familyMembers.find(m => m.name === name)).filter(Boolean);
             if (resolved.length > 0) return resolved;
-            // Fallback: check notes
+            // Fallback: check notes using whole-word match to avoid partial name matches
             if (event.notes) {
                 const notesLower = event.notes.toLowerCase();
-                const match = familyMembers.find(m => !m.isGoogleCalendar && m.name !== 'Family' && notesLower.indexOf(m.name.toLowerCase()) !== -1);
+                const match = familyMembers.find(m => {
+                    if (m.isGoogleCalendar || m.name === 'Family') return false;
+                    const nameLower = m.name.toLowerCase();
+                    return new RegExp('\\b' + nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(notesLower);
+                });
                 if (match) return [match];
             }
             return [];
@@ -3009,7 +3013,11 @@ let visiblePeriods = {
             }
             if (event.notes) {
                 const notesLower = event.notes.toLowerCase();
-                const match = familyMembers.find(m => !m.isGoogleCalendar && m.name !== 'Family' && notesLower.indexOf(m.name.toLowerCase()) !== -1);
+                const match = familyMembers.find(m => {
+                    if (m.isGoogleCalendar || m.name === 'Family') return false;
+                    const nameLower = m.name.toLowerCase();
+                    return new RegExp('\\b' + nameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(notesLower);
+                });
                 if (match) return match;
             }
             return null;
