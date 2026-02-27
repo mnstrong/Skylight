@@ -1442,7 +1442,7 @@ let visiblePeriods = {
             renderListsColumns();
         }
         
-        function addListItemToSection(listId, sectionName, inputElement) {
+        async function addListItemToSection(listId, sectionName, inputElement) {
             const text = inputElement.value.trim();
             if (!text) return;
             
@@ -1457,9 +1457,14 @@ let visiblePeriods = {
             };
             
             list.items.push(newItem);
-            localStorage.setItem('lists', JSON.stringify(lists));
             inputElement.value = '';
+            localStorage.setItem('lists', JSON.stringify(lists));
             renderListsColumns();
+
+            // Sync to Supabase via syncListItem
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+                await window.SupabaseSync.syncListItem(listId, newItem, 'add');
+            }
         }
         
         function addNewSection(listId) {
@@ -2234,9 +2239,13 @@ let visiblePeriods = {
             
             list.items.push(newItem);
             localStorage.setItem('lists', JSON.stringify(lists));
-            
             closeAddListItemPanel();
             renderListsColumns();
+
+            // Sync to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+                window.SupabaseSync.syncListItem(listId, newItem, 'add');
+            }
         }
         
         function openEditListPanel(listId) {
@@ -8250,17 +8259,23 @@ async function listsAddItemToList() {
   if (!list) return;
   var btn = document.getElementById('listsSheetAddBtn');
   btn.disabled = true;
-  console.log('[ADD ITEM] listId:', listsCurrentListId, 'hasAPI:', listsHasAPI(), 'text:', text);
-  if (listsHasAPI()) {
+  var newItem = { id: Date.now(), text: text, completed: false, section: 'Items' };
+  list.items.push(newItem);
+  listsSaveLocal();
+  input.value = '';
+  listsCloseAddItemSheet();
+  listsRenderDetailItems();
+  listsRenderLists();
+  // Sync to Supabase via syncListItem (updates newItem.id with UUID on success)
+  if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+    await window.SupabaseSync.syncListItem(listsCurrentListId, newItem, 'add');
+    // Save again with the updated UUID from Supabase
+    listsSaveLocal();
+  } else if (listsHasAPI()) {
     try {
       var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
-      console.log('[ADD ITEM] Supabase result:', row);
-      if (row) { list.items.push({ id:row.id, text:text, completed:false, section:'Items' }); listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists(); }
-      else { listsShowToast('Failed to add item'); }
-    } catch(err) { console.error(err); listsShowToast('Error adding item'); }
-  } else {
-    list.items.push({ id:Date.now(), text:text, completed:false, section:'Items' });
-    listsSaveLocal(); input.value=''; listsCloseAddItemSheet(); listsRenderDetailItems(); listsRenderLists();
+      if (row) { newItem.id = row.id; listsSaveLocal(); }
+    } catch(err) { console.error('[ADD ITEM] error:', err); }
   }
   btn.disabled = false;
 }
