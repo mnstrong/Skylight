@@ -3516,23 +3516,27 @@ let visiblePeriods = {
                     }
                 });
 
-                // Second pass: for each event, find max overlapping columns
+                // Second pass: for each overlap group, find how many columns are actually needed
+                // and apply the same totalCols to every event in the group
                 timed.forEach(ev => {
                     const startMins = parseTimeToMinutes(ev.time);
                     const endMins = ev.endTime ? parseTimeToMinutes(ev.endTime) : startMins + 60;
-                    let maxCol = 0;
+                    // Collect all events that overlap with this one (including itself)
+                    const groupCols = new Set();
+                    groupCols.add(eventLayouts.get(ev.id)?.col ?? 0);
                     timed.forEach(other => {
                         if (other.id === ev.id) return;
                         const oStart = parseTimeToMinutes(other.time);
                         const oEnd = other.endTime ? parseTimeToMinutes(other.endTime) : oStart + 60;
-                        // Check overlap
                         if (startMins < oEnd && endMins > oStart) {
                             const oLayout = eventLayouts.get(other.id);
-                            if (oLayout) maxCol = Math.max(maxCol, oLayout.col);
+                            if (oLayout) groupCols.add(oLayout.col);
                         }
                     });
+                    const totalCols = groupCols.size;
+                    // Only update if this event is actually in a multi-column group
                     const layout = eventLayouts.get(ev.id);
-                    if (layout) layout.totalCols = maxCol + 1;
+                    if (layout) layout.totalCols = totalCols;
                 });
 
                 return eventLayouts;
