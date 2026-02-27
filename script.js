@@ -3578,7 +3578,8 @@ let visiblePeriods = {
                     const endMins = ev.endTime ? parseTimeToMinutes(ev.endTime) : startMins + 60;
                     // Collect all events that overlap with this one (including itself)
                     const groupCols = new Set();
-                    groupCols.add(eventLayouts.get(ev.id)?.col ?? 0);
+                    var evLayout = eventLayouts.get(ev.id);
+                    groupCols.add(evLayout ? evLayout.col : 0);
                     timed.forEach(other => {
                         if (other.id === ev.id) return;
                         const oStart = parseTimeToMinutes(other.time);
