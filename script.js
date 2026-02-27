@@ -3448,13 +3448,8 @@ let visiblePeriods = {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // On mobile, start from the current week, on desktop use currentDate
-            let startDate;
-            if (window.innerWidth <= 768) {
-                startDate = getWeekStart(today);
-            } else {
-                startDate = getWeekStart(new Date(currentDate));
-            }
+            // Always start from today so the current day is first
+            let startDate = new Date(today);
             
             // On mobile show only 7 days (current week), on desktop show 7 days (week)
             const daysToShow = 7;
@@ -3679,14 +3674,16 @@ let visiblePeriods = {
                 daysHtml += `</div>`; // end sg-day-col
             }
 
-            container.innerHTML = `<div class="sg-wrapper">${hoursHtml}<div class="sg-days-scroll"><div class="sg-days-row">${daysHtml}</div></div></div>`;
+            // Build the hours column as first column inside the scrollable area
+            // so it scrolls vertically with the grid but can be made sticky
+            container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
 
             // Auto-scroll to current time or 8am
             setTimeout(() => {
                 const now = new Date();
                 const nowMins = now.getHours() * 60 + now.getMinutes();
                 const scrollTo = minutesToPx(nowMins) - 80;
-                const gridWrapper = container.querySelector('.sg-days-scroll');
+                const gridWrapper = container.querySelector('.sg-scroll-area');
                 if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
             }, 50);
         }
