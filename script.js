@@ -2937,7 +2937,39 @@ let visiblePeriods = {
                 googleEvents = GoogleCalendar.getEvents();
             }
             
-            return [...localEvents, ...googleEvents];
+            const allRaw = [...localEvents, ...googleEvents];
+
+            // Deduplicate: merge events with the same title+date+time into one event
+            // with a combined members array (handles legacy data saved per-profile)
+            const merged = [];
+            const seen = new Map(); // key -> index in merged
+
+            allRaw.forEach(ev => {
+                const key = `${ev.title}__${ev.date}__${ev.time || ''}__${ev.endTime || ''}`;
+                if (seen.has(key)) {
+                    const existing = merged[seen.get(key)];
+                    // Merge members
+                    const existingMembers = existing.members && existing.members.length > 0
+                        ? existing.members
+                        : (existing.member ? [existing.member] : []);
+                    const newMember = ev.member;
+                    if (newMember && !existingMembers.includes(newMember)) {
+                        existingMembers.push(newMember);
+                    }
+                    existing.members = existingMembers;
+                    existing.member = existingMembers[0] || '';
+                } else {
+                    // Normalize members array
+                    const clone = Object.assign({}, ev);
+                    if (!clone.members || clone.members.length === 0) {
+                        clone.members = clone.member ? [clone.member] : [];
+                    }
+                    seen.set(key, merged.length);
+                    merged.push(clone);
+                }
+            });
+
+            return merged;
         }
         
         function isEventOnDate(event, dateStr) {
