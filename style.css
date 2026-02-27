@@ -3381,8 +3381,35 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 4px;
             cursor: pointer;
             overflow: hidden;
+        }
+
+        .sg-allday-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sg-allday-avatars {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .sg-allday-avatar {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 9px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .sg-event {
