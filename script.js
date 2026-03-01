@@ -3332,14 +3332,14 @@ let visiblePeriods = {
             return m;
         })();
 
-        function getFlairUrl(title) {
-            if (!title) return null;
-            var lower = title.toLowerCase();
-            // Try longest keyword match first (sort by length desc)
+        function getFlairUrl(title, notes) {
             var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
-            for (var i = 0; i < keys.length; i++) {
-                if (lower.indexOf(keys[i]) !== -1) {
-                    return FLAIR_BASE + FLAIR_MAP[keys[i]] + '.jpg';
+            var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
+            for (var si = 0; si < sources.length; si++) {
+                for (var i = 0; i < keys.length; i++) {
+                    if (sources[si].indexOf(keys[i]) !== -1) {
+                        return FLAIR_BASE + FLAIR_MAP[keys[i]] + '.jpg';
+                    }
                 }
             }
             return null;
@@ -3351,8 +3351,9 @@ let visiblePeriods = {
                 : document.querySelectorAll('[data-evtitle]');
             els.forEach(function(el) {
                 var title = el.getAttribute('data-evtitle');
+                var notes = el.getAttribute('data-evnotes') || '';
                 var tintColor = el.getAttribute('data-evcolor');
-                var imgUrl = getFlairUrl(title);
+                var imgUrl = getFlairUrl(title, notes);
                 if (imgUrl) applyImageToEl(el, imgUrl, tintColor);
             });
         }
@@ -3427,7 +3428,7 @@ let visiblePeriods = {
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background-color: ${bgColor}; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                    html += `<div class="schedule-event" style="background-color: ${bgColor}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
@@ -3512,7 +3513,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3771,7 +3772,7 @@ let visiblePeriods = {
                     const avatarsHtml = members.slice(0, 2).map(m =>
                         `<span class="sg-allday-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
-                    daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};border-left:3px solid ${color};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
+                    daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
                         <span class="sg-allday-title">${ev.title}</span>
                         ${avatarsHtml ? `<div class="sg-allday-avatars">${avatarsHtml}</div>` : ''}
                     </div>`;
@@ -3810,12 +3811,12 @@ let visiblePeriods = {
                         const c1 = members[0].color;
                         const c2 = members[1].color;
                         bgStyle = `background: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
-                        borderStyle = `border-left: 3px solid ${c1}`;
+                        borderStyle = '';
                         timeColor = c1;
                     } else {
                         const color = members.length === 1 ? members[0].color : getFamilyColor();
                         bgStyle = `background: ${hexToRgba(color, 0.28)}`;
-                        borderStyle = `border-left: 3px solid ${color}`;
+                        borderStyle = '';
                         timeColor = color;
                     }
 
@@ -3824,7 +3825,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
