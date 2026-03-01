@@ -3839,12 +3839,12 @@ let visiblePeriods = {
                     if (members.length >= 2) {
                         const c1 = members[0].color;
                         const c2 = members[1].color;
-                        bgStyle = `background: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
+                        bgStyle = `background-image: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
                         borderStyle = '';
                         timeColor = c1;
                     } else {
                         const color = members.length === 1 ? members[0].color : getFamilyColor();
-                        bgStyle = `background: ${hexToRgba(color, 0.28)}`;
+                        bgStyle = `background-color: ${hexToRgba(color, 0.28)}`;
                         borderStyle = '';
                         timeColor = color;
                     }
