@@ -3368,35 +3368,23 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            // Use solid tinted background — no image in CSS background
-            var tint = tintColor ? hexToRgba(tintColor, 0.35) : 'rgba(0,0,0,0.15)';
+            var color = tintColor || '#888888';
+            var tintRgba = hexToRgba(color, 0.7);
+            var tintFade = hexToRgba(color, 0.0);
+            // Flair image as background, with a gradient from top-left (solid color)
+            // fading to transparent toward bottom-right where the image shows through
             el.style.borderLeft = 'none';
-            el.style.background = tint;
-            el.style.position = 'relative';
-            el.style.overflow = 'hidden';
-
-            // Inject flair as an <img> positioned bottom-right
-            var img = document.createElement('img');
-            img.src = imgUrl;
-            img.style.cssText = [
-                'position:absolute',
-                'bottom:-8px',
-                'right:-8px',
-                'width:55%',
-                'height:auto',
-                'pointer-events:none',
-                'opacity:0.9',
-                'z-index:0'
-            ].join(';');
-
-            // Push text content above the image via z-index
+            el.style.backgroundImage = [
+                'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
+                'url(' + imgUrl + ')'
+            ].join(', ');
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'bottom right';
+            el.style.backgroundRepeat = 'no-repeat';
+            // White text so it reads on the colored gradient
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                t.style.position = 'relative';
-                t.style.zIndex = '1';
-                t.style.color = tintColor || '#333';
+                t.style.color = '#fff';
             });
-
-            el.appendChild(img);
         }
 
         function renderWeekView() {
