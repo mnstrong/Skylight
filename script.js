@@ -3371,8 +3371,9 @@ let visiblePeriods = {
             var tint = tintColor ? hexToRgba(tintColor, 0.55) : 'rgba(0,0,0,0.45)';
             el.style.borderLeft = 'none';
             el.style.backgroundImage = 'linear-gradient(' + tint + ', ' + tint + '), url(' + imgUrl + ')';
-            el.style.backgroundSize = 'cover';
+            el.style.backgroundSize = '60%';
             el.style.backgroundPosition = 'bottom right';
+            el.style.backgroundRepeat = 'no-repeat';
             el.querySelectorAll('.sg-event-title, .sg-event-time, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                 t.style.color = '#fff';
             });
