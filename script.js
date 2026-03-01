@@ -3528,10 +3528,10 @@ let visiblePeriods = {
             const allEvents = getAllEvents();
 
             // Time grid settings
-            const START_HOUR = 0;   // Midnight - ensures no early events are cut off
-            const END_HOUR = 23;    // 11 PM
+            const START_HOUR = 7;   // 7 AM
+            const END_HOUR = 22;    // 10 PM
             const TOTAL_HOURS = END_HOUR - START_HOUR;
-            const HOUR_HEIGHT = 60; // px per hour
+            const HOUR_HEIGHT = 120; // px per hour - taller rows for larger fonts
             const GRID_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT;
 
             // Helper: parse time string "HH:MM" to minutes from midnight
