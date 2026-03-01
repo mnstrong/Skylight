@@ -3368,15 +3368,36 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            var tint = tintColor ? hexToRgba(tintColor, 0.55) : 'rgba(0,0,0,0.45)';
+            // Use solid tinted background — no image in CSS background
+            var tint = tintColor ? hexToRgba(tintColor, 0.35) : 'rgba(0,0,0,0.15)';
             el.style.borderLeft = 'none';
-            el.style.backgroundImage = 'linear-gradient(' + tint + ', ' + tint + '), url(' + imgUrl + ')';
-            el.style.backgroundSize = '60%';
-            el.style.backgroundPosition = 'bottom right';
-            el.style.backgroundRepeat = 'no-repeat';
-            el.querySelectorAll('.sg-event-title, .sg-event-time, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                t.style.color = '#fff';
+            el.style.background = tint;
+            el.style.position = 'relative';
+            el.style.overflow = 'hidden';
+
+            // Inject flair as an <img> positioned bottom-right
+            var img = document.createElement('img');
+            img.src = imgUrl;
+            img.style.cssText = [
+                'position:absolute',
+                'bottom:-8px',
+                'right:-8px',
+                'width:55%',
+                'height:auto',
+                'pointer-events:none',
+                'opacity:0.9',
+                'z-index:0'
+            ].join(';');
+
+            // Push text content above the image via z-index
+            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar,',
+                                '.day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                t.style.position = 'relative';
+                t.style.zIndex = '1';
+                t.style.color = tintColor || '#333';
             });
+
+            el.appendChild(img);
         }
 
         function renderWeekView() {
