@@ -3258,6 +3258,102 @@ let visiblePeriods = {
             return new Date(d.setDate(diff));
         }
 
+        // ── Event image cache (Unsplash) ─────────────────────────────────────────
+        var IMG_CACHE_PREFIX = 'evtimg:';
+        var IMG_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+        function getImageCacheKey(title) {
+            return IMG_CACHE_PREFIX + title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        }
+
+        function getCachedImage(title) {
+            try {
+                var key = getImageCacheKey(title);
+                var raw = localStorage.getItem(key);
+                if (!raw) return null;
+                var obj = JSON.parse(raw);
+                if (Date.now() - obj.ts > IMG_CACHE_DURATION) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                return obj.url; // null means "no image found" (also cached)
+            } catch(e) { return null; }
+        }
+
+        function setCachedImage(title, url) {
+            try {
+                var key = getImageCacheKey(title);
+                localStorage.setItem(key, JSON.stringify({ url: url, ts: Date.now() }));
+            } catch(e) {}
+        }
+
+        // Fetch image URL for an event title, resolves to url string or null
+        function fetchEventImageUrl(title) {
+            var cached = getCachedImage(title);
+            if (cached !== null) return Promise.resolve(cached === 'none' ? null : cached);
+
+            // Build a clean search query - strip times, member names, punctuation
+            var query = title.replace(/[0-9]{1,2}:[0-9]{2}/g, '')
+                             .replace(/am|pm/gi, '')
+                             .replace(/[^a-zA-Z0-9 ]/g, ' ')
+                             .trim()
+                             .split(' ').slice(0, 4).join(' ');
+
+            if (!query) { setCachedImage(title, 'none'); return Promise.resolve(null); }
+
+            // Use Unsplash source - it redirects to an image, we capture the final URL
+            var url = 'https://source.unsplash.com/featured/800x400/?' + encodeURIComponent(query);
+
+            return fetch(url, { method: 'HEAD' })
+                .then(function(res) {
+                    if (res.ok && res.url && res.url.indexOf('unsplash.com/photos') !== -1) {
+                        // Use the redirected image URL directly
+                        var imgUrl = res.url;
+                        setCachedImage(title, imgUrl);
+                        return imgUrl;
+                    }
+                    setCachedImage(title, 'none');
+                    return null;
+                })
+                .catch(function() {
+                    setCachedImage(title, 'none');
+                    return null;
+                });
+        }
+
+        // Apply background image to all event elements with a data-evtitle attribute
+        function applyEventImages(containerEl) {
+            var els = containerEl ? containerEl.querySelectorAll('[data-evtitle]') : document.querySelectorAll('[data-evtitle]');
+            var seen = {};
+            els.forEach(function(el) {
+                var title = el.getAttribute('data-evtitle');
+                if (!title) return;
+                if (seen[title]) {
+                    // Same title already being fetched - share the promise
+                    seen[title].then(function(url) { applyImageToEl(el, url, el.getAttribute('data-evcolor')); });
+                    return;
+                }
+                seen[title] = fetchEventImageUrl(title).then(function(url) {
+                    applyImageToEl(el, url, el.getAttribute('data-evcolor'));
+                    return url;
+                });
+            });
+        }
+
+        function applyImageToEl(el, imgUrl, tintColor) {
+            if (!imgUrl) return; // fall back to colored block (do nothing)
+            // Overlay: image behind, semi-opaque color tint on top for readability
+            var tint = tintColor ? hexToRgba(tintColor, 0.55) : 'rgba(0,0,0,0.45)';
+            el.style.backgroundImage = 'linear-gradient(' + tint + ', ' + tint + '), url(' + imgUrl + ')';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+            el.style.color = '#fff';
+            // Make text elements white for contrast
+            el.querySelectorAll('.sg-event-title, .sg-event-time, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                t.style.color = '#fff';
+            });
+        }
+
         function renderWeekView() {
             const container = document.getElementById('weekView');
             const today = new Date();
@@ -3402,7 +3498,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3415,6 +3511,7 @@ let visiblePeriods = {
             html += '</div>'; // Close day-view-main
             html += '</div>'; // Close day-view-container
             container.innerHTML = html;
+            applyEventImages(container);
         }
         
         function renderMiniCalendar() {
@@ -3713,7 +3810,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
@@ -3747,6 +3844,7 @@ let visiblePeriods = {
             // Build the hours column as first column inside the scrollable area
             // so it scrolls vertically with the grid but can be made sticky
             container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
+            applyEventImages(container);
 
             // Auto-scroll to current time or 8am
             setTimeout(() => {
