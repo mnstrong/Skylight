@@ -3258,100 +3258,145 @@ let visiblePeriods = {
             return new Date(d.setDate(diff));
         }
 
-        // ── Event image cache (Unsplash) ─────────────────────────────────────────
-        var IMG_CACHE_PREFIX = 'evtimg:';
-        var IMG_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+        // ── Google Calendar Flair images ──────────────────────────────────────────
+        var FLAIR_BASE     = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
+        var FLAIR_EXT      = '.svg';
+        var FLAIR_BASE_OLD = 'https://ssl.gstatic.com/calendar/images/eventillustrations/v1/img_';
+        var FLAIR_EXT_OLD  = '_1x.jpg';
+        // Flairs that haven't been updated to 2024_v2 yet - fall back to v1
+        var FLAIR_V1_ONLY  = {'archery':1,'billiard':1,'bookclub':1,'boxing':1,'carmaintenance':1,
+                              'handcraft':1,'karate':1,'sleep':1,'theateropera':1,'worldhistory':1};
 
-        function getImageCacheKey(title) {
-            return IMG_CACHE_PREFIX + title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-        }
+        // keyword (lowercase) → flair id
+        var FLAIR_MAP = (function() {
+            var m = {};
+            function add(id, keywords) {
+                keywords.forEach(function(k) { m[k.toLowerCase()] = id; });
+            }
+            add('americanfootball', ['american football','football','super bowl','superbowl']);
+            add('art',              ['painting','art workshop','drawing workshop','sketching workshop']);
+            add('badminton',        ['badminton']);
+            add('baseball',         ['baseball']);
+            add('basketball',       ['basketball']);
+            add('bbq',              ['bbq','barbecue','barbeque']);
+            add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
+            add('bookclub',         ['book club','reading']);
+            add('bowling',          ['bowling']);
+            add('boxing',           ['boxing']);
+            add('breakfast',        ['breakfast','brunch','brunches']);
+            add('camping',          ['camping']);
+            add('carmaintenance',   ['car maintenance','car repair','auto repair','auto mechanic','car mechanic','tire change','tire replacement','auto maintenance']);
+            add('cinema',           ['cinema','movie','movies']);
+            add('clean',            ['clean house','clean the house','clean the apartment','tidy up','vacuum clean','vacuum cleaning']);
+            add('climbing',         ['climbing','bouldering']);
+            add('coffee',           ['coffee','coffees']);
+            add('concert',          ['concert','concerts','gig','gigs']);
+            add('cooking',          ['cooking','cook dinner','cook lunch','make dinner','make lunch','prepare dinner','prepare lunch']);
+            add('cycling',          ['cycling','bicycle','bike','biking','mountain bike','mountain biking']);
+            add('dancing',          ['dancing','dance','ballet']);
+            add('datenight',        ['date night','datenight','candlelight dinner','romantic dinner']);
+            add('dentist',          ['dentist','dental','dentistry','teeth cleaning']);
+            add('dinner',           ['dinner','dinners','restaurant','restaurants','family meal']);
+            add('drinks',           ['drinks','cocktail','cocktails','wine night','wine bar','ladies night','bachelorette party']);
+            add('equestrian',       ['horse riding','horseriding','equestrian']);
+            add('gamenight',        ['board game','board games','boardgame','boardgames','game night']);
+            add('golf',             ['golf']);
+            add('graduation',       ['graduation']);
+            add('gym',              ['gym','workout','workouts','crossfit','weight lifting','weightlifting','fitness class','fitness training']);
+            add('haircut',          ['haircut','hair cut','hairdresser']);
+            add('halloween',        ['halloween']);
+            add('hiking',           ['hiking','hike','hikes']);
+            add('karate',           ['karate','martial arts','judo','taekwondo','jiu jitsu','aikido']);
+            add('kayaking',         ['kayaking','canoeing','canoe']);
+            add('learninstrument',  ['piano','guitar lesson','violin','singing','choir','orchestra','music class','clarinet','trumpet','saxophone','flute']);
+            add('lunch',            ['lunch','luncheon','lunches']);
+            add('manicure',         ['manicure','pedicure']);
+            add('massage',          ['massage','massages','back rub']);
+            add('oilchange',        ['oil change','car service']);
+            add('pingpong',         ['ping pong','table tennis','pingpong']);
+            add('run',              ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
+            add('sailing',          ['sailing','sail']);
+            add('shopping',         ['shopping','grocery shopping','groceries']);
+            add('skiing',           ['skiing','ski','snowboarding','snowboard']);
+            add('sleep',            ['nap','sleep','bedtime']);
+            add('soccer',           ['soccer','football match','football game']);
+            add('spa',              ['spa','sauna','steam room']);
+            add('study',            ['study','studying','exam','homework','tutoring','school']);
+            add('surfing',          ['surfing','surf']);
+            add('swimming',         ['swimming','swim','pool','lap swim']);
+            add('tennis',           ['tennis']);
+            add('travel',           ['travel','trip','vacation','holiday','flight','airport']);
+            add('videogaming',      ['gaming','video game','video games','game','dnd','dungeons','dungeons and dragons','tabletop']);
+            add('volunteering',     ['volunteer','volunteering']);
+            add('wedding',          ['wedding','wedding ceremony','wedding reception']);
+            add('workout',          ['workout','exercise','training','fitness']);
+            add('xmas',             ['christmas','xmas']);
+            add('xmasparty',        ['christmas party','xmas party','holiday party']);
+            add('yoga',             ['yoga','meditation','pilates']);
+            add('birthday',         ['birthday']);
+            add('genericnewyear',   ['new year','new years']);
+            return m;
+        })();
 
-        function getCachedImage(title) {
-            try {
-                var key = getImageCacheKey(title);
-                var raw = localStorage.getItem(key);
-                if (!raw) return null;
-                var obj = JSON.parse(raw);
-                if (Date.now() - obj.ts > IMG_CACHE_DURATION) {
-                    localStorage.removeItem(key);
-                    return null;
-                }
-                return obj.url; // null means "no image found" (also cached)
-            } catch(e) { return null; }
-        }
-
-        function setCachedImage(title, url) {
-            try {
-                var key = getImageCacheKey(title);
-                localStorage.setItem(key, JSON.stringify({ url: url, ts: Date.now() }));
-            } catch(e) {}
-        }
-
-        // Fetch image URL for an event title, resolves to url string or null
-        function fetchEventImageUrl(title) {
-            var cached = getCachedImage(title);
-            if (cached !== null) return Promise.resolve(cached === 'none' ? null : cached);
-
-            // Build a clean search query - strip times, member names, punctuation
-            var query = title.replace(/[0-9]{1,2}:[0-9]{2}/g, '')
-                             .replace(/am|pm/gi, '')
-                             .replace(/[^a-zA-Z0-9 ]/g, ' ')
-                             .trim()
-                             .split(' ').slice(0, 4).join(' ');
-
-            if (!query) { setCachedImage(title, 'none'); return Promise.resolve(null); }
-
-            // Use Unsplash source - it redirects to an image, we capture the final URL
-            var url = 'https://source.unsplash.com/featured/800x400/?' + encodeURIComponent(query);
-
-            return fetch(url, { method: 'HEAD' })
-                .then(function(res) {
-                    if (res.ok && res.url && res.url.indexOf('unsplash.com/photos') !== -1) {
-                        // Use the redirected image URL directly
-                        var imgUrl = res.url;
-                        setCachedImage(title, imgUrl);
-                        return imgUrl;
+        function getFlairUrl(title, notes) {
+            var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
+            var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
+            for (var si = 0; si < sources.length; si++) {
+                for (var i = 0; i < keys.length; i++) {
+                    if (sources[si].indexOf(keys[i]) !== -1) {
+                        var id = FLAIR_MAP[keys[i]];
+                        return FLAIR_V1_ONLY[id]
+                            ? FLAIR_BASE_OLD + id + FLAIR_EXT_OLD
+                            : FLAIR_BASE + id + FLAIR_EXT;
                     }
-                    setCachedImage(title, 'none');
-                    return null;
-                })
-                .catch(function() {
-                    setCachedImage(title, 'none');
-                    return null;
-                });
+                }
+            }
+            return null;
         }
 
-        // Apply background image to all event elements with a data-evtitle attribute
         function applyEventImages(containerEl) {
-            var els = containerEl ? containerEl.querySelectorAll('[data-evtitle]') : document.querySelectorAll('[data-evtitle]');
-            var seen = {};
+            var els = containerEl
+                ? containerEl.querySelectorAll('[data-evtitle]')
+                : document.querySelectorAll('[data-evtitle]');
             els.forEach(function(el) {
                 var title = el.getAttribute('data-evtitle');
-                if (!title) return;
-                if (seen[title]) {
-                    // Same title already being fetched - share the promise
-                    seen[title].then(function(url) { applyImageToEl(el, url, el.getAttribute('data-evcolor')); });
-                    return;
-                }
-                seen[title] = fetchEventImageUrl(title).then(function(url) {
-                    applyImageToEl(el, url, el.getAttribute('data-evcolor'));
-                    return url;
-                });
+                var notes = el.getAttribute('data-evnotes') || '';
+                var tintColor = el.getAttribute('data-evcolor');
+                var imgUrl = getFlairUrl(title, notes);
+                if (imgUrl) applyImageToEl(el, imgUrl, tintColor);
             });
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            if (!imgUrl) return; // fall back to colored block (do nothing)
-            // Overlay: image behind, semi-opaque color tint on top for readability
-            var tint = tintColor ? hexToRgba(tintColor, 0.55) : 'rgba(0,0,0,0.45)';
-            el.style.backgroundImage = 'linear-gradient(' + tint + ', ' + tint + '), url(' + imgUrl + ')';
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
-            el.style.color = '#fff';
-            // Make text elements white for contrast
-            el.querySelectorAll('.sg-event-title, .sg-event-time, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                t.style.color = '#fff';
+            // Use solid tinted background — no image in CSS background
+            var tint = tintColor ? hexToRgba(tintColor, 0.35) : 'rgba(0,0,0,0.15)';
+            el.style.borderLeft = 'none';
+            el.style.background = tint;
+            el.style.position = 'relative';
+            el.style.overflow = 'hidden';
+
+            // Inject flair as an <img> positioned bottom-right
+            var img = document.createElement('img');
+            img.src = imgUrl;
+            img.style.cssText = [
+                'position:absolute',
+                'bottom:-8px',
+                'right:-8px',
+                'width:55%',
+                'height:auto',
+                'pointer-events:none',
+                'opacity:0.9',
+                'z-index:0'
+            ].join(';');
+
+            // Push text content above the image via z-index
+            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                t.style.position = 'relative';
+                t.style.zIndex = '1';
+                t.style.color = tintColor || '#333';
             });
+
+            el.appendChild(img);
         }
 
         function renderWeekView() {
@@ -3413,7 +3458,7 @@ let visiblePeriods = {
                     
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="schedule-event" style="background-color: ${bgColor}; border-left-color: ${color}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                    html += `<div class="schedule-event" style="background-color: ${bgColor}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                         <div class="schedule-event-content">
                             <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
                             <div class="schedule-event-title">${event.title}</div>
@@ -3498,7 +3543,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}; border-left-color: ${color}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3757,7 +3802,7 @@ let visiblePeriods = {
                     const avatarsHtml = members.slice(0, 2).map(m =>
                         `<span class="sg-allday-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
-                    daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};border-left:3px solid ${color};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
+                    daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
                         <span class="sg-allday-title">${ev.title}</span>
                         ${avatarsHtml ? `<div class="sg-allday-avatars">${avatarsHtml}</div>` : ''}
                     </div>`;
@@ -3796,12 +3841,12 @@ let visiblePeriods = {
                         const c1 = members[0].color;
                         const c2 = members[1].color;
                         bgStyle = `background: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
-                        borderStyle = `border-left: 3px solid ${c1}`;
+                        borderStyle = '';
                         timeColor = c1;
                     } else {
                         const color = members.length === 1 ? members[0].color : getFamilyColor();
                         bgStyle = `background: ${hexToRgba(color, 0.28)}`;
-                        borderStyle = `border-left: 3px solid ${color}`;
+                        borderStyle = '';
                         timeColor = color;
                     }
 
@@ -3810,7 +3855,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
