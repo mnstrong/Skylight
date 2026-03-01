@@ -3259,7 +3259,13 @@ let visiblePeriods = {
         }
 
         // ── Google Calendar Flair images ──────────────────────────────────────────
-        var FLAIR_BASE = 'https://ssl.gstatic.com/tmly/f8944938hffheth4ew890ht4i8/flairs/xxhdpi/img_';
+        var FLAIR_BASE     = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
+        var FLAIR_EXT      = '.svg';
+        var FLAIR_BASE_OLD = 'https://ssl.gstatic.com/calendar/images/eventillustrations/v1/img_';
+        var FLAIR_EXT_OLD  = '_1x.jpg';
+        // Flairs that haven't been updated to 2024_v2 yet - fall back to v1
+        var FLAIR_V1_ONLY  = {'archery':1,'billiard':1,'bookclub':1,'boxing':1,'carmaintenance':1,
+                              'handcraft':1,'karate':1,'sleep':1,'theateropera':1,'worldhistory':1};
 
         // keyword (lowercase) → flair id
         var FLAIR_MAP = (function() {
@@ -3338,7 +3344,10 @@ let visiblePeriods = {
             for (var si = 0; si < sources.length; si++) {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
-                        return FLAIR_BASE + FLAIR_MAP[keys[i]] + '.jpg';
+                        var id = FLAIR_MAP[keys[i]];
+                        return FLAIR_V1_ONLY[id]
+                            ? FLAIR_BASE_OLD + id + FLAIR_EXT_OLD
+                            : FLAIR_BASE + id + FLAIR_EXT;
                     }
                 }
             }
