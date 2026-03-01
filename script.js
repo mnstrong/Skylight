@@ -3258,97 +3258,110 @@ let visiblePeriods = {
             return new Date(d.setDate(diff));
         }
 
-        // ── Event image cache (Unsplash) ─────────────────────────────────────────
-        var IMG_CACHE_PREFIX = 'evtimg:';
-        var IMG_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+        // ── Google Calendar Flair images ──────────────────────────────────────────
+        var FLAIR_BASE = 'https://ssl.gstatic.com/tmly/f8944938hffheth4ew890ht4i8/flairs/xxhdpi/img_';
 
-        function getImageCacheKey(title) {
-            return IMG_CACHE_PREFIX + title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-        }
+        // keyword (lowercase) → flair id
+        var FLAIR_MAP = (function() {
+            var m = {};
+            function add(id, keywords) {
+                keywords.forEach(function(k) { m[k.toLowerCase()] = id; });
+            }
+            add('americanfootball', ['american football','football','super bowl','superbowl']);
+            add('art',              ['painting','art workshop','drawing workshop','sketching workshop']);
+            add('badminton',        ['badminton']);
+            add('baseball',         ['baseball']);
+            add('basketball',       ['basketball']);
+            add('bbq',              ['bbq','barbecue','barbeque']);
+            add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
+            add('bookclub',         ['book club','reading']);
+            add('bowling',          ['bowling']);
+            add('boxing',           ['boxing']);
+            add('breakfast',        ['breakfast','brunch','brunches']);
+            add('camping',          ['camping']);
+            add('carmaintenance',   ['car maintenance','car repair','auto repair','auto mechanic','car mechanic','tire change','tire replacement','auto maintenance']);
+            add('cinema',           ['cinema','movie','movies']);
+            add('clean',            ['clean house','clean the house','clean the apartment','tidy up','vacuum clean','vacuum cleaning']);
+            add('climbing',         ['climbing','bouldering']);
+            add('coffee',           ['coffee','coffees']);
+            add('concert',          ['concert','concerts','gig','gigs']);
+            add('cooking',          ['cooking','cook dinner','cook lunch','make dinner','make lunch','prepare dinner','prepare lunch']);
+            add('cycling',          ['cycling','bicycle','bike','biking','mountain bike','mountain biking']);
+            add('dancing',          ['dancing','dance','ballet']);
+            add('datenight',        ['date night','datenight','candlelight dinner','romantic dinner']);
+            add('dentist',          ['dentist','dental','dentistry','teeth cleaning']);
+            add('dinner',           ['dinner','dinners','restaurant','restaurants','family meal']);
+            add('drinks',           ['drinks','cocktail','cocktails','wine night','wine bar','ladies night','bachelorette party']);
+            add('equestrian',       ['horse riding','horseriding','equestrian']);
+            add('gamenight',        ['board game','board games','boardgame','boardgames','game night']);
+            add('golf',             ['golf']);
+            add('graduation',       ['graduation']);
+            add('gym',              ['gym','workout','workouts','crossfit','weight lifting','weightlifting','fitness class','fitness training']);
+            add('haircut',          ['haircut','hair cut','hairdresser']);
+            add('halloween',        ['halloween']);
+            add('hiking',           ['hiking','hike','hikes']);
+            add('karate',           ['karate','martial arts','judo','taekwondo','jiu jitsu','aikido']);
+            add('kayaking',         ['kayaking','canoeing','canoe']);
+            add('learninstrument',  ['piano','guitar lesson','violin','singing','choir','orchestra','music class','clarinet','trumpet','saxophone','flute']);
+            add('lunch',            ['lunch','luncheon','lunches']);
+            add('manicure',         ['manicure','pedicure']);
+            add('massage',          ['massage','massages','back rub']);
+            add('oilchange',        ['oil change','car service']);
+            add('pingpong',         ['ping pong','table tennis','pingpong']);
+            add('run',              ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
+            add('sailing',          ['sailing','sail']);
+            add('shopping',         ['shopping','grocery shopping','groceries']);
+            add('skiing',           ['skiing','ski','snowboarding','snowboard']);
+            add('sleep',            ['nap','sleep','bedtime']);
+            add('soccer',           ['soccer','football match','football game']);
+            add('spa',              ['spa','sauna','steam room']);
+            add('study',            ['study','studying','exam','homework','tutoring','school']);
+            add('surfing',          ['surfing','surf']);
+            add('swimming',         ['swimming','swim','pool','lap swim']);
+            add('tennis',           ['tennis']);
+            add('travel',           ['travel','trip','vacation','holiday','flight','airport']);
+            add('videogaming',      ['gaming','video game','video games','game','dnd','dungeons','dungeons and dragons','tabletop']);
+            add('volunteering',     ['volunteer','volunteering']);
+            add('wedding',          ['wedding','wedding ceremony','wedding reception']);
+            add('workout',          ['workout','exercise','training','fitness']);
+            add('xmas',             ['christmas','xmas']);
+            add('xmasparty',        ['christmas party','xmas party','holiday party']);
+            add('yoga',             ['yoga','meditation','pilates']);
+            add('birthday',         ['birthday']);
+            add('genericnewyear',   ['new year','new years']);
+            return m;
+        })();
 
-        function getCachedImage(title) {
-            try {
-                var key = getImageCacheKey(title);
-                var raw = localStorage.getItem(key);
-                if (!raw) return null;
-                var obj = JSON.parse(raw);
-                if (Date.now() - obj.ts > IMG_CACHE_DURATION) {
-                    localStorage.removeItem(key);
-                    return null;
+        function getFlairUrl(title) {
+            if (!title) return null;
+            var lower = title.toLowerCase();
+            // Try longest keyword match first (sort by length desc)
+            var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
+            for (var i = 0; i < keys.length; i++) {
+                if (lower.indexOf(keys[i]) !== -1) {
+                    return FLAIR_BASE + FLAIR_MAP[keys[i]] + '.jpg';
                 }
-                return obj.url; // null means "no image found" (also cached)
-            } catch(e) { return null; }
+            }
+            return null;
         }
 
-        function setCachedImage(title, url) {
-            try {
-                var key = getImageCacheKey(title);
-                localStorage.setItem(key, JSON.stringify({ url: url, ts: Date.now() }));
-            } catch(e) {}
-        }
-
-        // Fetch image URL for an event title, resolves to url string or null
-        function fetchEventImageUrl(title) {
-            var cached = getCachedImage(title);
-            if (cached !== null) return Promise.resolve(cached === 'none' ? null : cached);
-
-            // Build a clean search query - strip times, member names, punctuation
-            var query = title.replace(/[0-9]{1,2}:[0-9]{2}/g, '')
-                             .replace(/am|pm/gi, '')
-                             .replace(/[^a-zA-Z0-9 ]/g, ' ')
-                             .trim()
-                             .split(' ').slice(0, 4).join(' ');
-
-            if (!query) { setCachedImage(title, 'none'); return Promise.resolve(null); }
-
-            // Use Unsplash source - it redirects to an image, we capture the final URL
-            var url = 'https://source.unsplash.com/featured/800x400/?' + encodeURIComponent(query);
-
-            return fetch(url, { method: 'HEAD' })
-                .then(function(res) {
-                    if (res.ok && res.url && res.url.indexOf('unsplash.com/photos') !== -1) {
-                        // Use the redirected image URL directly
-                        var imgUrl = res.url;
-                        setCachedImage(title, imgUrl);
-                        return imgUrl;
-                    }
-                    setCachedImage(title, 'none');
-                    return null;
-                })
-                .catch(function() {
-                    setCachedImage(title, 'none');
-                    return null;
-                });
-        }
-
-        // Apply background image to all event elements with a data-evtitle attribute
         function applyEventImages(containerEl) {
-            var els = containerEl ? containerEl.querySelectorAll('[data-evtitle]') : document.querySelectorAll('[data-evtitle]');
-            var seen = {};
+            var els = containerEl
+                ? containerEl.querySelectorAll('[data-evtitle]')
+                : document.querySelectorAll('[data-evtitle]');
             els.forEach(function(el) {
                 var title = el.getAttribute('data-evtitle');
-                if (!title) return;
-                if (seen[title]) {
-                    // Same title already being fetched - share the promise
-                    seen[title].then(function(url) { applyImageToEl(el, url, el.getAttribute('data-evcolor')); });
-                    return;
-                }
-                seen[title] = fetchEventImageUrl(title).then(function(url) {
-                    applyImageToEl(el, url, el.getAttribute('data-evcolor'));
-                    return url;
-                });
+                var tintColor = el.getAttribute('data-evcolor');
+                var imgUrl = getFlairUrl(title);
+                if (imgUrl) applyImageToEl(el, imgUrl, tintColor);
             });
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            if (!imgUrl) return; // fall back to colored block (do nothing)
-            // Overlay: image behind, semi-opaque color tint on top for readability
             var tint = tintColor ? hexToRgba(tintColor, 0.55) : 'rgba(0,0,0,0.45)';
             el.style.backgroundImage = 'linear-gradient(' + tint + ', ' + tint + '), url(' + imgUrl + ')';
             el.style.backgroundSize = 'cover';
             el.style.backgroundPosition = 'center';
-            el.style.color = '#fff';
-            // Make text elements white for contrast
             el.querySelectorAll('.sg-event-title, .sg-event-time, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                 t.style.color = '#fff';
             });
