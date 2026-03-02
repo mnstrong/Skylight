@@ -3367,20 +3367,23 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor, duration) {
-            var longEvent = duration && duration > 60;
-            var bgSize   = longEvent ? 'auto, 161%' : 'auto, cover';
-            var bgPos    = longEvent ? 'bottom right, bottom -20px right' : 'bottom right';
+            var longEvent  = duration && duration > 60;
+            // Short events: gradient covers top-left, fades toward image at bottom-right
+            // Long events:  gradient starts lower so it blends over the image edge more softly
+            var gradient   = longEvent
+                ? 'linear-gradient(to bottom right, ' + 'TINT' + ' 50%, ' + 'FADE' + ' 85%)'
+                : 'linear-gradient(to bottom right, ' + 'TINT' + ' 30%, ' + 'FADE' + ' 75%)';
+            var bgSize     = longEvent ? 'auto, 161%'                        : 'auto, cover';
+            var bgPos      = longEvent ? 'bottom right, bottom -20px right'  : 'bottom right';
             var img = new Image();
             img.onload = function() {
-                var color = tintColor || '#888888';
+                var color    = tintColor || '#888888';
                 var tintRgba = hexToRgba(color, 0.7);
                 var tintFade = hexToRgba(color, 0.0);
-                el.style.borderLeft = 'none';
-                el.style.backgroundImage = [
-                    'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
-                    'url(' + imgUrl + ')'
-                ].join(', ');
-                el.style.backgroundSize = bgSize;
+                var grad     = gradient.replace('TINT', tintRgba).replace('FADE', tintFade);
+                el.style.borderLeft       = 'none';
+                el.style.backgroundImage  = grad + ', url(' + imgUrl + ')';
+                el.style.backgroundSize   = bgSize;
                 el.style.backgroundPosition = bgPos;
                 el.style.backgroundRepeat = 'no-repeat';
                 el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
