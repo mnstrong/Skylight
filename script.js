@@ -3316,7 +3316,7 @@ let visiblePeriods = {
             add('sleep',            ['nap','sleep','bedtime']);
             add('soccer',           ['soccer','football match','football game']);
             add('spa',              ['spa','sauna','steam room']);
-            add('study',            ['study','studying','exam','homework','tutoring','school']);
+            add('study',            ['study','studying','exam','homework','tutoring','school','bible study','womens study','mens study','women\'s study','men\'s study','sunday school','vbs']);
             add('surfing',          ['surfing','surf']);
             add('swimming',         ['swimming','swim','pool','lap swim']);
             add('tennis',           ['tennis']);
@@ -3549,7 +3549,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3861,7 +3861,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
