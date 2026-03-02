@@ -3351,6 +3351,14 @@ let visiblePeriods = {
         })();
 
         function getFlairUrl(title, notes) {
+            // 1. Explicit tag in description: #flair:soccer or [flair:soccer]
+            if (notes) {
+                var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
+                if (tagMatch) {
+                    return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
+                }
+            }
+            // 2. Keyword matching — check title first, then description
             var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
             var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
             for (var si = 0; si < sources.length; si++) {
