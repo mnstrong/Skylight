@@ -3259,13 +3259,9 @@ let visiblePeriods = {
         }
 
         // ── Google Calendar Flair images ──────────────────────────────────────────
-        var FLAIR_BASE     = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
-        var FLAIR_EXT      = '.svg';
-        var FLAIR_BASE_OLD = 'https://ssl.gstatic.com/calendar/images/eventillustrations/v1/img_';
-        var FLAIR_EXT_OLD  = '_1x.jpg';
-        // Flairs that haven't been updated to 2024_v2 yet - fall back to v1
-        var FLAIR_V1_ONLY  = {'archery':1,'billiard':1,'bookclub':1,'boxing':1,'carmaintenance':1,
-                              'handcraft':1,'karate':1,'sleep':1,'theateropera':1,'worldhistory':1};
+        var FLAIR_BASE = 'https://ssl.gstatic.com/tmly/f8944938hffheth4ew890ht4i8/flairs/xxhdpi/img_';
+        var FLAIR_EXT  = '.jpg';
+        var FLAIR_V1_ONLY = {}; // All flairs now on unified CDN
 
         // keyword (lowercase) → flair id
         var FLAIR_MAP = (function() {
@@ -3334,7 +3330,24 @@ let visiblePeriods = {
             add('xmasparty',        ['christmas party','xmas party','holiday party']);
             add('yoga',             ['yoga','meditation','pilates']);
             add('birthday',         ['birthday']);
-            add('genericnewyear',   ['new year','new years']);
+            add('genericnewyear',   ['new year','new years','nye']);
+            add('artisticgymnastics', ['gymnastics','artistic gymnastics','rhythmic gymnastics','gym meet']);
+            add('athleticsjumping',   ['long jump','high jump','pole vault','triple jump','hurdles','track jump']);
+            add('athleticsthrowing',  ['shot put','discus','javelin','hammer throw','throwing event']);
+            add('babyshower',         ['baby shower','babyshower','gender reveal','baby sprinkle']);
+            add('backtoschool',       ['back to school','first day of school','orientation day','back-to-school']);
+            add('code',               ['coding','hackathon','programming','developer meetup','code review']);
+            add('cricket',            ['cricket','cricket match','cricket practice']);
+            add('cyclingbmx',         ['bmx','dirt jumping','bmx race']);
+            add('fencing',            ['fencing','epee','foil','sabre']);
+            add('fieldhockey',        ['field hockey','field hockey game','field hockey practice']);
+            add('icehockey',          ['ice hockey','hockey game','hockey practice','hockey tournament']);
+            add('kidspickupdropoff',  ['school pickup','school dropoff','pickup','drop off','carpool','after school pickup']);
+            add('theateropera',       ['theater','opera','musical','theatre','ballet','ballet recital','recital','show','performance']);
+            add('worldhistory',       ['history class','museum visit','historical site','world history']);
+            add('archery',            ['archery','bow and arrow','recurve bow','compound bow']);
+            add('billiard',           ['billiards','pool table','snooker','8-ball pool']);
+            add('handcraft',          ['crafts','knitting','sewing','crochet','pottery','ceramics','handcraft']);
             return m;
         })();
 
@@ -3345,9 +3358,7 @@ let visiblePeriods = {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
                         var id = FLAIR_MAP[keys[i]];
-                        return FLAIR_V1_ONLY[id]
-                            ? FLAIR_BASE_OLD + id + FLAIR_EXT_OLD
-                            : FLAIR_BASE + id + FLAIR_EXT;
+                        return FLAIR_BASE + id + FLAIR_EXT;
                     }
                 }
             }
@@ -3368,36 +3379,23 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            // Use solid tinted background — no image in CSS background
-            var tint = tintColor ? hexToRgba(tintColor, 0.35) : 'rgba(0,0,0,0.15)';
+            var color = tintColor || '#888888';
+            var tintRgba = hexToRgba(color, 0.7);
+            var tintFade = hexToRgba(color, 0.0);
+            // Flair image as background, with a gradient from top-left (solid color)
+            // fading to transparent toward bottom-right where the image shows through
             el.style.borderLeft = 'none';
-            el.style.background = tint;
-            el.style.position = 'relative';
-            el.style.overflow = 'hidden';
-
-            // Inject flair as an <img> positioned bottom-right
-            var img = document.createElement('img');
-            img.src = imgUrl;
-            img.style.cssText = [
-                'position:absolute',
-                'bottom:-8px',
-                'right:-8px',
-                'width:55%',
-                'height:auto',
-                'pointer-events:none',
-                'opacity:0.9',
-                'z-index:0'
-            ].join(';');
-
-            // Push text content above the image via z-index
-            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar,',
-                                '.day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                t.style.position = 'relative';
-                t.style.zIndex = '1';
-                t.style.color = tintColor || '#333';
+            el.style.backgroundImage = [
+                'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
+                'url(' + imgUrl + ')'
+            ].join(', ');
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'bottom right';
+            el.style.backgroundRepeat = 'no-repeat';
+            // White text so it reads on the colored gradient
+            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                t.style.color = '#fff';
             });
-
-            el.appendChild(img);
         }
 
         function renderWeekView() {
@@ -3841,12 +3839,12 @@ let visiblePeriods = {
                     if (members.length >= 2) {
                         const c1 = members[0].color;
                         const c2 = members[1].color;
-                        bgStyle = `background: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
+                        bgStyle = `background-image: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
                         borderStyle = '';
                         timeColor = c1;
                     } else {
                         const color = members.length === 1 ? members[0].color : getFamilyColor();
-                        bgStyle = `background: ${hexToRgba(color, 0.28)}`;
+                        bgStyle = `background-color: ${hexToRgba(color, 0.28)}`;
                         borderStyle = '';
                         timeColor = color;
                     }
