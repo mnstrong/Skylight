@@ -3259,9 +3259,8 @@ let visiblePeriods = {
         }
 
         // ── Google Calendar Flair images ──────────────────────────────────────────
-        var FLAIR_BASE = 'https://ssl.gstatic.com/tmly/f8944938hffheth4ew890ht4i8/flairs/xxhdpi/img_';
-        var FLAIR_EXT  = '.jpg';
-        var FLAIR_V1_ONLY = {}; // All flairs now on unified CDN
+        var FLAIR_BASE = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
+        var FLAIR_EXT  = '.svg';
 
         // keyword (lowercase) → flair id
         var FLAIR_MAP = (function() {
