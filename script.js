@@ -3275,7 +3275,8 @@ let visiblePeriods = {
             add('basketball',       ['basketball']);
             add('bbq',              ['bbq','barbecue','barbeque']);
             add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
-            add('bookclub',         ['book club','reading','study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
+            add('bookclub',         ['book club','reading']);
+            add('studying',         ['study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
             add('bowling',          ['bowling']);
             add('boxing',           ['boxing']);
             add('breakfast',        ['breakfast','brunch','brunches']);
@@ -3365,23 +3366,25 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor) {
-            var color = tintColor || '#888888';
-            var tintRgba = hexToRgba(color, 0.7);
-            var tintFade = hexToRgba(color, 0.0);
-            // Flair image as background, with a gradient from top-left (solid color)
-            // fading to transparent toward bottom-right where the image shows through
-            el.style.borderLeft = 'none';
-            el.style.backgroundImage = [
-                'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
-                'url(' + imgUrl + ')'
-            ].join(', ');
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'bottom right';
-            el.style.backgroundRepeat = 'no-repeat';
-            // White text so it reads on the colored gradient
-            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                t.style.color = '#fff';
-            });
+            var img = new Image();
+            img.onload = function() {
+                var color = tintColor || '#888888';
+                var tintRgba = hexToRgba(color, 0.7);
+                var tintFade = hexToRgba(color, 0.0);
+                el.style.borderLeft = 'none';
+                el.style.backgroundImage = [
+                    'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
+                    'url(' + imgUrl + ')'
+                ].join(', ');
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'bottom right';
+                el.style.backgroundRepeat = 'no-repeat';
+                el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                    t.style.color = '#fff';
+                });
+            };
+            img.onerror = function() { /* URL invalid — leave event styled normally */ };
+            img.src = imgUrl;
         }
 
         function renderWeekView() {
@@ -3528,7 +3531,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||''). replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3840,7 +3843,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||''). replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
