@@ -88,7 +88,7 @@ console.log('Script started loading...');
         let currentSection = 'calendar';
         let showCompletedChores = false;
         window.showCompletedListItems = false;
-        let scheduleDaysToShow = 31; // updated dynamically to days-in-month
+        let scheduleDaysToShow = 14;
         let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
             { name: 'Mary', color: '#54eef3' },
@@ -3312,7 +3312,7 @@ let visiblePeriods = {
             add('massage',          ['massage','massages','back rub']);
             add('oilchange',        ['oil change','car service']);
             add('pingpong',         ['ping pong','table tennis','pingpong']);
-            add('run',              ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
+            add('running',         ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
             add('sailing',          ['sailing','sail']);
             add('shopping',         ['shopping','grocery shopping','groceries']);
             add('skiing',           ['skiing','ski','snowboarding','snowboard']);
@@ -3360,12 +3360,14 @@ let visiblePeriods = {
                 var title = el.getAttribute('data-evtitle');
                 var notes = el.getAttribute('data-evnotes') || '';
                 var tintColor = el.getAttribute('data-evcolor');
+                var duration = parseInt(el.getAttribute('data-evduration') || '60', 10);
                 var imgUrl = getFlairUrl(title, notes);
-                if (imgUrl) applyImageToEl(el, imgUrl, tintColor);
+                if (imgUrl) applyImageToEl(el, imgUrl, tintColor, duration);
             });
         }
 
-        function applyImageToEl(el, imgUrl, tintColor) {
+        function applyImageToEl(el, imgUrl, tintColor, duration) {
+            var bgSize = (duration && duration > 60) ? '50%' : 'cover';
             var img = new Image();
             img.onload = function() {
                 var color = tintColor || '#888888';
@@ -3376,7 +3378,7 @@ let visiblePeriods = {
                     'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
                     'url(' + imgUrl + ')'
                 ].join(', ');
-                el.style.backgroundSize = 'cover';
+                el.style.backgroundSize = 'auto, ' + bgSize;
                 el.style.backgroundPosition = 'bottom right';
                 el.style.backgroundRepeat = 'no-repeat';
                 el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
@@ -3531,7 +3533,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||''). replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evduration="${(function(){var s=event.time?event.time.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;var e=event.endTime?event.endTime.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;return(s!==null&&e!==null)?e-s:60;})()}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3843,7 +3845,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||''). replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evduration="${endMins - startMins}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
