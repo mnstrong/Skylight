@@ -647,7 +647,7 @@ function startPeriodicRefresh() {
         clearInterval(refreshInterval);
     }
     
-    // Refresh every 10 seconds
+    // Refresh every 5 minutes
     refreshInterval = setInterval(async function() {
         console.log('🔄 Checking for updates from other devices...');
         try {
@@ -709,7 +709,7 @@ function startPeriodicRefresh() {
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
-    }, 30000); // 30 seconds (was 10s - reduced frequency to avoid hammering Google API)
+    }, 300000); // 5 minutes
     
     console.log('✅ Periodic refresh started (every 10 seconds)');
 }
