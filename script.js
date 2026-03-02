@@ -3367,7 +3367,9 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor, duration) {
-            var bgSize = (duration && duration > 60) ? '50%' : 'cover';
+            var longEvent = duration && duration > 60;
+            var bgSize   = longEvent ? 'auto, 161%' : 'auto, cover';
+            var bgPos    = longEvent ? 'bottom right, bottom -20px right' : 'bottom right';
             var img = new Image();
             img.onload = function() {
                 var color = tintColor || '#888888';
@@ -3378,8 +3380,8 @@ let visiblePeriods = {
                     'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
                     'url(' + imgUrl + ')'
                 ].join(', ');
-                el.style.backgroundSize = 'auto, ' + bgSize;
-                el.style.backgroundPosition = 'bottom right';
+                el.style.backgroundSize = bgSize;
+                el.style.backgroundPosition = bgPos;
                 el.style.backgroundRepeat = 'no-repeat';
                 el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                     t.style.color = '#fff';
