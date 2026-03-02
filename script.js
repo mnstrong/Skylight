@@ -3277,6 +3277,7 @@ let visiblePeriods = {
             add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
             add('bookclub',         ['book club','reading']);
             add('studying',         ['study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
+            add('kidspickupdropoff', ['school','teacher','student','school pickup','school dropoff','pickup','drop off','carpool','after school']);
             add('bowling',          ['bowling']);
             add('boxing',           ['boxing']);
             add('breakfast',        ['breakfast','brunch','brunches']);
