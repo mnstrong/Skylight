@@ -88,7 +88,7 @@ console.log('Script started loading...');
         let currentSection = 'calendar';
         let showCompletedChores = false;
         window.showCompletedListItems = false;
-        let scheduleDaysToShow = 14;
+        let scheduleDaysToShow = 31; // updated dynamically to days-in-month
         let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
             { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
             { name: 'Mary', color: '#54eef3' },
@@ -3200,7 +3200,8 @@ let visiblePeriods = {
                 currentDate.setDate(currentDate.getDate() + (direction * 7));
                 renderWeekView();
             } else if (currentView === 'schedule') {
-                currentDate.setDate(currentDate.getDate() + (direction * scheduleDaysToShow));
+                currentDate.setMonth(currentDate.getMonth() + direction);
+                currentDate.setDate(1);
                 renderScheduleView();
             } else if (currentView === 'day') {
                 currentDate.setDate(currentDate.getDate() + direction);
@@ -3335,12 +3336,10 @@ let visiblePeriods = {
         })();
 
         function getFlairUrl(title, notes) {
-            // 1. Explicit tag in description: #flair:soccer or [flair:soccer]
             if (notes) {
                 var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
                 if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
             }
-            // 2. Keyword matching — title first, then description
             var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
             var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
             for (var si = 0; si < sources.length; si++) {
@@ -3622,11 +3621,11 @@ let visiblePeriods = {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Always start from today so the current day is first
-            let startDate = new Date(today);
-            
-            // On mobile show only 7 days (current week), on desktop show 7 days (week)
-            const daysToShow = 7;
+            // Show the full current month
+            const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            let startDate = new Date(monthStart);
+            const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            scheduleDaysToShow = daysToShow;
             
             // Get all events ONCE outside the loop
             const allEvents = getAllEvents();
