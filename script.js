@@ -3200,7 +3200,8 @@ let visiblePeriods = {
                 currentDate.setDate(currentDate.getDate() + (direction * 7));
                 renderWeekView();
             } else if (currentView === 'schedule') {
-                currentDate.setDate(currentDate.getDate() + (direction * scheduleDaysToShow));
+                currentDate.setMonth(currentDate.getMonth() + direction);
+                currentDate.setDate(1);
                 renderScheduleView();
             } else if (currentView === 'day') {
                 currentDate.setDate(currentDate.getDate() + direction);
@@ -3632,11 +3633,11 @@ let visiblePeriods = {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Always start from today so the current day is first
-            let startDate = new Date(today);
-            
-            // On mobile show only 7 days (current week), on desktop show 7 days (week)
-            const daysToShow = 7;
+            // Show the full current month
+            const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            let startDate = new Date(monthStart);
+            const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            scheduleDaysToShow = daysToShow;
             
             // Get all events ONCE outside the loop
             const allEvents = getAllEvents();
