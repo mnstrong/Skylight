@@ -3275,7 +3275,7 @@ let visiblePeriods = {
             add('basketball',       ['basketball']);
             add('bbq',              ['bbq','barbecue','barbeque']);
             add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
-            add('bookclub',         ['book club','reading']);
+            add('bookclub',         ['book club','reading','study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
             add('bowling',          ['bowling']);
             add('boxing',           ['boxing']);
             add('breakfast',        ['breakfast','brunch','brunches']);
@@ -3316,7 +3316,6 @@ let visiblePeriods = {
             add('sleep',            ['nap','sleep','bedtime']);
             add('soccer',           ['soccer','football match','football game']);
             add('spa',              ['spa','sauna','steam room']);
-            add('study',            ['study','studying','exam','homework','tutoring','school','bible study','womens study','mens study','women\'s study','men\'s study','sunday school','vbs']);
             add('surfing',          ['surfing','surf']);
             add('swimming',         ['swimming','swim','pool','lap swim']);
             add('tennis',           ['tennis']);
@@ -3329,24 +3328,7 @@ let visiblePeriods = {
             add('xmasparty',        ['christmas party','xmas party','holiday party']);
             add('yoga',             ['yoga','meditation','pilates']);
             add('birthday',         ['birthday']);
-            add('genericnewyear',   ['new year','new years','nye']);
-            add('artisticgymnastics', ['gymnastics','artistic gymnastics','rhythmic gymnastics','gym meet']);
-            add('athleticsjumping',   ['long jump','high jump','pole vault','triple jump','hurdles','track jump']);
-            add('athleticsthrowing',  ['shot put','discus','javelin','hammer throw','throwing event']);
-            add('babyshower',         ['baby shower','babyshower','gender reveal','baby sprinkle']);
-            add('backtoschool',       ['back to school','first day of school','orientation day','back-to-school']);
-            add('code',               ['coding','hackathon','programming','developer meetup','code review']);
-            add('cricket',            ['cricket','cricket match','cricket practice']);
-            add('cyclingbmx',         ['bmx','dirt jumping','bmx race']);
-            add('fencing',            ['fencing','epee','foil','sabre']);
-            add('fieldhockey',        ['field hockey','field hockey game','field hockey practice']);
-            add('icehockey',          ['ice hockey','hockey game','hockey practice','hockey tournament']);
-            add('kidspickupdropoff',  ['school pickup','school dropoff','pickup','drop off','carpool','after school pickup']);
-            add('theateropera',       ['theater','opera','musical','theatre','ballet','ballet recital','recital','show','performance']);
-            add('worldhistory',       ['history class','museum visit','historical site','world history']);
-            add('archery',            ['archery','bow and arrow','recurve bow','compound bow']);
-            add('billiard',           ['billiards','pool table','snooker','8-ball pool']);
-            add('handcraft',          ['crafts','knitting','sewing','crochet','pottery','ceramics','handcraft']);
+            add('genericnewyear',   ['new year','new years']);
             return m;
         })();
 
@@ -3354,18 +3336,15 @@ let visiblePeriods = {
             // 1. Explicit tag in description: #flair:soccer or [flair:soccer]
             if (notes) {
                 var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
-                if (tagMatch) {
-                    return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
-                }
+                if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
             }
-            // 2. Keyword matching — check title first, then description
+            // 2. Keyword matching — title first, then description
             var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
             var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
             for (var si = 0; si < sources.length; si++) {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
-                        var id = FLAIR_MAP[keys[i]];
-                        return FLAIR_BASE + id + FLAIR_EXT;
+                        return FLAIR_BASE + FLAIR_MAP[keys[i]] + FLAIR_EXT;
                     }
                 }
             }
