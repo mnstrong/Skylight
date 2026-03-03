@@ -463,7 +463,8 @@ async function syncList(list, operation = 'update') {
             await SupabaseAPI.updateList(list.id, {
                 name: list.name,
                 color: list.color,
-                icon: list.icon
+                icon: list.icon,
+                assigned_to: list.assignedTo != null ? list.assignedTo : null
             });
             console.log('✓ List updated in Supabase:', list.name);
         } else if (operation === 'delete') {
