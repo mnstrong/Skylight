@@ -3190,87 +3190,227 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        
-        document.getElementById('monthYear').textContent = 
+        var year = currentDate.getFullYear();
+        var month = currentDate.getMonth();
+
+        document.getElementById('monthYear').textContent =
             new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        var firstDay = new Date(year, month, 1).getDay();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var daysInPrevMonth = new Date(year, month, 0).getDate();
 
-        const grid = document.getElementById('calendarGrid');
-        let html = `
-            <div class="day-header">Sun</div>
-            <div class="day-header">Mon</div>
-            <div class="day-header">Tue</div>
-            <div class="day-header">Wed</div>
-            <div class="day-header">Thu</div>
-            <div class="day-header">Fri</div>
-            <div class="day-header">Sat</div>
-        `;
+        var grid = document.getElementById('calendarGrid');
+        var today = new Date();
+        var allEvents = getAllEvents();
 
-        for (let i = firstDay - 1; i >= 0; i--) {
-            const day = daysInPrevMonth - i;
-            html += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
+        // ── Build list of all calendar cells (index 0 = first grid cell) ──
+        // cell index = 0..41, col = index % 7, gridRow = Math.floor(index/7)+2 (row 1 = headers)
+        var totalCells = firstDay + daysInMonth;
+        var weeks = Math.ceil(totalCells / 7);
+        var totalGridCells = weeks * 7;
+
+        // Separate all-day/multi-day events from timed events
+        // For spanning: only events without a time (all-day) or with an endDate > date
+        var allDayEvents = allEvents.filter(function(e) {
+            return isEventVisible(e) && (!e.time || (e.endDate && e.endDate > e.date));
+        });
+        var timedEvents = allEvents.filter(function(e) {
+            return isEventVisible(e) && e.time && (!e.endDate || e.endDate <= e.date);
+        });
+
+        // Build a map: dateStr -> timed events for that day (max 3 shown)
+        // Also track how many all-day rows each cell needs (reserve top space)
+        var timedByDate = {};
+        var allDayCountByCell = {}; // cell index -> count of allday bars passing through
+        for (var ci = 0; ci < totalGridCells; ci++) { allDayCountByCell[ci] = 0; }
+
+        // ── Compute spanning bars ──
+        // Each all-day event gets a row slot to avoid overlaps
+        // slot[week][col] = true if occupied
+        var slotMap = [];
+        for (var w = 0; w < weeks; w++) {
+            slotMap.push([null, null, null, null]); // up to 4 slots per week
         }
 
-        const today = new Date();
-        const allEvents = getAllEvents();
-        
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
-                if (!a.time) return -1;
-                if (!b.time) return 1;
-                return a.time.localeCompare(b.time);
-            });
+        var spanBars = []; // {event, weekIdx, startCol, endCol, slot}
 
-            var eventsHtml = '';
-            dayEvents.slice(0, 3).forEach(function(event) {
-                var color = getEventColor(event);
-                var isAllDay = !event.time;
-                // All-day: slightly more opaque solid pastel; timed: lighter
-                var bgColor = isAllDay ? hexToRgba(color, 0.38) : hexToRgba(color, 0.20);
+        allDayEvents.forEach(function(ev) {
+            var evStart = ev.date;
+            var evEnd = ev.endDate || ev.date;
 
-                var timeStr = '';
-                var hasTime = false;
-                if (event.time) {
-                    hasTime = true;
-                    var parts = event.time.split(':');
-                    var hours = parseInt(parts[0], 10);
-                    var minutes = parseInt(parts[1], 10);
-                    var period = hours >= 12 ? 'PM' : 'AM';
-                    var displayHours = hours % 12 || 12;
-                    timeStr = displayHours + ':' + String(minutes).padStart(2, '0') + ' ' + period;
+            // For each week this event spans, create a bar segment
+            for (var w = 0; w < weeks; w++) {
+                // First cell of this week (as a date)
+                var weekCellStart = w * 7; // cell index of Sun of this week
+                var weekFirstDate = new Date(year, month, 1 - firstDay + weekCellStart);
+                var weekLastDate  = new Date(year, month, 1 - firstDay + weekCellStart + 6);
+
+                var wfStr = weekFirstDate.getFullYear() + '-' +
+                    String(weekFirstDate.getMonth()+1).padStart(2,'0') + '-' +
+                    String(weekFirstDate.getDate()).padStart(2,'0');
+                var wlStr = weekLastDate.getFullYear() + '-' +
+                    String(weekLastDate.getMonth()+1).padStart(2,'0') + '-' +
+                    String(weekLastDate.getDate()).padStart(2,'0');
+
+                // Does this event overlap this week?
+                if (evEnd < wfStr || evStart > wlStr) continue;
+
+                // Clamp to week
+                var barStart = evStart < wfStr ? wfStr : evStart;
+                var barEnd   = evEnd   > wlStr ? wlStr : evEnd;
+
+                // Convert to col indices
+                var startDate = new Date(barStart + 'T12:00:00');
+                var endDate   = new Date(barEnd   + 'T12:00:00');
+                var startCol  = startDate.getDay();
+                var endCol    = endDate.getDay();
+
+                // Find a free slot in this week
+                var slot = -1;
+                for (var s = 0; s < 4; s++) {
+                    var occupied = false;
+                    if (slotMap[w][s]) {
+                        // Check if any existing bar in this slot overlaps cols
+                        for (var b = 0; b < spanBars.length; b++) {
+                            var existing = spanBars[b];
+                            if (existing.weekIdx === w && existing.slot === s) {
+                                if (!(endCol < existing.startCol || startCol > existing.endCol)) {
+                                    occupied = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!occupied) { slot = s; break; }
                 }
+                if (slot === -1) slot = 3; // overflow into slot 3
 
-                var hasTimeClass = hasTime ? ' has-time' : '';
-                eventsHtml += '<div class="day-event-item' + hasTimeClass + '" style="background-color: ' + bgColor + ';" onclick="event.stopPropagation(); showEventDetails(\'' + event.id + '\')">' +
-                    '<span class="day-event-time">' + timeStr + '</span>' +
-                    '<span class="day-event-title">' + event.title + '</span>' +
+                spanBars.push({ event: ev, weekIdx: w, startCol: startCol, endCol: endCol, slot: slot });
+
+                // Mark cells as having an allday bar (so timed events push down)
+                for (var col = startCol; col <= endCol; col++) {
+                    var cellIdx = w * 7 + col;
+                    if (allDayCountByCell[cellIdx] !== undefined) {
+                        allDayCountByCell[cellIdx] = Math.max(allDayCountByCell[cellIdx], slot + 1);
+                    }
+                }
+            }
+        });
+
+        // ── Build timed events map ──
+        for (var d = 1; d <= daysInMonth; d++) {
+            var ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            timedByDate[ds] = timedEvents.filter(function(e) {
+                return isEventOnDate(e, ds);
+            }).sort(function(a,b){ return a.time.localeCompare(b.time); });
+        }
+
+        // ── Render grid HTML ──
+        var html = '<div class="day-header">Sun</div>' +
+            '<div class="day-header">Mon</div>' +
+            '<div class="day-header">Tue</div>' +
+            '<div class="day-header">Wed</div>' +
+            '<div class="day-header">Thu</div>' +
+            '<div class="day-header">Fri</div>' +
+            '<div class="day-header">Sat</div>';
+
+        // prev-month filler cells
+        for (var i = firstDay - 1; i >= 0; i--) {
+            html += '<div class="day-cell other-month"><div class="day-number">' + (daysInPrevMonth - i) + '</div></div>';
+        }
+
+        // current month cells
+        for (var day = 1; day <= daysInMonth; day++) {
+            var isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+            var cellIdx = firstDay + day - 1;
+            var reservedSlots = allDayCountByCell[cellIdx] || 0;
+
+            // Timed events inside the cell
+            var cellTimedEvents = timedByDate[dateStr] || [];
+            var maxTimed = Math.max(0, 3 - reservedSlots);
+            var eventsHtml = '';
+
+            // Reserved space placeholders for allday bars
+            for (var s = 0; s < reservedSlots; s++) {
+                eventsHtml += '<div class="day-allday-placeholder"></div>';
+            }
+
+            cellTimedEvents.slice(0, maxTimed).forEach(function(ev) {
+                var color = getEventColor(ev);
+                var bgColor = hexToRgba(color, 0.22);
+                var parts2 = ev.time.split(':');
+                var h = parseInt(parts2[0], 10);
+                var m = parseInt(parts2[1], 10);
+                var period2 = h >= 12 ? 'PM' : 'AM';
+                var dh = h % 12 || 12;
+                var timeStr2 = dh + ':' + String(m).padStart(2,'0') + ' ' + period2;
+                eventsHtml += '<div class="day-event-item has-time" style="background-color:' + bgColor + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
+                    '<span class="day-event-time">' + timeStr2 + '</span>' +
+                    '<span class="day-event-title">' + ev.title + '</span>' +
                     '</div>';
             });
 
-            if (dayEvents.length > 3) {
-                eventsHtml += '<div class="day-event-more">' + (dayEvents.length - 3) + ' more</div>';
+            var totalForDay = (timedByDate[dateStr] || []).length + (allDayCountByCell[cellIdx] || 0);
+            if (totalForDay > 3) {
+                eventsHtml += '<div class="day-event-more">' + (totalForDay - 3) + ' more</div>';
             }
 
-            html += `
-                <div class="day-cell ${isToday ? 'today' : ''}" onclick="showDayEvents('${dateStr}')">
-                    <div class="day-number">${day}</div>
-                    <div class="day-events">${eventsHtml}</div>
-                </div>
-            `;
+            html += '<div class="day-cell' + (isToday ? ' today' : '') + '" onclick="showDayEvents(\'' + dateStr + '\')">' +
+                '<div class="day-number">' + day + '</div>' +
+                '<div class="day-events">' + eventsHtml + '</div>' +
+                '</div>';
         }
 
-        const remainingCells = 42 - (firstDay + daysInMonth);
-        for (let day = 1; day <= remainingCells; day++) {
-            html += `<div class="day-cell other-month"><div class="day-number">${day}</div></div>`;
+        // trailing filler cells
+        var remainingCells = totalGridCells - (firstDay + daysInMonth);
+        for (var fd = 1; fd <= remainingCells; fd++) {
+            html += '<div class="day-cell other-month"><div class="day-number">' + fd + '</div></div>';
         }
+
         grid.innerHTML = html;
+
+        // ── Inject spanning bars as absolutely-positioned overlays ──
+        // We measure each cell's position relative to the grid to place bars precisely
+        var cells = grid.querySelectorAll('.day-cell');
+        var gridRect = grid.getBoundingClientRect();
+
+        spanBars.forEach(function(bar) {
+            var startCellIdx = bar.weekIdx * 7 + bar.startCol;
+            var endCellIdx   = bar.weekIdx * 7 + bar.endCol;
+
+            // Cells: firstDay cells are other-month, then current month, then trailing
+            // All cells including other-month are in cells[] in order
+            var startCell = cells[startCellIdx];
+            var endCell   = cells[endCellIdx];
+            if (!startCell || !endCell) return;
+
+            var startRect = startCell.getBoundingClientRect();
+            var endRect   = endCell.getBoundingClientRect();
+
+            var left   = startRect.left - gridRect.left + 3;
+            var width  = endRect.right  - startRect.left - 6;
+            // Slot 0 = just below day-number (offset ~42px), each slot ~28px
+            var top    = 42 + bar.slot * 28;
+
+            var ev = bar.event;
+            var color = getEventColor(ev);
+            var bgColor = hexToRgba(color, 0.38);
+
+            var barEl = document.createElement('div');
+            barEl.className = 'day-span-bar';
+            barEl.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + width + 'px;height:24px;' +
+                'background:' + bgColor + ';border-radius:20px;z-index:2;cursor:pointer;' +
+                'display:flex;align-items:center;padding:0 10px;overflow:hidden;box-sizing:border-box;';
+            barEl.innerHTML = '<span style="font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222;">' +
+                ev.title + '</span>';
+            barEl.onclick = function(e) {
+                e.stopPropagation();
+                showEventDetails(ev.id);
+            };
+            grid.appendChild(barEl);
+        });
     }
 
     function navigateMonth(direction) {
