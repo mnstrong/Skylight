@@ -1,7 +1,7 @@
 // Polyfills for Android 8 / older browser compatibility
 // globalThis polyfill (needed by some libraries; moved from inline HTML script)
 if (typeof globalThis === 'undefined') {
-Object.defineProperty(Object.prototype, ‘**magic**’, {
+Object.defineProperty(Object.prototype, '**magic**', {
 get: function() { return this; }, configurable: true
 });
 /* jshint ignore:start */
