@@ -2010,7 +2010,7 @@ let visiblePeriods = {
             openEditListItemPanel();
         }
         
-        function deleteListItemFromDetail() {
+        async function deleteListItemFromDetail() {
             if (!confirm('Are you sure you want to delete this item?')) return;
             
             const list = lists.find(l => l.id === currentEditListId);
@@ -2018,8 +2018,25 @@ let visiblePeriods = {
             
             const itemIndex = list.items.findIndex(i => i.id === currentEditListItemId);
             if (itemIndex > -1) {
+                const deletedItem = list.items[itemIndex];
                 list.items.splice(itemIndex, 1);
                 localStorage.setItem('lists', JSON.stringify(lists));
+
+                // Sync deletion to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+                    try {
+                        await window.SupabaseSync.syncListItem(currentEditListId, deletedItem, 'delete');
+                    } catch(err) {
+                        console.error('[DELETE LIST ITEM] syncListItem error:', err);
+                    }
+                } else if (typeof window.SupabaseAPI !== 'undefined' && deletedItem.id) {
+                    try {
+                        await window.SupabaseAPI.deleteListItem(deletedItem.id);
+                    } catch(err) {
+                        console.error('[DELETE LIST ITEM] SupabaseAPI.deleteListItem error:', err);
+                    }
+                }
+
                 closeListItemDetail();
                 renderListsColumns();
             }
@@ -2267,7 +2284,7 @@ let visiblePeriods = {
             document.getElementById('editListPanelOverlay').classList.remove('active');
         }
         
-        function saveEditedList() {
+        async function saveEditedList() {
             const newName = document.getElementById('editListName').value.trim();
             const newAssignedTo = Number(document.getElementById('editListAssignedTo').value);
             
@@ -2282,6 +2299,26 @@ let visiblePeriods = {
             list.name = newName;
             list.assignedTo = newAssignedTo;
             localStorage.setItem('lists', JSON.stringify(lists));
+
+            // Sync update to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function') {
+                try {
+                    await window.SupabaseSync.syncList(list, 'update');
+                } catch(err) {
+                    console.error('[EDIT LIST] syncList error:', err);
+                }
+            } else if (typeof window.SupabaseAPI !== 'undefined') {
+                try {
+                    await window.SupabaseAPI.updateList(list.id, {
+                        name: list.name,
+                        color: list.color,
+                        icon: list.icon,
+                        assigned_to: list.assignedTo
+                    });
+                } catch(err) {
+                    console.error('[EDIT LIST] SupabaseAPI.updateList error:', err);
+                }
+            }
             
             closeEditListPanel();
             // Reset filter to 'all' so the list doesn't disappear after changing owner
@@ -2369,7 +2406,7 @@ let visiblePeriods = {
             renderEditListItemMemberGrid(memberName);
         }
         
-        function saveEditedListItem() {
+        async function saveEditedListItem() {
             const newText = document.getElementById('editListItemText').value.trim();
             
             if (!newText) {
@@ -2386,6 +2423,25 @@ let visiblePeriods = {
             item.text = newText;
             item.assignedTo = selectedListItemMember;
             localStorage.setItem('lists', JSON.stringify(lists));
+
+            // Sync item update to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+                try {
+                    await window.SupabaseSync.syncListItem(currentEditListId, item, 'update');
+                } catch(err) {
+                    console.error('[EDIT LIST ITEM] syncListItem error:', err);
+                }
+            } else if (typeof window.SupabaseAPI !== 'undefined') {
+                try {
+                    await window.SupabaseAPI.updateListItem(item.id, {
+                        text: item.text,
+                        checked: item.checked,
+                        display_order: item.displayOrder
+                    });
+                } catch(err) {
+                    console.error('[EDIT LIST ITEM] SupabaseAPI.updateListItem error:', err);
+                }
+            }
             
             closeEditListItemPanel();
             renderListsColumns();
