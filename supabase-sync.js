@@ -354,18 +354,11 @@ function mealPlanToDb(entry) {
     var localRecipeId = entry.recipe_id || entry.recipeId || null;
     var dbRecipeId    = isUuid(localRecipeId) ? localRecipeId : null;
 
-    var recipeName = entry.recipeName || entry.recipe_name || '';
-    if (!recipeName && localRecipeId && typeof window !== 'undefined' && window.recipes) {
-        var r = window.recipes.find(function(x) { return String(x.id) === String(localRecipeId); });
-        if (r) recipeName = r.title || r.name || '';
-    }
-
     return {
-        meal_date:   entry.meal_date  || entry.date     || '',
-        meal_type:   entry.meal_type  || entry.mealType || '',
-        recipe_id:   dbRecipeId,
-        recipe_name: recipeName,
-        notes:       entry.notes      || ''
+        meal_date:  entry.meal_date  || entry.date     || '',
+        meal_type:  entry.meal_type  || entry.mealType || '',
+        recipe_id:  dbRecipeId,
+        notes:      entry.notes      || ''
     };
 }
 
