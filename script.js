@@ -3228,33 +3228,34 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 return a.time.localeCompare(b.time);
             });
 
-            let eventsHtml = '';
-            dayEvents.slice(0, 3).forEach(event => {
-                const member = getEventMember(event);
-                const color = getEventColor(event);
-                const bgColor = hexToRgba(color, 0.25);
-                
-                // Format time to 12-hour format
-                let timeStr = '';
+            var eventsHtml = '';
+            dayEvents.slice(0, 3).forEach(function(event) {
+                var color = getEventColor(event);
+                var isAllDay = !event.time;
+                // All-day: slightly more opaque solid pastel; timed: lighter
+                var bgColor = isAllDay ? hexToRgba(color, 0.38) : hexToRgba(color, 0.20);
+
+                var timeStr = '';
+                var hasTime = false;
                 if (event.time) {
-                    const [hours, minutes] = event.time.split(':').map(Number);
-                    const period = hours >= 12 ? 'PM' : 'AM';
-                    const displayHours = hours % 12 || 12;
-                    timeStr = `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
-                } else {
-                    timeStr = 'All day';
+                    hasTime = true;
+                    var parts = event.time.split(':');
+                    var hours = parseInt(parts[0], 10);
+                    var minutes = parseInt(parts[1], 10);
+                    var period = hours >= 12 ? 'PM' : 'AM';
+                    var displayHours = hours % 12 || 12;
+                    timeStr = displayHours + ':' + String(minutes).padStart(2, '0') + ' ' + period;
                 }
-                
-                eventsHtml += `
-                    <div class="day-event-item" style="background-color: ${bgColor}; color: #000;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
-                        <span class="day-event-time">${timeStr}</span>
-                        <span class="day-event-title">${event.title}</span>
-                    </div>
-                `;
+
+                var hasTimeClass = hasTime ? ' has-time' : '';
+                eventsHtml += '<div class="day-event-item' + hasTimeClass + '" style="background-color: ' + bgColor + ';" onclick="event.stopPropagation(); showEventDetails(\'' + event.id + '\')">' +
+                    '<span class="day-event-time">' + timeStr + '</span>' +
+                    '<span class="day-event-title">' + event.title + '</span>' +
+                    '</div>';
             });
 
             if (dayEvents.length > 3) {
-                eventsHtml += `<div class="day-event-item" style="color: #999;">${dayEvents.length - 3} More...</div>`;
+                eventsHtml += '<div class="day-event-more">' + (dayEvents.length - 3) + ' more</div>';
             }
 
             html += `
