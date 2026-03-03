@@ -17,6 +17,31 @@
     <link rel="stylesheet" href="habits.css">
     <link rel="stylesheet" href="profile-dashboard.css">
     <!-- Supabase -->
+<style>
+    /* ── Spanning all-day event bars ─────────────────────────────────────── */
+    .cal-span-overlay {
+        position: relative;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .cal-span-overlay > div {
+        width: 100%;
+    }
+    .day-event-more {
+        font-size: 11px;
+        color: #999;
+        padding: 1px 3px;
+        cursor: pointer;
+    }
+    /* Ensure calendarGrid rows align properly for spanning */
+    #calendarGrid {
+        align-items: start !important;
+    }
+    #calendarGrid .day-cell {
+        min-height: 80px;
+        align-self: stretch;
+    }
+</style>
 </head>
 <body>
     <div class="container">
