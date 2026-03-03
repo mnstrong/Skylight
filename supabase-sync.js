@@ -355,8 +355,8 @@ function mealPlanToDb(entry) {
     var dbRecipeId    = isUuid(localRecipeId) ? localRecipeId : null;
 
     return {
-        meal_date:  entry.meal_date  || entry.date     || '',
-        meal_type:  entry.meal_type  || entry.mealType || '',
+        meal_date:  entry.meal_date  || entry.date              || '',
+        meal_type: (entry.meal_type  || entry.mealType || '').toLowerCase(),
         recipe_id:  dbRecipeId,
         notes:      entry.notes      || ''
     };
@@ -364,10 +364,13 @@ function mealPlanToDb(entry) {
 
 // DB meal plan row → local object
 function mealPlanFromDb(row) {
+    var mealType = row.meal_type || '';
+    // DB stores lowercase, app uses capitalized (Breakfast, Lunch, Dinner, Snack)
+    mealType = mealType.charAt(0).toUpperCase() + mealType.slice(1);
     return {
         id:         row.id,
         date:       row.meal_date   || '',
-        mealType:   row.meal_type   || '',
+        mealType:   mealType,
         recipeId:   row.recipe_id   || null,
         recipeName: (row.recipes && row.recipes.title) || row.recipe_name || '',
         notes:      row.notes       || ''
