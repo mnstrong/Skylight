@@ -519,6 +519,10 @@ let visiblePeriods = {
             mealPlan.push(newMeal);
             
             localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+            // Sync add to Supabase
+            if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
+                SupabaseSync.syncMealPlanEntry(newMeal, 'add');
+            }
             closeMealSelector();
             renderMealPlanGrid();
         }
@@ -572,8 +576,13 @@ let visiblePeriods = {
             if (confirm('Remove this meal?')) {
                 const index = mealPlan.findIndex(m => m.id == mealId);
                 if (index > -1) {
+                    const deletedEntry = mealPlan[index];
                     mealPlan.splice(index, 1);
                     localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+                    // Sync deletion to Supabase
+                    if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
+                        SupabaseSync.syncMealPlanEntry(deletedEntry, 'delete');
+                    }
                     closeMealDetail();
                     renderMealPlanGrid();
                 }
@@ -1169,6 +1178,8 @@ let visiblePeriods = {
         }
         
         function initializeSampleRecipes() {
+            // Skip samples if Supabase is handling data - they cause duplicates
+            if (typeof SupabaseSync !== 'undefined' || typeof syncEnabled !== 'undefined') return;
             if (recipes.length === 0) {
                 recipes = [
                     { id: 1, name: 'Scrambled Eggs', mealType: 'Breakfast', category: 'Quick', ingredients: 'Eggs, butter, salt, pepper', instructions: 'Beat eggs, cook in butter until fluffy.' },
