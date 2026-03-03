@@ -310,55 +310,75 @@ async function syncRecipes(recipes) {
     // Recipes are synced individually
 }
 
-// Map local recipe -> DB columns (mealType is local-only, not in DB)
+// ── Field mapping helpers ────────────────────────────────────────────────────
+
+function isUuid(val) {
+    return typeof val === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+}
+
+// Local recipe object → DB columns  (mealType is local-only, not a DB column)
 function recipeToDb(recipe) {
     return {
-        title:        recipe.title || recipe.name || '',
-        ingredients:  recipe.ingredients || '',
+        title:        recipe.title        || recipe.name  || '',
+        ingredients:  recipe.ingredients  || '',
         instructions: recipe.instructions || '',
-        category:     recipe.category || 'Uncategorized',
-        image_url:    recipe.image_url || recipe.imageUrl || null,
-        favorite:     recipe.favorite || false
+        category:     recipe.category     || 'Uncategorized',
+        image_url:    recipe.image_url     || recipe.imageUrl || null,
+        favorite:     recipe.favorite     || false
     };
 }
 
-// Map DB row -> local recipe object
+// DB row → local recipe object
 function recipeFromDb(row) {
     return {
         id:           row.id,
-        name:         row.title || '',
-        title:        row.title || '',
-        ingredients:  row.ingredients || '',
-        instructions: row.instructions || '',
-        category:     row.category || 'Uncategorized',
-        image_url:    row.image_url || null,
-        imageUrl:     row.image_url || null,
-        favorite:     row.favorite || false,
-        mealType:     row.category || ''
+        name:         row.title           || '',
+        title:        row.title           || '',
+        ingredients:  row.ingredients     || '',
+        instructions: row.instructions    || '',
+        category:     row.category        || 'Uncategorized',
+        image_url:    row.image_url        || null,
+        imageUrl:     row.image_url        || null,
+        favorite:     row.favorite        || false,
+        mealType:     row.category        || ''
     };
 }
 
-// Map local meal plan entry -> DB columns
+// Local meal plan entry → DB columns
+// recipe_id must be a UUID; if the recipe hasn't synced yet we store null + name
 function mealPlanToDb(entry) {
+    var localRecipeId = entry.recipe_id || entry.recipeId || null;
+    var dbRecipeId    = isUuid(localRecipeId) ? localRecipeId : null;
+
+    var recipeName = entry.recipeName || entry.recipe_name || '';
+    if (!recipeName && localRecipeId && typeof window !== 'undefined' && window.recipes) {
+        var r = window.recipes.find(function(x) { return String(x.id) === String(localRecipeId); });
+        if (r) recipeName = r.title || r.name || '';
+    }
+
     return {
-        meal_date:  entry.meal_date  || entry.date     || '',
-        meal_type:  entry.meal_type  || entry.mealType || '',
-        recipe_id:  entry.recipe_id  || entry.recipeId || null,
-        notes:      entry.notes      || ''
+        meal_date:   entry.meal_date  || entry.date     || '',
+        meal_type:   entry.meal_type  || entry.mealType || '',
+        recipe_id:   dbRecipeId,
+        recipe_name: recipeName,
+        notes:       entry.notes      || ''
     };
 }
 
-// Map DB meal plan row -> local object
+// DB meal plan row → local object
 function mealPlanFromDb(row) {
     return {
-        id:        row.id,
-        date:      row.meal_date  || '',
-        mealType:  row.meal_type  || '',
-        recipeId:  row.recipe_id  || null,
-        recipeName: (row.recipes && row.recipes.title) || '',
-        notes:     row.notes      || ''
+        id:         row.id,
+        date:       row.meal_date   || '',
+        mealType:   row.meal_type   || '',
+        recipeId:   row.recipe_id   || null,
+        recipeName: (row.recipes && row.recipes.title) || row.recipe_name || '',
+        notes:      row.notes       || ''
     };
 }
+
+// ── Sync functions ────────────────────────────────────────────────────────────
 
 // Sync single recipe
 async function syncRecipe(recipe, operation = 'update') {
@@ -700,7 +720,7 @@ function startPeriodicRefresh() {
         clearInterval(refreshInterval);
     }
     
-    // Refresh every 10 seconds
+    // Refresh every 5 minutes
     refreshInterval = setInterval(async function() {
         console.log('🔄 Checking for updates from other devices...');
         try {
@@ -762,7 +782,7 @@ function startPeriodicRefresh() {
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
-    }, 30000); // 30 seconds (was 10s - reduced frequency to avoid hammering Google API)
+    }, 300000); // 5 minutes
     
     console.log('✅ Periodic refresh started (every 10 seconds)');
 }
