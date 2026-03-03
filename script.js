@@ -3260,8 +3260,9 @@ let visiblePeriods = {
         }
 
         // ── Google Calendar Flair images ──────────────────────────────────────────
-        var FLAIR_BASE = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
-        var FLAIR_EXT  = '.svg';
+        var FLAIR_BASE = 'https://ssl.gstatic.com/tmly/f8944938hffheth4ew890ht4i8/flairs/xxhdpi/img_';
+        var FLAIR_EXT  = '.jpg';
+        var FLAIR_V1_ONLY = {}; // All flairs now on unified CDN
 
         // keyword (lowercase) → flair id
         var FLAIR_MAP = (function() {
@@ -3277,8 +3278,6 @@ let visiblePeriods = {
             add('bbq',              ['bbq','barbecue','barbeque']);
             add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
             add('bookclub',         ['book club','reading']);
-            add('studying',         ['study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
-            add('kidspickupdropoff', ['school','teacher','student','school pickup','school dropoff','pickup','drop off','carpool','after school']);
             add('bowling',          ['bowling']);
             add('boxing',           ['boxing']);
             add('breakfast',        ['breakfast','brunch','brunches']);
@@ -3312,13 +3311,14 @@ let visiblePeriods = {
             add('massage',          ['massage','massages','back rub']);
             add('oilchange',        ['oil change','car service']);
             add('pingpong',         ['ping pong','table tennis','pingpong']);
-            add('running',         ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
+            add('run',              ['run','running','jog','jogging','marathon','5k','10k','half marathon']);
             add('sailing',          ['sailing','sail']);
             add('shopping',         ['shopping','grocery shopping','groceries']);
             add('skiing',           ['skiing','ski','snowboarding','snowboard']);
             add('sleep',            ['nap','sleep','bedtime']);
             add('soccer',           ['soccer','football match','football game']);
             add('spa',              ['spa','sauna','steam room']);
+            add('study',            ['study','studying','exam','homework','tutoring','school']);
             add('surfing',          ['surfing','surf']);
             add('swimming',         ['swimming','swim','pool','lap swim']);
             add('tennis',           ['tennis']);
@@ -3331,21 +3331,35 @@ let visiblePeriods = {
             add('xmasparty',        ['christmas party','xmas party','holiday party']);
             add('yoga',             ['yoga','meditation','pilates']);
             add('birthday',         ['birthday']);
-            add('genericnewyear',   ['new year','new years']);
+            add('genericnewyear',   ['new year','new years','nye']);
+            add('artisticgymnastics', ['gymnastics','artistic gymnastics','rhythmic gymnastics','gym meet']);
+            add('athleticsjumping',   ['long jump','high jump','pole vault','triple jump','hurdles','track jump']);
+            add('athleticsthrowing',  ['shot put','discus','javelin','hammer throw','throwing event']);
+            add('babyshower',         ['baby shower','babyshower','gender reveal','baby sprinkle']);
+            add('backtoschool',       ['back to school','first day of school','orientation day','back-to-school']);
+            add('code',               ['coding','hackathon','programming','developer meetup','code review']);
+            add('cricket',            ['cricket','cricket match','cricket practice']);
+            add('cyclingbmx',         ['bmx','dirt jumping','bmx race']);
+            add('fencing',            ['fencing','epee','foil','sabre']);
+            add('fieldhockey',        ['field hockey','field hockey game','field hockey practice']);
+            add('icehockey',          ['ice hockey','hockey game','hockey practice','hockey tournament']);
+            add('kidspickupdropoff',  ['school pickup','school dropoff','pickup','drop off','carpool','after school pickup']);
+            add('theateropera',       ['theater','opera','musical','theatre','ballet','ballet recital','recital','show','performance']);
+            add('worldhistory',       ['history class','museum visit','historical site','world history']);
+            add('archery',            ['archery','bow and arrow','recurve bow','compound bow']);
+            add('billiard',           ['billiards','pool table','snooker','8-ball pool']);
+            add('handcraft',          ['crafts','knitting','sewing','crochet','pottery','ceramics','handcraft']);
             return m;
         })();
 
         function getFlairUrl(title, notes) {
-            if (notes) {
-                var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
-                if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
-            }
             var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
             var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
             for (var si = 0; si < sources.length; si++) {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
-                        return FLAIR_BASE + FLAIR_MAP[keys[i]] + FLAIR_EXT;
+                        var id = FLAIR_MAP[keys[i]];
+                        return FLAIR_BASE + id + FLAIR_EXT;
                     }
                 }
             }
@@ -3360,38 +3374,29 @@ let visiblePeriods = {
                 var title = el.getAttribute('data-evtitle');
                 var notes = el.getAttribute('data-evnotes') || '';
                 var tintColor = el.getAttribute('data-evcolor');
-                var duration = parseInt(el.getAttribute('data-evduration') || '60', 10);
                 var imgUrl = getFlairUrl(title, notes);
-                if (imgUrl) applyImageToEl(el, imgUrl, tintColor, duration);
+                if (imgUrl) applyImageToEl(el, imgUrl, tintColor);
             });
         }
 
-        function applyImageToEl(el, imgUrl, tintColor, duration) {
-            var longEvent  = duration && duration > 60;
-            // Short events: gradient covers top-left, fades toward image at bottom-right
-            // Long events:  gradient starts lower so it blends over the image edge more softly
-            var gradient   = longEvent
-                ? 'linear-gradient(to bottom right, ' + 'TINT' + ' 50%, ' + 'FADE' + ' 85%)'
-                : 'linear-gradient(to bottom right, ' + 'TINT' + ' 30%, ' + 'FADE' + ' 75%)';
-            var bgSize     = longEvent ? 'auto, 161%'                        : 'auto, cover';
-            var bgPos      = longEvent ? 'bottom right, bottom -20px right'  : 'bottom right';
-            var img = new Image();
-            img.onload = function() {
-                var color    = tintColor || '#888888';
-                var tintRgba = hexToRgba(color, 0.7);
-                var tintFade = hexToRgba(color, 0.0);
-                var grad     = gradient.replace('TINT', tintRgba).replace('FADE', tintFade);
-                el.style.borderLeft       = 'none';
-                el.style.backgroundImage  = grad + ', url(' + imgUrl + ')';
-                el.style.backgroundSize   = bgSize;
-                el.style.backgroundPosition = bgPos;
-                el.style.backgroundRepeat = 'no-repeat';
-                el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
-                    t.style.color = '#fff';
-                });
-            };
-            img.onerror = function() { /* URL invalid — leave event styled normally */ };
-            img.src = imgUrl;
+        function applyImageToEl(el, imgUrl, tintColor) {
+            var color = tintColor || '#888888';
+            var tintRgba = hexToRgba(color, 0.7);
+            var tintFade = hexToRgba(color, 0.0);
+            // Flair image as background, with a gradient from top-left (solid color)
+            // fading to transparent toward bottom-right where the image shows through
+            el.style.borderLeft = 'none';
+            el.style.backgroundImage = [
+                'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)',
+                'url(' + imgUrl + ')'
+            ].join(', ');
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'bottom right';
+            el.style.backgroundRepeat = 'no-repeat';
+            // White text so it reads on the colored gradient
+            el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
+                t.style.color = '#fff';
+            });
         }
 
         function renderWeekView() {
@@ -3538,7 +3543,7 @@ let visiblePeriods = {
                     const color = getEventColor(event);
                     const initial = member ? member.name.charAt(0).toUpperCase() : '';
                     
-                    html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evduration="${(function(){var s=event.time?event.time.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;var e=event.endTime?event.endTime.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;return(s!==null&&e!==null)?e-s:60;})()}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
+                    html += `<div class="day-view-event" data-evtitle="${event.title.replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
                         <div class="day-view-event-time">${event.time || 'All day'}</div>
                         <div class="day-view-event-title">${event.title}</div>
                         ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
@@ -3850,7 +3855,7 @@ let visiblePeriods = {
                         `<span class="sg-event-avatar" style="background:${m.color};${i === 1 ? 'right:26px;' : ''}">${m.name.charAt(0).toUpperCase()}</span>`
                     ).join('');
 
-                    daysHtml += `<div class="sg-event" data-evtitle="${(ev.title||ev.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evduration="${endMins - startMins}" data-evcolor="${timeColor}" style="
+                    daysHtml += `<div class="sg-event" data-evtitle="${ev.title.replace(/"/g,'&quot;')}" data-evnotes="${(ev.notes||ev.description||'').replace(/"/g,'&quot;')}" data-evcolor="${timeColor}" style="
                         top:${Math.max(0,top)}px;
                         height:${height}px;
                         left:${leftPct}%;
