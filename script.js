@@ -2286,7 +2286,10 @@ let visiblePeriods = {
         
         async function saveEditedList() {
             const newName = document.getElementById('editListName').value.trim();
-            const newAssignedTo = Number(document.getElementById('editListAssignedTo').value);
+            const rawAssignedTo = document.getElementById('editListAssignedTo').value;
+            const newAssignedTo = (rawAssignedTo && !isNaN(Number(rawAssignedTo)) && rawAssignedTo.indexOf('-') === -1)
+                ? Number(rawAssignedTo)
+                : rawAssignedTo;
             
             if (!newName) {
                 alert('Please enter a list name');
