@@ -156,7 +156,17 @@ let visiblePeriods = {
         let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         // Meal planning data
-        let recipes = JSON.parse(localStorage.getItem('recipes')) || [];
+        let recipes = (function() {
+            var stored = JSON.parse(localStorage.getItem('recipes')) || [];
+            // Deduplicate by id (Supabase UUIDs take priority over local numeric ids)
+            var seen = {};
+            return stored.filter(function(r) {
+                var key = String(r.id);
+                if (seen[key]) return false;
+                seen[key] = true;
+                return true;
+            });
+        })();
         let mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || [];
         let mealCategories = JSON.parse(localStorage.getItem('mealCategories')) || [
             { name: 'Breakfast', color: '#FFB3B3', visible: true },
@@ -418,7 +428,8 @@ let visiblePeriods = {
         
         function renderMealSelectorList() {
             const list = document.getElementById('mealSelectorList');
-            const categoryRecipes = recipes.filter(r => r.mealType === currentMealType);
+            // Show all recipes regardless of mealType (mealType is local-only, not in DB)
+            const categoryRecipes = recipes.slice();
             
             let html = `<div style="padding: 0 20px;">`;
             
@@ -3342,7 +3353,6 @@ let visiblePeriods = {
         })();
 
         function getFlairUrl(title, notes) {
-            // Support explicit #flair:id or [flair:id] tags in description
             if (notes) {
                 var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
                 if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
@@ -3352,7 +3362,6 @@ let visiblePeriods = {
             for (var si = 0; si < sources.length; si++) {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
-                        // Always try 2024 first; applyImageToEl will fall back to v1 on 404
                         return FLAIR_BASE + FLAIR_MAP[keys[i]] + FLAIR_EXT;
                     }
                 }
@@ -3397,8 +3406,6 @@ let visiblePeriods = {
                 });
             }
 
-            // Build v1 fallback URL from the 2024 URL
-            // 2024: .../2024_v2/img_<id>.svg  →  v1: .../v1/img_<id>_1x.jpg
             function fallbackUrl(url) {
                 var m = url.match(/2024_v2\/img_([^.]+)\.svg$/);
                 return m ? FLAIR_BASE_OLD + m[1] + FLAIR_EXT_OLD : null;
@@ -3411,7 +3418,7 @@ let visiblePeriods = {
                 if (!v1) return;
                 var img2 = new Image();
                 img2.onload = function() { applyBg(v1); };
-                img2.onerror = function() { /* neither URL valid — leave unstyled */ };
+                img2.onerror = function() {};
                 img2.src = v1;
             };
             img.src = imgUrl;
@@ -3651,7 +3658,6 @@ let visiblePeriods = {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            // Show the full current month
             const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
             let startDate = new Date(monthStart);
             const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
