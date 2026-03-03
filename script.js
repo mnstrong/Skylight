@@ -1,19 +1,19 @@
 // Polyfills for Android 8 / older browser compatibility
 // globalThis polyfill (needed by some libraries; moved from inline HTML script)
 if (typeof globalThis === 'undefined') {
-Object.defineProperty(Object.prototype, '**magic**', {
+Object.defineProperty(Object.prototype, '__magic__', {
 get: function() { return this; }, configurable: true
 });
 /* jshint ignore:start */
-**magic**.globalThis = **magic**;
+__magic__.globalThis = __magic__;
 /* jshint ignore:end */
-delete Object.prototype.**magic**;
+delete Object.prototype.__magic__;
 }
 
 if (!String.prototype.padStart) {
 String.prototype.padStart = function padStart(targetLength, padString) {
 targetLength = targetLength >> 0;
-padString = String(typeof padString !== ‘undefined’ ? padString : ’ ’);
+padString = String(typeof padString !== 'undefined' ? padString : ' ');
 if (this.length >= targetLength) {
 return String(this);
 } else {
@@ -29,7 +29,7 @@ return padString.slice(0, targetLength) + String(this);
 if (!Array.prototype.includes) {
 Array.prototype.includes = function(searchElement, fromIndex) {
 if (this == null) {
-throw new TypeError(’“this” is null or not defined’);
+throw new TypeError('"this" is null or not defined');
 }
 var o = Object(this);
 var len = o.length >>> 0;
@@ -50,7 +50,7 @@ return false;
 
 if (!String.prototype.includes) {
 String.prototype.includes = function(search, start) {
-if (typeof start !== ‘number’) {
+if (typeof start !== 'number') {
 start = 0;
 }
 if (start + search.length > this.length) {
@@ -64,7 +64,7 @@ return this.indexOf(search, start) !== -1;
 if (!Object.assign) {
 Object.assign = function(target) {
 if (target == null) {
-throw new TypeError(‘Cannot convert undefined or null to object’);
+throw new TypeError('Cannot convert undefined or null to object');
 }
 var to = Object(target);
 for (var index = 1; index < arguments.length; index++) {
@@ -81,20 +81,20 @@ return to;
 };
 }
 
-console.log(‘Script started loading…’);
+console.log('Script started loading…');
 let currentDate = new Date();
 window.currentDate = currentDate;
-let currentView = ‘month’;
-let currentSection = ‘calendar’;
+let currentView = 'month';
+let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
-let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem(‘familyMembers’)) || [
-{ name: ‘Family’, color: ‘#9B59B6’, isGoogleCalendar: true, calendarId: ‘family’ },
-{ name: ‘Mary’, color: ‘#54eef3’ },
-{ name: ‘Bret’, color: ‘#43AEDE’ },
-{ name: ‘Levi’, color: ‘#f2c342’ },
-{ name: ‘Elsie’, color: ‘#d9aafa’ }
+let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
+{ name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
+{ name: 'Mary', color: '#54eef3' },
+{ name: 'Bret', color: '#43AEDE' },
+{ name: 'Levi', color: '#f2c342' },
+{ name: 'Elsie', color: '#d9aafa' }
 ];
 
 ```
@@ -138,10 +138,10 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem(‘fa
 ```
 
 let visiblePeriods = {
-‘Mary-Morning’: true, ‘Mary-Afternoon’: true, ‘Mary-Evening’: true,
-‘Bret-Morning’: true, ‘Bret-Afternoon’: true, ‘Bret-Evening’: true,
-‘Levi-Morning’: true, ‘Levi-Afternoon’: true, ‘Levi-Evening’: true,
-‘Elsie-Morning’: true, ‘Elsie-Afternoon’: true, ‘Elsie-Evening’: true
+'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
+'Bret-Morning': true, 'Bret-Afternoon': true, 'Bret-Evening': true,
+'Levi-Morning': true, 'Levi-Afternoon': true, 'Levi-Evening': true,
+'Elsie-Morning': true, 'Elsie-Afternoon': true, 'Elsie-Evening': true
 };  
 // Initialize sortOrder for all routines if not set
 let needsSave = false;
@@ -152,11 +152,11 @@ needsSave = true;
 }
 });
 if (needsSave) {
-localStorage.setItem(‘routines’, JSON.stringify(routines));
+localStorage.setItem('routines', JSON.stringify(routines));
 }
-let meals = JSON.parse(localStorage.getItem(‘meals’)) || [];
-let allowances = JSON.parse(localStorage.getItem(‘allowances’)) || [];
-let rewards = JSON.parse(localStorage.getItem(‘rewards’)) || [];
+let meals = JSON.parse(localStorage.getItem('meals')) || [];
+let allowances = JSON.parse(localStorage.getItem('allowances')) || [];
+let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
 ```
     // Meal planning data
@@ -8106,7 +8106,7 @@ if (allChoresComplete || allRoutinesComplete) {
 const elem = document.documentElement;
 if (elem.requestFullscreen) {
 elem.requestFullscreen().catch(err => {
-console.log(‘Fullscreen request failed:’, err);
+console.log('Fullscreen request failed:', err);
 });
 } else if (elem.webkitRequestFullscreen) { // Safari
 elem.webkitRequestFullscreen();
@@ -8143,18 +8143,18 @@ elem.msRequestFullscreen();
 /*
 /*
 // Import the functions you need from the SDKs you need
-import { initializeApp } from “firebase/app”;
+import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app’s Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
-apiKey: “AIzaSyAgEyHTkAE_4-Ua8uPHs8uUtRm8C6eDNi4”,
-authDomain: “skylight-d1c07.firebaseapp.com”,
-projectId: “skylight-d1c07”,
-storageBucket: “skylight-d1c07.firebasestorage.app”,
-messagingSenderId: “812789085658”,
-appId: “1:812789085658:web:e9f3860a26e9e4ff3d3ce3”
+apiKey: "AIzaSyAgEyHTkAE_4-Ua8uPHs8uUtRm8C6eDNi4",
+authDomain: "skylight-d1c07.firebaseapp.com",
+projectId: "skylight-d1c07",
+storageBucket: "skylight-d1c07.firebasestorage.app",
+messagingSenderId: "812789085658",
+appId: "1:812789085658:web:e9f3860a26e9e4ff3d3ce3"
 };
 
 // Initialize Firebase
@@ -8162,10 +8162,10 @@ const app = initializeApp(firebaseConfig);
 */
 
 // Clock Picker Variables
-let currentClockMode = ‘hour’; // ‘hour’ or ‘minute’
+let currentClockMode = 'hour'; // 'hour' or 'minute'
 let selectedHour = new Date().getHours() % 12 || 12;
 let selectedMinute = new Date().getMinutes();
-let selectedPeriod = new Date().getHours() >= 12 ? ‘PM’ : ‘AM’;
+let selectedPeriod = new Date().getHours() >= 12 ? 'PM' : 'AM';
 let currentTimeInputId = null;
 
 function openClockPicker(inputId) {
@@ -8199,7 +8199,7 @@ document.getElementById('clockPickerModal').classList.add('active');
 }
 
 function closeClockPicker() {
-document.getElementById(‘clockPickerModal’).classList.remove(‘active’);
+document.getElementById('clockPickerModal').classList.remove('active');
 }
 
 function confirmClockTime() {
@@ -8228,15 +8228,15 @@ updateClockPeriod();
 }
 
 function updateClockPeriod() {
-document.getElementById(‘clockAM’).classList.toggle(‘active’, selectedPeriod === ‘AM’);
-document.getElementById(‘clockPM’).classList.toggle(‘active’, selectedPeriod === ‘PM’);
+document.getElementById('clockAM').classList.toggle('active', selectedPeriod === 'AM');
+document.getElementById('clockPM').classList.toggle('active', selectedPeriod === 'PM');
 }
 
 function renderClockFace() {
-const face = document.getElementById(‘clockFace’);
-const numbersContainer = face.querySelector(’.clock-numbers’) || document.createElement(‘div’);
-numbersContainer.className = ‘clock-numbers’;
-numbersContainer.innerHTML = ‘’;
+const face = document.getElementById('clockFace');
+const numbersContainer = face.querySelector('.clock-numbers') || document.createElement('div');
+numbersContainer.className = 'clock-numbers';
+numbersContainer.innerHTML = '';
 
 ```
 const numbers = currentClockMode === 'hour' ? 
@@ -8274,10 +8274,10 @@ updateClockHand();
 }
 
 function selectClockNumber(num) {
-if (currentClockMode === ‘hour’) {
+if (currentClockMode === 'hour') {
 selectedHour = num;
 // Switch to minute selection
-currentClockMode = ‘minute’;
+currentClockMode = 'minute';
 renderClockFace();
 } else {
 selectedMinute = num;
@@ -8287,14 +8287,14 @@ updateClockHand();
 }
 
 function updateClockDisplay() {
-const display = document.getElementById(‘clockTimeDisplay’);
-const hourStr = String(selectedHour).padStart(2, ‘0’);
-const minuteStr = String(selectedMinute).padStart(2, ‘0’);
+const display = document.getElementById('clockTimeDisplay');
+const hourStr = String(selectedHour).padStart(2, '0');
+const minuteStr = String(selectedMinute).padStart(2, '0');
 display.textContent = `${hourStr}:${minuteStr}`;
 }
 
 function updateClockHand() {
-const hand = document.getElementById(‘clockHand’);
+const hand = document.getElementById('clockHand');
 let angle;
 
 ```
@@ -8312,14 +8312,14 @@ hand.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
 }
 
 // Make time inputs readonly and open clock picker on click
-document.addEventListener(‘DOMContentLoaded’, function() {
+document.addEventListener('DOMContentLoaded', function() {
 // Add click handlers to time inputs
 setTimeout(() => {
 const timeInputs = [
-‘taskChoreTime’,
-‘editTaskTime’,
-‘eventTime’,
-‘eventEndTime’
+'taskChoreTime',
+'editTaskTime',
+'eventTime',
+'eventEndTime'
 ];
 
 ```
@@ -8342,10 +8342,10 @@ const timeInputs = [
 });
 
 // Handle hash changes for desktop navigation
-window.addEventListener(‘hashchange’, function() {
+window.addEventListener('hashchange', function() {
 if (window.innerWidth > 768) {
 const hash = window.location.hash;
-if (hash && hash.startsWith(’#/’)) {
+if (hash && hash.startsWith('#/')) {
 const section = hash.substring(2);
 switchSection(section);
 }
@@ -8363,7 +8363,7 @@ switchSection(section);
 (function() {
 var _origSwitchSection = window.switchSection;
 window.switchSection = function(section) {
-if (section === ‘lists’ && window.innerWidth <= 768) {
+if (section === 'lists' && window.innerWidth <= 768) {
 listsShowUI();
 return;
 }
@@ -8372,72 +8372,72 @@ if (_origSwitchSection) _origSwitchSection.call(this, section);
 })();
 
 function listsShowUI() {
-document.getElementById(‘mobileListsUI’).style.display = ‘block’;
+document.getElementById('mobileListsUI').style.display = 'block';
 listsLoadLists();
 }
 
 function hideMobileLists() {
-document.getElementById(‘mobileListsUI’).style.display = ‘none’;
-window.location.hash = ‘#/home’;
+document.getElementById('mobileListsUI').style.display = 'none';
+window.location.hash = '#/home';
 }
 
 var LISTS_COLORS = [
-{ bg: ‘#14607A’, card: ‘#DDE9F0’, name: ‘Teal’ },
-{ bg: ‘#1A73B5’, card: ‘#D9E8F5’, name: ‘Blue’ },
-{ bg: ‘#2AAAC0’, card: ‘#D5F0F5’, name: ‘Cyan’ },
-{ bg: ‘#6AAFC8’, card: ‘#DDF0F8’, name: ‘Sky’ },
-{ bg: ‘#8BBAC8’, card: ‘#E2EFF5’, name: ‘Mist’ },
-{ bg: ‘#7B3FA5’, card: ‘#EDE0F5’, name: ‘Purple’ },
-{ bg: ‘#B07FC8’, card: ‘#F0E5F8’, name: ‘Lavender’ },
-{ bg: ‘#1C6B5C’, card: ‘#D5EDE8’, name: ‘Dark Teal’ },
-{ bg: ‘#2E7D32’, card: ‘#DAEEDA’, name: ‘Green’ },
-{ bg: ‘#8BC34A’, card: ‘#EBF5D8’, name: ‘Lime’ },
-{ bg: ‘#C62828’, card: ‘#F5DADA’, name: ‘Red’ },
-{ bg: ‘#E8849A’, card: ‘#F8E5EA’, name: ‘Pink’ },
-{ bg: ‘#E86050’, card: ‘#F8E2DE’, name: ‘Coral’ },
-{ bg: ‘#C0521A’, card: ‘#F0E0D4’, name: ‘Orange’ },
-{ bg: ‘#E0A060’, card: ‘#F5EAD8’, name: ‘Peach’ },
-{ bg: ‘#F4C430’, card: ‘#FBF2CE’, name: ‘Yellow’ },
-{ bg: ‘#F0E080’, card: ‘#FAF6D8’, name: ‘Lemon’ },
-{ bg: ‘#996515’, card: ‘#EEE0C5’, name: ‘Brown’ },
-{ bg: ‘#D4A840’, card: ‘#F5E8C8’, name: ‘Gold’ },
-{ bg: ‘#FF6BFE’, card: ‘#FAE0FF’, name: ‘Rainbow’ },
+{ bg: '#14607A', card: '#DDE9F0', name: 'Teal' },
+{ bg: '#1A73B5', card: '#D9E8F5', name: 'Blue' },
+{ bg: '#2AAAC0', card: '#D5F0F5', name: 'Cyan' },
+{ bg: '#6AAFC8', card: '#DDF0F8', name: 'Sky' },
+{ bg: '#8BBAC8', card: '#E2EFF5', name: 'Mist' },
+{ bg: '#7B3FA5', card: '#EDE0F5', name: 'Purple' },
+{ bg: '#B07FC8', card: '#F0E5F8', name: 'Lavender' },
+{ bg: '#1C6B5C', card: '#D5EDE8', name: 'Dark Teal' },
+{ bg: '#2E7D32', card: '#DAEEDA', name: 'Green' },
+{ bg: '#8BC34A', card: '#EBF5D8', name: 'Lime' },
+{ bg: '#C62828', card: '#F5DADA', name: 'Red' },
+{ bg: '#E8849A', card: '#F8E5EA', name: 'Pink' },
+{ bg: '#E86050', card: '#F8E2DE', name: 'Coral' },
+{ bg: '#C0521A', card: '#F0E0D4', name: 'Orange' },
+{ bg: '#E0A060', card: '#F5EAD8', name: 'Peach' },
+{ bg: '#F4C430', card: '#FBF2CE', name: 'Yellow' },
+{ bg: '#F0E080', card: '#FAF6D8', name: 'Lemon' },
+{ bg: '#996515', card: '#EEE0C5', name: 'Brown' },
+{ bg: '#D4A840', card: '#F5E8C8', name: 'Gold' },
+{ bg: '#FF6BFE', card: '#FAE0FF', name: 'Rainbow' },
 ];
 
-function listsColorToStr(c) { return c.bg + ‘|’ + c.card; }
+function listsColorToStr(c) { return c.bg + '|' + c.card; }
 function listsColorFromStr(str) {
 if (!str) return LISTS_COLORS[1];
-if (str.indexOf(’|’) !== -1) { var p = str.split(’|’); return { bg: p[0], card: p[1] }; }
+if (str.indexOf('|') !== -1) { var p = str.split('|'); return { bg: p[0], card: p[1] }; }
 return LISTS_COLORS.find(function(c) { return c.bg === str; }) || LISTS_COLORS[1];
 }
 
 var listsMemo = [];
 var listsCurrentListId = null;
 var listsSelectedColorIdx = 0;
-var listsSelectedType = ‘todo’;
+var listsSelectedType = 'todo';
 var listsShowCompleted = true;
 
 function listsHasAPI() {
-return typeof window.SupabaseAPI !== ‘undefined’ && window.SupabaseAPI !== null;
+return typeof window.SupabaseAPI !== 'undefined' && window.SupabaseAPI !== null;
 }
 
 async function listsLoadLists() {
-document.getElementById(‘listCardsContainer’).innerHTML =
-‘<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading\u2026</div>’;
+document.getElementById('listCardsContainer').innerHTML =
+'<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading\u2026</div>';
 if (!listsHasAPI()) {
 try {
-// Prefer mobile-specific key; fall back to shared ‘lists’ (written by desktop/sync)
-var s = localStorage.getItem(‘lists_mobile’) || localStorage.getItem(‘lists’);
+// Prefer mobile-specific key; fall back to shared 'lists' (written by desktop/sync)
+var s = localStorage.getItem('lists_mobile') || localStorage.getItem('lists');
 listsMemo = s ? JSON.parse(s) : [];
 listsMemo.forEach(function(l){
-if(typeof l.color===‘string’) l.color=listsColorFromStr(l.color);
+if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
 if(!l.items) l.items=[];
-if(!(‘assignedTo’ in l)) l.assignedTo = null;
-// normalize: supabase-sync writes ‘checked’, mobile uses ‘completed’
+if(!('assignedTo' in l)) l.assignedTo = null;
+// normalize: supabase-sync writes 'checked', mobile uses 'completed'
 l.items.forEach(function(it){
-if(‘done’ in it && !(‘completed’ in it)) { it.completed = it.done; delete it.done; }
-if(‘checked’ in it && !(‘completed’ in it)) { it.completed = it.checked; }
-if(!it.section) it.section = ‘Items’;
+if('done' in it && !('completed' in it)) { it.completed = it.done; delete it.done; }
+if('checked' in it && !('completed' in it)) { it.completed = it.checked; }
+if(!it.section) it.section = 'Items';
 if(it.displayOrder == null) it.displayOrder = 9999;
 });
 // sort by displayOrder
@@ -8453,22 +8453,22 @@ var colorObj = listsColorFromStr(row.color);
 var assignedTo = row.assigned_to || row.assignedTo || null;
 // If no assignedTo, derive from color (desktop stores member color as list color)
 if (!assignedTo && row.color) {
-var colorHex = row.color.split(’|’)[0]; // bg color
+var colorHex = row.color.split('|')[0]; // bg color
 var matchedMember = (window.familyMembers || []).find(function(m){ return m.color === colorHex; });
 if (matchedMember) assignedTo = matchedMember.id || matchedMember.name;
 }
 return {
-id: row.id, name: row.name, color: colorObj, type: row.icon||‘todo’,
+id: row.id, name: row.name, color: colorObj, type: row.icon||'todo',
 assignedTo: assignedTo,
-items: (row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:‘Items’, displayOrder: it.display_order != null ? it.display_order : 9999 }; }).sort(function(a,b){ return a.displayOrder - b.displayOrder; })
+items: (row.list_items||[]).map(function(it){ return { id:it.id, text:it.text, completed:it.checked||false, section:'Items', displayOrder: it.display_order != null ? it.display_order : 9999 }; }).sort(function(a,b){ return a.displayOrder - b.displayOrder; })
 };
 });
 listsSaveLocal();
-} catch(err) { console.error(‘listsLoadLists:’,err); listsShowToast(‘Could not load lists’); listsMemo=[]; }
+} catch(err) { console.error('listsLoadLists:',err); listsShowToast('Could not load lists'); listsMemo=[]; }
 listsRenderLists();
 }
 
-function listsSaveLocal() { try { localStorage.setItem(‘lists_mobile’, JSON.stringify(listsMemo)); } catch(e){} }
+function listsSaveLocal() { try { localStorage.setItem('lists_mobile', JSON.stringify(listsMemo)); } catch(e){} }
 
 // Find the family member assigned to a list.
 // Lists store assignedTo (id/name) locally, but Supabase only has list.color = member.color.
@@ -8483,7 +8483,7 @@ if (m) return m;
 }
 // Fall back to color match (desktop/Supabase data)
 if (list.color) {
-var colorHex = (typeof list.color === ‘object’) ? list.color.bg : list.color;
+var colorHex = (typeof list.color === 'object') ? list.color.bg : list.color;
 var m2 = members.find(function(m) { return m.color === colorHex; });
 if (m2) return m2;
 }
@@ -8491,46 +8491,46 @@ return null;
 }
 
 function listsRenderLists() {
-var c = document.getElementById(‘listCardsContainer’);
+var c = document.getElementById('listCardsContainer');
 if (!listsMemo.length) {
 c.innerHTML = [
-‘<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px;text-align:center;">’,
-‘<div style="margin-bottom:28px;">’,
-‘<svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">’,
-‘<rect x="18" y="18" width="74" height="82" rx="10" fill="#EEF3F8" stroke="#C8D8E8" stroke-width="2"/>’,
-‘<rect x="38" y="10" width="34" height="18" rx="6" fill="#C8D8E8"/>’,
-‘<rect x="43" y="14" width="24" height="10" rx="4" fill="#F2F6FA"/>’,
-‘<rect x="30" y="42" width="14" height="14" rx="4" fill="#14607A" opacity="0.9"/>’,
-‘<polyline points="33,49 36,52 41,45" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>’,
-‘<rect x="50" y="45" width="26" height="5" rx="2.5" fill="#C8D8E8"/>’,
-‘<rect x="30" y="63" width="14" height="14" rx="4" fill="#14607A" opacity="0.6"/>’,
-‘<polyline points="33,70 36,73 41,66" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>’,
-‘<rect x="50" y="66" width="20" height="5" rx="2.5" fill="#C8D8E8"/>’,
-‘<rect x="30" y="84" width="14" height="14" rx="4" fill="none" stroke="#C8D8E8" stroke-width="2" stroke-dasharray="3 2"/>’,
-‘<rect x="50" y="87" width="30" height="5" rx="2.5" fill="#E4EDF5"/>’,
-‘</svg>’,
-‘</div>’,
-‘<div style="font-family:Jost,sans-serif;font-size:22px;font-weight:700;color:#1C3A4A;margin-bottom:10px;letter-spacing:-0.3px;">No lists yet</div>’,
-‘<div style="font-family:Jost,sans-serif;font-size:15px;color:#8E9BAA;line-height:1.5;margin-bottom:36px;max-width:220px;">Stay organized \u2014 create your first shopping, to-do, or grocery list.</div>’,
-‘<button onclick="listsShowAddList()" style="font-family:Jost,sans-serif;font-size:16px;font-weight:600;color:#fff;background:#14607A;border:none;border-radius:14px;padding:14px 32px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(20,96,122,0.28);">’,
-‘<span style="font-size:20px;line-height:1;">+</span> New List’,
-‘</button>’,
-‘</div>’
-].join(’’);
+'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 32px;text-align:center;">',
+'<div style="margin-bottom:28px;">',
+'<svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">',
+'<rect x="18" y="18" width="74" height="82" rx="10" fill="#EEF3F8" stroke="#C8D8E8" stroke-width="2"/>',
+'<rect x="38" y="10" width="34" height="18" rx="6" fill="#C8D8E8"/>',
+'<rect x="43" y="14" width="24" height="10" rx="4" fill="#F2F6FA"/>',
+'<rect x="30" y="42" width="14" height="14" rx="4" fill="#14607A" opacity="0.9"/>',
+'<polyline points="33,49 36,52 41,45" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+'<rect x="50" y="45" width="26" height="5" rx="2.5" fill="#C8D8E8"/>',
+'<rect x="30" y="63" width="14" height="14" rx="4" fill="#14607A" opacity="0.6"/>',
+'<polyline points="33,70 36,73 41,66" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+'<rect x="50" y="66" width="20" height="5" rx="2.5" fill="#C8D8E8"/>',
+'<rect x="30" y="84" width="14" height="14" rx="4" fill="none" stroke="#C8D8E8" stroke-width="2" stroke-dasharray="3 2"/>',
+'<rect x="50" y="87" width="30" height="5" rx="2.5" fill="#E4EDF5"/>',
+'</svg>',
+'</div>',
+'<div style="font-family:Jost,sans-serif;font-size:22px;font-weight:700;color:#1C3A4A;margin-bottom:10px;letter-spacing:-0.3px;">No lists yet</div>',
+'<div style="font-family:Jost,sans-serif;font-size:15px;color:#8E9BAA;line-height:1.5;margin-bottom:36px;max-width:220px;">Stay organized \u2014 create your first shopping, to-do, or grocery list.</div>',
+'<button onclick="listsShowAddList()" style="font-family:Jost,sans-serif;font-size:16px;font-weight:600;color:#fff;background:#14607A;border:none;border-radius:14px;padding:14px 32px;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(20,96,122,0.28);">',
+'<span style="font-size:20px;line-height:1;">+</span> New List',
+'</button>',
+'</div>'
+].join('');
 return;
 }
-c.innerHTML = ‘’;
+c.innerHTML = '';
 listsMemo.forEach(function(list) {
-var card = document.createElement(‘div’);
-card.className = ‘list-card’;
+var card = document.createElement('div');
+card.className = 'list-card';
 var cardBg = (list.color && list.color.card) ? list.color.card :
-(list.color && list.color.bg) ? list.color.bg + ‘22’ :
-(typeof list.color === ‘string’) ? list.color + ‘22’ : ‘#E8F0F5’;
+(list.color && list.color.bg) ? list.color.bg + '22' :
+(typeof list.color === 'string') ? list.color + '22' : '#E8F0F5';
 card.style.background = cardBg;
 var unchecked = list.items.filter(function(i){ return !i.completed; }).length;
 var assignedMember = listsFindMember(list);
-var avatarHtml = assignedMember ? ‘<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">’+assignedMember.name.charAt(0).toUpperCase()+’</span>’ : ‘’;
-card.innerHTML = ‘<span class="list-card-name">’+listsEsc(list.name)+’</span>’+(unchecked>0?’<span class="list-badge">’+unchecked+’</span>’:’’)+avatarHtml;
+var avatarHtml = assignedMember ? '<span class="list-card-avatar" style="background:'+assignedMember.color+'" title="'+listsEsc(assignedMember.name)+'">'+assignedMember.name.charAt(0).toUpperCase()+'</span>' : '';
+card.innerHTML = '<span class="list-card-name">'+listsEsc(list.name)+'</span>'+(unchecked>0?'<span class="list-badge">'+unchecked+'</span>':'')+avatarHtml;
 card.onclick = function(){ listsOpenList(list.id); };
 c.appendChild(card);
 });
@@ -8545,21 +8545,21 @@ var _listsDragLongPress = null;  // long-press timer handle
 function listsRenderDetailItems() {
 var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
 if (!list) return;
-var c = document.getElementById(‘listsDetailItemList’);
+var c = document.getElementById('listsDetailItemList');
 var items = listsShowCompleted ? list.items : list.items.filter(function(i){ return !i.completed; });
 if (!items.length) {
-c.innerHTML = ‘<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>’;
+c.innerHTML = '<div style="text-align:center;padding:32px 0;color:rgba(0,0,0,0.35);font-size:16px">No items yet.</div>';
 return;
 }
-c.innerHTML = ‘’;
+c.innerHTML = '';
 items.forEach(function(item, idx) {
-var row = document.createElement(‘div’);
-row.className = ‘list-item-row’;
+var row = document.createElement('div');
+row.className = 'list-item-row';
 row.dataset.itemId = item.id;
 row.innerHTML =
-‘<div class="list-drag-handle">⠿</div>’ +
-‘<div class="item-check '+(item.completed?'checked':'')+'">’+(item.completed?‘✓’:’’)+’</div>’ +
-‘<span class="item-text '+(item.completed?'done':'')+'" style="flex:1">’+listsEsc(item.text)+’</span>’;
+'<div class="list-drag-handle">⠿</div>' +
+'<div class="item-check '+(item.completed?'checked':'')+'">'+(item.completed?'✓':'')+'</div>' +
+'<span class="item-text '+(item.completed?'done':'')+'" style="flex:1">'+listsEsc(item.text)+'</span>';
 
 ```
 // Tap on text/check area toggles completion
@@ -8615,26 +8615,26 @@ c.appendChild(row);
 function listsStartDrag(row, itemId) {
 _listsDragItem = row;
 _listsDragItemId = itemId;
-row.classList.add(‘dragging’);
+row.classList.add('dragging');
 }
 
 function listsOnDragMove(x, y) {
 if (!_listsDragItem) return;
 // Find the row under the pointer (excluding the dragged row itself)
-_listsDragItem.style.pointerEvents = ‘none’;
+_listsDragItem.style.pointerEvents = 'none';
 var el = document.elementFromPoint(x, y);
-_listsDragItem.style.pointerEvents = ‘’;
-var targetRow = el ? el.closest(’.list-item-row’) : null;
+_listsDragItem.style.pointerEvents = '';
+var targetRow = el ? el.closest('.list-item-row') : null;
 
 // Clear previous indicator
 if (_listsDragOver && _listsDragOver !== targetRow) {
-_listsDragOver.classList.remove(‘drag-over-top’, ‘drag-over-bottom’);
+_listsDragOver.classList.remove('drag-over-top', 'drag-over-bottom');
 }
 if (targetRow && targetRow !== _listsDragItem) {
 var rect = targetRow.getBoundingClientRect();
 var isTop = y < rect.top + rect.height / 2;
-targetRow.classList.toggle(‘drag-over-top’, isTop);
-targetRow.classList.toggle(‘drag-over-bottom’, !isTop);
+targetRow.classList.toggle('drag-over-top', isTop);
+targetRow.classList.toggle('drag-over-bottom', !isTop);
 _listsDragOver = targetRow;
 } else {
 _listsDragOver = null;
@@ -8647,8 +8647,8 @@ var draggedId = _listsDragItemId;
 var targetRow = _listsDragOver;
 
 // Clean up styles
-_listsDragItem.classList.remove(‘dragging’);
-if (_listsDragOver) _listsDragOver.classList.remove(‘drag-over-top’, ‘drag-over-bottom’);
+_listsDragItem.classList.remove('dragging');
+if (_listsDragOver) _listsDragOver.classList.remove('drag-over-top', 'drag-over-bottom');
 
 _listsDragItem = null;
 _listsDragItemId = null;
@@ -8668,7 +8668,7 @@ if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
 var moved = list.items.splice(fromIdx, 1)[0];
 // Recalculate toIdx after splice
 toIdx = list.items.findIndex(function(i){ return String(i.id) === String(toItemId); });
-var insertAt = targetRow.classList.contains(‘drag-over-top’) ? toIdx : toIdx + 1;
+var insertAt = targetRow.classList.contains('drag-over-top') ? toIdx : toIdx + 1;
 list.items.splice(insertAt < 0 ? 0 : insertAt, 0, moved);
 
 // Assign displayOrder values
@@ -8681,21 +8681,21 @@ listsRenderDetailItems();
 if (listsHasAPI()) {
 list.items.forEach(function(it) {
 window.SupabaseAPI.updateListItem(it.id, { display_order: it.displayOrder })
-.catch(function(err){ console.error(‘reorder sync:’, err); });
+.catch(function(err){ console.error('reorder sync:', err); });
 });
 }
 }
 
 function listsRenderColorGrid() {
-var grid = document.getElementById(‘listsColorGrid’);
-grid.innerHTML = ‘’;
+var grid = document.getElementById('listsColorGrid');
+grid.innerHTML = '';
 LISTS_COLORS.forEach(function(c, i) {
-var wrap = document.createElement(‘div’);
-wrap.className = ‘lists-color-dot-wrap’;
+var wrap = document.createElement('div');
+wrap.className = 'lists-color-dot-wrap';
 if (i === 0) {
-wrap.innerHTML = ‘<div class="lists-color-selected-box" onclick="listsSelectColor(0)"><div class="lists-color-dot '+(listsSelectedColorIdx===0?'selected':'')+'" style="background:'+c.bg+'"></div></div>’;
+wrap.innerHTML = '<div class="lists-color-selected-box" onclick="listsSelectColor(0)"><div class="lists-color-dot '+(listsSelectedColorIdx===0?'selected':'')+'" style="background:'+c.bg+'"></div></div>';
 } else {
-wrap.innerHTML = ‘<div class="lists-color-dot '+(listsSelectedColorIdx===i?'selected':'')+'" style="background:'+c.bg+'" onclick="listsSelectColor('+i+')"></div>’;
+wrap.innerHTML = '<div class="lists-color-dot '+(listsSelectedColorIdx===i?'selected':'')+'" style="background:'+c.bg+'" onclick="listsSelectColor('+i+')"></div>';
 }
 grid.appendChild(wrap);
 });
@@ -8703,8 +8703,8 @@ grid.appendChild(wrap);
 
 function listsSelectColor(idx) { listsSelectedColorIdx = idx; listsRenderColorGrid(); }
 function listsSelectType(btn) {
-document.querySelectorAll(’#addListScreen .type-btn’).forEach(function(b){ b.classList.remove(‘active’); });
-btn.classList.add(‘active’);
+document.querySelectorAll('#addListScreen .type-btn').forEach(function(b){ b.classList.remove('active'); });
+btn.classList.add('active');
 listsSelectedType = btn.dataset.type;
 }
 
@@ -8712,40 +8712,40 @@ function listsOpenList(id) {
 listsCurrentListId = id;
 var list = listsMemo.find(function(l){ return l.id===id; });
 if (!list) return;
-document.getElementById(‘listsDetailTitle’).textContent = list.name;
-document.getElementById(‘listDetailScreen’).style.background = list.color.card;
-document.querySelector(’#listDetailScreen .list-detail-header’).style.background = ‘transparent’;
+document.getElementById('listsDetailTitle').textContent = list.name;
+document.getElementById('listDetailScreen').style.background = list.color.card;
+document.querySelector('#listDetailScreen .list-detail-header').style.background = 'transparent';
 listsShowCompleted = true;
-document.getElementById(‘listsCompletedToggleBtn’).classList.add(‘active’);
+document.getElementById('listsCompletedToggleBtn').classList.add('active');
 listsRenderDetailItems();
-listsShowScreen(‘listDetailScreen’);
+listsShowScreen('listDetailScreen');
 }
 
 function listsShowAddList() {
-listsSelectedColorIdx = 0; listsSelectedType = ‘todo’;
-document.getElementById(‘newListTitle’).value = ‘’;
-document.querySelectorAll(’#addListScreen .type-btn’).forEach(function(b,i){ b.classList.toggle(‘active’, i===0); });
+listsSelectedColorIdx = 0; listsSelectedType = 'todo';
+document.getElementById('newListTitle').value = '';
+document.querySelectorAll('#addListScreen .type-btn').forEach(function(b,i){ b.classList.toggle('active', i===0); });
 listsRenderColorGrid();
-listsShowScreen(‘addListScreen’);
+listsShowScreen('addListScreen');
 }
 
 async function listsAddNewList() {
-var title = document.getElementById(‘newListTitle’).value.trim();
-if (!title) { listsShowToast(‘Please enter a title’); return; }
-var btn = document.getElementById(‘addListBtn’);
-btn.disabled = true; btn.textContent = ‘Adding\u2026’;
+var title = document.getElementById('newListTitle').value.trim();
+if (!title) { listsShowToast('Please enter a title'); return; }
+var btn = document.getElementById('addListBtn');
+btn.disabled = true; btn.textContent = 'Adding\u2026';
 var color = LISTS_COLORS[listsSelectedColorIdx];
 if (listsHasAPI()) {
 try {
 var row = await window.SupabaseAPI.addList({ name:title, color:listsColorToStr(color), icon:listsSelectedType });
-if (row) { listsMemo.push({ id:row.id, name:title, color:color, type:listsSelectedType, assignedTo:null, items:[] }); listsSaveLocal(); listsRenderLists(); listsShowScreen(‘listsScreen’); listsShowToast(‘List created!’); }
-else { listsShowToast(‘Failed to create list’); }
-} catch(err) { console.error(err); listsShowToast(‘Error creating list’); }
+if (row) { listsMemo.push({ id:row.id, name:title, color:color, type:listsSelectedType, assignedTo:null, items:[] }); listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created!'); }
+else { listsShowToast('Failed to create list'); }
+} catch(err) { console.error(err); listsShowToast('Error creating list'); }
 } else {
 listsMemo.push({ id:Date.now(), name:title, color:color, type:listsSelectedType, assignedTo:null, items:[] });
-listsSaveLocal(); listsRenderLists(); listsShowScreen(‘listsScreen’); listsShowToast(‘List created (offline)’);
+listsSaveLocal(); listsRenderLists(); listsShowScreen('listsScreen'); listsShowToast('List created (offline)');
 }
-btn.disabled = false; btn.textContent = ‘Add’;
+btn.disabled = false; btn.textContent = 'Add';
 }
 
 async function listsToggleItem(itemId) {
@@ -8757,65 +8757,65 @@ item.completed = !item.completed;
 listsRenderDetailItems(); listsRenderLists(); listsSaveLocal();
 if (listsHasAPI()) {
 try { await window.SupabaseAPI.updateListItem(itemId, { checked:item.completed }); }
-catch(err) { console.error(err); item.completed=!item.completed; listsRenderDetailItems(); listsRenderLists(); listsSaveLocal(); listsShowToast(‘Sync failed’); }
+catch(err) { console.error(err); item.completed=!item.completed; listsRenderDetailItems(); listsRenderLists(); listsSaveLocal(); listsShowToast('Sync failed'); }
 }
 }
 
 async function listsAddItemToList() {
-var input = document.getElementById(‘listsSheetItemInput’);
+var input = document.getElementById('listsSheetItemInput');
 var text = input.value.trim();
 if (!text) return;
 var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
 if (!list) return;
-var btn = document.getElementById(‘listsSheetAddBtn’);
+var btn = document.getElementById('listsSheetAddBtn');
 btn.disabled = true;
-var newItem = { id: Date.now(), text: text, completed: false, section: ‘Items’ };
+var newItem = { id: Date.now(), text: text, completed: false, section: 'Items' };
 list.items.push(newItem);
 listsSaveLocal();
-input.value = ‘’;
+input.value = '';
 listsCloseAddItemSheet();
 listsRenderDetailItems();
 listsRenderLists();
 // Sync to Supabase via syncListItem (updates newItem.id with UUID on success)
-if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === ‘function’) {
-await window.SupabaseSync.syncListItem(listsCurrentListId, newItem, ‘add’);
+if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+await window.SupabaseSync.syncListItem(listsCurrentListId, newItem, 'add');
 // Save again with the updated UUID from Supabase
 listsSaveLocal();
 } else if (listsHasAPI()) {
 try {
 var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
 if (row) { newItem.id = row.id; listsSaveLocal(); }
-} catch(err) { console.error(’[ADD ITEM] error:’, err); }
+} catch(err) { console.error('[ADD ITEM] error:', err); }
 }
 btn.disabled = false;
 }
 
 function listsOpenAddItemSheet() {
-document.getElementById(‘listsSheetOverlay’).classList.add(‘active’);
-document.getElementById(‘listsAddItemSheet’).classList.add(‘active’);
-setTimeout(function(){ document.getElementById(‘listsSheetItemInput’).focus(); }, 300);
+document.getElementById('listsSheetOverlay').classList.add('active');
+document.getElementById('listsAddItemSheet').classList.add('active');
+setTimeout(function(){ document.getElementById('listsSheetItemInput').focus(); }, 300);
 }
 function listsCloseAddItemSheet() {
-document.getElementById(‘listsSheetOverlay’).classList.remove(‘active’);
-document.getElementById(‘listsAddItemSheet’).classList.remove(‘active’);
+document.getElementById('listsSheetOverlay').classList.remove('active');
+document.getElementById('listsAddItemSheet').classList.remove('active');
 }
-function listsToggleSelectMode(btn) { btn.classList.toggle(‘active’); }
+function listsToggleSelectMode(btn) { btn.classList.toggle('active'); }
 function listsToggleShowCompleted() {
 listsShowCompleted = !listsShowCompleted;
-document.getElementById(‘listsCompletedToggleBtn’).classList.toggle(‘active’, listsShowCompleted);
+document.getElementById('listsCompletedToggleBtn').classList.toggle('active', listsShowCompleted);
 listsRenderDetailItems();
 }
 function listsShowScreen(id) {
-document.querySelectorAll(’#mobileListsUI .lists-screen’).forEach(function(s){ s.classList.remove(‘active’); });
-document.getElementById(id).classList.add(‘active’);
+document.querySelectorAll('#mobileListsUI .lists-screen').forEach(function(s){ s.classList.remove('active'); });
+document.getElementById(id).classList.add('active');
 }
 function listsShowToast(msg) {
-var t = document.getElementById(‘listsToast’);
-t.textContent = msg; t.classList.add(‘show’);
-setTimeout(function(){ t.classList.remove(‘show’); }, 2200);
+var t = document.getElementById('listsToast');
+t.textContent = msg; t.classList.add('show');
+setTimeout(function(){ t.classList.remove('show'); }, 2200);
 }
 function listsEsc(str) {
-return String(str).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
+return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
 }
 
 // –– Edit list sheet ––
@@ -8824,7 +8824,7 @@ var listsEditSelectedProfile = null; // null = unassigned
 function listsOpenEditSheet() {
 var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
 if (!list) return;
-document.getElementById(‘listsEditNameInput’).value = list.name;
+document.getElementById('listsEditNameInput').value = list.name;
 // Normalize assignedTo to member name (in case it was saved as ID by old code)
 var _at = list.assignedTo || null;
 if (_at) {
@@ -8836,34 +8836,34 @@ if (_m && list.assignedTo !== _m.name) { list.assignedTo = _m.name; } // normali
 listsEditSelectedProfile = null;
 }
 listsRenderEditProfileGrid();
-document.getElementById(‘listsEditSheetOverlay’).classList.add(‘active’);
-document.getElementById(‘listsEditSheet’).classList.add(‘active’);
-setTimeout(function(){ document.getElementById(‘listsEditNameInput’).focus(); }, 300);
+document.getElementById('listsEditSheetOverlay').classList.add('active');
+document.getElementById('listsEditSheet').classList.add('active');
+setTimeout(function(){ document.getElementById('listsEditNameInput').focus(); }, 300);
 }
 
 function listsCloseEditSheet() {
-document.getElementById(‘listsEditSheetOverlay’).classList.remove(‘active’);
-document.getElementById(‘listsEditSheet’).classList.remove(‘active’);
+document.getElementById('listsEditSheetOverlay').classList.remove('active');
+document.getElementById('listsEditSheet').classList.remove('active');
 }
 
 function listsRenderEditProfileGrid() {
-var grid = document.getElementById(‘listsEditProfileGrid’);
+var grid = document.getElementById('listsEditProfileGrid');
 var members = [];
 if (window.familyMembers && window.familyMembers.length) {
 members = window.familyMembers.filter(function(m){ return !m.isGoogleCalendar; });
 } else {
-try { members = JSON.parse(localStorage.getItem(‘familyMembers’) || ‘[]’).filter(function(m){ return !m.isGoogleCalendar; }); } catch(e){}
+try { members = JSON.parse(localStorage.getItem('familyMembers') || '[]').filter(function(m){ return !m.isGoogleCalendar; }); } catch(e){}
 }
-grid.innerHTML = ‘’;
+grid.innerHTML = '';
 if (!members.length) {
-grid.textContent = ‘No profiles set up yet.’;
+grid.textContent = 'No profiles set up yet.';
 return;
 }
 
 function addProfile(initial, color, label, isActive, clickFn) {
-var wrap = document.createElement(‘div’);
-wrap.style.cursor = ‘pointer’;
-wrap.style.textAlign = ‘center’;
+var wrap = document.createElement('div');
+wrap.style.cursor = 'pointer';
+wrap.style.textAlign = 'center';
 
 ```
 var av = document.createElement('div');
@@ -8903,7 +8903,7 @@ grid.appendChild(wrap);
 // Ensure listsEditSelectedProfile is a string for reliable comparison
 if (listsEditSelectedProfile != null) listsEditSelectedProfile = String(listsEditSelectedProfile);
 var noneActive = listsEditSelectedProfile === null;
-addProfile(’_’, noneActive ? ‘#14607A’ : ‘#E5E5EA’, ‘None’, noneActive, function() {
+addProfile('_', noneActive ? '#14607A' : '#E5E5EA', 'None', noneActive, function() {
 listsEditSelectedProfile = null;
 listsRenderEditProfileGrid();
 });
@@ -8920,69 +8920,69 @@ listsRenderEditProfileGrid();
 }
 
 async function listsSaveEdit() {
-var newName = document.getElementById(‘listsEditNameInput’).value.trim();
-if (!newName) { listsShowToast(‘Please enter a name’); return; }
+var newName = document.getElementById('listsEditNameInput').value.trim();
+if (!newName) { listsShowToast('Please enter a name'); return; }
 var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
 if (!list) return;
 list.name = newName;
 list.assignedTo = listsEditSelectedProfile;
 listsSaveLocal();
 // Update header title live
-document.getElementById(‘listsDetailTitle’).textContent = newName;
+document.getElementById('listsDetailTitle').textContent = newName;
 listsRenderLists();
 listsCloseEditSheet();
-if (listsHasAPI() && typeof window.SupabaseAPI.updateList === ‘function’) {
+if (listsHasAPI() && typeof window.SupabaseAPI.updateList === 'function') {
 try {
 await window.SupabaseAPI.updateList(listsCurrentListId, { name: newName, icon: list.type, color: listsColorToStr(list.color), assigned_to: listsEditSelectedProfile });
-} catch(err) { console.error(‘listsSaveEdit:’, err); listsShowToast(‘Saved locally, sync failed’); }
+} catch(err) { console.error('listsSaveEdit:', err); listsShowToast('Saved locally, sync failed'); }
 }
-listsShowToast(‘List updated’);
+listsShowToast('List updated');
 }
 
 async function listsDeleteList() {
 var list = listsMemo.find(function(l){ return l.id === listsCurrentListId; });
-var listName = list ? list.name : ‘this list’;
-if (!confirm(‘Delete “’ + listName + ‘” and all its items?’)) return;
-// Register this ID so supabase-sync periodic refresh doesn’t re-add it
+var listName = list ? list.name : 'this list';
+if (!confirm('Delete "' + listName + '" and all its items?')) return;
+// Register this ID so supabase-sync periodic refresh doesn't re-add it
 if (!window._deletedListIds) window._deletedListIds = new Set();
 window._deletedListIds.add(String(listsCurrentListId));
 var idx = listsMemo.findIndex(function(l){ return l.id === listsCurrentListId; });
 if (idx > -1) listsMemo.splice(idx, 1);
 listsSaveLocal();
 listsCloseEditSheet();
-listsShowScreen(‘listsScreen’);
+listsShowScreen('listsScreen');
 listsRenderLists();
-// Use SupabaseSync.syncList(‘delete’) — same path auto-sync-wrapper uses for adds
-if (window.SupabaseSync && typeof window.SupabaseSync.syncList === ‘function’ && list) {
+// Use SupabaseSync.syncList('delete') — same path auto-sync-wrapper uses for adds
+if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function' && list) {
 try {
-console.log(’[DELETE mobile] syncList delete:’, list.name, listsCurrentListId);
-await window.SupabaseSync.syncList(list, ‘delete’);
-console.log(’[DELETE mobile] done’);
-} catch(err) { console.error(’[DELETE mobile] error:’, err); }
+console.log('[DELETE mobile] syncList delete:', list.name, listsCurrentListId);
+await window.SupabaseSync.syncList(list, 'delete');
+console.log('[DELETE mobile] done');
+} catch(err) { console.error('[DELETE mobile] error:', err); }
 } else if (listsHasAPI() && list) {
 try {
 if (list.items) await Promise.all(list.items.map(function(it){
 return window.SupabaseAPI.deleteListItem(it.id).catch(function(){});
 }));
 var deleted = await window.SupabaseAPI.deleteList(listsCurrentListId);
-console.log(’[DELETE mobile] API result:’, deleted);
-} catch(err) { console.error(’[DELETE mobile] API error:’, err); }
+console.log('[DELETE mobile] API result:', deleted);
+} catch(err) { console.error('[DELETE mobile] API error:', err); }
 }
-listsShowToast(‘List deleted’);
+listsShowToast('List deleted');
 listsCurrentListId = null;
 }
-document.addEventListener(‘DOMContentLoaded’, function() {
-var si = document.getElementById(‘listsSheetItemInput’);
-if (si) si.addEventListener(‘keydown’, function(e){ if(e.key===‘Enter’){ e.preventDefault(); listsAddItemToList(); } });
-var ti = document.getElementById(‘newListTitle’);
-if (ti) ti.addEventListener(‘keydown’, function(e){ if(e.key===‘Enter’){ e.preventDefault(); listsAddNewList(); } });
+document.addEventListener('DOMContentLoaded', function() {
+var si = document.getElementById('listsSheetItemInput');
+if (si) si.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddItemToList(); } });
+var ti = document.getElementById('newListTitle');
+if (ti) ti.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddNewList(); } });
 });
 
 // =============================================
 // MOBILE NAVIGATION (moved from inline HTML script)
 // =============================================
 
-var currentMobileSection = ‘home’;
+var currentMobileSection = 'home';
 
 function initMobile() {
 if (window.innerWidth <= 768) {
@@ -8993,76 +8993,76 @@ updateMobileTodayCard();
 
 function showMobileHome() {
 if (window.innerWidth > 768) return;
-document.body.classList.remove(‘viewing-section’);
-document.body.classList.remove(‘calendar-view’);
-currentMobileSection = ‘home’;
-var homeEl = document.getElementById(‘mobileHome’);
-if (homeEl) homeEl.style.display = ‘block’;
-document.querySelectorAll(’.content-section’).forEach(function(section) { section.style.display = ‘none’; });
-document.getElementById(‘mobileHeaderTitle’).textContent = ‘strongcalendar23’;
-document.getElementById(‘mobileBackBtn’).style.display = ‘none’;
-document.getElementById(‘mobileHomeIndicator’).style.display = ‘block’;
+document.body.classList.remove('viewing-section');
+document.body.classList.remove('calendar-view');
+currentMobileSection = 'home';
+var homeEl = document.getElementById('mobileHome');
+if (homeEl) homeEl.style.display = 'block';
+document.querySelectorAll('.content-section').forEach(function(section) { section.style.display = 'none'; });
+document.getElementById('mobileHeaderTitle').textContent = 'strongcalendar23';
+document.getElementById('mobileBackBtn').style.display = 'none';
+document.getElementById('mobileHomeIndicator').style.display = 'block';
 updateMobileTodayCard();
 }
 
 function goToSection(sectionName) {
-if (window.innerWidth > 768) { window.location.hash = ‘#/’ + sectionName; return; }
-window.location.hash = ‘#/’ + sectionName;
+if (window.innerWidth > 768) { window.location.hash = '#/' + sectionName; return; }
+window.location.hash = '#/' + sectionName;
 }
 
 function handleHashChange() {
 var hash = window.location.hash;
 if (window.innerWidth > 768) {
-if (hash && hash.startsWith(’#/’)) {
+if (hash && hash.startsWith('#/')) {
 var section = hash.substring(2);
-if (typeof switchSection === ‘function’) switchSection(section);
-} else if (!hash || hash === ‘#/’ || hash === ‘#/home’) {
-if (typeof switchSection === ‘function’) switchSection(‘calendar’);
+if (typeof switchSection === 'function') switchSection(section);
+} else if (!hash || hash === '#/' || hash === '#/home') {
+if (typeof switchSection === 'function') switchSection('calendar');
 }
 return;
 }
-if (!hash || hash === ‘#/’ || hash === ‘#/home’) {
+if (!hash || hash === '#/' || hash === '#/home') {
 // Hide lists UI if open
-var lui = document.getElementById(‘mobileListsUI’);
-if (lui) lui.style.display = ‘none’;
+var lui = document.getElementById('mobileListsUI');
+if (lui) lui.style.display = 'none';
 showMobileHome();
-} else if (hash.startsWith(’#/’)) {
+} else if (hash.startsWith('#/')) {
 var sectionName = hash.substring(2);
 // Lists handled by the lists UI overlay, not the section system
-if (sectionName === ‘lists’) {
+if (sectionName === 'lists') {
 listsShowUI();
 // Still update header
-document.getElementById(‘mobileBackBtn’).style.display = ‘block’;
-document.getElementById(‘mobileHomeIndicator’).style.display = ‘none’;
-document.getElementById(‘mobileHeaderTitle’).textContent = ‘Lists’;
+document.getElementById('mobileBackBtn').style.display = 'block';
+document.getElementById('mobileHomeIndicator').style.display = 'none';
+document.getElementById('mobileHeaderTitle').textContent = 'Lists';
 return;
 }
-document.body.classList.add(‘viewing-section’);
-if (sectionName === ‘calendar’) document.body.classList.add(‘calendar-view’);
-else document.body.classList.remove(‘calendar-view’);
+document.body.classList.add('viewing-section');
+if (sectionName === 'calendar') document.body.classList.add('calendar-view');
+else document.body.classList.remove('calendar-view');
 currentMobileSection = sectionName;
-var homeEl = document.getElementById(‘mobileHome’);
-if (homeEl) homeEl.style.display = ‘none’;
-document.getElementById(‘mobileBackBtn’).style.display = ‘block’;
-document.getElementById(‘mobileHomeIndicator’).style.display = ‘none’;
-var titles = { ‘calendar’: getWeekRangeTitle(), ‘chores’: ‘Thu, Feb 5’, ‘rewards’: ‘Rewards’, ‘meals’: ‘Meals’, ‘recipes’: ‘Recipes’, ‘habits’: ‘Habits’ };
-document.getElementById(‘mobileHeaderTitle’).textContent = titles[sectionName] || sectionName;
-if (typeof switchSection === ‘function’) switchSection(sectionName);
+var homeEl = document.getElementById('mobileHome');
+if (homeEl) homeEl.style.display = 'none';
+document.getElementById('mobileBackBtn').style.display = 'block';
+document.getElementById('mobileHomeIndicator').style.display = 'none';
+var titles = { 'calendar': getWeekRangeTitle(), 'chores': 'Thu, Feb 5', 'rewards': 'Rewards', 'meals': 'Meals', 'recipes': 'Recipes', 'habits': 'Habits' };
+document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
+if (typeof switchSection === 'function') switchSection(sectionName);
 }
 }
 
 function goToMobileHome() {
 // If the mobile lists UI is open, handle back within it first
-var listsUI = document.getElementById(‘mobileListsUI’);
-if (listsUI && listsUI.style.display !== ‘none’) {
+var listsUI = document.getElementById('mobileListsUI');
+if (listsUI && listsUI.style.display !== 'none') {
 // Check which screen is active
-var detailActive = document.getElementById(‘listDetailScreen’) &&
-document.getElementById(‘listDetailScreen’).classList.contains(‘active’);
-var addActive = document.getElementById(‘addListScreen’) &&
-document.getElementById(‘addListScreen’).classList.contains(‘active’);
+var detailActive = document.getElementById('listDetailScreen') &&
+document.getElementById('listDetailScreen').classList.contains('active');
+var addActive = document.getElementById('addListScreen') &&
+document.getElementById('addListScreen').classList.contains('active');
 if (detailActive || addActive) {
 // Go back to the lists overview, not home
-listsShowScreen(‘listsScreen’);
+listsShowScreen('listsScreen');
 listsCurrentListId = null;
 return;
 }
@@ -9070,10 +9070,10 @@ return;
 hideMobileLists();
 return;
 }
-window.location.hash = ‘#/home’;
+window.location.hash = '#/home';
 }
 
-window.addEventListener(‘hashchange’, handleHashChange);
+window.addEventListener('hashchange', handleHashChange);
 
 function getWeekRangeTitle() {
 var today = new Date();
@@ -9082,75 +9082,75 @@ var diff = weekStart.getDate() - weekStart.getDay();
 weekStart.setDate(diff);
 var weekEnd = new Date(weekStart);
 weekEnd.setDate(weekStart.getDate() + 6);
-var opts = { month: ‘short’, day: ‘numeric’ };
-return weekStart.toLocaleDateString(‘en-US’, opts) + ’ - ’ + weekEnd.toLocaleDateString(‘en-US’, opts);
+var opts = { month: 'short', day: 'numeric' };
+return weekStart.toLocaleDateString('en-US', opts) + ' - ' + weekEnd.toLocaleDateString('en-US', opts);
 }
 
 function updateMobileTodayCard() {
 var today = new Date();
-var dateEl = document.getElementById(‘mobileTodayDate’);
-if (dateEl) dateEl.textContent = today.toLocaleDateString(‘en-US’, { weekday: ‘long’, month: ‘long’, day: ‘numeric’ });
-if (typeof getAllEvents === ‘function’) {
-var todayStr = today.toISOString().split(‘T’)[0];
+var dateEl = document.getElementById('mobileTodayDate');
+if (dateEl) dateEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+if (typeof getAllEvents === 'function') {
+var todayStr = today.toISOString().split('T')[0];
 var allEvents = getAllEvents();
 var todayEvents = allEvents.filter(function(event) {
-if (typeof isEventOnDate === ‘function’) return isEventOnDate(event, todayStr);
+if (typeof isEventOnDate === 'function') return isEventOnDate(event, todayStr);
 return event.date === todayStr;
 });
-var eventsContainer = document.getElementById(‘mobileTodayEvents’);
-var noEventsEl = document.getElementById(‘mobileNoEvents’);
+var eventsContainer = document.getElementById('mobileTodayEvents');
+var noEventsEl = document.getElementById('mobileNoEvents');
 if (todayEvents.length > 0) {
-if (noEventsEl) noEventsEl.style.display = ‘none’;
+if (noEventsEl) noEventsEl.style.display = 'none';
 if (eventsContainer) {
-eventsContainer.innerHTML = ‘’;
+eventsContainer.innerHTML = '';
 todayEvents.slice(0, 3).forEach(function(event, index) {
-var colorClass = index % 2 === 0 ? ‘color-pink’ : ‘color-peach’;
-var memberInitial = event.member ? event.member.charAt(0).toUpperCase() : ‘?’;
-var timeStr = event.time || ‘All day’;
-eventsContainer.innerHTML += ‘<div class="mobile-today-event ' + colorClass + '" onclick="goToSection(\'calendar\')">’ +
-‘<div class="mobile-event-content"><div class="mobile-event-title">’ + event.title + ‘</div>’ +
-‘<div class="mobile-event-time">’ + timeStr + ‘</div></div>’ +
-‘<div class="mobile-event-avatar">’ + memberInitial + ‘</div></div>’;
+var colorClass = index % 2 === 0 ? 'color-pink' : 'color-peach';
+var memberInitial = event.member ? event.member.charAt(0).toUpperCase() : '?';
+var timeStr = event.time || 'All day';
+eventsContainer.innerHTML += '<div class="mobile-today-event ' + colorClass + '" onclick="goToSection(\'calendar\')">' +
+'<div class="mobile-event-content"><div class="mobile-event-title">' + event.title + '</div>' +
+'<div class="mobile-event-time">' + timeStr + '</div></div>' +
+'<div class="mobile-event-avatar">' + memberInitial + '</div></div>';
 });
 }
 } else {
-if (noEventsEl) noEventsEl.style.display = ‘block’;
-if (eventsContainer) eventsContainer.innerHTML = ‘’;
+if (noEventsEl) noEventsEl.style.display = 'block';
+if (eventsContainer) eventsContainer.innerHTML = '';
 }
 }
 }
 
-window.addEventListener(‘resize’, function() {
-if (window.innerWidth <= 768 && currentMobileSection === ‘home’) showMobileHome();
+window.addEventListener('resize', function() {
+if (window.innerWidth <= 768 && currentMobileSection === 'home') showMobileHome();
 });
 
-if (document.readyState === ‘loading’) {
-document.addEventListener(‘DOMContentLoaded’, function() {
+if (document.readyState === 'loading') {
+document.addEventListener('DOMContentLoaded', function() {
 initMobile();
-if (typeof initGoogleCalendar === ‘function’) initGoogleCalendar();
+if (typeof initGoogleCalendar === 'function') initGoogleCalendar();
 });
 } else {
 initMobile();
-if (typeof initGoogleCalendar === ‘function’) initGoogleCalendar();
+if (typeof initGoogleCalendar === 'function') initGoogleCalendar();
 }
 
 function openProfilePicker() {
 var seen = {};
-var members = (window.familyMembers || JSON.parse(localStorage.getItem(‘familyMembers’) || ‘[]’))
+var members = (window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]'))
 .filter(function(m) {
-if (m.isGoogleCalendar || m.name === ‘Family’) return false;
+if (m.isGoogleCalendar || m.name === 'Family') return false;
 if (seen[m.name]) return false;
 seen[m.name] = true;
 return true;
 });
 if (members.length === 0) return;
-var existing = document.getElementById(‘profilePickerMount’);
+var existing = document.getElementById('profilePickerMount');
 if (existing) { existing.remove(); return; }
 var buttonsHtml = members.map(function(m) {
-return ‘<button class="ppick-btn" onclick="document.getElementById(\'profilePickerMount\').remove();openProfileDashboard(\''+m.name+'\')" style="--pmc:'+m.color+'"><span class="ppick-avatar">’+m.name.charAt(0).toUpperCase()+’</span>’+m.name+’</button>’;
-}).join(’’);
-var html = ‘<div id="profilePickerMount" class="ppick-overlay" onclick="this.remove()"><div class="ppick-modal" onclick="event.stopPropagation()"><div class="ppick-title">Whose dashboard?</div><div class="ppick-list">’+buttonsHtml+’</div><button class="ppick-cancel" onclick="document.getElementById(\'profilePickerMount\').remove()">Cancel</button></div></div>’;
-var el = document.createElement(‘div’);
+return '<button class="ppick-btn" onclick="document.getElementById(\'profilePickerMount\').remove();openProfileDashboard(\''+m.name+'\')" style="--pmc:'+m.color+'"><span class="ppick-avatar">'+m.name.charAt(0).toUpperCase()+'</span>'+m.name+'</button>';
+}).join('');
+var html = '<div id="profilePickerMount" class="ppick-overlay" onclick="this.remove()"><div class="ppick-modal" onclick="event.stopPropagation()"><div class="ppick-title">Whose dashboard?</div><div class="ppick-list">'+buttonsHtml+'</div><button class="ppick-cancel" onclick="document.getElementById(\'profilePickerMount\').remove()">Cancel</button></div></div>';
+var el = document.createElement('div');
 el.innerHTML = html;
 document.body.appendChild(el.firstChild);
 }
@@ -9161,56 +9161,56 @@ if (!eventId) return;
 var ev = null;
 var localEvents = window.events || [];
 for (var i = 0; i < localEvents.length; i++) { if (localEvents[i].id == eventId) { ev = localEvents[i]; break; } }
-if (!ev && typeof GoogleCalendar !== ‘undefined’) {
+if (!ev && typeof GoogleCalendar !== 'undefined') {
 var gcalEvents = GoogleCalendar.getEvents();
 for (var j = 0; j < gcalEvents.length; j++) { if (gcalEvents[j].id == eventId) { ev = gcalEvents[j]; break; } }
 }
 if (!ev) return;
-if (typeof closeEventDetailPanel === ‘function’) closeEventDetailPanel();
-var evDate = ev.date || ‘’, evEndDate = ev.endDate || ‘’, evTime = ev.time || ‘’, evEndTime = ev.endTime || ‘’, evNotes = ev.notes || ev.description || ‘’, evIsAllDay = ev.isAllDay;
+if (typeof closeEventDetailPanel === 'function') closeEventDetailPanel();
+var evDate = ev.date || '', evEndDate = ev.endDate || '', evTime = ev.time || '', evEndTime = ev.endTime || '', evNotes = ev.notes || ev.description || '', evIsAllDay = ev.isAllDay;
 if (!evDate && ev.start) {
-if (ev.start.dateTime) { var sd = new Date(ev.start.dateTime); evDate = sd.toISOString().split(‘T’)[0]; evTime = sd.toTimeString().slice(0,5); evIsAllDay = false; }
+if (ev.start.dateTime) { var sd = new Date(ev.start.dateTime); evDate = sd.toISOString().split('T')[0]; evTime = sd.toTimeString().slice(0,5); evIsAllDay = false; }
 else if (ev.start.date) { evDate = ev.start.date; evIsAllDay = true; }
 }
 if (!evEndDate && ev.end) {
-if (ev.end.dateTime) { var ed = new Date(ev.end.dateTime); evEndDate = ed.toISOString().split(‘T’)[0]; evEndTime = ed.toTimeString().slice(0,5); }
+if (ev.end.dateTime) { var ed = new Date(ev.end.dateTime); evEndDate = ed.toISOString().split('T')[0]; evEndTime = ed.toTimeString().slice(0,5); }
 else if (ev.end.date) { evEndDate = ev.end.date; }
 }
 if (evIsAllDay === undefined || evIsAllDay === null) evIsAllDay = !evTime;
-document.getElementById(‘eventTitle’).value = ev.title || ev.summary || ‘’;
-document.getElementById(‘eventDate’).value = evDate;
-document.getElementById(‘eventEndDate’).value = evEndDate;
-document.getElementById(‘eventNotes’).value = evNotes;
-document.getElementById(‘eventAllDayToggle’).checked = evIsAllDay;
-if (!evIsAllDay) { document.getElementById(‘eventTime’).value = evTime; document.getElementById(‘eventEndTime’).value = evEndTime; }
-if (typeof updateEventTimeVisibility === ‘function’) updateEventTimeVisibility();
-if (typeof selectedEventProfiles !== ‘undefined’) {
-selectedEventProfile = ev.member || ‘’;
+document.getElementById('eventTitle').value = ev.title || ev.summary || '';
+document.getElementById('eventDate').value = evDate;
+document.getElementById('eventEndDate').value = evEndDate;
+document.getElementById('eventNotes').value = evNotes;
+document.getElementById('eventAllDayToggle').checked = evIsAllDay;
+if (!evIsAllDay) { document.getElementById('eventTime').value = evTime; document.getElementById('eventEndTime').value = evEndTime; }
+if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
+if (typeof selectedEventProfiles !== 'undefined') {
+selectedEventProfile = ev.member || '';
 // Load the full members array so all assigned profiles are pre-selected
 var evMembers = (ev.members && ev.members.length > 0) ? ev.members : (ev.member ? [ev.member] : []);
 selectedEventProfiles = evMembers.slice();
 }
-if (typeof renderEventProfileGrid === ‘function’) renderEventProfileGrid();
-document.getElementById(‘eventPanelOverlay’).classList.add(‘active’);
-document.getElementById(‘eventModal’).classList.add(‘active’);
+if (typeof renderEventProfileGrid === 'function') renderEventProfileGrid();
+document.getElementById('eventPanelOverlay').classList.add('active');
+document.getElementById('eventModal').classList.add('active');
 window._editingEventId = eventId;
-var btn = document.getElementById(‘eventSaveBtn’);
-if (btn) btn.textContent = ‘Save Changes’;
+var btn = document.getElementById('eventSaveBtn');
+if (btn) btn.textContent = 'Save Changes';
 }
 
 function updateEvent(eventId) {
-var isAllDay = document.getElementById(‘eventAllDayToggle’).checked;
-var member = ‘’;
-if (typeof selectedEventProfiles !== ‘undefined’ && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
-else if (typeof selectedEventProfile !== ‘undefined’) member = selectedEventProfile;
-var membersArr = (typeof selectedEventProfiles !== ‘undefined’ && selectedEventProfiles.length > 0) ? selectedEventProfiles.slice() : (member ? [member] : []);
+var isAllDay = document.getElementById('eventAllDayToggle').checked;
+var member = '';
+if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
+else if (typeof selectedEventProfile !== 'undefined') member = selectedEventProfile;
+var membersArr = (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) ? selectedEventProfiles.slice() : (member ? [member] : []);
 var eventData = {
-title: document.getElementById(‘eventTitle’).value,
-date: document.getElementById(‘eventDate’).value,
-endDate: document.getElementById(‘eventEndDate’).value,
-time: isAllDay ? ‘’ : document.getElementById(‘eventTime’).value,
-endTime: isAllDay ? ‘’ : document.getElementById(‘eventEndTime’).value,
-notes: document.getElementById(‘eventNotes’).value,
+title: document.getElementById('eventTitle').value,
+date: document.getElementById('eventDate').value,
+endDate: document.getElementById('eventEndDate').value,
+time: isAllDay ? '' : document.getElementById('eventTime').value,
+endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
+notes: document.getElementById('eventNotes').value,
 isAllDay: isAllDay,
 member: member,
 members: membersArr
@@ -9227,7 +9227,7 @@ break;
 }
 }
 if (found) {
-try { localStorage.setItem(‘events’, JSON.stringify(evs)); } catch(e) {}
+try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
 window.events = evs;
 
 ```
@@ -9256,5 +9256,5 @@ try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected())
 }
 
 function openProfileSettings() {
-if (window.innerWidth <= 768) alert(‘Profile settings coming soon!’);
+if (window.innerWidth <= 768) alert('Profile settings coming soon!');
 }
