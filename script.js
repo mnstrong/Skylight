@@ -4008,7 +4008,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     '<span class="sg-day-num">' + dayNum + '</span>' +
                 '</div>' +
                 dinnerPillHtml +
-                '<button class="schedule-add-btn" onclick="openEventModalForDate('' + dateStr + '')">+ Add</button>' +
+                '<button class="schedule-add-btn" onclick="openEventModalForDate(\'' + dateStr + '\')">+ Add</button>' +
                 '</div>';
 
             // Time grid
