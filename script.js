@@ -3226,13 +3226,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         for (var ci = 0; ci < totalGridCells; ci++) { allDayCountByCell[ci] = 0; }
 
         // ── Compute spanning bars ──
-        // Each all-day event gets a row slot to avoid overlaps
-        // slot[week][col] = true if occupied
-        var slotMap = [];
-        for (var w = 0; w < weeks; w++) {
-            slotMap.push([null, null, null, null]); // up to 4 slots per week
-        }
-
         var spanBars = []; // {event, weekIdx, startCol, endCol, slot}
 
         allDayEvents.forEach(function(ev) {
@@ -3266,25 +3259,24 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 var startCol  = startDate.getDay();
                 var endCol    = endDate.getDay();
 
-                // Find a free slot in this week
+                // Find the lowest free slot in this week row
                 var slot = -1;
                 for (var s = 0; s < 4; s++) {
                     var occupied = false;
-                    if (slotMap[w][s]) {
-                        // Check if any existing bar in this slot overlaps cols
-                        for (var b = 0; b < spanBars.length; b++) {
-                            var existing = spanBars[b];
-                            if (existing.weekIdx === w && existing.slot === s) {
-                                if (!(endCol < existing.startCol || startCol > existing.endCol)) {
-                                    occupied = true;
-                                    break;
-                                }
+                    // Check every already-placed bar in this week at this slot
+                    for (var b = 0; b < spanBars.length; b++) {
+                        var existing = spanBars[b];
+                        if (existing.weekIdx === w && existing.slot === s) {
+                            // Overlap if ranges intersect
+                            if (!(endCol < existing.startCol || startCol > existing.endCol)) {
+                                occupied = true;
+                                break;
                             }
                         }
                     }
                     if (!occupied) { slot = s; break; }
                 }
-                if (slot === -1) slot = 3; // overflow into slot 3
+                if (slot === -1) slot = 3; // overflow
 
                 spanBars.push({ event: ev, weekIdx: w, startCol: startCol, endCol: endCol, slot: slot });
 
