@@ -3371,28 +3371,21 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
         grid.innerHTML = html;
 
-        // ── Inject spanning bars as absolutely-positioned overlays ──
-        // We measure each cell's position relative to the grid to place bars precisely
+        // Inject spanning bars - use offsetTop/offsetLeft (relative to grid as offsetParent)
         var cells = grid.querySelectorAll('.day-cell');
-        var gridRect = grid.getBoundingClientRect();
 
         spanBars.forEach(function(bar) {
             var startCellIdx = bar.weekIdx * 7 + bar.startCol;
             var endCellIdx   = bar.weekIdx * 7 + bar.endCol;
 
-            // Cells: firstDay cells are other-month, then current month, then trailing
-            // All cells including other-month are in cells[] in order
             var startCell = cells[startCellIdx];
             var endCell   = cells[endCellIdx];
             if (!startCell || !endCell) return;
 
-            var startRect = startCell.getBoundingClientRect();
-            var endRect   = endCell.getBoundingClientRect();
-
-            var left   = startRect.left - gridRect.left + 3;
-            var width  = endRect.right  - startRect.left - 6;
-            // Slot 0 = just below day-number (offset ~42px), each slot ~28px
-            var top    = 42 + bar.slot * 28;
+            var left  = startCell.offsetLeft + 3;
+            var width = (endCell.offsetLeft + endCell.offsetWidth) - startCell.offsetLeft - 6;
+            // startCell.offsetTop places us in the correct week row; +42 clears the day-number area
+            var top   = startCell.offsetTop + 42 + bar.slot * 28;
 
             var ev = bar.event;
             var color = getEventColor(ev);
@@ -3402,7 +3395,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             barEl.className = 'day-span-bar';
             barEl.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + width + 'px;height:24px;' +
                 'background:' + bgColor + ';border-radius:20px;z-index:2;cursor:pointer;' +
-                'display:flex;align-items:center;padding:0 10px;overflow:hidden;box-sizing:border-box;';
+                'display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;' +
+                'padding:0 10px;overflow:hidden;box-sizing:border-box;';
             barEl.innerHTML = '<span style="font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222;">' +
                 ev.title + '</span>';
             barEl.onclick = function(e) {
