@@ -3367,19 +3367,14 @@
         .sg-day-header .schedule-add-btn:hover { opacity: 1; }
 
         .sg-meal-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            padding: 4px 6px;
-            flex-shrink: 0;
-            background: white;
-            border-bottom: 1px solid #f0f0f0;
+            display: none; /* no longer used — dinner pill is inside sg-day-header */
         }
 
         .sg-meal-pill {
+            display: -webkit-flex;
             display: flex;
+            -webkit-align-items: center;
             align-items: center;
-            gap: 4px;
             border-radius: 20px;
             padding: 3px 8px;
             font-size: 12px;
@@ -3388,7 +3383,16 @@
             overflow: hidden;
         }
 
-        .sg-meal-emoji { font-size: 13px; flex-shrink: 0; }
+        /* Compact pill sitting inside the fixed-height day header */
+        .sg-meal-pill-header {
+            max-width: 140px;
+            -webkit-flex-shrink: 1;
+            flex-shrink: 1;
+            min-width: 0;
+            margin-right: 4px;
+        }
+
+        .sg-meal-emoji { font-size: 13px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 4px; }
         .sg-meal-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .sg-time-grid { position: relative; cursor: pointer; }
@@ -3455,8 +3459,8 @@
         .sg-event:hover { filter: brightness(0.93); }
 
         .sg-event-title {
-            font-size: 18px;
-            font-weight: 400;
+            font-size: 12px;
+            font-weight: 600;
             color: #222;
             line-height: 1.3;
             overflow: hidden;
@@ -3465,7 +3469,7 @@
             -webkit-box-orient: vertical;
         }
 
-        .sg-event-time { font-size: 16px; font-weight: 400; margin-top: 2px; opacity: 0.8; }
+        .sg-event-time { font-size: 11px; font-weight: 500; margin-top: 2px; opacity: 0.8; }
 
         .sg-event-avatar {
             position: absolute;

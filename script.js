@@ -2668,6 +2668,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Update localStorage
         localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
         
+        // Sync color/name change to Supabase
+        if (typeof syncFamilyMemberColor === 'function') {
+            syncFamilyMemberColor(member);
+        }
+        
         // Update all references in other data
         updateMemberReferences(oldName, newName);
         
@@ -3988,28 +3993,23 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
             daysHtml += `<div class="sg-day-col">`;
 
-            // Day header
-            daysHtml += `<div class="sg-day-header">
-                <div class="sg-day-title ${isToday ? 'today' : ''}">
-                    <span class="sg-day-name">${dayName}</span>
-                    <span class="sg-day-num">${dayNum}</span>
-                </div>
-                <button class="schedule-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add</button>
-            </div>`;
-
-            // Meal banner(s) at top
-            if (dayMeals.length > 0) {
-                daysHtml += `<div class="sg-meal-bar">`;
-                dayMeals.forEach(meal => {
-                    const cat = mealCategories.find(c => c.name === meal.mealType) || { color: '#FFD9A3' };
-                    const mealEmoji = meal.mealType === 'Breakfast' ? '🌅' : meal.mealType === 'Lunch' ? '☀️' : meal.mealType === 'Dinner' ? '🍽️' : '🍎';
-                    daysHtml += `<div class="sg-meal-pill" style="background:${cat.color};" onclick="event.stopPropagation()">
-                        <span class="sg-meal-emoji">${mealEmoji}</span>
-                        <span class="sg-meal-name">${meal.recipeName || meal.name || 'Meal'}</span>
-                    </div>`;
-                });
-                daysHtml += `</div>`;
-            }
+            // Day header — dinner pill inline so it never shifts the time grid
+            const dinnerMeal = dayMeals.find(m => m.mealType === 'Dinner');
+            const dinnerPillHtml = dinnerMeal ? (function() {
+                var cat = mealCategories.find(function(c){ return c.name === 'Dinner'; }) || { color: '#FFD9A3' };
+                return '<div class="sg-meal-pill sg-meal-pill-header" style="background:' + cat.color + ';" onclick="event.stopPropagation()">' +
+                    '<span class="sg-meal-emoji">🍽️</span>' +
+                    '<span class="sg-meal-name">' + (dinnerMeal.recipeName || dinnerMeal.name || 'Dinner') + '</span>' +
+                    '</div>';
+            })() : '';
+            daysHtml += '<div class="sg-day-header">' +
+                '<div class="sg-day-title ' + (isToday ? 'today' : '') + '">' +
+                    '<span class="sg-day-name">' + dayName + '</span>' +
+                    '<span class="sg-day-num">' + dayNum + '</span>' +
+                '</div>' +
+                dinnerPillHtml +
+                '<button class="schedule-add-btn" onclick="openEventModalForDate('' + dateStr + '')">+ Add</button>' +
+                '</div>';
 
             // Time grid
             daysHtml += `<div class="sg-time-grid" style="height:${GRID_HEIGHT}px;" onclick="openEventModalForDate('${dateStr}')">`;
