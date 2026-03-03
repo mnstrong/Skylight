@@ -116,8 +116,11 @@ async function loadAllDataFromSupabase() {
         const allRecipesRaw = await SupabaseAPI.getRecipes();
         if (allRecipesRaw) {
             const allRecipes = allRecipesRaw.map(recipeFromDb);
+            // Fully replace local recipes with Supabase data (removes sample/duplicate entries)
             localStorage.setItem('recipes', JSON.stringify(allRecipes));
             window.recipes = allRecipes;
+            // If the in-page recipes variable exists, sync it too
+            if (typeof recipes !== 'undefined') recipes = allRecipes;
             console.log('✓ Loaded', allRecipes.length, 'recipes');
         }
         
