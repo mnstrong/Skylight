@@ -3260,8 +3260,13 @@ let visiblePeriods = {
         }
 
         // ── Google Calendar Flair images ──────────────────────────────────────────
-        var FLAIR_BASE = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
-        var FLAIR_EXT  = '.svg';
+        var FLAIR_BASE     = 'https://ssl.gstatic.com/calendar/images/eventillustrations/2024_v2/img_';
+        var FLAIR_EXT      = '.svg';
+        var FLAIR_BASE_OLD = 'https://ssl.gstatic.com/calendar/images/eventillustrations/v1/img_';
+        var FLAIR_EXT_OLD  = '_1x.jpg';
+        // Flairs that haven't been updated to 2024_v2 yet - fall back to v1
+        var FLAIR_V1_ONLY  = {'archery':1,'billiard':1,'bookclub':1,'boxing':1,'carmaintenance':1,
+                              'handcraft':1,'karate':1,'sleep':1,'theateropera':1,'worldhistory':1};
 
         // keyword (lowercase) → flair id
         var FLAIR_MAP = (function() {
@@ -3277,8 +3282,8 @@ let visiblePeriods = {
             add('bbq',              ['bbq','barbecue','barbeque']);
             add('beer',             ['beer','beers','oktoberfest','octoberfest','october fest']);
             add('bookclub',         ['book club','reading']);
-            add('studying',         ['study','studying','exam','homework','tutoring','bible study','womens study','mens study']);
-            add('kidspickupdropoff', ['school','teacher','student','school pickup','school dropoff','pickup','drop off','carpool','after school']);
+            add('studying',         ['bible study','womens study','mens study','studying','tutoring']);
+            add('kidspickupdropoff', ['school pickup','school dropoff','after school','carpool','drop off']);
             add('bowling',          ['bowling']);
             add('boxing',           ['boxing']);
             add('breakfast',        ['breakfast','brunch','brunches']);
@@ -3319,6 +3324,7 @@ let visiblePeriods = {
             add('sleep',            ['nap','sleep','bedtime']);
             add('soccer',           ['soccer','football match','football game']);
             add('spa',              ['spa','sauna','steam room']);
+            add('studying',         ['study','exam','homework']);
             add('surfing',          ['surfing','surf']);
             add('swimming',         ['swimming','swim','pool','lap swim']);
             add('tennis',           ['tennis']);
@@ -3336,6 +3342,7 @@ let visiblePeriods = {
         })();
 
         function getFlairUrl(title, notes) {
+            // Support explicit #flair:id or [flair:id] tags in description
             if (notes) {
                 var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
                 if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
@@ -3345,6 +3352,7 @@ let visiblePeriods = {
             for (var si = 0; si < sources.length; si++) {
                 for (var i = 0; i < keys.length; i++) {
                     if (sources[si].indexOf(keys[i]) !== -1) {
+                        // Always try 2024 first; applyImageToEl will fall back to v1 on 404
                         return FLAIR_BASE + FLAIR_MAP[keys[i]] + FLAIR_EXT;
                     }
                 }
@@ -3367,30 +3375,45 @@ let visiblePeriods = {
         }
 
         function applyImageToEl(el, imgUrl, tintColor, duration) {
-            var longEvent  = duration && duration > 60;
-            // Short events: gradient covers top-left, fades toward image at bottom-right
-            // Long events:  gradient starts lower so it blends over the image edge more softly
-            var gradient   = longEvent
-                ? 'linear-gradient(to bottom right, ' + 'TINT' + ' 50%, ' + 'FADE' + ' 85%)'
-                : 'linear-gradient(to bottom right, ' + 'TINT' + ' 30%, ' + 'FADE' + ' 75%)';
-            var bgSize     = longEvent ? 'auto, 161%'                        : 'auto, cover';
-            var bgPos      = longEvent ? 'bottom right, bottom -20px right'  : 'bottom right';
-            var img = new Image();
-            img.onload = function() {
+            var longEvent = duration && duration > 60;
+            var bgSize    = longEvent ? 'auto, 161%'                       : 'auto, cover';
+            var bgPos     = longEvent ? 'bottom right, bottom -20px right' : 'bottom right';
+            var gradient  = longEvent
+                ? 'linear-gradient(to bottom right, TINT 50%, FADE 85%)'
+                : 'linear-gradient(to bottom right, TINT 30%, FADE 75%)';
+
+            function applyBg(url) {
                 var color    = tintColor || '#888888';
                 var tintRgba = hexToRgba(color, 0.7);
                 var tintFade = hexToRgba(color, 0.0);
                 var grad     = gradient.replace('TINT', tintRgba).replace('FADE', tintFade);
-                el.style.borderLeft       = 'none';
-                el.style.backgroundImage  = grad + ', url(' + imgUrl + ')';
-                el.style.backgroundSize   = bgSize;
+                el.style.borderLeft         = 'none';
+                el.style.backgroundImage    = grad + ', url(' + url + ')';
+                el.style.backgroundSize     = bgSize;
                 el.style.backgroundPosition = bgPos;
-                el.style.backgroundRepeat = 'no-repeat';
+                el.style.backgroundRepeat   = 'no-repeat';
                 el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                     t.style.color = '#fff';
                 });
+            }
+
+            // Build v1 fallback URL from the 2024 URL
+            // 2024: .../2024_v2/img_<id>.svg  →  v1: .../v1/img_<id>_1x.jpg
+            function fallbackUrl(url) {
+                var m = url.match(/2024_v2\/img_([^.]+)\.svg$/);
+                return m ? FLAIR_BASE_OLD + m[1] + FLAIR_EXT_OLD : null;
+            }
+
+            var img = new Image();
+            img.onload = function() { applyBg(imgUrl); };
+            img.onerror = function() {
+                var v1 = fallbackUrl(imgUrl);
+                if (!v1) return;
+                var img2 = new Image();
+                img2.onload = function() { applyBg(v1); };
+                img2.onerror = function() { /* neither URL valid — leave unstyled */ };
+                img2.src = v1;
             };
-            img.onerror = function() { /* URL invalid — leave event styled normally */ };
             img.src = imgUrl;
         }
 
