@@ -3324,7 +3324,7 @@
 
         .sg-day-col {
             flex: 1;
-            min-width: 130px;
+            min-width: 280px;
             border-right: 1px solid #e8e8e8;
             display: flex;
             flex-direction: column;
