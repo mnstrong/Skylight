@@ -1,13 +1,13 @@
 // Polyfills for Android 8 / older browser compatibility
 // globalThis polyfill (needed by some libraries; moved from inline HTML script)
 if (typeof globalThis === 'undefined') {
-Object.defineProperty(Object.prototype, '__magic__', {
+Object.defineProperty(Object.prototype, '**magic**', {
 get: function() { return this; }, configurable: true
 });
 /* jshint ignore:start */
-__magic__.globalThis = __magic__;
+**magic**.globalThis = **magic**;
 /* jshint ignore:end */
-delete Object.prototype.__magic__;
+delete Object.prototype.**magic**;
 }
 
 if (!String.prototype.padStart) {
@@ -97,7 +97,6 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
 { name: 'Elsie', color: '#d9aafa' }
 ];
 
-```
     // Deduplicate family members by name (keep first occurrence)
     const seenNames = new Set();
     familyMembers = familyMembers.filter(member => {
@@ -135,7 +134,6 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let chores = JSON.parse(localStorage.getItem('chores')) || [];
     let routines = JSON.parse(localStorage.getItem('routines')) || [];
-```
 
 let visiblePeriods = {
 'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
@@ -158,7 +156,6 @@ let meals = JSON.parse(localStorage.getItem('meals')) || [];
 let allowances = JSON.parse(localStorage.getItem('allowances')) || [];
 let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
-```
     // Meal planning data
     let recipes = (function() {
         var stored = JSON.parse(localStorage.getItem('recipes')) || [];
@@ -6990,7 +6987,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     };
     
     console.log('window.toggleChore exposed:', typeof window.toggleChore);
-```
 
 function checkAllTasksComplete(memberName) {
 // 1. Check Chores
@@ -7000,7 +6996,6 @@ const completedChores = memberChores.filter(c => c.completed);
 const allChoresComplete = memberChores.length > 0 &&
 memberChores.length === completedChores.length;
 
-```
 // 2. Check Routines
 const memberRoutines = routines.filter(r => r.member === memberName);
 const completedRoutines = memberRoutines.filter(r => r.completed);
@@ -7012,11 +7007,9 @@ const allRoutinesComplete = memberRoutines.length > 0 &&
 if (allChoresComplete || allRoutinesComplete) {
     triggerConfetti();
 }
-```
 
 }
 
-```
     function triggerConfetti() {
         // Create confetti container
         const container = document.createElement('div');
@@ -8100,7 +8093,6 @@ if (allChoresComplete || allRoutinesComplete) {
     }
 
    // Auto-fullscreen when page loads
-```
 
 /*       function enterFullscreen() {
 const elem = document.documentElement;
@@ -8117,7 +8109,6 @@ elem.msRequestFullscreen();
 }
 }
 
-```
     // Try to enter fullscreen after page loads
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(enterFullscreen, 500);
@@ -8138,7 +8129,6 @@ elem.msRequestFullscreen();
             enterFullscreen();
         }
     }, { once: true });
-```
 
 /*
 /*
@@ -8172,7 +8162,6 @@ function openClockPicker(inputId) {
 currentTimeInputId = inputId;
 const input = document.getElementById(inputId);
 
-```
 // Set to current time if input is empty
 if (!input.value) {
     const now = new Date();
@@ -8194,7 +8183,6 @@ updateClockDisplay();
 updateClockPeriod();
 
 document.getElementById('clockPickerModal').classList.add('active');
-```
 
 }
 
@@ -8205,7 +8193,6 @@ document.getElementById('clockPickerModal').classList.remove('active');
 function confirmClockTime() {
 if (!currentTimeInputId) return;
 
-```
 // Convert to 24-hour format
 let hour24 = selectedHour;
 if (selectedPeriod === 'PM' && selectedHour !== 12) {
@@ -8218,7 +8205,6 @@ const timeString = `${String(hour24).padStart(2, '0')}:${String(selectedMinute).
 document.getElementById(currentTimeInputId).value = timeString;
 
 closeClockPicker();
-```
 
 }
 
@@ -8238,7 +8224,6 @@ const numbersContainer = face.querySelector('.clock-numbers') || document.create
 numbersContainer.className = 'clock-numbers';
 numbersContainer.innerHTML = '';
 
-```
 const numbers = currentClockMode === 'hour' ? 
     [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] : 
     [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -8269,7 +8254,6 @@ if (!face.querySelector('.clock-numbers')) {
 }
 
 updateClockHand();
-```
 
 }
 
@@ -8297,7 +8281,6 @@ function updateClockHand() {
 const hand = document.getElementById('clockHand');
 let angle;
 
-```
 if (currentClockMode === 'hour') {
     // Hour hand: 12 positions, 30 degrees each
     angle = (selectedHour % 12) * 30;
@@ -8307,7 +8290,6 @@ if (currentClockMode === 'hour') {
 }
 
 hand.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
-```
 
 }
 
@@ -8322,7 +8304,6 @@ const timeInputs = [
 'eventEndTime'
 ];
 
-```
     timeInputs.forEach(inputId => {
         const input = document.getElementById(inputId);
         if (input) {
@@ -8337,7 +8318,6 @@ const timeInputs = [
         }
     });
 }, 500);
-```
 
 });
 
@@ -8561,7 +8541,6 @@ row.innerHTML =
 '<div class="item-check '+(item.completed?'checked':'')+'">'+(item.completed?'✓':'')+'</div>' +
 '<span class="item-text '+(item.completed?'done':'')+'" style="flex:1">'+listsEsc(item.text)+'</span>';
 
-```
 // Tap on text/check area toggles completion
 row.addEventListener('click', function(e) {
   if (_listsDragItem) return; // suppress click after drag
@@ -8607,7 +8586,6 @@ handle.addEventListener('mousedown', function(e) {
 });
 
 c.appendChild(row);
-```
 
 });
 }
@@ -8865,7 +8843,6 @@ var wrap = document.createElement('div');
 wrap.style.cursor = 'pointer';
 wrap.style.textAlign = 'center';
 
-```
 var av = document.createElement('div');
 av.textContent = initial;
 av.style.width = '44px';
@@ -8896,7 +8873,6 @@ wrap.appendChild(av);
 wrap.appendChild(lbl);
 wrap.onclick = clickFn;
 grid.appendChild(wrap);
-```
 
 }
 
@@ -9230,7 +9206,6 @@ if (found) {
 try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
 window.events = evs;
 
-```
     // Sync to Supabase
     try {
         if (window.SupabaseSync && typeof window.SupabaseSync.syncCalendarEvent === 'function') {
@@ -9251,7 +9226,6 @@ if (typeof currentView !== 'undefined') {
     else if (currentView === 'day' && typeof renderDayView === 'function') renderDayView();
 }
 try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected()) GoogleCalendar.update(eventId, eventData); } catch(e) {}
-```
 
 }
 
