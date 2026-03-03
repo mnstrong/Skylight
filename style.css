@@ -721,7 +721,7 @@
         }
         
         .week-allday-event {
-            border-radius: 6px;
+            border-radius: 20px;
             padding: 6px 10px;
             cursor: pointer;
             display: flex;
@@ -1160,6 +1160,63 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* ── Month grid event pills ── */
+        #calendarGrid .day-event-item {
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin: 1px 2px;
+            font-size: 12px;
+            font-weight: 600;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: flex-start;
+            justify-content: flex-start;
+            cursor: pointer;
+            overflow: hidden;
+            min-height: 22px;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            width: calc(100% - 4px);
+            color: #222;
+        }
+
+        /* Hide time for all-day events */
+        #calendarGrid .day-event-item .day-event-time {
+            display: none;
+        }
+
+        /* Show time only for timed events */
+        #calendarGrid .day-event-item.has-time .day-event-time {
+            display: inline;
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-right: 4px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        #calendarGrid .day-event-item .day-event-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 12px;
+            font-weight: 600;
+            -webkit-flex: 1;
+            flex: 1;
+        }
+
+        #calendarGrid .day-event-more {
+            font-size: 11px;
+            color: #888;
+            padding: 1px 4px;
+            cursor: pointer;
+            font-weight: 500;
         }
 
         .event-time-block {
@@ -3374,8 +3431,8 @@
 
         .sg-allday-event {
             margin: 2px 4px;
-            padding: 3px 7px;
-            border-radius: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             display: flex;
