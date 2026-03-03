@@ -1,13 +1,13 @@
 // Polyfills for Android 8 / older browser compatibility
 // globalThis polyfill (needed by some libraries; moved from inline HTML script)
 if (typeof globalThis === 'undefined') {
-Object.defineProperty(Object.prototype, '__magic__', {
+Object.defineProperty(Object.prototype, '**magic**', {
 get: function() { return this; }, configurable: true
 });
 /* jshint ignore:start */
- __magic__.globalThis =  __magic__;
+**magic**.globalThis = **magic**;
 /* jshint ignore:end */
-delete Object.prototype. __magic__;
+delete Object.prototype.**magic**;
 }
 
 if (!String.prototype.padStart) {
@@ -2679,6 +2679,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         closeEditProfileModal();
         renderCalendarFilterList();
+        renderFamilyPillsLists();
+        if (typeof renderFamilyPills === 'function') renderFamilyPills();
         
         // Re-render current view
         if (currentView === 'month') renderCalendar();
@@ -3152,9 +3154,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const color = colors[familyMembers.length % colors.length];
             familyMembers.push({ name, color });
             localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
-            if (currentSection === 'calendar') {
-                renderFamilyPills();
-            }
+            // Add new member to calendar filter
+            calendarFilterActive.push(name);
+            // Re-render pills everywhere
+            renderFamilyPillsLists();
+            if (typeof renderFamilyPills === 'function') renderFamilyPills();
+            renderCalendarFilterList();
             renderPersonAvatars();
             
             // Update dropdowns
