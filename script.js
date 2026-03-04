@@ -3592,9 +3592,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function applyImageToEl(el, imgUrl, tintColor, duration) {
-        var longEvent = duration && duration > 60;
-        var bgSize    = longEvent ? 'auto, 161%'                       : 'auto, cover';
-        var bgPos     = longEvent ? 'bottom right, bottom -20px right' : 'bottom right';
+        var longEvent = duration && duration > 90;
+        var bgSize    = longEvent ? 'auto, 191%'              : 'auto, cover';
+        var bgPos     = longEvent ? 'bottom right, bottom right' : 'bottom right';
         var gradient  = longEvent
             ? 'linear-gradient(to bottom right, TINT 50%, FADE 85%)'
             : 'linear-gradient(to bottom right, TINT 30%, FADE 75%)';
