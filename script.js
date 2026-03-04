@@ -3002,40 +3002,28 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             googleEvents = GoogleCalendar.getEvents();
         }
         
-        const allRaw = [...localEvents, ...googleEvents];
+        const allRaw = [...localEvents, ...googleEvents]; // kept for reference
 
-        // Deduplicate: local events take precedence over Google Calendar copies
-        // (user edits member/color on local events; GCal copies have no member)
+        // Deduplicate: local events are authoritative.
+        // GCal events are only included if no local event with the same title+date+time exists.
         const merged = [];
-        const seen = new Map(); // key -> index in merged
+        const seen = new Map(); // titleDateTimeKey -> index in merged
 
-        // Process local events first so they take precedence
-        const localFirst = [...localEvents, ...googleEvents];
+        // First pass: add all local events
+        localEvents.forEach(function(ev) {
+            var clone = Object.assign({}, ev);
+            if (!clone.members || clone.members.length === 0) {
+                clone.members = clone.member ? [clone.member] : [];
+            }
+            var key = (ev.title || '') + '__' + (ev.date || '') + '__' + (ev.time || '');
+            seen.set(key, merged.length);
+            merged.push(clone);
+        });
 
-        localFirst.forEach(function(ev) {
-            var key = (ev.title || '') + '__' + (ev.date || '') + '__' + (ev.time || '') + '__' + (ev.endTime || '');
-            if (seen.has(key)) {
-                var existing = merged[seen.get(key)];
-                // Merge members
-                var existingMembers = (existing.members && existing.members.length > 0)
-                    ? existing.members
-                    : (existing.member ? [existing.member] : []);
-                var newMember = ev.member;
-                if (newMember && existingMembers.indexOf(newMember) === -1) {
-                    existingMembers.push(newMember);
-                }
-                // Also merge any members array from the duplicate
-                if (ev.members && ev.members.length > 0) {
-                    ev.members.forEach(function(name) {
-                        if (name && existingMembers.indexOf(name) === -1) {
-                            existingMembers.push(name);
-                        }
-                    });
-                }
-                existing.members = existingMembers;
-                existing.member = existingMembers[0] || '';
-            } else {
-                // Normalize members array
+        // Second pass: add GCal events only if no local event covers that slot
+        googleEvents.forEach(function(ev) {
+            var key = (ev.title || '') + '__' + (ev.date || '') + '__' + (ev.time || '');
+            if (!seen.has(key)) {
                 var clone = Object.assign({}, ev);
                 if (!clone.members || clone.members.length === 0) {
                     clone.members = clone.member ? [clone.member] : [];
@@ -9467,7 +9455,9 @@ var profiles = window.selectedEventProfiles || [];
 if (profiles.length > 0) member = profiles[0];
 else member = window.selectedEventProfile || '';
 var membersArr = profiles.length > 0 ? profiles.slice() : (member ? [member] : []);
-console.log('[updateEvent] member:', member, 'members:', membersArr);
+console.log('[updateEvent] id:', eventId, 'member:', member, 'members:', membersArr);
+console.log('[updateEvent] window.events count:', (window.events || []).length);
+console.log('[updateEvent] event ids sample:', (window.events || []).slice(0,3).map(function(e){return e.id + '(' + typeof e.id + ')';}).join(','));
 var eventData = {
 title: document.getElementById('eventTitle').value,
 date: document.getElementById('eventDate').value,
@@ -9490,14 +9480,26 @@ found = true;
 break;
 }
 }
+if (!found) {
+// Event not in local events - may be GCal-only. Add it locally so member saves.
+console.log('[updateEvent] Event not found in window.events, adding locally. id:', eventId);
+var newLocal = Object.assign({ id: eventId }, eventData);
+evs.push(newLocal);
+updatedEvent = newLocal;
+found = true;
+}
 if (found) {
+console.log('[updateEvent] Saving event:', updatedEvent.title, 'member:', updatedEvent.member);
 try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
 window.events = evs;
 
     // Sync to Supabase
     try {
         if (window.SupabaseSync && typeof window.SupabaseSync.syncCalendarEvent === 'function') {
+            console.log('[updateEvent] Calling syncCalendarEvent...');
             window.SupabaseSync.syncCalendarEvent(updatedEvent, 'update');
+        } else {
+            console.warn('[updateEvent] SupabaseSync not available:', window.SupabaseSync);
         }
     } catch(syncErr) {
         console.warn('[updateEvent] Supabase sync error:', syncErr);
