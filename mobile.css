@@ -290,23 +290,23 @@
         letter-spacing: 0.1px;
     }
 
-    /* Content area offset for nav height (~110px header + ~90px nav) */
+    /* Content area offset for nav height (mobile header ~56px + range ~48px + buttons ~60px) */
     body.viewing-section.calendar-view #contentArea {
         padding: 0 !important;
-        padding-top: 200px !important;
+        padding-top: 175px !important;
     }
 
-    /* Show weekView, hide everything else in calendar section on mobile */
-    body.viewing-section.calendar-view .week-view {
-        display: block !important;
-    }
-
+    /* Show weekView or calendarGrid depending on view; hide schedule/day/tabs */
     body.viewing-section.calendar-view .schedule-view,
-    body.viewing-section.calendar-view #calendarGrid,
     body.viewing-section.calendar-view .day-view,
     body.viewing-section.calendar-view .family-pills,
     body.viewing-section.calendar-view .tabs {
         display: none !important;
+    }
+
+    /* week view shown by default (JS switches) */
+    body.viewing-section.calendar-view .week-view {
+        display: block !important;
     }
 
     /* ── Week View – mobile list layout ────────────────────────────────── */
@@ -391,6 +391,119 @@
         font-size: 14px !important;
         color: #888 !important;
         text-align: center !important;
+    }
+
+    /* ── Month View – mobile grid ───────────────────────────────────────── */
+    body.viewing-section.calendar-view #calendarGrid {
+        display: grid !important;
+        padding: 0 10px 80px !important;
+        background: #fff !important;
+        border: none !important;
+        gap: 0 !important;
+    }
+
+    /* Day-of-week headers */
+    body.viewing-section.calendar-view #calendarGrid .day-header {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #888 !important;
+        text-align: center !important;
+        padding: 8px 0 6px !important;
+        border: none !important;
+    }
+
+    /* Individual day cells – no box, no border */
+    body.viewing-section.calendar-view .day-cell {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+        padding: 2px 2px 6px !important;
+        min-height: 64px !important;
+        vertical-align: top !important;
+        cursor: pointer !important;
+    }
+
+    body.viewing-section.calendar-view .day-cell.other-month {
+        opacity: 0.25 !important;
+    }
+
+    /* Past dates dim */
+    body.viewing-section.calendar-view .day-cell.is-past .day-number {
+        opacity: 0.35 !important;
+    }
+
+    body.viewing-section.calendar-view .day-cell.is-past .day-event-item,
+    body.viewing-section.calendar-view .day-cell.is-past .day-event-more {
+        opacity: 0.4 !important;
+    }
+
+    /* Date number */
+    body.viewing-section.calendar-view .day-number {
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: #1a1a1a !important;
+        text-align: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+        border-radius: 50% !important;
+        margin: 0 auto 3px !important;
+        display: block !important;
+        background: transparent !important;
+    }
+
+    /* Today red circle */
+    body.viewing-section.calendar-view .day-cell.today .day-number {
+        background: #FF3B30 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+    }
+
+    /* Event pills inside month cells */
+    body.viewing-section.calendar-view .day-events {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        padding: 0 !important;
+    }
+
+    body.viewing-section.calendar-view .day-event-item {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        color: #1a1a1a !important;
+        border-radius: 4px !important;
+        padding: 2px 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: block !important;
+        line-height: 1.4 !important;
+        border-left: none !important;
+    }
+
+    body.viewing-section.calendar-view .day-event-time {
+        display: none !important;
+    }
+
+    body.viewing-section.calendar-view .day-event-more {
+        font-size: 10px !important;
+        color: #888 !important;
+        padding: 0 4px !important;
+        font-weight: 500 !important;
+    }
+
+    /* Spanning event bars (all-day) */
+    body.viewing-section.calendar-view .cal-span-overlay {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        border-radius: 4px !important;
+    }
+
+    body.viewing-section.calendar-view .day-allday-placeholder {
+        height: 16px !important;
+        display: block !important;
     }
 
     /* Event cards inside week view */

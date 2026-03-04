@@ -1409,12 +1409,22 @@ function updateMobileCalRangeTitle() {
 }
 
 function mobileCycleView() {
-    if (typeof switchView === 'undefined') return;
-    var views = ['week', 'month', 'schedule'];
+    if (typeof switchView !== 'function') return;
+    var views = ['week', 'month'];
     var cur = (typeof currentView !== 'undefined') ? currentView : 'week';
     var idx = views.indexOf(cur);
     var next = views[(idx + 1) % views.length];
     switchView(next);
+    // On mobile, make sure the right container is visible
+    var weekView = document.getElementById('weekView');
+    var calGrid = document.getElementById('calendarGrid');
+    if (next === 'week') {
+        if (weekView) weekView.style.display = 'block';
+        if (calGrid) calGrid.style.display = 'none';
+    } else {
+        if (weekView) weekView.style.display = 'none';
+        if (calGrid) calGrid.style.display = 'grid';
+    }
     updateMobileCalRangeTitle();
 }
 
@@ -1427,9 +1437,13 @@ function showMobileCalendar() {
     document.getElementById('mobileBackBtn').style.display = 'block';
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
-    // Always week view on mobile
     if (typeof switchSection === 'function') switchSection('calendar');
+    // Default to week view on mobile
     if (typeof switchView === 'function') switchView('week');
+    var weekView = document.getElementById('weekView');
+    var calGrid = document.getElementById('calendarGrid');
+    if (weekView) weekView.style.display = 'block';
+    if (calGrid) calGrid.style.display = 'none';
     updateMobileCalRangeTitle();
 }
 

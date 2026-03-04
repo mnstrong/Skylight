@@ -3333,6 +3333,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // current month cells
         for (var day = 1; day <= daysInMonth; day++) {
             var isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            var dayDate = new Date(year, month, day);
+            dayDate.setHours(0,0,0,0);
+            var isPast = !isToday && dayDate < today;
             var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
             var cellIdx = firstDay + day - 1;
             var reservedSlots = allDayCountByCell[cellIdx] || 0;
@@ -3367,7 +3370,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 eventsHtml += '<div class="day-event-more">' + (totalForDay - 3) + ' more</div>';
             }
 
-            html += '<div class="day-cell' + (isToday ? ' today' : '') + '" onclick="showDayEvents(\'' + dateStr + '\')">' +
+            html += '<div class="day-cell' + (isToday ? ' today' : '') + (isPast ? ' is-past' : '') + '" onclick="showDayEvents(\'' + dateStr + '\')">' +
                 '<div class="day-number">' + day + '</div>' +
                 '<div class="day-events">' + eventsHtml + '</div>' +
                 '</div>';
