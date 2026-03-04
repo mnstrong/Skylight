@@ -1668,7 +1668,7 @@ function renderMobileChoresProfileFilter() {
         var isSelected = mobileChoresFilter === m.name;
         var isAll = mobileChoresFilter === null;
         var dim = !isAll && !isSelected;
-        html += '<div class="mcpf-item' + (isSelected ? ' mcpf-selected' : '') + (dim ? ' mcpf-dim' : '') + '" onclick="mobileChoresSetFilter('' + m.name + '')">' +
+        html += '<div class="mcpf-item' + (isSelected ? ' mcpf-selected' : '') + (dim ? ' mcpf-dim' : '') + '" data-name="' + m.name + '" onclick="mobileChoresSetFilter(this.getAttribute(\'data-name\'))">' +
             '<div class="mcpf-avatar" style="background:' + m.color + '">' + m.name.charAt(0).toUpperCase() + '</div>' +
             '<div class="mcpf-name">' + m.name + '</div>' +
             '</div>';
@@ -1696,89 +1696,60 @@ function renderMobileChoresList() {
     var html = '';
     members.forEach(function(member) {
         var memberChores = (window.chores || []).filter(function(c) { return c.member === member.name; });
-        var memberRoutines = (window.routines || []).filter(function(r) { return r.member === member.name; });
+        if (memberChores.length === 0) return;
         var completedCount = memberChores.filter(function(c) { return c.completed; }).length;
         var totalCount = memberChores.length;
         var pct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
         var bg = typeof hexToRgba === 'function' ? hexToRgba(member.color, 0.12) : 'rgba(0,0,0,0.06)';
-        var allTasks = memberChores.concat(memberRoutines.filter(function(r) {
-            return r.period === 'Chores' || !r.period;
-        }));
-        if (allTasks.length === 0) return;
         html += '<div class="mc-card" style="background:' + bg + '">';
-        // Header
         html += '<div class="mc-card-header">';
         html += '<div class="mc-card-avatar" style="background:' + member.color + '">' + member.name.charAt(0).toUpperCase() + '</div>';
-        html += '<div class="mc-card-info"><div class="mc-card-name">' + member.name + '</div>';
+        html += '<div class="mc-card-info">';
+        html += '<div class="mc-card-name">' + member.name + '</div>';
         html += '<div class="mc-card-progress"><div class="mc-card-progress-fill" style="width:' + pct + '%;background:' + member.color + '"></div></div>';
         html += '</div></div>';
-        // Task rows
         memberChores.forEach(function(chore) {
             var today = new Date(); today.setHours(0,0,0,0);
             var isLate = chore.dueDate && new Date(chore.dueDate + 'T00:00:00') < today && !chore.completed;
             var lateText = '';
             if (isLate) {
                 var daysLate = Math.floor((today - new Date(chore.dueDate + 'T00:00:00')) / 86400000);
-                if (daysLate >= 28) {
-                    var months = Math.round(daysLate / 30);
-                    lateText = months + ' month' + (months > 1 ? 's' : '') + ' late';
-                } else {
-                    lateText = daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late';
-                }
+                lateText = daysLate >= 28
+                    ? Math.round(daysLate / 30) + ' month' + (Math.round(daysLate/30) > 1 ? 's' : '') + ' late'
+                    : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late';
             }
             var taskBg = typeof hexToRgba === 'function' ? hexToRgba(member.color, chore.completed ? 0.35 : 0.18) : 'rgba(0,0,0,0.08)';
-            html += '<div class="mc-task" style="background:' + taskBg + '" onclick="if(typeof openTaskDetail==='function')openTaskDetail('' + chore.id + '','chore',event)">';
+            var checkStyle = chore.completed ? 'background:' + member.color + ';border-color:' + member.color + ';' : '';
+            html += '<div class="mc-task" data-cid="' + chore.id + '" style="background:' + taskBg + '">';
             html += '<div class="mc-task-body">';
             html += '<div class="mc-task-title' + (chore.completed ? ' mc-task-done' : '') + '">' + (chore.title || '') + '</div>';
             if (isLate) html += '<div class="mc-task-late">' + lateText + '</div>';
             html += '</div>';
-            html += '<div class="mc-task-check' + (chore.completed ? ' mc-task-check-done' : '') + '" style="' + (chore.completed ? 'background:' + member.color + ';border-color:' + member.color + ';' : '') + '" onclick="event.stopPropagation();if(typeof toggleChore==='function')toggleChore('' + chore.id + '');setTimeout(renderMobileChoresList,100)"></div>';
+            html += '<div class="mc-task-check' + (chore.completed ? ' mc-task-check-done' : '') + '" data-cid="' + chore.id + '" style="' + checkStyle + '"></div>';
             html += '</div>';
         });
         html += '</div>';
     });
     if (!html) html = '<div style="text-align:center;padding:48px 24px;color:#999;font-size:15px;">No tasks</div>';
     container.innerHTML = html;
-}
-
-function showMobileChores() {
-    document.body.classList.add('viewing-section');
-    document.body.classList.add('chores-view-active');
-    document.body.classList.remove('calendar-view');
-    currentMobileSection = 'chores';
-    var homeEl = document.getElementById('mobileHome');
-    if (homeEl) homeEl.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'none';
-    document.getElementById('mobileHomeIndicator').style.display = 'none';
-    document.getElementById('mobileHeaderTitle').textContent = '';
-    mobileChoresDate = new Date();
-    updateMobileChoresDateTitle();
-    if (typeof switchSection === 'function') switchSection('chores');
-    setTimeout(function() {
-        renderMobileChoresProfileFilter();
-    }, 50);
-}
-
-function openProfileSettings() {
-    if (typeof openProfileDashboard === 'function') openProfileDashboard();
-}
-
-// Init
-(function init() {
-    function run() {
-        if (window.innerWidth <= 768) {
-            handleHashChange();
-            updateMobileTodayCard();
+    // Attach events via delegation - no inline handlers needed
+    container.onclick = function(e) {
+        var check = e.target.closest('.mc-task-check');
+        if (check) {
+            e.stopPropagation();
+            var cid = check.getAttribute('data-cid');
+            if (cid && typeof toggleChore === 'function') {
+                toggleChore(cid);
+                setTimeout(renderMobileChoresList, 100);
+            }
+            return;
         }
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', run);
-    } else {
-        // script.js may not be ready yet — wait a tick
-        setTimeout(run, 100);
-    }
-})();
-</script>
+        var task = e.target.closest('.mc-task');
+        if (task) {
+            var cid = task.getAttribute('data-cid');
+            if (cid && typeof openTaskDetail === 'function') openTaskDetail(cid, 'chore', e);
+        }
+    };
+}
 
-</body>
-</html>
+
