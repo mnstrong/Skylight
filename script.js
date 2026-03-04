@@ -3004,12 +3004,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         const allRaw = [...localEvents, ...googleEvents];
 
-        // Deduplicate: merge events with the same title+date+time into one event
-        // with a combined members array (handles legacy data saved per-profile)
+        // Deduplicate: local events take precedence over Google Calendar copies
+        // (user edits member/color on local events; GCal copies have no member)
         const merged = [];
         const seen = new Map(); // key -> index in merged
 
-        allRaw.forEach(function(ev) {
+        // Process local events first so they take precedence
+        const localFirst = [...localEvents, ...googleEvents];
+
+        localFirst.forEach(function(ev) {
             var key = (ev.title || '') + '__' + (ev.date || '') + '__' + (ev.time || '') + '__' + (ev.endTime || '');
             if (seen.has(key)) {
                 var existing = merged[seen.get(key)];
@@ -7686,7 +7689,6 @@ if (allChoresComplete || allRoutinesComplete) {
         // If we're editing an existing event, route to updateEvent instead
         if (window._editingEventId) {
             var editId = window._editingEventId;
-            window._editingEventId = null;
             updateEvent(editId);
             return;
         }
@@ -7861,6 +7863,28 @@ if (allChoresComplete || allRoutinesComplete) {
         }
 
         document.getElementById('eventDetailDateTime').textContent = dateTimeText;
+
+        // Show member/profile avatars
+        var memberRow = document.getElementById('eventDetailMemberRow');
+        var memberEl  = document.getElementById('eventDetailMember');
+        if (memberEl) {
+            var evMembers = (event.members && event.members.length > 0)
+                ? event.members
+                : (event.member ? [event.member] : []);
+            if (evMembers.length > 0) {
+                var avatarHtml = evMembers.map(function(name) {
+                    var fm = (window.familyMembers || []).find(function(m) { return m.name === name; });
+                    var color = fm ? fm.color : '#888';
+                    return '<div class="task-detail-avatar" style="background:' + color + '">' +
+                        name.charAt(0).toUpperCase() + '</div>';
+                }).join('');
+                memberEl.innerHTML = avatarHtml;
+                if (memberRow) memberRow.style.display = 'flex';
+            } else {
+                memberEl.innerHTML = '';
+                if (memberRow) memberRow.style.display = 'none';
+            }
+        }
 
         // Show notes if present
         var notesEl = document.getElementById('eventDetailNotes');
@@ -9392,8 +9416,11 @@ function editEventFromDetail() {
 var eventId = window.currentEventDetailId;
 if (!eventId) return;
 var ev = null;
-var localEvents = window.events || [];
-for (var i = 0; i < localEvents.length; i++) { if (localEvents[i].id == eventId) { ev = localEvents[i]; break; } }
+// Use getAllEvents so we get the merged local+GCal event with correct members
+var allEvs = typeof getAllEvents === 'function' ? getAllEvents() : (window.events || []);
+for (var i = 0; i < allEvs.length; i++) { if (allEvs[i].id == eventId) { ev = allEvs[i]; break; } }
+// Fallback to raw local then GCal
+if (!ev) { var localEvents = window.events || []; for (var i = 0; i < localEvents.length; i++) { if (localEvents[i].id == eventId) { ev = localEvents[i]; break; } } }
 if (!ev && typeof GoogleCalendar !== 'undefined') {
 var gcalEvents = GoogleCalendar.getEvents();
 for (var j = 0; j < gcalEvents.length; j++) { if (gcalEvents[j].id == eventId) { ev = gcalEvents[j]; break; } }
