@@ -3503,8 +3503,8 @@
         .sg-event:hover { filter: brightness(0.93); }
 
         .sg-event-title {
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 400;
             color: #222;
             line-height: 1.3;
             overflow: hidden;
@@ -3513,7 +3513,7 @@
             -webkit-box-orient: vertical;
         }
 
-        .sg-event-time { font-size: 11px; font-weight: 500; margin-top: 2px; opacity: 0.8; }
+        .sg-event-time { font-size: 16px; font-weight: 400; margin-top: 2px; opacity: 0.8; }
 
         .sg-event-avatar {
             position: absolute;
