@@ -2669,8 +2669,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
         
         // Sync color/name change to Supabase
-        if (typeof syncFamilyMemberColor === 'function') {
-            syncFamilyMemberColor(member);
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberColor === 'function') {
+            console.log('[Profile] Syncing member to Supabase:', member.name, member.color, 'id:', member.id);
+            window.SupabaseSync.syncFamilyMemberColor(member);
+        } else {
+            console.warn('[Profile] SupabaseSync.syncFamilyMemberColor not available');
         }
         
         // Update all references in other data
