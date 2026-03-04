@@ -1274,13 +1274,37 @@
 
 <!-- Mobile Calendar Navigation -->
 <div class="mobile-calendar-nav" id="mobileCalendarNav">
+    <div class="mobile-cal-header">
+        <button class="mobile-cal-back-btn" onclick="goToMobileHome()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="mobile-cal-range-title" id="mobileCalRangeTitle">Loading...</div>
+    </div>
     <div class="mobile-calendar-nav-row">
-        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(-1)"><span>←</span></button>
-        <button class="mobile-calendar-nav-btn" onclick="goToToday()"><span>📅</span><span style="font-size: 11px;">Today</span></button>
-        <button class="mobile-calendar-nav-btn arrow" onclick="navigateView(1)"><span>→</span></button>
-        <button class="mobile-calendar-nav-btn" onclick="switchView('week')"><span>📊</span><span style="font-size: 11px;">Week</span></button>
-        <button class="mobile-calendar-nav-btn" onclick="toggleCalendarFilter()"><span>🔍</span><span style="font-size: 11px;">Filter</span></button>
-        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')"><span>🔎</span><span style="font-size: 11px;">Search</span></button>
+        <button class="mobile-calendar-nav-btn" onclick="navigateView(-1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <span class="mobile-cal-btn-label">Previous</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="goToToday()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="2" fill="currentColor" stroke="none"/></svg>
+            <span class="mobile-cal-btn-label">Today</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="navigateView(1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span class="mobile-cal-btn-label">Next</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" id="mobileViewBtn" onclick="mobileCycleView()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg>
+            <span class="mobile-cal-btn-label" id="mobileViewLabel">Week</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="toggleCalendarFilter()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2V12.46L22 3z"/></svg>
+            <span class="mobile-cal-btn-label">Filter</span>
+        </button>
+        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="mobile-cal-btn-label">Search</span>
+        </button>
     </div>
 </div>
 
@@ -1337,6 +1361,244 @@
 </div>
 
 <!-- Mobile Navigation JavaScript -->
+<script>
+var currentMobileSection = 'home';
+
+function goToMobileHome() {
+    window.location.hash = '#/home';
+}
+
+function goToSection(sectionName) {
+    window.location.hash = '#/' + sectionName;
+}
+
+function getWeekRangeTitle() {
+    if (typeof currentDate === 'undefined') return '';
+    var d = new Date(currentDate);
+    var dow = d.getDay();
+    var weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - dow);
+    weekStart.setHours(0,0,0,0);
+    var weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    var sm = weekStart.toLocaleDateString('en-US', {month:'short'});
+    var em = weekEnd.toLocaleDateString('en-US', {month:'short'});
+    if (sm === em) {
+        return sm + ' ' + weekStart.getDate() + ' - ' + em + ' ' + weekEnd.getDate();
+    }
+    return sm + ' ' + weekStart.getDate() + ' - ' + em + ' ' + weekEnd.getDate();
+}
+
+function updateMobileCalRangeTitle() {
+    var el = document.getElementById('mobileCalRangeTitle');
+    if (!el) return;
+    if (typeof currentView === 'undefined') return;
+    if (currentView === 'week') {
+        el.textContent = getWeekRangeTitle();
+    } else if (currentView === 'month' && typeof currentDate !== 'undefined') {
+        el.textContent = currentDate.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    } else if (currentView === 'schedule' && typeof currentDate !== 'undefined') {
+        el.textContent = currentDate.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    } else if (typeof currentDate !== 'undefined') {
+        el.textContent = currentDate.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    }
+    var lbl = document.getElementById('mobileViewLabel');
+    if (lbl && typeof currentView !== 'undefined') {
+        lbl.textContent = currentView.charAt(0).toUpperCase() + currentView.slice(1);
+    }
+}
+
+function mobileCycleView() {
+    if (typeof switchView === 'undefined') return;
+    var views = ['week', 'month', 'schedule'];
+    var cur = (typeof currentView !== 'undefined') ? currentView : 'week';
+    var idx = views.indexOf(cur);
+    var next = views[(idx + 1) % views.length];
+    switchView(next);
+    updateMobileCalRangeTitle();
+}
+
+function showMobileCalendar() {
+    document.body.classList.add('viewing-section');
+    document.body.classList.add('calendar-view');
+    currentMobileSection = 'calendar';
+    var homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'none';
+    document.getElementById('mobileBackBtn').style.display = 'block';
+    document.getElementById('mobileHomeIndicator').style.display = 'none';
+    document.getElementById('mobileHeaderTitle').textContent = '';
+    // Always week view on mobile
+    if (typeof switchSection === 'function') switchSection('calendar');
+    if (typeof switchView === 'function') switchView('week');
+    updateMobileCalRangeTitle();
+}
+
+function showMobileSection(sectionName) {
+    document.body.classList.add('viewing-section');
+    document.body.classList.remove('calendar-view');
+    currentMobileSection = sectionName;
+    var homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'none';
+    document.getElementById('mobileBackBtn').style.display = 'block';
+    document.getElementById('mobileHomeIndicator').style.display = 'none';
+    var titles = {chores:'Tasks', rewards:'Rewards', meals:'Meals', recipes:'Recipes', habits:'Habits'};
+    document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
+    if (typeof switchSection === 'function') switchSection(sectionName);
+}
+
+function showMobileHome() {
+    document.body.classList.remove('viewing-section');
+    document.body.classList.remove('calendar-view');
+    currentMobileSection = 'home';
+    var homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'block';
+    var listsUI = document.getElementById('mobileListsUI');
+    if (listsUI) listsUI.style.display = 'none';
+    document.getElementById('mobileBackBtn').style.display = 'none';
+    document.getElementById('mobileHomeIndicator').style.display = 'block';
+    document.getElementById('mobileHeaderTitle').textContent = 'strongcalendar23';
+    updateMobileTodayCard();
+}
+
+function handleHashChange() {
+    var hash = window.location.hash;
+
+    // Desktop: delegate to switchSection
+    if (window.innerWidth > 768) {
+        if (hash && hash.startsWith('#/')) {
+            var sec = hash.substring(2);
+            if (sec && sec !== 'home' && typeof switchSection === 'function') switchSection(sec);
+        }
+        return;
+    }
+
+    if (!hash || hash === '#/' || hash === '#/home') {
+        showMobileHome();
+    } else if (hash.startsWith('#/')) {
+        var section = hash.substring(2);
+        if (section === 'lists') {
+            // Lists has its own full-screen UI
+            document.body.classList.remove('viewing-section');
+            document.body.classList.remove('calendar-view');
+            var homeEl = document.getElementById('mobileHome');
+            if (homeEl) homeEl.style.display = 'none';
+            if (typeof listsShowUI === 'function') {
+                listsShowUI();
+            }
+            document.getElementById('mobileBackBtn').style.display = 'block';
+            document.getElementById('mobileHomeIndicator').style.display = 'none';
+            document.getElementById('mobileHeaderTitle').textContent = '';
+            return;
+        }
+        if (section === 'calendar') {
+            showMobileCalendar();
+        } else {
+            showMobileSection(section);
+        }
+    }
+}
+
+window.addEventListener('hashchange', handleHashChange);
+
+function updateMobileTodayCard() {
+    var today = new Date();
+    var dateEl = document.getElementById('mobileTodayDate');
+    if (dateEl) {
+        dateEl.textContent = today.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+    }
+    var todayStr = today.toISOString().split('T')[0];
+    var eventsContainer = document.getElementById('mobileTodayEvents');
+    var noEventsEl = document.getElementById('mobileNoEvents');
+    if (!eventsContainer) return;
+
+    var allEvents = (typeof getAllEvents === 'function') ? getAllEvents() : [];
+    var todayEvents = allEvents.filter(function(ev) {
+        if (typeof isEventOnDate === 'function') return isEventOnDate(ev, todayStr);
+        return ev.date === todayStr;
+    });
+
+    if (todayEvents.length > 0) {
+        if (noEventsEl) noEventsEl.style.display = 'none';
+        eventsContainer.innerHTML = '';
+        todayEvents.slice(0, 4).forEach(function(ev) {
+            var timeStr = '';
+            if (ev.time) {
+                var parts = ev.time.split(':');
+                var h = parseInt(parts[0], 10);
+                var m = parts[1] || '00';
+                var period = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                timeStr = h + ':' + m + ' ' + period;
+            } else {
+                timeStr = 'All day';
+            }
+            var primaryColor = (typeof getEventPrimaryColor === 'function') ? getEventPrimaryColor(ev) : '#888';
+            var bgVal = (typeof getMultiMemberBg === 'function') ? getMultiMemberBg(ev, 0.18) : 'rgba(0,0,0,0.05)';
+            var members = (typeof getEventMembers === 'function') ? getEventMembers(ev) : [];
+            var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
+            var div = document.createElement('div');
+            div.className = 'mobile-today-event';
+            div.style.background = bgVal.indexOf('gradient') !== -1 ? '' : bgVal;
+            if (bgVal.indexOf('gradient') !== -1) div.style.backgroundImage = bgVal;
+            div.style.borderRadius = '12px';
+            div.style.padding = '12px 14px';
+            div.style.marginBottom = '8px';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'space-between';
+            div.style.cursor = 'pointer';
+            div.innerHTML = '<div style="flex:1;min-width:0;">' +
+                '<div style="font-weight:700;font-size:15px;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (ev.title || '') + '</div>' +
+                '<div style="font-size:13px;color:' + primaryColor + ';margin-top:2px;">' + timeStr + '</div>' +
+                '</div>' +
+                (initial ? '<div style="width:32px;height:32px;border-radius:50%;background:' + primaryColor + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;margin-left:10px;">' + initial + '</div>' : '');
+            div.onclick = function() { goToSection('calendar'); };
+            eventsContainer.appendChild(div);
+        });
+    } else {
+        if (noEventsEl) noEventsEl.style.display = 'block';
+        eventsContainer.innerHTML = '';
+    }
+}
+
+// Patch navigateView and goToToday to keep range title in sync
+(function patchFns() {
+    var _nav = window.navigateView;
+    if (_nav) {
+        window.navigateView = function(dir) {
+            _nav.call(this, dir);
+            if (window.innerWidth <= 768) updateMobileCalRangeTitle();
+        };
+    }
+    var _today = window.goToToday;
+    if (_today) {
+        window.goToToday = function() {
+            _today.call(this);
+            if (window.innerWidth <= 768) updateMobileCalRangeTitle();
+        };
+    }
+})();
+
+function openProfileSettings() {
+    if (typeof openProfileDashboard === 'function') openProfileDashboard();
+}
+
+// Init
+(function init() {
+    function run() {
+        if (window.innerWidth <= 768) {
+            handleHashChange();
+            updateMobileTodayCard();
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        // script.js may not be ready yet — wait a tick
+        setTimeout(run, 100);
+    }
+})();
+</script>
 
 </body>
 </html>
