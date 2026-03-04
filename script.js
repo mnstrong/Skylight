@@ -3651,101 +3651,83 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function renderWeekView() {
-        const container = document.getElementById('weekView');
-        const today = new Date();
+        var container = document.getElementById('weekView');
+        var today = new Date();
         today.setHours(0, 0, 0, 0);
-        const weekStart = new Date(currentDate);
-        const weekDays = [];
-        
-        // Get 7 days starting from currentDate
-        for (let i = 0; i < 7; i++) {
-            const day = new Date(weekStart);
+        var weekStart = new Date(currentDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // snap to Sunday
+        weekStart.setHours(0, 0, 0, 0);
+        var allEvents = getAllEvents();
+
+        var html = '<div class="swg">';
+
+        for (var i = 0; i < 7; i++) {
+            var day = new Date(weekStart);
             day.setDate(weekStart.getDate() + i);
-            weekDays.push(day);
-        }
-        
-        // Get all events
-        const allEvents = getAllEvents();
-        
-        let html = '<div class="simple-week-grid">';
-        
-        // Render 7 day boxes with events
-        weekDays.forEach(day => {
-            const isToday = day.getTime() === today.getTime();
-            const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
-            const dayNum = day.getDate();
-            const dateStr = day.toISOString().split('T')[0];
-            
-            // Get events for this day
-            const dayEvents = allEvents.filter(e => isEventOnDate(e, dateStr) && isEventVisible(e)).sort((a, b) => {
+            var isToday = day.getTime() === today.getTime();
+            var dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+            var dayNum = day.getDate();
+            var dateStr = day.toISOString().split('T')[0];
+
+            var dayEvents = allEvents.filter(function(e) {
+                return isEventOnDate(e, dateStr) && isEventVisible(e);
+            }).sort(function(a, b) {
                 if (!a.time) return -1;
                 if (!b.time) return 1;
                 return a.time.localeCompare(b.time);
             });
-            
-            html += `<div class="simple-week-day">
-                <div class="simple-week-day-header ${isToday ? 'today' : ''}">
-                    <div class="week-day-name">${dayName}</div>
-                    <div class="week-day-number">${dayNum}</div>
-                </div>
-                <div class="simple-week-events-count">${dayEvents.length} event${dayEvents.length !== 1 ? 's' : ''}</div>`;
-            
-            // Display events
-            dayEvents.forEach(event => {
-                const members = getEventMembers(event);
-                const primaryColor = getEventPrimaryColor(event);
-                const bgVal = getMultiMemberBg(event, 0.28);
-                const isBgImg = bgVal.indexOf('gradient') !== -1;
-                const bgStyle = isBgImg ? `background-image:${bgVal}` : `background-color:${bgVal}`;
-                
-                // Format time
-                let timeStr = '';
-                if (event.time) {
-                    const [hours, minutes] = event.time.split(':').map(Number);
-                    const period = hours >= 12 ? 'PM' : 'AM';
-                    const displayHours = hours % 12 || 12;
-                    timeStr = `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
-                } else {
-                    timeStr = 'All day';
-                }
-                
-                const initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
-                
-                html += `<div class="schedule-event" style="${bgStyle}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
-                    <div class="schedule-event-content">
-                        <div class="schedule-event-time" style="color: ${primaryColor}">${timeStr}</div>
-                        <div class="schedule-event-title">${event.title}</div>
-                        ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
-                    </div>
-                    ${initial ? `<div class="schedule-event-dot" style="background: ${primaryColor}">${initial}</div>` : ''}
-                </div>`;
-            });
-            
-            html += `<div class="simple-week-add-btn" onclick="openEventModalForDate('${dateStr}')">+ Add Event</div>
-            </div>`;
-        });
-        
-        // Add "Next Week" box
-        const nextWeekDate = new Date(weekStart);
-        nextWeekDate.setDate(nextWeekDate.getDate() + 7);
-        const nextWeekEnd = new Date(nextWeekDate);
-        nextWeekEnd.setDate(nextWeekEnd.getDate() + 6);
-        
-        const startMonth = nextWeekDate.toLocaleDateString('en-US', { month: 'short' });
-        const endMonth = nextWeekEnd.toLocaleDateString('en-US', { month: 'short' });
-        const dateRange = startMonth === endMonth 
-            ? `${startMonth} ${nextWeekDate.getDate()}-${nextWeekEnd.getDate()}`
-            : `${startMonth} ${nextWeekDate.getDate()} - ${endMonth} ${nextWeekEnd.getDate()}`;
-        
-        html += `<div class="simple-week-day simple-week-next-week" onclick="navigateView(1)">
-            <div class="simple-week-next-label">Next Week</div>
-            <div class="simple-week-next-date">${dateRange}</div>
-        </div>`;
-        
-        html += '</div>';
+
+            html += '<div class="swg-row">';
+
+            // Left: day label
+            html += '<div class="swg-label' + (isToday ? ' swg-today' : '') + '">' +
+                '<span class="swg-day-name">' + dayName + '</span>' +
+                '<span class="swg-day-num">' + dayNum + '</span>' +
+                '</div>';
+
+            // Right: events column
+            html += '<div class="swg-events">';
+
+            if (dayEvents.length === 0) {
+                html += '<div class="swg-empty"></div>';
+            } else {
+                dayEvents.forEach(function(ev) {
+                    var members = getEventMembers(ev);
+                    var primaryColor = getEventPrimaryColor(ev);
+                    var bgVal = getMultiMemberBg(ev, 0.22);
+                    var bgStyle = bgVal.indexOf('gradient') !== -1
+                        ? 'background-image:' + bgVal
+                        : 'background-color:' + bgVal;
+
+                    var timeStr = 'All day';
+                    if (ev.time) {
+                        var parts = ev.time.split(':');
+                        var h = parseInt(parts[0], 10);
+                        var m = parts[1] || '00';
+                        var period = h >= 12 ? 'PM' : 'AM';
+                        h = h % 12 || 12;
+                        timeStr = h + ':' + m + ' ' + period;
+                    }
+
+                    var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
+
+                    html += '<div class="swg-event" style="' + bgStyle + ';" onclick="event.stopPropagation();showEventDetails('' + ev.id + '')">' +
+                        '<div class="swg-event-body">' +
+                        '<div class="swg-event-time" style="color:' + primaryColor + '">' + timeStr + '</div>' +
+                        '<div class="swg-event-title">' + (ev.title || '') + '</div>' +
+                        '</div>' +
+                        (initial ? '<div class="swg-event-avatar" style="background:' + primaryColor + '">' + initial + '</div>' : '') +
+                        '</div>';
+                });
+            }
+
+            html += '</div>'; // swg-events
+            html += '</div>'; // swg-row
+        }
+
+        html += '</div>'; // swg
         container.innerHTML = html;
     }
-    
     function renderDayView() {
         const container = document.getElementById('dayView');
         const today = new Date();
