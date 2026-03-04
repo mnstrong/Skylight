@@ -3711,7 +3711,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
                     var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
 
-                    html += '<div class="swg-event" style="' + bgStyle + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
+                    html += '<div class="swg-event" data-eid="' + ev.id + '" style="' + bgStyle + '" onclick="event.stopPropagation();showEventDetails(this.getAttribute(\'data-eid\'))">' +
                         '<div class="swg-event-body">' +
                         '<div class="swg-event-time" style="color:' + primaryColor + '">' + timeStr + '</div>' +
                         '<div class="swg-event-title">' + (ev.title || '') + '</div>' +
