@@ -214,6 +214,7 @@ async function loadAllDataFromSupabase() {
                     endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                     isAllDay: e.all_day || false,
                     member: memberInfo ? memberInfo.name : '',
+                    members: memberInfo ? [memberInfo.name] : [],
                     googleId: e.google_event_id || null,
                     isGoogle: false
                 };
@@ -238,11 +239,38 @@ async function loadAllDataFromSupabase() {
 // Sync Family Members
 async function syncFamilyMembers(members) {
     localStorage.setItem('familyMembers', JSON.stringify(members));
+    window.familyMembers = members;
     
     if (!syncEnabled || !isSupabaseReady) return;
     
-    // Note: We don't auto-sync family members to avoid conflicts
-    // User must manually add/edit through UI which will call Supabase directly
+    // Sync each member's color/name to Supabase
+    for (var i = 0; i < members.length; i++) {
+        var m = members[i];
+        if (!m.id) continue; // skip members without a Supabase id
+        try {
+            await SupabaseAPI.updateFamilyMember(m.id, { name: m.name, color: m.color });
+        } catch(e) {
+            console.warn('Could not sync member', m.name, e);
+        }
+    }
+}
+
+// Sync a single family member's color/name change to Supabase
+async function syncFamilyMemberColor(member) {
+    localStorage.setItem('familyMembers', JSON.stringify(window.familyMembers || []));
+    
+    if (!syncEnabled || !isSupabaseReady) return;
+    if (!member || !member.id) {
+        console.warn('syncFamilyMemberColor: member has no Supabase id, skipping');
+        return;
+    }
+    
+    try {
+        await SupabaseAPI.updateFamilyMember(member.id, { name: member.name, color: member.color });
+        console.log('✓ Member color synced to Supabase:', member.name, member.color);
+    } catch(e) {
+        console.error('✗ Failed to sync member color:', member.name, e);
+    }
 }
 
 // Sync Tasks
@@ -754,6 +782,7 @@ function startPeriodicRefresh() {
                         endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                         isAllDay: e.all_day || false,
                         member: memberInfo ? memberInfo.name : '',
+                        members: memberInfo ? [memberInfo.name] : [],
                         googleId: e.google_event_id || null,
                         isGoogle: false
                     };
@@ -799,6 +828,8 @@ window.SupabaseSync = {
     syncList,
     syncListItem,
     syncCalendarEvent,
+    syncFamilyMembers,
+    syncFamilyMemberColor,
     isReady: function() { return isSupabaseReady; },
     isEnabled: function() { return syncEnabled; }
 };
