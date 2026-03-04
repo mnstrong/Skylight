@@ -1495,6 +1495,9 @@ function showMobileSection(sectionName) {
 function showMobileHome() {
     document.body.classList.remove('viewing-section');
     document.body.classList.remove('calendar-view');
+    document.body.classList.remove('chores-view-active');
+    var choresNav = document.getElementById('mobileChoresNav');
+    if (choresNav) choresNav.style.display = 'none';
     currentMobileSection = 'home';
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'block';
@@ -1764,4 +1767,32 @@ function renderMobileChoresList() {
             if (cid && typeof openTaskDetail === 'function') openTaskDetail(cid, 'chore', e);
         }
     };
+}
+
+function showMobileChores() {
+    console.log('[MC] showMobileChores called');
+    document.body.classList.add('viewing-section');
+    document.body.classList.add('chores-view-active');
+    document.body.classList.remove('calendar-view');
+    currentMobileSection = 'chores';
+    var homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'none';
+    document.getElementById('mobileBackBtn').style.display = 'none';
+    document.getElementById('mobileHomeIndicator').style.display = 'none';
+    document.getElementById('mobileHeaderTitle').textContent = '';
+
+    // Show chores nav, hide calendar nav
+    var choresNav = document.getElementById('mobileChoresNav');
+    var calNav = document.getElementById('mobileCalendarNav');
+    if (choresNav) choresNav.style.display = 'flex';
+    if (calNav) calNav.style.display = 'none';
+
+    mobileChoresDate = new Date();
+    updateMobileChoresDateTitle();
+
+    // switchSection injects the containers; give DOM a tick then render
+    if (typeof switchSection === 'function') switchSection('chores');
+    setTimeout(function() {
+        renderMobileChoresProfileFilter();
+    }, 80);
 }
