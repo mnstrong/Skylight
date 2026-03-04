@@ -1660,6 +1660,9 @@ function mobileChoresGoToday() {
 }
 
 function renderMobileChoresProfileFilter() {
+    console.log('[MC] renderMobileChoresProfileFilter called');
+    var pfEl = document.getElementById('mobileChoresProfileFilter');
+    console.log('[MC] profile filter el:', pfEl);
     var container = document.getElementById('mobileChoresProfileFilter');
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
@@ -1688,6 +1691,13 @@ function mobileChoresSetFilter(name) {
 }
 
 function renderMobileChoresList() {
+    console.log('[MC] renderMobileChoresList called');
+    console.log('[MC] window.familyMembers:', window.familyMembers ? window.familyMembers.length : 'undefined');
+    console.log('[MC] window.chores:', window.chores ? window.chores.length : 'undefined');
+    console.log('[MC] localStorage chores:', localStorage.getItem('chores') ? JSON.parse(localStorage.getItem('chores')).length : 'none');
+    console.log('[MC] mobileChoresFilter:', mobileChoresFilter);
+    var el = document.getElementById('mobileChoresList');
+    console.log('[MC] container el:', el);
     var container = document.getElementById('mobileChoresList');
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
@@ -1755,5 +1765,3 @@ function renderMobileChoresList() {
         }
     };
 }
-
-
