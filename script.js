@@ -3532,6 +3532,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         add('dancing',          ['dancing','dance','ballet']);
         add('datenight',        ['date night','datenight','candlelight dinner','romantic dinner']);
         add('dentist',          ['dentist','dental','dentistry','teeth cleaning']);
+        add('doctor',           ['doctor','appointment','checkup','check-up','physician','pediatrician','therapy','therapist','counseling','psychiatrist','optometrist','eye doctor','vet','veterinarian','hospital','clinic','medical','urgent care','physical','physical exam']);
         add('dinner',           ['dinner','dinners','restaurant','restaurants','family meal']);
         add('drinks',           ['drinks','cocktail','cocktails','wine night','wine bar','ladies night','bachelorette party']);
         add('equestrian',       ['horse riding','horseriding','equestrian']);
