@@ -84,7 +84,7 @@ return to;
 console.log('Script started loading…');
 let currentDate = new Date();
 window.currentDate = currentDate;
-let currentView = 'month';
+let currentView = localStorage.getItem('lastCalendarView') || 'month';
 let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
@@ -4019,19 +4019,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 daysHtml += `<div class="sg-hour-line" style="top:${h * HOUR_HEIGHT}px"></div>`;
             }
 
-            // All-day events — pill bars above the time grid, matching month view style
-            var allDayBarHtml = '';
-            allDayEvents.slice(0, 3).forEach(function(ev) {
-                var color = getEventColor(ev);
-                var bgColor = hexToRgba(color, 0.38);
-                allDayBarHtml += '<div class="sg-allday-pill" style="background:' + bgColor + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
-                    '<span class="sg-allday-pill-title">' + ev.title + '</span>' +
-                    '</div>';
-            });
-            if (allDayEvents.length > 3) {
-                allDayBarHtml += '<div class="sg-allday-more">+' + (allDayEvents.length - 3) + ' more</div>';
-            }
-            daysHtml += '<div class="sg-allday-strip">' + allDayBarHtml + '</div>';
+            // All-day events rendered as spanning overlays after DOM is built
+            // Empty strip acts as vertical spacer to reserve room for the bars
+            daysHtml += '<div class="sg-allday-strip"></div>';
+
 
             // Timed events
             timedEvents.forEach(ev => {
@@ -4111,24 +4102,118 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             daysHtml += `</div>`; // end sg-day-col
         }
 
+        // ── Pre-compute spanning all-day bars (same slot algorithm as month view) ──
+        // Build an array of {event, startDayIdx, endDayIdx, slot}
+        var sgSpanBars = [];
+        var allDayEventsAll = allEvents.filter(function(e) {
+            return isEventVisible(e) && !e.time;
+        });
+
+        allDayEventsAll.forEach(function(ev) {
+            var evStart = ev.date;
+            var evEnd = ev.endDate || ev.date;
+
+            // Find which day-column indices this event spans
+            var startIdx = -1, endIdx = -1;
+            for (var di = 0; di < daysToShow; di++) {
+                var d = new Date(startDate);
+                d.setDate(startDate.getDate() + di);
+                var ds = d.toISOString().split('T')[0];
+                if (ds >= evStart && ds <= evEnd) {
+                    if (startIdx === -1) startIdx = di;
+                    endIdx = di;
+                }
+            }
+            if (startIdx === -1) return; // not visible this month
+
+            // Find lowest free slot (no column overlap with existing bars)
+            var slot = 0;
+            for (var s = 0; s < 4; s++) {
+                var occupied = false;
+                for (var b = 0; b < sgSpanBars.length; b++) {
+                    var existing = sgSpanBars[b];
+                    if (existing.slot === s &&
+                        !(endIdx < existing.startIdx || startIdx > existing.endIdx)) {
+                        occupied = true;
+                        break;
+                    }
+                }
+                if (!occupied) { slot = s; break; }
+            }
+            sgSpanBars.push({ event: ev, startIdx: startIdx, endIdx: endIdx, slot: slot });
+        });
+
         // Build the hours column as first column inside the scrollable area
         // so it scrolls vertically with the grid but can be made sticky
         container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
         applyEventImages(container);
 
-        // Sync hours-spacer height to match tallest day-header + allday-strip combo
-        // so hour labels stay aligned with the time grid
+        // ── Inject spanning bars + sync spacer height ──
         setTimeout(function() {
-            var strips = container.querySelectorAll('.sg-allday-strip');
+            var daysRow = container.querySelector('.sg-days-row');
+            var dayCols = container.querySelectorAll('.sg-day-col');
             var headers = container.querySelectorAll('.sg-day-header');
-            var maxOffset = 0;
-            for (var i = 0; i < headers.length; i++) {
-                var h = headers[i] ? headers[i].offsetHeight : 0;
-                var s = strips[i] ? strips[i].offsetHeight : 0;
-                maxOffset = Math.max(maxOffset, h + s);
+            var strips  = container.querySelectorAll('.sg-allday-strip');
+
+            // 1. Work out how many slot rows each column needs
+            var slotCountByCol = [];
+            for (var ci = 0; ci < dayCols.length; ci++) slotCountByCol.push(0);
+            sgSpanBars.forEach(function(bar) {
+                for (var ci = bar.startIdx; ci <= bar.endIdx; ci++) {
+                    slotCountByCol[ci] = Math.max(slotCountByCol[ci], bar.slot + 1);
+                }
+            });
+
+            // 2. Set strip height on each column so they all match the tallest
+            var SLOT_H = 28; // px per slot row
+            var STRIP_PAD = 6;
+            var maxSlots = 0;
+            for (var ci = 0; ci < slotCountByCol.length; ci++) {
+                maxSlots = Math.max(maxSlots, slotCountByCol[ci]);
             }
+            var stripHeight = maxSlots > 0 ? maxSlots * SLOT_H + STRIP_PAD : 8;
+            for (var ci = 0; ci < strips.length; ci++) {
+                strips[ci].style.height = stripHeight + 'px';
+            }
+
+            // 3. Sync hours-spacer to header + strip
+            var headerH = headers[0] ? headers[0].offsetHeight : 56;
             var spacer = container.querySelector('.sg-hours-spacer');
-            if (spacer && maxOffset > 0) spacer.style.height = maxOffset + 'px';
+            if (spacer) spacer.style.height = (headerH + stripHeight) + 'px';
+
+            // 4. Inject absolutely-positioned spanning bars
+            // daysRow must be position:relative
+            if (daysRow) daysRow.style.position = 'relative';
+
+            sgSpanBars.forEach(function(bar) {
+                var startCol = dayCols[bar.startIdx];
+                var endCol   = dayCols[bar.endIdx];
+                if (!startCol || !endCol) return;
+
+                var left  = startCol.offsetLeft + 3;
+                var width = (endCol.offsetLeft + endCol.offsetWidth) - startCol.offsetLeft - 6;
+                // Position within the strip area (just below header)
+                var top   = headerH + STRIP_PAD / 2 + bar.slot * SLOT_H;
+
+                var ev = bar.event;
+                var color = getEventColor(ev);
+                var bgColor = hexToRgba(color, 0.38);
+
+                var barEl = document.createElement('div');
+                barEl.className = 'sg-span-bar';
+                barEl.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;' +
+                    'width:' + width + 'px;height:24px;' +
+                    'background:' + bgColor + ';border-radius:20px;z-index:4;cursor:pointer;' +
+                    'display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;' +
+                    'padding:0 10px;overflow:hidden;box-sizing:border-box;';
+                barEl.innerHTML = '<span style="font-size:18px;font-weight:600;white-space:nowrap;' +
+                    'overflow:hidden;text-overflow:ellipsis;color:#222;">' + ev.title + '</span>';
+                barEl.onclick = function(e) {
+                    e.stopPropagation();
+                    showEventDetails(ev.id);
+                };
+                daysRow.appendChild(barEl);
+            });
         }, 0);
 
         // Auto-scroll to current time or 8am
@@ -4207,14 +4292,17 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             renderFamilyPills();
             renderCalendarFilterList();
             
-            // On mobile, default to schedule view, on desktop use current view
+            // On mobile, default to schedule view, on desktop restore last used view
             if (window.innerWidth <= 768) {
                 // Use setTimeout to ensure DOM is ready
                 setTimeout(() => {
                     switchView('schedule');
                 }, 10);
             } else {
-                renderCalendar();
+                var savedView = localStorage.getItem('lastCalendarView') || 'month';
+                setTimeout(function() {
+                    switchView(savedView);
+                }, 10);
             }
             
             updateViewHeader();
@@ -7241,6 +7329,7 @@ if (allChoresComplete || allRoutinesComplete) {
 
     function switchView(view) {
         currentView = view;
+        localStorage.setItem('lastCalendarView', view);
         
         // Update dropdown
         const dropdown = document.getElementById('mainViewSelector');
