@@ -5547,6 +5547,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     let selectedProfiles = [];
     let selectedEventProfile = ''; // For event modal (single selection)
     let selectedEventProfiles = []; // For event modal (multiple selections)
+    window.selectedEventProfile = selectedEventProfile;
+    window.selectedEventProfiles = selectedEventProfiles;
     
     function openTaskChoreModal() {
         document.getElementById('taskChorePanelOverlay').classList.add('active');
@@ -6629,19 +6631,20 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function toggleEventProfile(profileName) {
         const index = selectedEventProfiles.indexOf(profileName);
         if (index > -1) {
-            // Remove if already selected
             selectedEventProfiles.splice(index, 1);
         } else {
-            // Add if not selected
             selectedEventProfiles.push(profileName);
         }
+        window.selectedEventProfiles = selectedEventProfiles;
+        window.selectedEventProfile = selectedEventProfiles[0] || '';
         renderEventProfileGrid();
     }
     
     function selectEventProfile(profileName) {
-        // Keep this for backward compatibility
         selectedEventProfile = profileName;
         selectedEventProfiles = [profileName];
+        window.selectedEventProfile = selectedEventProfile;
+        window.selectedEventProfiles = selectedEventProfiles;
         renderEventProfileGrid();
     }
     
@@ -7419,8 +7422,8 @@ if (allChoresComplete || allRoutinesComplete) {
     
     function openEventModal() {
         console.log('📅 Opening event modal...');
-        selectedEventProfile = ''; // Reset selection
-        selectedEventProfiles = []; // Reset array
+        selectedEventProfile = ''; selectedEventProfiles = [];
+        window.selectedEventProfile = ''; window.selectedEventProfiles = [];
         document.getElementById('eventPanelOverlay').classList.add('active');
         document.getElementById('eventModal').classList.add('active');
         document.getElementById('eventDate').valueAsDate = new Date();
@@ -7449,8 +7452,8 @@ if (allChoresComplete || allRoutinesComplete) {
     window.openEventModalForCurrentDay = openEventModalForCurrentDay;
     
     function openEventModalForDate(dateStr) {
-        selectedEventProfile = ''; // Reset selection
-        selectedEventProfiles = []; // Reset array
+        selectedEventProfile = ''; selectedEventProfiles = [];
+        window.selectedEventProfile = ''; window.selectedEventProfiles = [];
         document.getElementById('eventPanelOverlay').classList.add('active');
         document.getElementById('eventModal').classList.add('active');
         document.getElementById('eventDate').valueAsDate = new Date(dateStr + 'T12:00:00');
@@ -7750,8 +7753,8 @@ if (allChoresComplete || allRoutinesComplete) {
         document.getElementById('eventRepeatUntilToggle').checked = false;
         document.getElementById('repeatOptionsSection').style.display = 'none';
         document.getElementById('repeatUntilSection').style.display = 'none';
-        selectedEventProfile = '';
-        selectedEventProfiles = [];
+        selectedEventProfile = ''; selectedEventProfiles = [];
+        window.selectedEventProfile = ''; window.selectedEventProfiles = [];
         selectedRepeatFrequency = 'weekly';
         selectedRepeatEndType = 'on';
         window._editingEventId = null;
@@ -9419,6 +9422,8 @@ selectedEventProfile = ev.member || '';
 // Load the full members array so all assigned profiles are pre-selected
 var evMembers = (ev.members && ev.members.length > 0) ? ev.members : (ev.member ? [ev.member] : []);
 selectedEventProfiles = evMembers.slice();
+window.selectedEventProfile = selectedEventProfile;
+window.selectedEventProfiles = selectedEventProfiles;
 }
 if (typeof renderEventProfileGrid === 'function') renderEventProfileGrid();
 document.getElementById('eventPanelOverlay').classList.add('active');
@@ -9431,9 +9436,11 @@ if (btn) btn.textContent = 'Save Changes';
 function updateEvent(eventId) {
 var isAllDay = document.getElementById('eventAllDayToggle').checked;
 var member = '';
-if (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) member = selectedEventProfiles[0];
-else if (typeof selectedEventProfile !== 'undefined') member = selectedEventProfile;
-var membersArr = (typeof selectedEventProfiles !== 'undefined' && selectedEventProfiles.length > 0) ? selectedEventProfiles.slice() : (member ? [member] : []);
+var profiles = window.selectedEventProfiles || [];
+if (profiles.length > 0) member = profiles[0];
+else member = window.selectedEventProfile || '';
+var membersArr = profiles.length > 0 ? profiles.slice() : (member ? [member] : []);
+console.log('[updateEvent] member:', member, 'members:', membersArr);
 var eventData = {
 title: document.getElementById('eventTitle').value,
 date: document.getElementById('eventDate').value,
