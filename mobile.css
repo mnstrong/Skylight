@@ -541,6 +541,208 @@
 
 
     
+    /* ── Mobile Chores Nav ─────────────────────────────────────────────── */
+    .mobile-chores-nav {
+        display: none;
+        position: fixed;
+        top: var(--mobile-header-height);
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 12px 16px 10px;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+        z-index: 100;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    body.viewing-section.chores-view-active .mobile-chores-nav {
+        display: flex;
+    }
+
+    body.viewing-section.chores-view-active #contentArea {
+        padding: 0 !important;
+        padding-top: 175px !important;
+    }
+
+    body.viewing-section.chores-view-active .mobile-header {
+        display: flex !important;
+    }
+
+    /* ── Profile filter row ─────────────────────────────────────────────── */
+    .mcpf-row {
+        display: flex;
+        gap: 16px;
+        padding: 14px 16px 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mcpf-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .mcpf-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+        box-sizing: border-box;
+        border: 3px solid transparent;
+        transition: opacity 0.15s;
+    }
+
+    .mcpf-selected .mcpf-avatar {
+        border: 3px solid #1a1a1a;
+        box-shadow: 0 0 0 2px white inset;
+    }
+
+    .mcpf-dim .mcpf-avatar {
+        opacity: 0.35;
+    }
+
+    .mcpf-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #444;
+    }
+
+    .mcpf-dim .mcpf-name {
+        opacity: 0.4;
+    }
+
+    /* ── Task list ──────────────────────────────────────────────────────── */
+    .mc-list {
+        padding: 4px 14px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Member card */
+    .mc-card {
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mc-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .mc-card-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .mc-card-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mc-card-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 6px;
+    }
+
+    .mc-card-progress {
+        height: 5px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .mc-card-progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.4s;
+    }
+
+    /* Task row */
+    .mc-task {
+        display: flex;
+        align-items: center;
+        padding: 14px 14px;
+        border-radius: 14px;
+        gap: 10px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mc-task-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mc-task-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 2px;
+    }
+
+    .mc-task-done {
+        opacity: 0.5;
+        text-decoration: line-through;
+    }
+
+    .mc-task-late {
+        font-size: 13px;
+        font-weight: 600;
+        color: #E05C2A;
+    }
+
+    /* Circle checkbox */
+    .mc-task-check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid rgba(0,0,0,0.2);
+        background: white;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .mc-task-check-done {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        border: none;
+    }
+
+    .mc-task-check-done::after {
+        content: '✓';
+    }
+
     /* Icon grid */
     .mobile-icon-grid {
         display: grid;
