@@ -3105,6 +3105,25 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         return m ? m.color : getFamilyColor();
     }
 
+    // Returns a CSS background string: split gradient for 2+ members, solid for 1
+    function getMultiMemberBg(event, opacity) {
+        opacity = opacity || 0.35;
+        var members = getEventMembers(event);
+        if (members.length >= 2) {
+            var c1 = hexToRgba(members[0].color, opacity);
+            var c2 = hexToRgba(members[1].color, opacity);
+            return 'linear-gradient(135deg, ' + c1 + ' 50%, ' + c2 + ' 50%)';
+        }
+        var color = members.length === 1 ? members[0].color : getFamilyColor();
+        return hexToRgba(color, opacity);
+    }
+
+    // Returns the primary color for text/border (first member or family)
+    function getEventPrimaryColor(event) {
+        var members = getEventMembers(event);
+        return members.length > 0 ? members[0].color : getFamilyColor();
+    }
+
     function updateDateTime() {
         const now = new Date();
         const dateOptions = { month: 'long', day: 'numeric' };
@@ -3335,15 +3354,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             }
 
             cellTimedEvents.slice(0, maxTimed).forEach(function(ev) {
-                var color = getEventColor(ev);
-                var bgColor = hexToRgba(color, 0.22);
+                var bgStyle = getMultiMemberBg(ev, 0.32);
+                var isBgImage = bgStyle.indexOf('gradient') !== -1;
                 var parts2 = ev.time.split(':');
                 var h = parseInt(parts2[0], 10);
                 var m = parseInt(parts2[1], 10);
                 var period2 = h >= 12 ? 'PM' : 'AM';
                 var dh = h % 12 || 12;
                 var timeStr2 = dh + ':' + String(m).padStart(2,'0') + ' ' + period2;
-                eventsHtml += '<div class="day-event-item has-time" style="background-color:' + bgColor + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
+                eventsHtml += '<div class="day-event-item has-time" style="' + (isBgImage ? 'background-image:' + bgStyle : 'background-color:' + bgStyle) + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
                     '<span class="day-event-time">' + timeStr2 + '</span>' +
                     '<span class="day-event-title">' + ev.title + '</span>' +
                     '</div>';
@@ -3385,13 +3404,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             var top   = startCell.offsetTop + 42 + bar.slot * 28;
 
             var ev = bar.event;
-            var color = getEventColor(ev);
-            var bgColor = hexToRgba(color, 0.38);
+            var bgVal = getMultiMemberBg(ev, 0.38);
+            var isBgImg = bgVal.indexOf('gradient') !== -1;
+            var bgCss = isBgImg ? 'background-image:' + bgVal : 'background:' + bgVal;
 
             var barEl = document.createElement('div');
             barEl.className = 'day-span-bar';
             barEl.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + width + 'px;height:24px;' +
-                'background:' + bgColor + ';border-radius:20px;z-index:2;cursor:pointer;' +
+                bgCss + ';border-radius:20px;z-index:2;cursor:pointer;' +
                 'display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;' +
                 'padding:0 10px;overflow:hidden;box-sizing:border-box;';
             barEl.innerHTML = '<span style="font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#222;">' +
@@ -3674,9 +3694,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             
             // Display events
             dayEvents.forEach(event => {
-                const member = getEventMember(event);
-                const color = getEventColor(event);
-                const bgColor = hexToRgba(color, 0.25);
+                const members = getEventMembers(event);
+                const primaryColor = getEventPrimaryColor(event);
+                const bgVal = getMultiMemberBg(event, 0.28);
+                const isBgImg = bgVal.indexOf('gradient') !== -1;
+                const bgStyle = isBgImg ? `background-image:${bgVal}` : `background-color:${bgVal}`;
                 
                 // Format time
                 let timeStr = '';
@@ -3689,15 +3711,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     timeStr = 'All day';
                 }
                 
-                const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                const initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
                 
-                html += `<div class="schedule-event" style="background-color: ${bgColor}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
+                html += `<div class="schedule-event" style="${bgStyle}; margin-bottom: 8px;" onclick="event.stopPropagation(); showEventDetails('${event.id}')">
                     <div class="schedule-event-content">
-                        <div class="schedule-event-time" style="color: ${color}">${timeStr}</div>
+                        <div class="schedule-event-time" style="color: ${primaryColor}">${timeStr}</div>
                         <div class="schedule-event-title">${event.title}</div>
                         ${event.member ? `<div class="schedule-event-member">${event.member}</div>` : ''}
                     </div>
-                    ${initial ? `<div class="schedule-event-dot" style="background: ${color}">${initial}</div>` : ''}
+                    ${initial ? `<div class="schedule-event-dot" style="background: ${primaryColor}">${initial}</div>` : ''}
                 </div>`;
             });
             
@@ -3772,15 +3794,19 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         } else {
             html += '<div class="day-view-events">';
             dayEvents.forEach(event => {
-                const member = getEventMember(event);
-                const color = getEventColor(event);
-                const initial = member ? member.name.charAt(0).toUpperCase() : '';
+                const members = getEventMembers(event);
+                const primaryColor = getEventPrimaryColor(event);
+                const bgVal = getMultiMemberBg(event, 0.25);
+                const isBgImg = bgVal.indexOf('gradient') !== -1;
+                const bgStyle = isBgImg ? `background-image:${bgVal}` : `background-color:${bgVal}`;
+                const initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
+                const dur = (function(){var s=event.time?event.time.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;var e=event.endTime?event.endTime.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;return(s!==null&&e!==null)?e-s:60;})();
                 
-                html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evduration="${(function(){var s=event.time?event.time.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;var e=event.endTime?event.endTime.split(':').reduce(function(a,b,i){return a+(i===0?+b*60:+b);},0):null;return(s!==null&&e!==null)?e-s:60;})()}" data-evcolor="${color}" style="background-color: ${hexToRgba(color, 0.25)}" onclick="showEventDetails('${event.id}')">
+                html += `<div class="day-view-event" data-evtitle="${(event.title||event.summary||'').replace(/"/g,'&quot;')}" data-evnotes="${(event.notes||event.description||'').replace(/"/g,'&quot;')}" data-evduration="${dur}" data-evcolor="${primaryColor}" style="${bgStyle}" onclick="showEventDetails('${event.id}')">
                     <div class="day-view-event-time">${event.time || 'All day'}</div>
                     <div class="day-view-event-title">${event.title}</div>
                     ${event.member ? `<div class="day-view-event-member">${event.member}</div>` : ''}
-                    ${initial ? `<div class="day-view-event-dot" style="background: ${color}">${initial}</div>` : ''}
+                    ${initial ? `<div class="day-view-event-dot" style="background: ${primaryColor}">${initial}</div>` : ''}
                 </div>`;
             });
             html += '</div>';
@@ -4051,20 +4077,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 };
                 const timeLabel = `${fmt(startH, startM)} – ${fmt(endH, endM)}`;
 
-                // Build background and border based on number of members
-                let bgStyle, borderStyle, timeColor;
-                if (members.length >= 2) {
-                    const c1 = members[0].color;
-                    const c2 = members[1].color;
-                    bgStyle = `background-image: linear-gradient(135deg, ${hexToRgba(c1, 0.35)} 50%, ${hexToRgba(c2, 0.35)} 50%)`;
-                    borderStyle = '';
-                    timeColor = c1;
-                } else {
-                    const color = members.length === 1 ? members[0].color : getFamilyColor();
-                    bgStyle = `background-color: ${hexToRgba(color, 0.28)}`;
-                    borderStyle = '';
-                    timeColor = color;
-                }
+                // Build background based on number of members
+                const timeColor = getEventPrimaryColor(ev);
+                const bgStyle = getMultiMemberBg(ev, 0.35);
+                const isBgImg = bgStyle.indexOf('gradient') !== -1;
+                const bgStyleAttr = isBgImg ? `background-image: ${bgStyle}` : `background-color: ${bgStyle}`;
 
                 // Build avatars for all members
                 const avatarsHtml = members.slice(0, 2).map((m, i) =>
@@ -4076,8 +4093,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     height:${height}px;
                     left:${leftPct}%;
                     width:${widthPct - 1}%;
-                    ${bgStyle};
-                    ${borderStyle};
+                    ${bgStyleAttr};
                 " onclick="event.stopPropagation();showEventDetails('${ev.id}')">
                     <div class="sg-event-title">${ev.title}</div>
                     ${height > 35 ? `<div class="sg-event-time" style="color:${timeColor}">${timeLabel}</div>` : ''}
@@ -4196,14 +4212,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 var top   = headerH + STRIP_PAD / 2 + bar.slot * SLOT_H;
 
                 var ev = bar.event;
-                var color = getEventColor(ev);
-                var bgColor = hexToRgba(color, 0.38);
+                var bgVal = getMultiMemberBg(ev, 0.38);
+                var isBgImg = bgVal.indexOf('gradient') !== -1;
+                var bgCss = isBgImg ? 'background-image:' + bgVal : 'background:' + bgVal;
 
                 var barEl = document.createElement('div');
                 barEl.className = 'sg-span-bar';
                 barEl.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;' +
                     'width:' + width + 'px;height:24px;' +
-                    'background:' + bgColor + ';border-radius:20px;z-index:4;cursor:pointer;' +
+                    bgCss + ';border-radius:20px;z-index:4;cursor:pointer;' +
                     'display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;' +
                     'padding:0 10px;overflow:hidden;box-sizing:border-box;';
                 barEl.innerHTML = '<span style="font-size:18px;font-weight:600;white-space:nowrap;' +
