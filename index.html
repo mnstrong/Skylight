@@ -1662,7 +1662,8 @@ function mobileChoresGoToday() {
 function renderMobileChoresProfileFilter() {
     var container = document.getElementById('mobileChoresProfileFilter');
     if (!container) return;
-    var members = (window.familyMembers || []).filter(function(m) { return !m.isGoogleCalendar; });
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
     var html = '';
     members.forEach(function(m) {
         var isSelected = mobileChoresFilter === m.name;
@@ -1689,18 +1690,21 @@ function mobileChoresSetFilter(name) {
 function renderMobileChoresList() {
     var container = document.getElementById('mobileChoresList');
     if (!container) return;
-    var members = (window.familyMembers || []).filter(function(m) { return !m.isGoogleCalendar; });
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
     if (mobileChoresFilter) {
         members = members.filter(function(m) { return m.name === mobileChoresFilter; });
     }
     var html = '';
     members.forEach(function(member) {
-        var memberChores = (window.chores || []).filter(function(c) { return c.member === member.name; });
+        var memberChores = allChores.filter(function(c) { return c.member === member.name; });
         if (memberChores.length === 0) return;
         var completedCount = memberChores.filter(function(c) { return c.completed; }).length;
         var totalCount = memberChores.length;
         var pct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-        var bg = typeof hexToRgba === 'function' ? hexToRgba(member.color, 0.12) : 'rgba(0,0,0,0.06)';
+        var _rgba = window.hexToRgba || function(c,a){return 'rgba(0,0,0,'+a+')';};
+        var bg = _rgba(member.color, 0.12);
         html += '<div class="mc-card" style="background:' + bg + '">';
         html += '<div class="mc-card-header">';
         html += '<div class="mc-card-avatar" style="background:' + member.color + '">' + member.name.charAt(0).toUpperCase() + '</div>';
@@ -1718,7 +1722,7 @@ function renderMobileChoresList() {
                     ? Math.round(daysLate / 30) + ' month' + (Math.round(daysLate/30) > 1 ? 's' : '') + ' late'
                     : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late';
             }
-            var taskBg = typeof hexToRgba === 'function' ? hexToRgba(member.color, chore.completed ? 0.35 : 0.18) : 'rgba(0,0,0,0.08)';
+            var taskBg = _rgba(member.color, chore.completed ? 0.35 : 0.18);
             var checkStyle = chore.completed ? 'background:' + member.color + ';border-color:' + member.color + ';' : '';
             html += '<div class="mc-task" data-cid="' + chore.id + '" style="background:' + taskBg + '">';
             html += '<div class="mc-task-body">';

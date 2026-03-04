@@ -134,6 +134,8 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let chores = JSON.parse(localStorage.getItem('chores')) || [];
     let routines = JSON.parse(localStorage.getItem('routines')) || [];
+    window.chores = chores;
+    window.routines = routines;
 
 let visiblePeriods = {
 'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
@@ -150,7 +152,7 @@ needsSave = true;
 }
 });
 if (needsSave) {
-localStorage.setItem('routines', JSON.stringify(routines));
+localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
 }
 let meals = JSON.parse(localStorage.getItem('meals')) || [];
 let allowances = JSON.parse(localStorage.getItem('allowances')) || [];
@@ -2720,7 +2722,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.member = newName;
             }
         });
-        localStorage.setItem('chores', JSON.stringify(chores));
+        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
         
         // Update routines
         routines.forEach(routine => {
@@ -2728,7 +2730,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 routine.member = newName;
             }
         });
-        localStorage.setItem('routines', JSON.stringify(routines));
+        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
         
         // Update rewards
         rewards.forEach(reward => {
@@ -2788,6 +2790,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     // Utility function to convert hex color to rgba
     const _rgbaCache = {};
+    window.hexToRgba = hexToRgba;
     function hexToRgba(hex, alpha) {
         // Check cache first
         const cacheKey = hex + '|' + alpha;
@@ -2902,7 +2905,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ];
         
         routines = sampleRoutines;
-        localStorage.setItem('routines', JSON.stringify(routines));
+        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
     }
     
     function initializeSampleChores() {
@@ -2936,7 +2939,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ];
         
         chores = sampleChores;
-        localStorage.setItem('chores', JSON.stringify(chores));
+        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
     }
     
     function initializeSampleRewards() {
@@ -5395,7 +5398,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             } else {
                 delete routine.completedDate;
             }
-            localStorage.setItem('routines', JSON.stringify(routines));
+            localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
             
             // Check if member completed all their tasks
             if (!wasCompleted && routine.completed) {
@@ -5490,7 +5493,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                         }
                     });
                     
-                    localStorage.setItem('routines', JSON.stringify(routines));
+                    localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
                     renderChoresView();
                 }
             }
@@ -6821,8 +6824,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             }
         });
         
-        localStorage.setItem('chores', JSON.stringify(chores));
-        localStorage.setItem('routines', JSON.stringify(routines));
+        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
         
         // Reset form
         document.getElementById('taskChoreTitle').value = '';
@@ -6994,7 +6997,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     // Delete the task (future instances won't be generated)
                     chores.splice(index, 1);
                 }
-                localStorage.setItem('chores', JSON.stringify(chores));
+                localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
             }
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
@@ -7006,7 +7009,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     // Delete the routine (future instances won't be generated)
                     routines.splice(index, 1);
                 }
-                localStorage.setItem('routines', JSON.stringify(routines));
+                localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
             }
         }
         
@@ -7168,7 +7171,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.dueDate = hasDate ? date : null;
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
-                localStorage.setItem('chores', JSON.stringify(chores));
+                localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
             }
         } else {
             const routine = routines.find(r => r.id === currentEditTaskId);
@@ -7186,7 +7189,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     else routine.period = 'Morning';
                 }
                 
-                localStorage.setItem('routines', JSON.stringify(routines));
+                localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
             }
         }
         
@@ -7209,7 +7212,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             } else {
                 delete chore.completedDate;
             }
-            localStorage.setItem('chores', JSON.stringify(chores));
+            localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
             
             // Check if member completed all their chores
             if (!wasCompleted && chore.completed) {
