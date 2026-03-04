@@ -3301,10 +3301,54 @@
         }
 
         .sg-hours-spacer {
+            /* matches sg-day-header (56px) + sg-allday-strip (up to ~100px for 3 slots) */
             height: 56px;
             flex-shrink: 0;
             border-bottom: 1px solid #f0f0f0;
             background: white;
+        }
+
+        /* All-day pill strip — sits between the day header and the time grid */
+        .sg-allday-strip {
+            padding: 3px 4px;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            gap: 3px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            min-height: 8px;
+        }
+
+        .sg-allday-pill {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            border-radius: 20px;
+            padding: 4px 10px;
+            cursor: pointer;
+            overflow: hidden;
+            width: 100%;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .sg-allday-pill-title {
+            font-size: 18px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #222;
+        }
+
+        .sg-allday-more {
+            font-size: 13px;
+            color: #888;
+            padding: 2px 10px;
+            font-weight: 500;
         }
 
         .sg-hour-label {
