@@ -4019,21 +4019,19 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 daysHtml += `<div class="sg-hour-line" style="top:${h * HOUR_HEIGHT}px"></div>`;
             }
 
-            // All-day events
-            allDayEvents.forEach(ev => {
-                const members = getEventMembers(ev);
-                const color = members.length > 0 ? members[0].color : getFamilyColor();
-                const bgStyle = members.length >= 2
-                    ? `linear-gradient(135deg, ${hexToRgba(members[0].color, 0.35)} 50%, ${hexToRgba(members[1].color, 0.35)} 50%)`
-                    : hexToRgba(color, 0.3);
-                const avatarsHtml = members.slice(0, 2).map(m =>
-                    `<span class="sg-allday-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</span>`
-                ).join('');
-                daysHtml += `<div class="sg-allday-event" style="background:${bgStyle};" onclick="event.stopPropagation();showEventDetails('${ev.id}')">
-                    <span class="sg-allday-title">${ev.title}</span>
-                    ${avatarsHtml ? `<div class="sg-allday-avatars">${avatarsHtml}</div>` : ''}
-                </div>`;
+            // All-day events — pill bars above the time grid, matching month view style
+            var allDayBarHtml = '';
+            allDayEvents.slice(0, 3).forEach(function(ev) {
+                var color = getEventColor(ev);
+                var bgColor = hexToRgba(color, 0.38);
+                allDayBarHtml += '<div class="sg-allday-pill" style="background:' + bgColor + ';" onclick="event.stopPropagation();showEventDetails(\'' + ev.id + '\')">' +
+                    '<span class="sg-allday-pill-title">' + ev.title + '</span>' +
+                    '</div>';
             });
+            if (allDayEvents.length > 3) {
+                allDayBarHtml += '<div class="sg-allday-more">+' + (allDayEvents.length - 3) + ' more</div>';
+            }
+            daysHtml += '<div class="sg-allday-strip">' + allDayBarHtml + '</div>';
 
             // Timed events
             timedEvents.forEach(ev => {
@@ -4117,6 +4115,21 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // so it scrolls vertically with the grid but can be made sticky
         container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
         applyEventImages(container);
+
+        // Sync hours-spacer height to match tallest day-header + allday-strip combo
+        // so hour labels stay aligned with the time grid
+        setTimeout(function() {
+            var strips = container.querySelectorAll('.sg-allday-strip');
+            var headers = container.querySelectorAll('.sg-day-header');
+            var maxOffset = 0;
+            for (var i = 0; i < headers.length; i++) {
+                var h = headers[i] ? headers[i].offsetHeight : 0;
+                var s = strips[i] ? strips[i].offsetHeight : 0;
+                maxOffset = Math.max(maxOffset, h + s);
+            }
+            var spacer = container.querySelector('.sg-hours-spacer');
+            if (spacer && maxOffset > 0) spacer.style.height = maxOffset + 'px';
+        }, 0);
 
         // Auto-scroll to current time or 8am
         setTimeout(() => {
