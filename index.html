@@ -1663,9 +1663,7 @@ function mobileChoresGoToday() {
 }
 
 function renderMobileChoresProfileFilter() {
-    console.log('[MC] renderMobileChoresProfileFilter called');
     var pfEl = document.getElementById('mobileChoresProfileFilter');
-    console.log('[MC] profile filter el:', pfEl);
     var container = document.getElementById('mobileChoresProfileFilter');
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
@@ -1694,13 +1692,7 @@ function mobileChoresSetFilter(name) {
 }
 
 function renderMobileChoresList() {
-    console.log('[MC] renderMobileChoresList called');
-    console.log('[MC] window.familyMembers:', window.familyMembers ? window.familyMembers.length : 'undefined');
-    console.log('[MC] window.chores:', window.chores ? window.chores.length : 'undefined');
-    console.log('[MC] localStorage chores:', localStorage.getItem('chores') ? JSON.parse(localStorage.getItem('chores')).length : 'none');
-    console.log('[MC] mobileChoresFilter:', mobileChoresFilter);
     var el = document.getElementById('mobileChoresList');
-    console.log('[MC] container el:', el);
     var container = document.getElementById('mobileChoresList');
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
@@ -1770,11 +1762,11 @@ function renderMobileChoresList() {
 }
 
 function showMobileChores() {
-    console.log('[MC] showMobileChores called');
     document.body.classList.add('viewing-section');
     document.body.classList.add('chores-view-active');
     document.body.classList.remove('calendar-view');
     currentMobileSection = 'chores';
+
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
     document.getElementById('mobileBackBtn').style.display = 'none';
@@ -1790,9 +1782,23 @@ function showMobileChores() {
     mobileChoresDate = new Date();
     updateMobileChoresDateTitle();
 
-    // switchSection injects the containers; give DOM a tick then render
-    if (typeof switchSection === 'function') switchSection('chores');
-    setTimeout(function() {
-        renderMobileChoresProfileFilter();
-    }, 80);
+    // Inject containers directly into contentArea - don't rely on switchSection
+    var contentArea = document.getElementById('contentArea');
+    if (contentArea) {
+        contentArea.innerHTML =
+            '<div id="mobileChoresProfileFilter" class="mcpf-row"></div>' +
+            '<div id="mobileChoresList" class="mc-list"></div>';
+    }
+
+    // Hide calendar nav elements that switchSection would normally hide
+    var monthNav = document.getElementById('monthNav');
+    var todayNav = document.getElementById('todayNav');
+    var mainViewSelector = document.getElementById('mainViewSelector');
+    if (monthNav) monthNav.style.display = 'none';
+    if (todayNav) todayNav.style.display = 'none';
+    if (mainViewSelector) mainViewSelector.style.display = 'none';
+
+    // Render immediately - containers are already in DOM
+    renderMobileChoresProfileFilter();
 }
+

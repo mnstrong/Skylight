@@ -4324,15 +4324,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             document.getElementById('todayNav').style.display = 'none';
             document.getElementById('mainViewSelector').style.display = 'none';
 
-            if (window.innerWidth <= 768) {
-                contentArea.innerHTML =
-                    '<div id="mobileChoresProfileFilter" class="mcpf-row"></div>' +
-                    '<div id="mobileChoresList" class="mc-list"></div>';
-                // renderMobileChoresList called from showMobileChores after a tick
-            } else {
-                contentArea.innerHTML = '<div class="chores-container" id="choresContainer"></div>';
-                renderChoresView();
-            }
+            contentArea.innerHTML = '<div class="chores-container" id="choresContainer"></div>';
+            renderChoresView();
             // Show floating add task button
             document.getElementById('floatingAddTaskBtn').classList.add('active');
         } else if (section === 'rewards') {
