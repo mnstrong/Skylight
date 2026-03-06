@@ -4434,6 +4434,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                             <div class="timer-controls">
                                 <button class="timer-btn timer-btn-reset" onclick="resetTimer(1)">🔄 Reset</button>
                                 <button class="timer-btn timer-btn-start" id="timer1-start-btn" onclick="startTimer(1)">▶ Start</button>
+                                <button class="timer-btn timer-btn-stop" id="timer1-stop-btn" onclick="stopTimer(1)" style="display:none;">■ Stop</button>
                             </div>
                         </div>
                         
@@ -4457,6 +4458,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                             <div class="timer-controls">
                                 <button class="timer-btn timer-btn-reset" onclick="resetTimer(2)">🔄 Reset</button>
                                 <button class="timer-btn timer-btn-start" id="timer2-start-btn" onclick="startTimer(2)">▶ Start</button>
+                                <button class="timer-btn timer-btn-stop" id="timer2-stop-btn" onclick="stopTimer(2)" style="display:none;">■ Stop</button>
                             </div>
                         </div>
                     </div>
@@ -4491,8 +4493,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     // Timer functionality
-    let timer1State = { interval: null, totalSeconds: 0, running: false, alarmInterval: null };
-    let timer2State = { interval: null, totalSeconds: 0, running: false, alarmInterval: null };
+    let timer1State = { interval: null, totalSeconds: 0, running: false, paused: false, alarmInterval: null };
+    let timer2State = { interval: null, totalSeconds: 0, running: false, paused: false, alarmInterval: null };
     let currentTimerBeingSet = null;
     
     function initializeTimers() {
@@ -4546,57 +4548,97 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function startTimer(timerNum) {
-        const timerState = timerNum === 1 ? timer1State : timer2State;
-        const card = document.getElementById(`timer${timerNum}`);
-        const startBtn = document.getElementById(`timer${timerNum}-start-btn`);
-        
-        if (timerState.running) {
-            // Stop timer
-            clearInterval(timerState.interval);
-            if (timerState.alarmInterval) {
-                clearInterval(timerState.alarmInterval);
-                timerState.alarmInterval = null;
-            }
-            timerState.running = false;
-            card.classList.remove('running', 'alarm');
-            startBtn.innerHTML = '▶ Start';
-            startBtn.className = 'timer-btn timer-btn-start';
-        } else {
-            // Start timer
-            if (timerState.totalSeconds === 0) {
-                alert('Please set a time first by clicking on the timer');
-                return;
-            }
-            
+        var timerState = timerNum === 1 ? timer1State : timer2State;
+        var card = document.getElementById('timer' + timerNum);
+        var startBtn = document.getElementById('timer' + timerNum + '-start-btn');
+        var stopBtn = document.getElementById('timer' + timerNum + '-stop-btn');
+
+        if (timerState.paused) {
+            // Resume from pause
+            timerState.paused = false;
             timerState.running = true;
             card.classList.add('running');
-            startBtn.innerHTML = '■ Stop';
-            startBtn.className = 'timer-btn timer-btn-stop';
-            
-            timerState.interval = setInterval(() => {
+            card.classList.remove('paused');
+            startBtn.innerHTML = '&#9646;&#9646; Pause';
+            startBtn.className = 'timer-btn timer-btn-pause';
+            timerState.interval = setInterval(function() {
                 timerState.totalSeconds--;
-                
-                const hours = Math.floor(timerState.totalSeconds / 3600);
-                const minutes = Math.floor((timerState.totalSeconds % 3600) / 60);
-                const seconds = timerState.totalSeconds % 60;
-                
-                document.getElementById(`timer${timerNum}-hours`).textContent = String(hours).padStart(2, '0');
-                document.getElementById(`timer${timerNum}-minutes`).textContent = String(minutes).padStart(2, '0');
-                document.getElementById(`timer${timerNum}-seconds`).textContent = String(seconds).padStart(2, '0');
-                
+                var h = Math.floor(timerState.totalSeconds / 3600);
+                var m = Math.floor((timerState.totalSeconds % 3600) / 60);
+                var s = timerState.totalSeconds % 60;
+                document.getElementById('timer' + timerNum + '-hours').textContent = String(h).padStart(2, '0');
+                document.getElementById('timer' + timerNum + '-minutes').textContent = String(m).padStart(2, '0');
+                document.getElementById('timer' + timerNum + '-seconds').textContent = String(s).padStart(2, '0');
                 if (timerState.totalSeconds <= 0) {
                     clearInterval(timerState.interval);
                     timerState.running = false;
                     card.classList.remove('running');
                     card.classList.add('alarm');
-                    startBtn.innerHTML = '▶ Start';
+                    startBtn.innerHTML = '&#9654; Start';
                     startBtn.className = 'timer-btn timer-btn-start';
-                    
-                    // Start repeating alarm
+                    if (stopBtn) stopBtn.style.display = 'none';
+                    startRepeatingAlarm(timerNum);
+                }
+            }, 1000);
+        } else if (timerState.running) {
+            // Pause timer
+            clearInterval(timerState.interval);
+            timerState.running = false;
+            timerState.paused = true;
+            card.classList.remove('running');
+            card.classList.add('paused');
+            startBtn.innerHTML = '&#9654; Resume';
+            startBtn.className = 'timer-btn timer-btn-start';
+        } else {
+            // Start timer fresh
+            if (timerState.totalSeconds === 0) {
+                alert('Please set a time first by clicking on the timer');
+                return;
+            }
+            timerState.running = true;
+            timerState.paused = false;
+            card.classList.add('running');
+            startBtn.innerHTML = '&#9646;&#9646; Pause';
+            startBtn.className = 'timer-btn timer-btn-pause';
+            if (stopBtn) stopBtn.style.display = '';
+            timerState.interval = setInterval(function() {
+                timerState.totalSeconds--;
+                var h = Math.floor(timerState.totalSeconds / 3600);
+                var m = Math.floor((timerState.totalSeconds % 3600) / 60);
+                var s = timerState.totalSeconds % 60;
+                document.getElementById('timer' + timerNum + '-hours').textContent = String(h).padStart(2, '0');
+                document.getElementById('timer' + timerNum + '-minutes').textContent = String(m).padStart(2, '0');
+                document.getElementById('timer' + timerNum + '-seconds').textContent = String(s).padStart(2, '0');
+                if (timerState.totalSeconds <= 0) {
+                    clearInterval(timerState.interval);
+                    timerState.running = false;
+                    card.classList.remove('running');
+                    card.classList.add('alarm');
+                    startBtn.innerHTML = '&#9654; Start';
+                    startBtn.className = 'timer-btn timer-btn-start';
+                    if (stopBtn) stopBtn.style.display = 'none';
                     startRepeatingAlarm(timerNum);
                 }
             }, 1000);
         }
+    }
+
+    function stopTimer(timerNum) {
+        var timerState = timerNum === 1 ? timer1State : timer2State;
+        var card = document.getElementById('timer' + timerNum);
+        var startBtn = document.getElementById('timer' + timerNum + '-start-btn');
+        var stopBtn = document.getElementById('timer' + timerNum + '-stop-btn');
+        clearInterval(timerState.interval);
+        if (timerState.alarmInterval) {
+            clearInterval(timerState.alarmInterval);
+            timerState.alarmInterval = null;
+        }
+        timerState.running = false;
+        timerState.paused = false;
+        card.classList.remove('running', 'paused', 'alarm');
+        startBtn.innerHTML = '&#9654; Start';
+        startBtn.className = 'timer-btn timer-btn-start';
+        if (stopBtn) stopBtn.style.display = 'none';
     }
     
     function startRepeatingAlarm(timerNum) {
@@ -4612,20 +4654,23 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function resetTimer(timerNum) {
-        const timerState = timerNum === 1 ? timer1State : timer2State;
-        const card = document.getElementById(`timer${timerNum}`);
-        const startBtn = document.getElementById(`timer${timerNum}-start-btn`);
-        
+        var timerState = timerNum === 1 ? timer1State : timer2State;
+        var card = document.getElementById('timer' + timerNum);
+        var startBtn = document.getElementById('timer' + timerNum + '-start-btn');
+        var stopBtn = document.getElementById('timer' + timerNum + '-stop-btn');
+
         clearInterval(timerState.interval);
         if (timerState.alarmInterval) {
             clearInterval(timerState.alarmInterval);
             timerState.alarmInterval = null;
         }
         timerState.running = false;
+        timerState.paused = false;
         timerState.totalSeconds = 0;
-        card.classList.remove('running', 'alarm');
-        startBtn.innerHTML = '▶ Start';
+        card.classList.remove('running', 'paused', 'alarm');
+        startBtn.innerHTML = '&#9654; Start';
         startBtn.className = 'timer-btn timer-btn-start';
+        if (stopBtn) stopBtn.style.display = 'none';
         
         updateTimerDisplay(timerNum, 0, 0, 0);
     }
