@@ -541,19 +541,21 @@
 
 
     
-    /* ── Mobile Chores Nav ─────────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════
+       CHORES / TASKS PAGE
+       ═══════════════════════════════════════════ */
+
     .mobile-chores-nav {
         display: none;
         position: fixed;
         top: var(--mobile-header-height);
-        left: 0;
-        right: 0;
+        left: 0; right: 0;
         background: white;
-        padding: 12px 16px 10px;
+        padding: 10px 16px 8px;
         box-shadow: 0 1px 0 rgba(0,0,0,0.08);
         z-index: 100;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
     body.viewing-section.chores-view-active .mobile-chores-nav {
@@ -562,18 +564,20 @@
 
     body.viewing-section.chores-view-active #contentArea {
         padding: 0 !important;
-        padding-top: 175px !important;
+        padding-top: 160px !important;
+        background: #f5f5f5 !important;
     }
 
     body.viewing-section.chores-view-active .mobile-header {
         display: flex !important;
     }
 
-    /* ── Profile filter row ─────────────────────────────────────────────── */
+    /* ── Profile circles row ──────── */
     .mcpf-row {
         display: flex;
-        gap: 16px;
-        padding: 14px 16px 10px;
+        gap: 20px;
+        padding: 16px 20px 8px;
+        background: #f5f5f5;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -582,322 +586,116 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 5px;
+        gap: 3px;
         cursor: pointer;
         flex-shrink: 0;
     }
 
     .mcpf-avatar {
-        width: 56px;
-        height: 56px;
+        width: 62px;
+        height: 62px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 700;
         color: white;
         box-sizing: border-box;
         border: 3px solid transparent;
-        transition: opacity 0.15s;
     }
 
     .mcpf-selected .mcpf-avatar {
         border: 3px solid #1a1a1a;
-        box-shadow: 0 0 0 2px white inset;
+        box-shadow: 0 0 0 3px white inset;
     }
 
-    .mcpf-dim .mcpf-avatar {
-        opacity: 0.35;
-    }
+    .mcpf-dim .mcpf-avatar  { opacity: 0.3; }
+    .mcpf-name  { font-size: 12px; font-weight: 600; color: #333; }
+    .mcpf-dim .mcpf-name    { opacity: 0.3; }
+    .mcpf-count { font-size: 11px; color: #888; }
+    .mcpf-stars { font-size: 11px; color: #888; }
 
-    .mcpf-name {
-        font-size: 12px;
-        font-weight: 500;
-        color: #444;
-    }
-
-    .mcpf-dim .mcpf-name {
-        opacity: 0.4;
-    }
-
-    /* ── Task list ──────────────────────────────────────────────────────── */
+    /* ── Task list ───────────────── */
     .mc-list {
-        padding: 4px 14px 80px;
+        padding: 8px 14px 80px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        background: #f5f5f5;
     }
 
-    /* Member card */
-    .mc-card {
-        border-radius: 18px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .mc-card-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(0,0,0,0.07);
-    }
-
-    .mc-card-avatar {
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: 700;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .mc-card-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .mc-card-name {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 6px;
-    }
-
-    .mc-card-progress {
-        height: 5px;
-        background: rgba(0,0,0,0.1);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .mc-card-progress-fill {
-        height: 100%;
-        border-radius: 3px;
-        transition: width 0.4s;
-    }
-
-    /* Task row */
-    .mc-task {
-        display: flex;
-        align-items: center;
-        padding: 14px 14px;
-        border-radius: 14px;
-        gap: 10px;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .mc-task-body {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .mc-task-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 2px;
-    }
-
-    .mc-task-done {
-        opacity: 0.5;
-        text-decoration: line-through;
-    }
-
-    .mc-task-late {
-        font-size: 13px;
-        font-weight: 600;
-        color: #E05C2A;
-    }
-
-    /* Circle checkbox */
-    .mc-task-check {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: 2px solid rgba(0,0,0,0.2);
-        background: white;
-        flex-shrink: 0;
-        cursor: pointer;
-    }
-
-    .mc-task-check-done {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 14px;
-        font-weight: 700;
-        border: none;
-    }
-
-    .mc-task-check-done::after {
-        content: '✓';
-    }
-
-    /* ═══════════════════════════════════════════════════════════════════
-       TASKS PAGE — REDESIGNED MOBILE STYLES
-       ═══════════════════════════════════════════════════════════════════ */
-
-    /* ── Nav: adjust to 4-button layout ──────────────────────────────── */
-    body.viewing-section.chores-view-active .mobile-chores-nav {
-        padding: 10px 16px 8px !important;
-        gap: 8px !important;
-    }
-
-    body.viewing-section.chores-view-active #contentArea {
-        padding-top: 160px !important;
-        background: #F5F5F7 !important;
-    }
-
-    /* ── Profile circles row ─────────────────────────────────────────── */
-    .mcpf-row {
-        display: flex !important;
-        gap: 20px !important;
-        padding: 16px 20px 8px !important;
-        background: #F5F5F7 !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .mcpf-item {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 6px !important;
-        cursor: pointer !important;
-        flex-shrink: 0 !important;
-    }
-
-    .mcpf-avatar {
-        width: 62px !important;
-        height: 62px !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 24px !important;
-        font-weight: 700 !important;
-        color: white !important;
-        box-sizing: border-box !important;
-        border: 3px solid transparent !important;
-    }
-
-    .mcpf-selected .mcpf-avatar {
-        border: 3px solid #1a1a1a !important;
-        box-shadow: 0 0 0 3px white inset !important;
-    }
-
-    .mcpf-dim .mcpf-avatar {
-        opacity: 0.3 !important;
-    }
-
-    .mcpf-name {
-        font-size: 12px !important;
-        font-weight: 500 !important;
-        color: #333 !important;
-    }
-
-    .mcpf-dim .mcpf-name {
-        opacity: 0.3 !important;
-    }
-
-    /* Count below avatar (0/4) */
-    .mcpf-count {
-        font-size: 11px !important;
-        color: #888 !important;
-        font-weight: 500 !important;
-    }
-
-    .mcpf-stars {
-        font-size: 11px !important;
-        color: #888 !important;
-    }
-
-    /* ── Task list: flat cards, no member wrapper card ───────────────── */
-    .mc-list {
-        padding: 8px 16px 80px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 0 !important;
-        background: #F5F5F7 !important;
-    }
-
-    /* Remove the colored member card wrapper */
+    /* Member wrapper — invisible */
     .mc-card {
         background: transparent !important;
         border-radius: 0 !important;
         padding: 0 !important;
-        gap: 0 !important;
         box-shadow: none !important;
+        display: flex;
+        flex-direction: column;
     }
 
-    .mc-card-header {
+    .mc-card-header,
+    .mc-card-avatar,
+    .mc-card-info,
+    .mc-card-name,
+    .mc-card-progress {
         display: none !important;
     }
 
-    /* Flat white task row */
+    /* Task row — colored pastel bg */
     .mc-task {
         display: flex !important;
         align-items: center !important;
-        padding: 14px 16px !important;
+        padding: 13px 14px !important;
         border-radius: 16px !important;
         margin-bottom: 8px !important;
-        gap: 12px !important;
-        cursor: pointer !important;
-        background: white !important;
-        -webkit-tap-highlight-color: transparent !important;
+        gap: 10px !important;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        /* background set inline by JS */
     }
 
     .mc-task-body {
-        flex: 1 !important;
-        min-width: 0 !important;
+        flex: 1;
+        min-width: 0;
     }
 
     .mc-task-title {
         font-size: 15px !important;
         font-weight: 700 !important;
         color: #1a1a1a !important;
-        margin-bottom: 2px !important;
-    }
-
-    .mc-task-subtitle {
-        font-size: 13px !important;
-        color: #999 !important;
-        font-weight: 400 !important;
+        margin-bottom: 1px !important;
     }
 
     .mc-task-done .mc-task-title {
-        opacity: 0.4 !important;
+        opacity: 0.45 !important;
         text-decoration: line-through !important;
+    }
+
+    .mc-task-subtitle {
+        font-size: 13px;
+        color: #888;
+        font-weight: 400;
     }
 
     .mc-task-late {
         font-size: 13px !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         color: #E05C2A !important;
     }
 
     /* Member avatar dot on right */
     .mc-task-avatar {
-        width: 28px !important;
-        height: 28px !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        color: white !important;
-        flex-shrink: 0 !important;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
     }
 
     /* Circle checkbox */
@@ -905,11 +703,12 @@
         width: 28px !important;
         height: 28px !important;
         border-radius: 50% !important;
-        border: 2px solid rgba(0,0,0,0.15) !important;
-        background: white !important;
-        flex-shrink: 0 !important;
-        cursor: pointer !important;
-        box-sizing: border-box !important;
+        border: 2px solid rgba(0,0,0,0.18) !important;
+        background: rgba(255,255,255,0.7) !important;
+        flex-shrink: 0;
+        cursor: pointer;
+        box-sizing: border-box;
+        display: block !important;
     }
 
     .mc-task-check-done {
@@ -922,227 +721,189 @@
         border: none !important;
     }
 
-    .mc-task-check-done::after {
-        content: '✓' !important;
+    .mc-task-check-done::after { content: '\2713'; }
+
+    /* ═══════════════════════════════════════════
+       TASK DETAIL — bottom sheet
+       ═══════════════════════════════════════════ */
+
+    .task-detail-modal {
+        display: none;
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100% !important; height: 100% !important;
+        background: rgba(0,0,0,0.4) !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        z-index: 2000 !important;
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-       TASK DETAIL MODAL — full-screen on mobile
-       ═══════════════════════════════════════════════════════════════════ */
+    .task-detail-modal.active { display: flex !important; }
 
-    @media (max-width: 1200px) {
-        .task-detail-modal {
-            position: fixed !important;
-            inset: 0 !important;
-            background: rgba(0,0,0,0.4) !important;
-            display: none !important;
-            align-items: flex-end !important;
-            justify-content: center !important;
-            z-index: 1000 !important;
-        }
-
-        .task-detail-modal.active {
-            display: flex !important;
-        }
-
-        .task-detail-content {
-            background: white !important;
-            border-radius: 24px 24px 0 0 !important;
-            width: 100% !important;
-            max-height: 90vh !important;
-            overflow-y: auto !important;
-            padding: 0 0 40px !important;
-            position: relative !important;
-        }
-
-        /* Back arrow row */
-        .task-detail-content::before {
-            content: '' !important;
-            display: block !important;
-            width: 36px !important;
-            height: 4px !important;
-            background: #ddd !important;
-            border-radius: 2px !important;
-            margin: 12px auto 0 !important;
-        }
-
-        .task-detail-title {
-            font-size: 28px !important;
-            font-weight: 700 !important;
-            color: #1a1a1a !important;
-            padding: 20px 24px 0 !important;
-            line-height: 1.2 !important;
-        }
-
-        .task-detail-actions {
-            display: flex !important;
-            gap: 12px !important;
-            padding: 16px 24px !important;
-            border-bottom: 1px solid #F0F0F0 !important;
-        }
-
-        .task-detail-btn {
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            padding: 8px 16px !important;
-            border-radius: 10px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            border: none !important;
-            cursor: pointer !important;
-            background: #F5F5F7 !important;
-            color: #333 !important;
-        }
-
-        .task-detail-edit {
-            background: #F5F5F7 !important;
-            color: #333 !important;
-        }
-
-        .task-detail-delete {
-            background: #FFF0EE !important;
-            color: #E05C2A !important;
-        }
-
-        .task-detail-info {
-            padding: 8px 24px !important;
-        }
-
-        .task-detail-row {
-            display: flex !important;
-            align-items: flex-start !important;
-            gap: 14px !important;
-            padding: 14px 0 !important;
-            border-bottom: 1px solid #F5F5F7 !important;
-        }
-
-        .task-detail-icon {
-            font-size: 20px !important;
-            width: 24px !important;
-            flex-shrink: 0 !important;
-            margin-top: 1px !important;
-        }
-
-        .task-detail-row span,
-        .task-detail-row div:not(.task-detail-icon):not(.task-detail-label):not(.task-detail-avatar) {
-            font-size: 15px !important;
-            color: #1a1a1a !important;
-            font-weight: 400 !important;
-        }
-
-        .task-detail-label {
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            color: #4A90D9 !important;
-        }
-
-        .task-detail-assigned {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-            padding: 8px 24px 16px 62px !important;
-        }
-
-        .task-detail-avatar {
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            font-size: 15px !important;
-            color: #1a1a1a !important;
-            font-weight: 500 !important;
-        }
-
-        .task-detail-complete-btn {
-            display: block !important;
-            width: calc(100% - 48px) !important;
-            margin: 24px 24px 0 !important;
-            padding: 18px !important;
-            background: #4A90D9 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50px !important;
-            font-size: 16px !important;
-            font-weight: 700 !important;
-            cursor: pointer !important;
-            text-align: center !important;
-            letter-spacing: 0.3px !important;
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           EDIT SIDE PANEL — full-screen on mobile
-           ═══════════════════════════════════════════════════════════════ */
-
-        .edit-side-panel {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            border-radius: 0 !important;
-            transform: translateX(100%) !important;
-            transition: transform 0.3s ease !important;
-            z-index: 1100 !important;
-            overflow-y: auto !important;
-            background: white !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
-        .edit-side-panel.active {
-            transform: translateX(0) !important;
-        }
-
-        .edit-panel-header {
-            display: flex !important;
-            align-items: center !important;
-            gap: 12px !important;
-            padding: 56px 20px 16px !important;
-            border-bottom: 1px solid #F0F0F0 !important;
-        }
-
-        .edit-panel-header h2,
-        .edit-panel-title {
-            font-size: 22px !important;
-            font-weight: 700 !important;
-            color: #1a1a1a !important;
-        }
-
-        .edit-panel-back {
-            display: flex !important;
-            align-items: center !important;
-            gap: 4px !important;
-            font-size: 16px !important;
-            color: #333 !important;
-            cursor: pointer !important;
-            background: none !important;
-            border: none !important;
-            padding: 0 !important;
-        }
-
-        .edit-panel-content {
-            flex: 1 !important;
-            padding: 16px 20px !important;
-            overflow-y: auto !important;
-        }
-
-        .edit-panel-overlay {
-            display: none !important;
-        }
-
-        /* Form field rows in edit panel */
-        .edit-panel-content input[type="text"],
-        .edit-panel-content input[type="date"],
-        .edit-panel-content select {
-            width: 100% !important;
-            font-size: 16px !important;
-            padding: 12px 14px !important;
-            border-radius: 12px !important;
-            border: 1px solid #E0E0E0 !important;
-            background: #FAFAFA !important;
-            box-sizing: border-box !important;
-            -webkit-appearance: none !important;
-        }
+    .task-detail-content {
+        background: white !important;
+        border-radius: 24px 24px 0 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+        padding: 0 0 40px !important;
     }
+
+    .task-detail-content::before {
+        content: '';
+        display: block;
+        width: 36px; height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+        margin: 12px auto 0;
+    }
+
+    .task-detail-title {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        color: #1a1a1a !important;
+        padding: 16px 24px 4px !important;
+        line-height: 1.2 !important;
+    }
+
+    .task-detail-actions {
+        display: flex !important;
+        gap: 10px !important;
+        padding: 12px 24px 14px !important;
+        border-bottom: 1px solid #F0F0F0 !important;
+    }
+
+    .task-detail-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 8px 16px !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        cursor: pointer;
+    }
+
+    .task-detail-edit   { background: #F0F0F0 !important; color: #333 !important; }
+    .task-detail-delete { background: #FFF0EE !important; color: #D64B2A !important; }
+
+    .task-detail-info { padding: 4px 24px !important; }
+
+    .task-detail-row {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+        padding: 14px 0 !important;
+        border-bottom: 1px solid #F5F5F7 !important;
+    }
+
+    .task-detail-icon {
+        width: 22px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #555 !important;
+        font-size: 18px !important;
+        margin-top: 1px !important;
+    }
+
+    .task-detail-label {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #4A90D9 !important;
+    }
+
+    .task-detail-row > span,
+    .task-detail-row > div:not(.task-detail-icon) {
+        font-size: 15px !important;
+        color: #1a1a1a !important;
+        line-height: 1.4 !important;
+    }
+
+    .task-detail-assigned {
+        padding: 6px 0 14px 60px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .task-detail-avatar {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        font-size: 15px !important;
+        color: #1a1a1a !important;
+        font-weight: 500 !important;
+    }
+
+    .task-detail-complete-btn {
+        display: block !important;
+        width: calc(100% - 48px) !important;
+        margin: 20px 24px 0 !important;
+        padding: 18px !important;
+        background: #4A90D9 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50px !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        cursor: pointer;
+    }
+
+    /* ═══════════════════════════════════════════
+       EDIT PANEL — full screen slide-in
+       ═══════════════════════════════════════════ */
+
+    .edit-panel-overlay { display: none !important; }
+
+    .edit-side-panel {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100% !important; height: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        transform: translateX(100%) !important;
+        transition: transform 0.3s ease !important;
+        z-index: 2100 !important;
+        overflow-y: auto !important;
+        background: white !important;
+    }
+
+    .edit-side-panel.active { transform: translateX(0) !important; }
+
+    .edit-panel-header {
+        padding: 56px 20px 16px !important;
+        border-bottom: 1px solid #F0F0F0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .edit-panel-title {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        color: #1a1a1a !important;
+    }
+
+    .edit-panel-body { padding: 16px 20px 80px !important; }
+
+    .edit-panel-body input[type="text"],
+    .edit-panel-body input[type="date"],
+    .edit-panel-body select {
+        width: 100% !important;
+        font-size: 16px !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        border: 1px solid #E0E0E0 !important;
+        background: #FAFAFA !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+    }
+
 
     /* Icon grid */
     .mobile-icon-grid {
