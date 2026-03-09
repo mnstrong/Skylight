@@ -3273,7 +3273,7 @@
             flex-direction: column;
         }
 
-        /* Page nav bar: ‹ date range › */
+        /* Page nav bar */
         .sg-page-nav {
             display: -webkit-flex;
             display: flex;
@@ -3281,20 +3281,20 @@
             align-items: center;
             -webkit-justify-content: center;
             justify-content: center;
-            padding: 6px 16px;
+            padding: 5px 12px;
             background: #fff;
             border-bottom: 1px solid #e8e8e8;
             -webkit-flex-shrink: 0;
             flex-shrink: 0;
-            gap: 14px;
         }
 
         .sg-page-label {
             font-size: 15px;
             font-weight: 600;
             color: #4a5568;
-            min-width: 150px;
+            min-width: 148px;
             text-align: center;
+            padding: 0 10px;
             font-family: 'Jost', sans-serif;
         }
 
@@ -3302,11 +3302,10 @@
             background: none;
             border: 1.5px solid #e2e8f0;
             border-radius: 8px;
-            width: 38px;
-            height: 38px;
-            font-size: 24px;
-            line-height: 36px;
-            text-align: center;
+            width: 40px;
+            height: 40px;
+            font-size: 26px;
+            line-height: 1;
             color: #667eea;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
@@ -3319,11 +3318,9 @@
             justify-content: center;
         }
 
-        .sg-page-btn:active {
-            background: #eef2ff;
-        }
+        .sg-page-btn:active { background: #eef2ff; }
 
-        /* Clip: hides content sliding off screen */
+        /* Clip: masks content sliding off-screen during swipe */
         .sg-clip {
             -webkit-flex: 1;
             flex: 1;
@@ -3331,15 +3328,15 @@
             position: relative;
         }
 
-        /* Slide: the translateX target for swipe animation */
+        /* Slide: the element we translateX for the swipe animation */
         .sg-slide {
             width: 100%;
             height: 100%;
             -webkit-transform: translateX(0);
             transform: translateX(0);
-            will-change: transform;
         }
 
+        /* Scroll area: vertical + horizontal scrolling inside the slide */
         .sg-scroll-area {
             width: 100%;
             height: 100%;
