@@ -3875,7 +3875,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Always start from today + page offset
         var startDate = new Date(today);
         startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
         var daysToShow = schedulePageSize;
@@ -4143,7 +4142,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             sgSpanBars.push({ event: ev, startIdx: startIdx, endIdx: endIdx, slot: slot });
         });
 
-        // Build page label e.g. "Mar 9 – Mar 14"
+        // Build page date label
         var pgStart = new Date(today);
         pgStart.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
         var pgEnd = new Date(pgStart);
@@ -4151,7 +4150,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var lo = { month: 'short', day: 'numeric' };
         var pgLabel = pgStart.toLocaleDateString('en-US', lo) + ' \u2013 ' + pgEnd.toLocaleDateString('en-US', lo);
 
-        // Build HTML: nav bar + clip > slide > scroll-area > grid
         container.innerHTML =
             '<div class="sg-wrapper">' +
               '<div class="sg-page-nav">' +
@@ -4231,130 +4229,151 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 };
                 daysRow.appendChild(barEl);
             });
+        }, 0);
 
-            // ── Swipe handler (attached after DOM is laid out) ──
-            // CRITICAL for Android 8: listeners go on sg-clip (non-scrolling parent),
-            // NOT on the scroll area. This way the browser never steals the touch stream.
-            // touchmove must NOT be passive so we can preventDefault on horizontal swipes.
+        // Scroll to 7 AM (top of grid)
+        setTimeout(function() {
+            var sa = document.getElementById('sgScrollArea');
+            if (sa) sa.scrollTop = 0;
+        }, 80);
+
+        // ── Swipe handler ──
+        // Attached after a tick so elements are in DOM.
+        // Listeners go on sgClip (non-scrollable) so Android WebView can't steal the touch stream.
+        // touchmove is { passive:false } so we can preventDefault on confirmed horizontal swipes.
+        // touchend is ALSO registered on document as a safety net in case the browser
+        // swallows the event on the element (common on Android 8 WebView).
+        setTimeout(function() {
             var clip  = document.getElementById('sgClip');
             var slide = document.getElementById('sgSlide');
             if (!clip || !slide) return;
 
-            var animating   = false;
-            var startX      = 0;
-            var startY      = 0;
-            var currentX    = 0;
-            var tracking    = false;
-            var decided     = false;
+            var swipeActive = false;   // a horizontal swipe is in progress
+            var committed   = false;   // we have already fired the page-turn
+            var startX = 0;
+            var startY = 0;
+            var lastDx = 0;
 
-            function applyTransform(px, withTransition, bounce) {
-                var dur  = withTransition ? (bounce ? '420ms' : '320ms') : '0ms';
+            function setSlide(px, transition, bounce) {
+                var dur  = transition ? (bounce ? '400ms' : '300ms') : '0ms';
                 var ease = bounce
                     ? 'cubic-bezier(0.34,1.56,0.64,1)'
                     : 'cubic-bezier(0.25,0.46,0.45,0.94)';
                 slide.style.webkitTransition = '-webkit-transform ' + dur + ' ' + ease;
                 slide.style.transition       = 'transform '         + dur + ' ' + ease;
-                slide.style.webkitTransform  = 'translateX(' + px + 'px)';
-                slide.style.transform        = 'translateX(' + px + 'px)';
+                slide.style.webkitTransform  = 'translateX(' + Math.round(px) + 'px)';
+                slide.style.transform        = 'translateX(' + Math.round(px) + 'px)';
+            }
+
+            function commitSwipe(dx) {
+                if (committed) return;
+                committed = true;
+                var w = clip.offsetWidth || window.innerWidth;
+                if (dx < 0) {
+                    // next page
+                    setSlide(-w, true, false);
+                    setTimeout(function() { schedulePageOffset += 1; renderScheduleView(); }, 310);
+                } else if (schedulePageOffset > 0) {
+                    // prev page
+                    setSlide(w, true, false);
+                    setTimeout(function() { schedulePageOffset -= 1; renderScheduleView(); }, 310);
+                } else {
+                    // already at page 0, snap back with bounce
+                    setSlide(0, true, true);
+                    committed = false;
+                }
+            }
+
+            function snapBack() {
+                if (committed) return;
+                setSlide(0, true, true);
+                swipeActive = false;
             }
 
             clip.addEventListener('touchstart', function(e) {
-                if (animating) return;
-                startX   = e.touches[0].clientX;
-                startY   = e.touches[0].clientY;
-                currentX = 0;
-                tracking = false;
-                decided  = false;
-                // Kill any running transition so finger snaps to content
-                applyTransform(0, false, false);
+                startX      = e.touches[0].clientX;
+                startY      = e.touches[0].clientY;
+                lastDx      = 0;
+                swipeActive = false;
+                committed   = false;
+                // Remove any in-progress transition so content snaps to finger
+                setSlide(0, false, false);
             }, { passive: true });
 
             clip.addEventListener('touchmove', function(e) {
-                if (animating) return;
+                if (committed) return;
                 var dx = e.touches[0].clientX - startX;
                 var dy = e.touches[0].clientY - startY;
+                lastDx = dx;
 
-                if (!decided) {
-                    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-                    decided  = true;
-                    tracking = Math.abs(dx) > Math.abs(dy) * 1.2;
+                // Once we have at least 10px horizontal movement that is more
+                // horizontal than vertical, lock in as a swipe
+                if (!swipeActive) {
+                    if (Math.abs(dx) < 10) return;
+                    if (Math.abs(dx) < Math.abs(dy)) return; // vertical — ignore
+                    swipeActive = true;
                 }
 
-                if (!tracking) return;
-
-                // Prevent browser from scrolling vertically while we handle horizontal
+                // Prevent the browser's vertical scroll so the slide can move freely
                 e.preventDefault();
 
-                // Rubber-band at left edge (page 0, pulling right)
-                currentX = (dx > 0 && schedulePageOffset === 0)
-                    ? Math.round(dx * 0.28)
+                // Rubber-band at left edge
+                var visualDx = (dx > 0 && schedulePageOffset === 0)
+                    ? Math.round(dx * 0.25)
                     : dx;
+                setSlide(visualDx, false, false);
+            }, { passive: false });
 
-                applyTransform(currentX, false, false);
-            }, { passive: false }); // MUST be non-passive to call preventDefault
-
+            // Handle on clip element
             clip.addEventListener('touchend', function(e) {
-                if (animating || !decided || !tracking) {
-                    tracking = false; decided = false; return;
-                }
-                var dx        = e.changedTouches[0].clientX - startX;
-                var clipW     = clip.offsetWidth || window.innerWidth;
-                var threshold = Math.round(clipW * 0.20);
-
-                if (dx < -threshold) {
-                    animating = true;
-                    applyTransform(-clipW, true, false);
-                    setTimeout(function() {
-                        schedulePageOffset = schedulePageOffset + 1;
-                        animating = false;
-                        renderScheduleView();
-                    }, 330);
-                } else if (dx > threshold && schedulePageOffset > 0) {
-                    animating = true;
-                    applyTransform(clipW, true, false);
-                    setTimeout(function() {
-                        schedulePageOffset = schedulePageOffset - 1;
-                        animating = false;
-                        renderScheduleView();
-                    }, 330);
+                if (!swipeActive) return;
+                var dx = e.changedTouches[0].clientX - startX;
+                // Commit on ANY swipe >= 20px that was already classified as horizontal
+                if (Math.abs(dx) >= 20) {
+                    commitSwipe(dx);
                 } else {
-                    applyTransform(0, true, true);
+                    snapBack();
                 }
-                tracking = false;
-                decided  = false;
+                swipeActive = false;
             }, { passive: true });
-        }, 50);
 
-        // Auto-scroll to 7 AM (top of visible grid)
-        setTimeout(function() {
-            var sa = document.getElementById('sgScrollArea');
-            if (sa) sa.scrollTop = 0;
-        }, 100);
+            // Safety net on document — fires even if the element handler is suppressed
+            document.addEventListener('touchend', function(e) {
+                if (!swipeActive || committed) return;
+                var dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) >= 20) {
+                    commitSwipe(dx);
+                } else {
+                    snapBack();
+                }
+                swipeActive = false;
+            }, { passive: true });
+
+        }, 50);
     }
 
-    // Called by nav buttons + navigateView
+    // Called by nav buttons and navigateView arrow presses
     function scheduleNavigatePage(direction) {
         if (direction < 0 && schedulePageOffset === 0) return;
         var container = document.getElementById('scheduleContainer');
-        var clip  = container ? container.querySelector('#sgClip')  : null;
         var slide = container ? container.querySelector('#sgSlide') : null;
-        var clipW = clip ? clip.offsetWidth : window.innerWidth;
+        var clip  = container ? container.querySelector('#sgClip')  : null;
+        var w     = clip ? clip.offsetWidth : window.innerWidth;
 
-        function applyTransform(px, withT) {
+        function doSlide(px) {
             if (!slide) return;
             var ease = 'cubic-bezier(0.25,0.46,0.45,0.94)';
-            slide.style.webkitTransition = '-webkit-transform 320ms ' + ease;
-            slide.style.transition       = 'transform 320ms '         + ease;
+            slide.style.webkitTransition = '-webkit-transform 300ms ' + ease;
+            slide.style.transition       = 'transform 300ms '         + ease;
             slide.style.webkitTransform  = 'translateX(' + px + 'px)';
             slide.style.transform        = 'translateX(' + px + 'px)';
         }
 
-        if (!slide) { schedulePageOffset += direction; renderScheduleView(); return; }
-        applyTransform(direction < 0 ? clipW : -clipW, true);
+        doSlide(direction < 0 ? w : -w);
         setTimeout(function() {
             schedulePageOffset = schedulePageOffset + direction;
             renderScheduleView();
-        }, 330);
+        }, 310);
     }
 
     function switchSection(section) {
