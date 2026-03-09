@@ -89,6 +89,8 @@ let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
+var schedulePageOffset = 0; // which 6-day page to show (0 = today, 1 = days 7-12, etc.)
+var schedulePageSize = 6;   // days per page
 let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
 { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
 { name: 'Mary', color: '#54eef3' },
@@ -3439,8 +3441,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setDate(currentDate.getDate() + (direction * 7));
             renderWeekView();
         } else if (currentView === 'schedule') {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            currentDate.setDate(1);
+            if (direction > 0) {
+                schedulePageOffset++;
+            } else {
+                if (schedulePageOffset > 0) schedulePageOffset--;
+            }
             renderScheduleView();
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
@@ -3871,13 +3876,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function renderScheduleView() {
-        const container = document.getElementById('scheduleContainer');
-        const today = new Date();
+        var container = document.getElementById('scheduleContainer');
+        var today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        let startDate = new Date(monthStart);
-        const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+        // Always start from today + page offset (6 days per page)
+        var startDate = new Date(today);
+        startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
+        var daysToShow = schedulePageSize;
         scheduleDaysToShow = daysToShow;
         
         // Get all events ONCE outside the loop
@@ -4144,7 +4150,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
         // Build the hours column as first column inside the scrollable area
         // so it scrolls vertically with the grid but can be made sticky
-        container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
+        container.innerHTML = '<div class="sg-wrapper"><div class="sg-page-nav"><button class="sg-page-btn" onclick="(function(){if(schedulePageOffset>0){schedulePageOffset--;renderScheduleView();}}())">&#8249;</button><span class="sg-page-label" id="schedulePageLabel"></span><button class="sg-page-btn" onclick="(function(){schedulePageOffset++;renderScheduleView();})()">&#8250;</button></div><div class="sg-scroll-area"><div class="sg-days-row">' + hoursHtml + daysHtml + '</div></div></div>';
         applyEventImages(container);
 
         // ── Inject spanning bars + sync spacer height ──
@@ -4217,13 +4223,68 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         }, 0);
 
         // Auto-scroll to current time or 8am
-        setTimeout(() => {
-            const now = new Date();
-            const nowMins = now.getHours() * 60 + now.getMinutes();
-            const scrollTo = minutesToPx(nowMins) - 80;
-            const gridWrapper = container.querySelector('.sg-scroll-area');
+        setTimeout(function() {
+            var now = new Date();
+            var nowMins = now.getHours() * 60 + now.getMinutes();
+            var scrollTo = minutesToPx(nowMins) - 80;
+            var gridWrapper = container.querySelector('.sg-scroll-area');
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
+
+        // Attach swipe-to-page handler on the scroll area
+        setTimeout(function() {
+            var scrollArea = container.querySelector('.sg-scroll-area');
+            if (!scrollArea || scrollArea._swipeAttached) return;
+            scrollArea._swipeAttached = true;
+
+            var swipeStartX = 0;
+            var swipeStartY = 0;
+            var swipeStartScrollLeft = 0;
+
+            scrollArea.addEventListener('touchstart', function(e) {
+                swipeStartX = e.touches[0].clientX;
+                swipeStartY = e.touches[0].clientY;
+                swipeStartScrollLeft = scrollArea.scrollLeft;
+            }, { passive: true });
+
+            scrollArea.addEventListener('touchend', function(e) {
+                var dx = e.changedTouches[0].clientX - swipeStartX;
+                var dy = e.changedTouches[0].clientY - swipeStartY;
+                // Only treat as horizontal page swipe if more horizontal than vertical
+                // and scrollLeft hasn't moved much (they didn't scroll horizontally)
+                var scrolledX = Math.abs(scrollArea.scrollLeft - swipeStartScrollLeft);
+                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40 && scrolledX < 30) {
+                    if (dx < 0) {
+                        // Swipe left → next page
+                        schedulePageOffset++;
+                    } else {
+                        // Swipe right → prev page (don't go before today)
+                        if (schedulePageOffset > 0) schedulePageOffset--;
+                    }
+                    renderScheduleView();
+                    updateSchedulePageLabel();
+                }
+            }, { passive: true });
+        }, 60);
+
+        // Update the page label in the header
+        updateSchedulePageLabel();
+    }
+
+    function updateSchedulePageLabel() {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var startDate = new Date(today);
+        startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
+        var endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + schedulePageSize - 1);
+
+        var opts = { month: 'short', day: 'numeric' };
+        var label = startDate.toLocaleDateString('en-US', opts) + ' – ' + endDate.toLocaleDateString('en-US', opts);
+
+        // Try to update a schedule-specific header element if present
+        var el = document.getElementById('schedulePageLabel');
+        if (el) el.textContent = label;
     }
 
     function switchSection(section) {
@@ -7398,6 +7459,7 @@ if (allChoresComplete || allRoutinesComplete) {
             document.getElementById('weekView').classList.add('active');
             renderWeekView();
         } else if (view === 'schedule') {
+            schedulePageOffset = 0; // always start from today when entering schedule view
             document.getElementById('scheduleView').classList.add('active');
             renderScheduleView();
         } else if (view === 'day') {
@@ -7419,7 +7481,7 @@ if (allChoresComplete || allRoutinesComplete) {
             currentDate = new Date();
             if (currentView === 'month') renderCalendar();
             else if (currentView === 'week') renderWeekView();
-            else if (currentView === 'schedule') renderScheduleView();
+            else if (currentView === 'schedule') { schedulePageOffset = 0; renderScheduleView(); }
             else if (currentView === 'day') renderDayView();
             updateViewHeader();
         }
