@@ -3273,6 +3273,7 @@
             flex-direction: column;
         }
 
+        /* Page nav bar: ‹ date range › */
         .sg-page-nav {
             display: -webkit-flex;
             display: flex;
@@ -3280,45 +3281,73 @@
             align-items: center;
             -webkit-justify-content: center;
             justify-content: center;
-            gap: 16px;
-            padding: 6px 12px;
+            padding: 6px 16px;
             background: #fff;
             border-bottom: 1px solid #e8e8e8;
+            -webkit-flex-shrink: 0;
             flex-shrink: 0;
+            gap: 14px;
         }
 
         .sg-page-label {
             font-size: 15px;
             font-weight: 600;
             color: #4a5568;
-            min-width: 160px;
+            min-width: 150px;
             text-align: center;
+            font-family: 'Jost', sans-serif;
         }
 
         .sg-page-btn {
             background: none;
-            border: 1px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            font-size: 22px;
-            line-height: 1;
+            width: 38px;
+            height: 38px;
+            font-size: 24px;
+            line-height: 36px;
+            text-align: center;
             color: #667eea;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            padding: 0;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            justify-content: center;
         }
 
         .sg-page-btn:active {
             background: #eef2ff;
         }
 
-        .sg-scroll-area {
+        /* Clip: hides content sliding off screen */
+        .sg-clip {
             -webkit-flex: 1;
             flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Slide: the translateX target for swipe animation */
+        .sg-slide {
+            width: 100%;
+            height: 100%;
+            -webkit-transform: translateX(0);
+            transform: translateX(0);
+            will-change: transform;
+        }
+
+        .sg-scroll-area {
+            width: 100%;
+            height: 100%;
             overflow-y: auto;
             overflow-x: auto;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
+            -webkit-overflow-scrolling: touch;
         }
 
         .sg-scroll-area::-webkit-scrollbar { width: 6px; height: 6px; }
