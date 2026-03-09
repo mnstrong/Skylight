@@ -89,8 +89,8 @@ let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
-var schedulePageOffset = 0; // which 6-day page to show (0 = today, 1 = days 7-12, etc.)
-var schedulePageSize = 6;   // days per page
+var schedulePageOffset = 0; // 0 = starting from today, 1 = days 7-12, etc.
+var schedulePageSize   = 6; // days per page
 let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
 { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
 { name: 'Mary', color: '#54eef3' },
@@ -3441,12 +3441,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setDate(currentDate.getDate() + (direction * 7));
             renderWeekView();
         } else if (currentView === 'schedule') {
-            if (direction > 0) {
-                schedulePageOffset++;
-            } else {
-                if (schedulePageOffset > 0) schedulePageOffset--;
-            }
-            renderScheduleView();
+            scheduleNavigatePage(direction);
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
             renderDayView();
@@ -3880,7 +3875,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Always start from today + page offset (6 days per page)
+        // Always anchor to today + page offset (6 days per page)
         var startDate = new Date(today);
         startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
         var daysToShow = schedulePageSize;
@@ -4148,9 +4143,31 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             sgSpanBars.push({ event: ev, startIdx: startIdx, endIdx: endIdx, slot: slot });
         });
 
+        // Build page label (e.g. "Mar 9 – Mar 14")
+        var pgLabelStart = new Date(today);
+        pgLabelStart.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
+        var pgLabelEnd = new Date(pgLabelStart);
+        pgLabelEnd.setDate(pgLabelStart.getDate() + schedulePageSize - 1);
+        var labelOpts = { month: 'short', day: 'numeric' };
+        var pgLabel = pgLabelStart.toLocaleDateString('en-US', labelOpts) + ' \u2013 ' + pgLabelEnd.toLocaleDateString('en-US', labelOpts);
+
         // Build the hours column as first column inside the scrollable area
-        // so it scrolls vertically with the grid but can be made sticky
-        container.innerHTML = '<div class="sg-wrapper"><div class="sg-page-nav"><button class="sg-page-btn" onclick="(function(){if(schedulePageOffset>0){schedulePageOffset--;renderScheduleView();}}())">&#8249;</button><span class="sg-page-label" id="schedulePageLabel"></span><button class="sg-page-btn" onclick="(function(){schedulePageOffset++;renderScheduleView();})()">&#8250;</button></div><div class="sg-scroll-area"><div class="sg-days-row">' + hoursHtml + daysHtml + '</div></div></div>';
+        container.innerHTML =
+            '<div class="sg-wrapper">' +
+              '<div class="sg-page-nav">' +
+                '<button class="sg-page-btn" onclick="scheduleNavigatePage(-1)">&#8249;</button>' +
+                '<span class="sg-page-label" id="schedulePageLabel">' + pgLabel + '</span>' +
+                '<button class="sg-page-btn" onclick="scheduleNavigatePage(1)">&#8250;</button>' +
+              '</div>' +
+              '<div class="sg-clip" id="sgClip">' +
+                '<div class="sg-slide" id="sgSlide">' +
+                  '<div class="sg-scroll-area" id="sgScrollArea">' +
+                    '<div class="sg-days-row">' + hoursHtml + daysHtml + '</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+
         applyEventImages(container);
 
         // ── Inject spanning bars + sync spacer height ──
@@ -4170,7 +4187,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             });
 
             // 2. Set strip height on each column so they all match the tallest
-            var SLOT_H = 28; // px per slot row
+            var SLOT_H = 28;
             var STRIP_PAD = 6;
             var maxSlots = 0;
             for (var ci = 0; ci < slotCountByCol.length; ci++) {
@@ -4187,7 +4204,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             if (spacer) spacer.style.height = (headerH + stripHeight) + 'px';
 
             // 4. Inject absolutely-positioned spanning bars
-            // daysRow must be position:relative
             if (daysRow) daysRow.style.position = 'relative';
 
             sgSpanBars.forEach(function(bar) {
@@ -4197,7 +4213,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
                 var left  = startCol.offsetLeft + 3;
                 var width = (endCol.offsetLeft + endCol.offsetWidth) - startCol.offsetLeft - 6;
-                // Position within the strip area (just below header)
                 var top   = headerH + STRIP_PAD / 2 + bar.slot * SLOT_H;
 
                 var ev = bar.event;
@@ -4222,69 +4237,126 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             });
         }, 0);
 
-        // Auto-scroll to current time or 8am
+        // Auto-scroll to top of time grid (7 AM = start of grid)
         setTimeout(function() {
-            var now = new Date();
-            var nowMins = now.getHours() * 60 + now.getMinutes();
-            var scrollTo = minutesToPx(nowMins) - 80;
-            var gridWrapper = container.querySelector('.sg-scroll-area');
-            if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
+            var scrollArea = document.getElementById('sgScrollArea');
+            if (scrollArea) scrollArea.scrollTop = 0;
         }, 50);
 
-        // Attach swipe-to-page handler on the scroll area
+        // ── Swipe-to-page animation (Android 8 / Chrome 67 compatible) ──
         setTimeout(function() {
-            var scrollArea = container.querySelector('.sg-scroll-area');
-            if (!scrollArea || scrollArea._swipeAttached) return;
-            scrollArea._swipeAttached = true;
+            var clip  = document.getElementById('sgClip');
+            var slide = document.getElementById('sgSlide');
+            var scrollArea = document.getElementById('sgScrollArea');
+            if (!clip || !slide || !scrollArea) return;
 
-            var swipeStartX = 0;
-            var swipeStartY = 0;
-            var swipeStartScrollLeft = 0;
+            var animating  = false;
+            var touchStartX = 0;
+            var touchStartY = 0;
+            var tracking   = false;  // confirmed horizontal swipe
+            var decided    = false;  // intent determined yet
 
+            function setSlide(px, withTransition, bounce) {
+                var dur    = withTransition ? (bounce ? '0.45s' : '0.32s') : '0s';
+                var ease   = bounce
+                    ? 'cubic-bezier(0.34,1.56,0.64,1)'
+                    : 'cubic-bezier(0.25,0.46,0.45,0.94)';
+                var trans  = withTransition ? ('-webkit-transform ' + dur + ' ' + ease) : 'none';
+                var trans2 = withTransition ? ('transform '         + dur + ' ' + ease) : 'none';
+                slide.style.webkitTransition = trans;
+                slide.style.transition       = trans2;
+                slide.style.webkitTransform  = 'translateX(' + px + 'px)';
+                slide.style.transform        = 'translateX(' + px + 'px)';
+            }
+
+            // touchstart on the scroll area — captures intent early
             scrollArea.addEventListener('touchstart', function(e) {
-                swipeStartX = e.touches[0].clientX;
-                swipeStartY = e.touches[0].clientY;
-                swipeStartScrollLeft = scrollArea.scrollLeft;
+                if (animating) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                tracking = false;
+                decided  = false;
+                // Kill any in-progress transition so finger sticks to content
+                setSlide(0, false, false);
+            }, { passive: true });
+
+            scrollArea.addEventListener('touchmove', function(e) {
+                if (animating) return;
+                var dx = e.touches[0].clientX - touchStartX;
+                var dy = e.touches[0].clientY - touchStartY;
+
+                // Wait for at least 8px of movement before deciding direction
+                if (!decided) {
+                    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+                    decided  = true;
+                    tracking = Math.abs(dx) > Math.abs(dy);
+                }
+                if (!tracking) return; // vertical scroll — don't interfere
+
+                // Rubber-band resistance when already at first page and pulling right
+                var dampedDx = dx;
+                if (dx > 0 && schedulePageOffset === 0) {
+                    dampedDx = Math.round(dx * 0.25);
+                }
+                setSlide(dampedDx, false, false);
             }, { passive: true });
 
             scrollArea.addEventListener('touchend', function(e) {
-                var dx = e.changedTouches[0].clientX - swipeStartX;
-                var dy = e.changedTouches[0].clientY - swipeStartY;
-                // Only treat as horizontal page swipe if more horizontal than vertical
-                // and scrollLeft hasn't moved much (they didn't scroll horizontally)
-                var scrolledX = Math.abs(scrollArea.scrollLeft - swipeStartScrollLeft);
-                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40 && scrolledX < 30) {
-                    if (dx < 0) {
-                        // Swipe left → next page
-                        schedulePageOffset++;
-                    } else {
-                        // Swipe right → prev page (don't go before today)
-                        if (schedulePageOffset > 0) schedulePageOffset--;
-                    }
-                    renderScheduleView();
-                    updateSchedulePageLabel();
+                if (animating || !decided || !tracking) { tracking = false; decided = false; return; }
+                var dx        = e.changedTouches[0].clientX - touchStartX;
+                var clipW     = clip.offsetWidth || window.innerWidth;
+                var threshold = Math.round(clipW * 0.22);
+
+                if (dx < -threshold) {
+                    // Swipe left → next page
+                    animating = true;
+                    setSlide(-clipW, true, false);
+                    setTimeout(function() {
+                        schedulePageOffset = schedulePageOffset + 1;
+                        animating = false;
+                        renderScheduleView();
+                    }, 340);
+                } else if (dx > threshold && schedulePageOffset > 0) {
+                    // Swipe right → prev page
+                    animating = true;
+                    setSlide(clipW, true, false);
+                    setTimeout(function() {
+                        schedulePageOffset = schedulePageOffset - 1;
+                        animating = false;
+                        renderScheduleView();
+                    }, 340);
+                } else {
+                    // Not enough — snap back with a bounce
+                    setSlide(0, true, true);
                 }
+                tracking = false;
+                decided  = false;
             }, { passive: true });
         }, 60);
-
-        // Update the page label in the header
-        updateSchedulePageLabel();
     }
 
-    function updateSchedulePageLabel() {
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        var startDate = new Date(today);
-        startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
-        var endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + schedulePageSize - 1);
+    // Called by ‹ › nav buttons and navigateView
+    function scheduleNavigatePage(direction) {
+        if (direction < 0 && schedulePageOffset === 0) return;
+        var container = document.getElementById('scheduleContainer');
+        var clip  = container ? container.querySelector('#sgClip')  : null;
+        var slide = container ? container.querySelector('#sgSlide') : null;
+        var clipW = clip ? clip.offsetWidth : window.innerWidth;
 
-        var opts = { month: 'short', day: 'numeric' };
-        var label = startDate.toLocaleDateString('en-US', opts) + ' – ' + endDate.toLocaleDateString('en-US', opts);
+        function setSlide(px, withT) {
+            if (!slide) return;
+            var ease = 'cubic-bezier(0.25,0.46,0.45,0.94)';
+            slide.style.webkitTransition = withT ? ('-webkit-transform 0.32s ' + ease) : 'none';
+            slide.style.transition       = withT ? ('transform 0.32s '         + ease) : 'none';
+            slide.style.webkitTransform  = 'translateX(' + px + 'px)';
+            slide.style.transform        = 'translateX(' + px + 'px)';
+        }
 
-        // Try to update a schedule-specific header element if present
-        var el = document.getElementById('schedulePageLabel');
-        if (el) el.textContent = label;
+        setSlide(direction < 0 ? clipW : -clipW, true);
+        setTimeout(function() {
+            schedulePageOffset = schedulePageOffset + direction;
+            renderScheduleView();
+        }, 340);
     }
 
     function switchSection(section) {
@@ -7459,7 +7531,7 @@ if (allChoresComplete || allRoutinesComplete) {
             document.getElementById('weekView').classList.add('active');
             renderWeekView();
         } else if (view === 'schedule') {
-            schedulePageOffset = 0; // always start from today when entering schedule view
+            schedulePageOffset = 0;
             document.getElementById('scheduleView').classList.add('active');
             renderScheduleView();
         } else if (view === 'day') {
