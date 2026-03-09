@@ -3273,7 +3273,6 @@
             flex-direction: column;
         }
 
-        /* Page nav bar */
         .sg-page-nav {
             display: -webkit-flex;
             display: flex;
@@ -3295,7 +3294,6 @@
             min-width: 148px;
             text-align: center;
             padding: 0 10px;
-            font-family: 'Jost', sans-serif;
         }
 
         .sg-page-btn {
@@ -3320,7 +3318,7 @@
 
         .sg-page-btn:active { background: #eef2ff; }
 
-        /* Clip: masks content sliding off-screen during swipe */
+        /* Clips the slide during swipe so nothing bleeds outside */
         .sg-clip {
             -webkit-flex: 1;
             flex: 1;
@@ -3328,7 +3326,7 @@
             position: relative;
         }
 
-        /* Slide: the element we translateX for the swipe animation */
+        /* The element we translateX during swipe */
         .sg-slide {
             width: 100%;
             height: 100%;
@@ -3336,7 +3334,6 @@
             transform: translateX(0);
         }
 
-        /* Scroll area: vertical + horizontal scrolling inside the slide */
         .sg-scroll-area {
             width: 100%;
             height: 100%;
