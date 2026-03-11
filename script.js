@@ -3591,6 +3591,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         add('pizza.jpg',  ['pizza']);
         add('funk.jpg',   ['funk']);
         add('spring.jpg', ['spring break']);
+        add('dnd.jpg', ['dnd', 'd&d', 'dungeons and dragons', 'dungeons & dragons']);
         return m;
     })();
 
