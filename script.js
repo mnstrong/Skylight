@@ -89,8 +89,6 @@ let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
-var schedulePageOffset = 0;
-var schedulePageSize   = 6;
 let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
 { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
 { name: 'Mary', color: '#54eef3' },
@@ -2992,7 +2990,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             // Re-render calendar
             if (currentView === 'month') renderCalendar();
             else if (currentView === 'week') renderWeekView();
-            else if (currentView === 'schedule') { schedulePageOffset = 0; renderScheduleView(); }
+            else if (currentView === 'schedule') renderScheduleView();
             else if (currentView === 'day') renderDayView();
         }
     }
@@ -3441,7 +3439,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setDate(currentDate.getDate() + (direction * 7));
             renderWeekView();
         } else if (currentView === 'schedule') {
-            scheduleNavigatePage(direction);
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            currentDate.setDate(1);
+            renderScheduleView();
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
             renderDayView();
@@ -3581,13 +3581,36 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         return m;
     })();
 
+    // ── Custom hosted graphics (checked before built-in flair) ──────────────
+    var CUSTOM_IMG_BASE = 'graphics/';
+    var CUSTOM_IMG_MAP = (function() {
+        var m = {};
+        function add(file, keywords) {
+            keywords.forEach(function(k) { m[k.toLowerCase()] = file; });
+        }
+        add('pizza.jpg',  ['pizza']);
+        add('funk.jpg',   ['funk']);
+        add('spring.jpg', ['spring break']);
+        return m;
+    })();
+
     function getFlairUrl(title, notes) {
         if (notes) {
             var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
             if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
         }
-        var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
+        // Check custom hosted images first (longer keywords sorted first for specificity)
+        var customKeys = Object.keys(CUSTOM_IMG_MAP).sort(function(a,b){ return b.length - a.length; });
         var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
+        for (var si = 0; si < sources.length; si++) {
+            for (var i = 0; i < customKeys.length; i++) {
+                if (sources[si].indexOf(customKeys[i]) !== -1) {
+                    return CUSTOM_IMG_BASE + CUSTOM_IMG_MAP[customKeys[i]];
+                }
+            }
+        }
+        // Fall back to built-in Google Calendar flair
+        var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
         for (var si = 0; si < sources.length; si++) {
             for (var i = 0; i < keys.length; i++) {
                 if (sources[si].indexOf(keys[i]) !== -1) {
@@ -3871,13 +3894,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function renderScheduleView() {
-        var container = document.getElementById('scheduleContainer');
-        var today = new Date();
+        const container = document.getElementById('scheduleContainer');
+        const today = new Date();
         today.setHours(0, 0, 0, 0);
-
-        var startDate = new Date(today);
-        startDate.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
-        var daysToShow = schedulePageSize;
+        
+        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        let startDate = new Date(monthStart);
+        const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
         scheduleDaysToShow = daysToShow;
         
         // Get all events ONCE outside the loop
@@ -4142,30 +4165,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             sgSpanBars.push({ event: ev, startIdx: startIdx, endIdx: endIdx, slot: slot });
         });
 
-        // Build page date label
-        var pgStart = new Date(today);
-        pgStart.setDate(today.getDate() + schedulePageOffset * schedulePageSize);
-        var pgEnd = new Date(pgStart);
-        pgEnd.setDate(pgStart.getDate() + schedulePageSize - 1);
-        var lo = { month: 'short', day: 'numeric' };
-        var pgLabel = pgStart.toLocaleDateString('en-US', lo) + ' \u2013 ' + pgEnd.toLocaleDateString('en-US', lo);
-
-        container.innerHTML =
-            '<div class="sg-wrapper">' +
-              '<div class="sg-page-nav">' +
-                '<button class="sg-page-btn" onclick="scheduleNavigatePage(-1)">&#8249;</button>' +
-                '<span class="sg-page-label">' + pgLabel + '</span>' +
-                '<button class="sg-page-btn" onclick="scheduleNavigatePage(1)">&#8250;</button>' +
-              '</div>' +
-              '<div class="sg-clip" id="sgClip">' +
-                '<div class="sg-slide" id="sgSlide">' +
-                  '<div class="sg-scroll-area" id="sgScrollArea">' +
-                    '<div class="sg-days-row">' + hoursHtml + daysHtml + '</div>' +
-                  '</div>' +
-                '</div>' +
-              '</div>' +
-            '</div>';
-
+        // Build the hours column as first column inside the scrollable area
+        // so it scrolls vertically with the grid but can be made sticky
+        container.innerHTML = `<div class="sg-wrapper"><div class="sg-scroll-area"><div class="sg-days-row">${hoursHtml}${daysHtml}</div></div></div>`;
         applyEventImages(container);
 
         // ── Inject spanning bars + sync spacer height ──
@@ -4175,6 +4177,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             var headers = container.querySelectorAll('.sg-day-header');
             var strips  = container.querySelectorAll('.sg-allday-strip');
 
+            // 1. Work out how many slot rows each column needs
             var slotCountByCol = [];
             for (var ci = 0; ci < dayCols.length; ci++) slotCountByCol.push(0);
             sgSpanBars.forEach(function(bar) {
@@ -4183,7 +4186,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
             });
 
-            var SLOT_H = 28;
+            // 2. Set strip height on each column so they all match the tallest
+            var SLOT_H = 28; // px per slot row
             var STRIP_PAD = 6;
             var maxSlots = 0;
             for (var ci = 0; ci < slotCountByCol.length; ci++) {
@@ -4194,10 +4198,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 strips[ci].style.height = stripHeight + 'px';
             }
 
+            // 3. Sync hours-spacer to header + strip
             var headerH = headers[0] ? headers[0].offsetHeight : 56;
             var spacer = container.querySelector('.sg-hours-spacer');
             if (spacer) spacer.style.height = (headerH + stripHeight) + 'px';
 
+            // 4. Inject absolutely-positioned spanning bars
+            // daysRow must be position:relative
             if (daysRow) daysRow.style.position = 'relative';
 
             sgSpanBars.forEach(function(bar) {
@@ -4207,6 +4214,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
                 var left  = startCol.offsetLeft + 3;
                 var width = (endCol.offsetLeft + endCol.offsetWidth) - startCol.offsetLeft - 6;
+                // Position within the strip area (just below header)
                 var top   = headerH + STRIP_PAD / 2 + bar.slot * SLOT_H;
 
                 var ev = bar.event;
@@ -4231,149 +4239,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             });
         }, 0);
 
-        // Scroll to 7 AM (top of grid)
-        setTimeout(function() {
-            var sa = document.getElementById('sgScrollArea');
-            if (sa) sa.scrollTop = 0;
-        }, 80);
-
-        // ── Swipe handler ──
-        // Attached after a tick so elements are in DOM.
-        // Listeners go on sgClip (non-scrollable) so Android WebView can't steal the touch stream.
-        // touchmove is { passive:false } so we can preventDefault on confirmed horizontal swipes.
-        // touchend is ALSO registered on document as a safety net in case the browser
-        // swallows the event on the element (common on Android 8 WebView).
-        setTimeout(function() {
-            var clip  = document.getElementById('sgClip');
-            var slide = document.getElementById('sgSlide');
-            if (!clip || !slide) return;
-
-            var swipeActive = false;   // a horizontal swipe is in progress
-            var committed   = false;   // we have already fired the page-turn
-            var startX = 0;
-            var startY = 0;
-            var lastDx = 0;
-
-            function setSlide(px, transition, bounce) {
-                var dur  = transition ? (bounce ? '400ms' : '300ms') : '0ms';
-                var ease = bounce
-                    ? 'cubic-bezier(0.34,1.56,0.64,1)'
-                    : 'cubic-bezier(0.25,0.46,0.45,0.94)';
-                slide.style.webkitTransition = '-webkit-transform ' + dur + ' ' + ease;
-                slide.style.transition       = 'transform '         + dur + ' ' + ease;
-                slide.style.webkitTransform  = 'translateX(' + Math.round(px) + 'px)';
-                slide.style.transform        = 'translateX(' + Math.round(px) + 'px)';
-            }
-
-            function commitSwipe(dx) {
-                if (committed) return;
-                committed = true;
-                var w = clip.offsetWidth || window.innerWidth;
-                if (dx < 0) {
-                    // next page
-                    setSlide(-w, true, false);
-                    setTimeout(function() { schedulePageOffset += 1; renderScheduleView(); }, 310);
-                } else if (schedulePageOffset > 0) {
-                    // prev page
-                    setSlide(w, true, false);
-                    setTimeout(function() { schedulePageOffset -= 1; renderScheduleView(); }, 310);
-                } else {
-                    // already at page 0, snap back with bounce
-                    setSlide(0, true, true);
-                    committed = false;
-                }
-            }
-
-            function snapBack() {
-                if (committed) return;
-                setSlide(0, true, true);
-                swipeActive = false;
-            }
-
-            clip.addEventListener('touchstart', function(e) {
-                startX      = e.touches[0].clientX;
-                startY      = e.touches[0].clientY;
-                lastDx      = 0;
-                swipeActive = false;
-                committed   = false;
-                // Remove any in-progress transition so content snaps to finger
-                setSlide(0, false, false);
-            }, { passive: true });
-
-            clip.addEventListener('touchmove', function(e) {
-                if (committed) return;
-                var dx = e.touches[0].clientX - startX;
-                var dy = e.touches[0].clientY - startY;
-                lastDx = dx;
-
-                // Once we have at least 10px horizontal movement that is more
-                // horizontal than vertical, lock in as a swipe
-                if (!swipeActive) {
-                    if (Math.abs(dx) < 10) return;
-                    if (Math.abs(dx) < Math.abs(dy)) return; // vertical — ignore
-                    swipeActive = true;
-                }
-
-                // Prevent the browser's vertical scroll so the slide can move freely
-                e.preventDefault();
-
-                // Rubber-band at left edge
-                var visualDx = (dx > 0 && schedulePageOffset === 0)
-                    ? Math.round(dx * 0.25)
-                    : dx;
-                setSlide(visualDx, false, false);
-            }, { passive: false });
-
-            // Handle on clip element
-            clip.addEventListener('touchend', function(e) {
-                if (!swipeActive) return;
-                var dx = e.changedTouches[0].clientX - startX;
-                // Commit on ANY swipe >= 20px that was already classified as horizontal
-                if (Math.abs(dx) >= 20) {
-                    commitSwipe(dx);
-                } else {
-                    snapBack();
-                }
-                swipeActive = false;
-            }, { passive: true });
-
-            // Safety net on document — fires even if the element handler is suppressed
-            document.addEventListener('touchend', function(e) {
-                if (!swipeActive || committed) return;
-                var dx = e.changedTouches[0].clientX - startX;
-                if (Math.abs(dx) >= 20) {
-                    commitSwipe(dx);
-                } else {
-                    snapBack();
-                }
-                swipeActive = false;
-            }, { passive: true });
-
+        // Auto-scroll to current time or 8am
+        setTimeout(() => {
+            const now = new Date();
+            const nowMins = now.getHours() * 60 + now.getMinutes();
+            const scrollTo = minutesToPx(nowMins) - 80;
+            const gridWrapper = container.querySelector('.sg-scroll-area');
+            if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
-    }
-
-    // Called by nav buttons and navigateView arrow presses
-    function scheduleNavigatePage(direction) {
-        if (direction < 0 && schedulePageOffset === 0) return;
-        var container = document.getElementById('scheduleContainer');
-        var slide = container ? container.querySelector('#sgSlide') : null;
-        var clip  = container ? container.querySelector('#sgClip')  : null;
-        var w     = clip ? clip.offsetWidth : window.innerWidth;
-
-        function doSlide(px) {
-            if (!slide) return;
-            var ease = 'cubic-bezier(0.25,0.46,0.45,0.94)';
-            slide.style.webkitTransition = '-webkit-transform 300ms ' + ease;
-            slide.style.transition       = 'transform 300ms '         + ease;
-            slide.style.webkitTransform  = 'translateX(' + px + 'px)';
-            slide.style.transform        = 'translateX(' + px + 'px)';
-        }
-
-        doSlide(direction < 0 ? w : -w);
-        setTimeout(function() {
-            schedulePageOffset = schedulePageOffset + direction;
-            renderScheduleView();
-        }, 310);
     }
 
     function switchSection(section) {
@@ -7548,7 +7421,6 @@ if (allChoresComplete || allRoutinesComplete) {
             document.getElementById('weekView').classList.add('active');
             renderWeekView();
         } else if (view === 'schedule') {
-            schedulePageOffset = 0;
             document.getElementById('scheduleView').classList.add('active');
             renderScheduleView();
         } else if (view === 'day') {
