@@ -5386,14 +5386,16 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function initializeEditRewardEmojiPicker() {
         const grid = document.getElementById('editRewardEmojiPickerGrid');
         if (grid.innerHTML) return; // Already initialized
-
-        const emojiData = window.emojiData || [];
-        grid.innerHTML = emojiData.map(item =>
-            `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEditRewardEmoji('${item.emoji}')">${item.emoji}</div>`
-        ).join('');
-
+        
+        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
+        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
+        
+        // Parse emojis with Twemoji after populating
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+            twemoji.parse(grid, {
+                folder: 'svg',
+                ext: '.svg'
+            });
         }
     }
     
@@ -6857,6 +6859,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
                 
                 chores.push(choreData);
+                // Sync new chore to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(choreData, 'add');
+                }
             }
         });
         
@@ -7022,18 +7028,19 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (currentEditTaskType === 'chore') {
             const index = chores.findIndex(c => c.id === currentEditTaskId);
             if (index > -1) {
+                const deletedChore = chores[index];
                 if (option === 'all' || !chores[index].repeat) {
-                    // Delete the entire task
                     chores.splice(index, 1);
                 } else if (option === 'current') {
-                    // For now, just mark this instance as deleted
-                    // TODO: Implement proper instance tracking
                     chores.splice(index, 1);
                 } else if (option === 'future') {
-                    // Delete the task (future instances won't be generated)
                     chores.splice(index, 1);
                 }
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                // Sync deletion to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(deletedChore, 'delete');
+                }
             }
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
@@ -7143,16 +7150,16 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function initializeEditEmojiPicker() {
         const grid = document.getElementById('editEmojiPickerGrid');
         if (grid.innerHTML) return; // Already initialized
-
-        // Use raw emojiData array (not innerHTML which has already been Twemoji-parsed,
-        // which would embed <img> tags into the onclick attribute values)
-        const emojiData = window.emojiData || [];
-        grid.innerHTML = emojiData.map(item =>
-            `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEditEmoji('${item.emoji}')">${item.emoji}</div>`
-        ).join('');
-
+        
+        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
+        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditEmoji');
+        
+        // Parse emojis with Twemoji after populating
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+            twemoji.parse(grid, {
+                folder: 'svg',
+                ext: '.svg'
+            });
         }
     }
     
@@ -7208,6 +7215,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                // Sync edit to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(chore, 'update');
+                }
             }
         } else {
             const routine = routines.find(r => r.id === currentEditTaskId);
@@ -7249,6 +7260,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 delete chore.completedDate;
             }
             localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+            // Sync completion state to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                window.SupabaseSync.syncChore(chore, 'update');
+            }
             
             // Check if member completed all their chores
             if (!wasCompleted && chore.completed) {

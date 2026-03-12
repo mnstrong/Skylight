@@ -92,7 +92,7 @@ async function loadAllDataFromSupabase() {
                     id: t.id,
                     member: member ? member.name : 'Unknown',
                     title: t.title,
-                    icon: '📋',
+                    icon: t.description || '',   // icon stored in description column
                     completed: t.completed || false,
                     stars: t.points || 0,
                     dueDate: t.due_date,
@@ -290,8 +290,8 @@ async function syncTask(task, operation = 'update') {
         if (operation === 'add') {
             const supabaseTask = {
                 title: task.title,
-                description: task.description,
-                assigned_to: task.assigned_to || task.assignedTo,  // Support both formats
+                description: task.description || task.icon || '',  // chores store icon in description
+                assigned_to: task.assigned_to || task.assignedTo,
                 due_date: task.due_date || task.dueDate,
                 due_time: task.due_time || task.dueTime,
                 completed: task.completed || false,
@@ -310,8 +310,8 @@ async function syncTask(task, operation = 'update') {
         } else if (operation === 'update') {
             const updates = {
                 title: task.title,
-                description: task.description,
-                assigned_to: task.assigned_to || task.assignedTo,  // Support both formats
+                description: task.description || task.icon || '',  // chores store icon in description
+                assigned_to: task.assigned_to || task.assignedTo,
                 due_date: task.due_date || task.dueDate,
                 due_time: task.due_time || task.dueTime,
                 completed: task.completed,
@@ -591,6 +591,43 @@ async function syncCalendarEvent(event, operation) {
 }
 
 // ============================================
+// CHORE SYNC (maps chore fields → tasks table)
+// ============================================
+
+async function syncChore(chore, operation) {
+    operation = operation || 'update';
+    if (!syncEnabled || !isSupabaseReady) return;
+
+    // Resolve family_member_id from member name
+    var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var memberObj = null;
+    for (var mi = 0; mi < members.length; mi++) {
+        if (members[mi].name === chore.member) { memberObj = members[mi]; break; }
+    }
+    var assignedTo = memberObj ? (memberObj.id || null) : null;
+
+    var taskPayload = {
+        id:                 chore.id,
+        title:              chore.title || '',
+        description:        chore.icon  || '',   // icon lives in description column
+        assigned_to:        assignedTo,
+        due_date:           chore.dueDate  || null,
+        due_time:           chore.time     || null,
+        completed:          chore.completed || false,
+        points:             chore.stars    || 0,
+        recurring_pattern:  chore.repeat ? (chore.repeat.unit || null) : null,
+        recurring_days:     chore.repeat ? (chore.repeat.days || null) : null
+    };
+
+    await syncTask(taskPayload, operation);
+
+    // Write back the Supabase UUID to the local chore object (on add)
+    if (operation === 'add' && taskPayload.id !== chore.id) {
+        chore.id = taskPayload.id;
+    }
+}
+
+// ============================================
 // REAL-TIME LISTENERS
 // ============================================
 
@@ -642,7 +679,7 @@ async function loadTasksFromSupabase() {
                 id: t.id,
                 member: member ? member.name : 'Unknown',
                 title: t.title,
-                icon: '📋',
+                icon: t.description || '',   // icon stored in description column
                 completed: t.completed || false,
                 stars: t.points || 0,
                 dueDate: t.due_date,
@@ -823,6 +860,7 @@ function startPeriodicRefresh() {
 window.SupabaseSync = {
     initialize: initializeSupabaseSync,
     syncTask,
+    syncChore,
     syncRecipe,
     syncMealPlanEntry,
     syncList,
