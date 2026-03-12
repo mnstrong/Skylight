@@ -112,7 +112,7 @@
             // Convert to Supabase format
             const supabaseTask = {
                 title: chore.title,
-                description: null,
+                description: chore.icon || null,  // icon stored in description column
                 assigned_to: memberObj ? memberObj.id : null,
                 due_date: chore.dueDate,
                 due_time: chore.time,

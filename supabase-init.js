@@ -26,6 +26,8 @@
             if (typeof window.chores !== 'undefined') {
                 window.chores = JSON.parse(localStorage.getItem('chores') || '[]');
                 console.log('✅ Reloaded', window.chores.length, 'chores into window.chores');
+                // Tell script.js to resync its local chores variable and re-render
+                document.dispatchEvent(new CustomEvent('supabaseChoresLoaded'));
             }
             
             if (typeof window.tasks !== 'undefined') {
