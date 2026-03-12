@@ -3613,48 +3613,22 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function applyImageToEl(el, imgUrl, tintColor, duration) {
-        var HOUR_HEIGHT_PX = 120; // must match renderScheduleView HOUR_HEIGHT
         var longEvent = duration && duration > 90;
-
-        function applyBanner(url) {
-            if (el.querySelector('.sg-event-banner')) return;
-
-            // Card height in px based on duration
-            var cardPx = Math.max(duration, 90) / 60 * HOUR_HEIGHT_PX;
-
-            // Banner = 42% of card height, clamped 72px–160px
-            var BANNER_H = Math.round(Math.min(Math.max(cardPx * 0.42, 72), 160));
-
-            var banner = document.createElement('div');
-            banner.className = 'sg-event-banner';
-            banner.style.cssText =
-                'position:absolute;top:0;left:0;right:0;' +
-                'height:' + BANNER_H + 'px;' +
-                'background-image:url(' + url + ');' +
-                'background-size:cover;' +
-                'background-position:center top;' +
-                'border-radius:8px 8px 0 0;' +
-                'overflow:hidden;';
-
-            var wash = document.createElement('div');
-            wash.style.cssText =
-                'position:absolute;top:0;left:0;right:0;bottom:0;' +
-                'background:' + hexToRgba(tintColor || '#888888', 0.25) + ';';
-            banner.appendChild(wash);
-
-            el.insertBefore(banner, el.firstChild);
-            el.style.paddingTop = (BANNER_H + 5) + 'px';
-        }
+        var bgSize    = longEvent ? 'auto, 191%'              : 'auto, cover';
+        var bgPos     = longEvent ? 'bottom right, bottom right' : 'bottom right';
+        var gradient  = longEvent
+            ? 'linear-gradient(to bottom right, TINT 50%, FADE 85%)'
+            : 'linear-gradient(to bottom right, TINT 30%, FADE 75%)';
 
         function applyBg(url) {
             var color    = tintColor || '#888888';
             var tintRgba = hexToRgba(color, 0.7);
             var tintFade = hexToRgba(color, 0.0);
-            var grad = 'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)';
+            var grad     = gradient.replace('TINT', tintRgba).replace('FADE', tintFade);
             el.style.borderLeft         = 'none';
             el.style.backgroundImage    = grad + ', url(' + url + ')';
-            el.style.backgroundSize     = 'auto, cover';
-            el.style.backgroundPosition = 'bottom right';
+            el.style.backgroundSize     = bgSize;
+            el.style.backgroundPosition = bgPos;
             el.style.backgroundRepeat   = 'no-repeat';
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                 t.style.color = '#fff';
@@ -3666,17 +3640,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return m ? FLAIR_BASE_OLD + m[1] + FLAIR_EXT_OLD : null;
         }
 
-        function apply(url) {
-            if (longEvent) { applyBanner(url); } else { applyBg(url); }
-        }
-
         var img = new Image();
-        img.onload = function() { apply(imgUrl); };
+        img.onload = function() { applyBg(imgUrl); };
         img.onerror = function() {
             var v1 = fallbackUrl(imgUrl);
             if (!v1) return;
             var img2 = new Image();
-            img2.onload = function() { apply(v1); };
+            img2.onload = function() { applyBg(v1); };
             img2.onerror = function() {};
             img2.src = v1;
         };
@@ -5416,16 +5386,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function initializeEditRewardEmojiPicker() {
         const grid = document.getElementById('editRewardEmojiPickerGrid');
         if (grid.innerHTML) return; // Already initialized
-        
-        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
-        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
-        
-        // Parse emojis with Twemoji after populating
+
+        const emojiData = window.emojiData || [];
+        grid.innerHTML = emojiData.map(item =>
+            `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEditRewardEmoji('${item.emoji}')">${item.emoji}</div>`
+        ).join('');
+
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, {
-                folder: 'svg',
-                ext: '.svg'
-            });
+            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
         }
     }
     
@@ -7175,16 +7143,16 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function initializeEditEmojiPicker() {
         const grid = document.getElementById('editEmojiPickerGrid');
         if (grid.innerHTML) return; // Already initialized
-        
-        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
-        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditEmoji');
-        
-        // Parse emojis with Twemoji after populating
+
+        // Use raw emojiData array (not innerHTML which has already been Twemoji-parsed,
+        // which would embed <img> tags into the onclick attribute values)
+        const emojiData = window.emojiData || [];
+        grid.innerHTML = emojiData.map(item =>
+            `<div class="emoji-picker-item" data-keywords="${item.keywords}" onclick="selectEditEmoji('${item.emoji}')">${item.emoji}</div>`
+        ).join('');
+
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, {
-                folder: 'svg',
-                ext: '.svg'
-            });
+            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
         }
     }
     
