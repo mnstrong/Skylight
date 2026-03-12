@@ -92,7 +92,7 @@ async function loadAllDataFromSupabase() {
                     id: t.id,
                     member: member ? member.name : 'Unknown',
                     title: t.title,
-                    icon: t.description || '',  // icon stored in description column
+                    icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
                     completed: t.completed || false,
                     stars: t.points || 0,
                     dueDate: t.due_date,
@@ -642,7 +642,7 @@ async function loadTasksFromSupabase() {
                 id: t.id,
                 member: member ? member.name : 'Unknown',
                 title: t.title,
-                icon: t.description || '',  // icon stored in description column
+                icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
                 completed: t.completed || false,
                 stars: t.points || 0,
                 dueDate: t.due_date,
