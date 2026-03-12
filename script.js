@@ -4928,7 +4928,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function renderChoresView() {
-        // Supabase may have replaced window.chores with a new array — resync local var
         if (window.chores !== chores) { chores = window.chores; }
         if (window.routines !== routines) { routines = window.routines; }
         const container = document.getElementById('choresContainer');
@@ -5387,14 +5386,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function initializeEditRewardEmojiPicker() {
-        const grid = document.getElementById('editRewardEmojiPickerGrid');
-        if (grid.innerHTML) return; // Already initialized
-
+        var grid = document.getElementById('editRewardEmojiPickerGrid');
+        if (grid.innerHTML) return;
         var emojiData = window.emojiData || [];
-        grid.innerHTML = emojiData.map(function(item) {
-            return '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditRewardEmoji('' + item.emoji + '')">' + item.emoji + '</div>';
-        }).join('');
-
+        var html = '';
+        for (var i = 0; i < emojiData.length; i++) {
+            var item = emojiData[i];
+            html += '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditRewardEmoji(\'' + item.emoji + '\')">'+item.emoji+'</div>';
+        }
+        grid.innerHTML = html;
         if (typeof twemoji !== 'undefined') {
             twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
         }
@@ -6928,10 +6928,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (event) event.stopPropagation();
         if (window.chores !== chores) { chores = window.chores; }
         if (window.routines !== routines) { routines = window.routines; }
-
         currentEditTaskId = taskId;
         currentEditTaskType = taskType;
-
         var _tid = Number(taskId);
         var task = taskType === 'chore'
             ? chores.find(function(c){ return c.id === _tid || String(c.id) === String(taskId); })
@@ -7149,14 +7147,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function initializeEditEmojiPicker() {
-        const grid = document.getElementById('editEmojiPickerGrid');
-        if (grid.innerHTML) return; // Already initialized
-
+        var grid = document.getElementById('editEmojiPickerGrid');
+        if (grid.innerHTML) return;
         var emojiData = window.emojiData || [];
-        grid.innerHTML = emojiData.map(function(item) {
-            return '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditEmoji('' + item.emoji + '')">' + item.emoji + '</div>';
-        }).join('');
-
+        var html = '';
+        for (var i = 0; i < emojiData.length; i++) {
+            var item = emojiData[i];
+            html += '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditEmoji(\'' + item.emoji + '\')">'+item.emoji+'</div>';
+        }
+        grid.innerHTML = html;
         if (typeof twemoji !== 'undefined') {
             twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
         }
@@ -7242,9 +7241,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     window.toggleChore = function toggleChore(choreId) {
-        // Resync in case Supabase replaced window.chores after initial render
         if (window.chores !== chores) { chores = window.chores; }
-        // IDs may be floats (Date.now()+random), integers, or UUID strings from Supabase
         var numericId = Number(choreId);
         var chore = chores.find(function(c) {
             return c.id === numericId || String(c.id) === String(choreId);
@@ -8369,14 +8366,12 @@ if (allChoresComplete || allRoutinesComplete) {
 
     init();
 
-    // When Supabase finishes loading chores, resync local variable and re-render
     document.addEventListener('supabaseChoresLoaded', function() {
         if (window.chores) { chores = window.chores; }
         if (window.routines) { routines = window.routines; }
         if (currentSection === 'chores' && typeof renderChoresView === 'function') {
             renderChoresView();
         }
-        console.log('chores variable resynced:', chores.length, 'chores');
     });
 
     // Convert all emojis to images using Twemoji
