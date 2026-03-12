@@ -3502,7 +3502,6 @@
 
         .sg-event:hover { filter: brightness(0.93); }
 
-        /* Banner image strip at top of long events (90min+), sized via JS */
         .sg-event-banner { pointer-events: none; }
 
         .sg-event-title {
