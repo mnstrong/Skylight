@@ -1168,7 +1168,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ingredientLines.forEach(ingredient => {
             if (ingredient.trim()) {
                 groceryList.items.push({
-                    id: Date.now() + Math.random(),
+                    id: Date.now() + Math.floor(Math.random() * 1000),
                     text: ingredient.trim(),
                     completed: false,
                     section: 'Items'
@@ -6859,10 +6859,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
                 
                 chores.push(choreData);
-                // Sync new chore to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(choreData, 'add');
-                }
             }
         });
         
@@ -6933,7 +6929,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         currentEditTaskId = taskId;
         currentEditTaskType = taskType;
         
-        const task = taskType === 'chore' ? chores.find(c => c.id === taskId) : routines.find(r => r.id === taskId);
+        var _numId = Number(taskId);
+        var task = taskType === 'chore' ? chores.find(function(c){ return c.id === _numId || String(c.id) === String(taskId); }) : routines.find(function(r){ return r.id === _numId || String(r.id) === String(taskId); });
         if (!task) return;
         
         // Populate detail modal
@@ -7028,19 +7025,18 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (currentEditTaskType === 'chore') {
             const index = chores.findIndex(c => c.id === currentEditTaskId);
             if (index > -1) {
-                const deletedChore = chores[index];
                 if (option === 'all' || !chores[index].repeat) {
+                    // Delete the entire task
                     chores.splice(index, 1);
                 } else if (option === 'current') {
+                    // For now, just mark this instance as deleted
+                    // TODO: Implement proper instance tracking
                     chores.splice(index, 1);
                 } else if (option === 'future') {
+                    // Delete the task (future instances won't be generated)
                     chores.splice(index, 1);
                 }
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-                // Sync deletion to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(deletedChore, 'delete');
-                }
             }
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
@@ -7215,10 +7211,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-                // Sync edit to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(chore, 'update');
-                }
             }
         } else {
             const routine = routines.find(r => r.id === currentEditTaskId);
@@ -7245,12 +7237,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     window.toggleChore = function toggleChore(choreId) {
-        console.log('toggleChore called with ID:', choreId);
-        console.log('toggleChore function type:', typeof toggleChore);
-        // Convert to number since IDs are timestamps
-        const numericId = typeof choreId === 'string' ? parseInt(choreId) : choreId;
-        const chore = chores.find(c => c.id === numericId);
-        console.log('Found chore:', chore);
+        // IDs may be floats (Date.now()+random), integers, or UUID strings (Supabase).
+        // Use Number() to preserve floats; fall back to string comparison for UUIDs.
+        var numericId = Number(choreId);
+        var chore = chores.find(function(c) {
+            return c.id === numericId || String(c.id) === String(choreId);
+        });
         if (chore) {
             const wasCompleted = chore.completed;
             chore.completed = !chore.completed;
@@ -7260,10 +7252,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 delete chore.completedDate;
             }
             localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-            // Sync completion state to Supabase
-            if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                window.SupabaseSync.syncChore(chore, 'update');
-            }
             
             // Check if member completed all their chores
             if (!wasCompleted && chore.completed) {
