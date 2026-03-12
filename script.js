@@ -3581,38 +3581,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         return m;
     })();
 
-    // ── Custom hosted graphics (checked before built-in flair) ──────────────
-    var CUSTOM_IMG_BASE = 'graphics/';
-    var CUSTOM_IMG_MAP = (function() {
-        var m = {};
-        function add(file, keywords) {
-            keywords.forEach(function(k) { m[k.toLowerCase()] = file; });
-        }
-        add('pizza.jpg',  ['pizza']);
-        add('funk.jpg',   ['funk']);
-        add('spring.jpg', ['spring break']);
-        add('dnd.jpg', ['dnd', 'd&d', 'dungeons and dragons', 'dungeons & dragons']);
-        add('homework.jpg', ['homework', 'math', 'ela']);
-        return m;
-    })();
-
     function getFlairUrl(title, notes) {
         if (notes) {
             var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
             if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
         }
-        // Check custom hosted images first (longer keywords sorted first for specificity)
-        var customKeys = Object.keys(CUSTOM_IMG_MAP).sort(function(a,b){ return b.length - a.length; });
-        var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
-        for (var si = 0; si < sources.length; si++) {
-            for (var i = 0; i < customKeys.length; i++) {
-                if (sources[si].indexOf(customKeys[i]) !== -1) {
-                    return CUSTOM_IMG_BASE + CUSTOM_IMG_MAP[customKeys[i]];
-                }
-            }
-        }
-        // Fall back to built-in Google Calendar flair
         var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
+        var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
         for (var si = 0; si < sources.length; si++) {
             for (var i = 0; i < keys.length; i++) {
                 if (sources[si].indexOf(keys[i]) !== -1) {
@@ -3639,21 +3614,50 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
     function applyImageToEl(el, imgUrl, tintColor, duration) {
         var longEvent = duration && duration > 90;
-        var bgSize    = longEvent ? 'auto, 191%'              : 'auto, cover';
-        var bgPos     = longEvent ? 'bottom right, bottom right' : 'bottom right';
-        var gradient  = longEvent
-            ? 'linear-gradient(to bottom right, TINT 50%, FADE 85%)'
-            : 'linear-gradient(to bottom right, TINT 30%, FADE 75%)';
+
+        function applyBanner(url) {
+            // Top-banner style for long events (90min+):
+            // A fixed-height image strip across the top, text sits below it normally.
+            var BANNER_H = 72; // px — fits comfortably in a 180px+ tall event block
+
+            // Insert banner div as first child (only once)
+            if (!el.querySelector('.sg-event-banner')) {
+                var banner = document.createElement('div');
+                banner.className = 'sg-event-banner';
+                banner.style.cssText =
+                    'position:absolute;top:0;left:0;right:0;' +
+                    'height:' + BANNER_H + 'px;' +
+                    'background-image:url(' + url + ');' +
+                    'background-size:cover;' +
+                    'background-position:center top;' +
+                    'border-radius:8px 8px 0 0;' +
+                    'overflow:hidden;';
+
+                // Tinted colour wash over the banner image so it harmonises with the event colour
+                var color    = tintColor || '#888888';
+                var tintRgba = hexToRgba(color, 0.28);
+                var wash = document.createElement('div');
+                wash.style.cssText =
+                    'position:absolute;inset:0;' +
+                    'background:' + tintRgba + ';';
+                banner.appendChild(wash);
+
+                el.insertBefore(banner, el.firstChild);
+                // Push text content down below the banner
+                el.style.paddingTop = (BANNER_H + 5) + 'px';
+            }
+        }
 
         function applyBg(url) {
+            // Short-event style: background image fading in from bottom-right
             var color    = tintColor || '#888888';
             var tintRgba = hexToRgba(color, 0.7);
             var tintFade = hexToRgba(color, 0.0);
-            var grad     = gradient.replace('TINT', tintRgba).replace('FADE', tintFade);
+            var grad = 'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)';
             el.style.borderLeft         = 'none';
             el.style.backgroundImage    = grad + ', url(' + url + ')';
-            el.style.backgroundSize     = bgSize;
-            el.style.backgroundPosition = bgPos;
+            el.style.backgroundSize     = 'auto, cover';
+            el.style.backgroundPosition = 'bottom right';
             el.style.backgroundRepeat   = 'no-repeat';
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
                 t.style.color = '#fff';
@@ -3665,13 +3669,21 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return m ? FLAIR_BASE_OLD + m[1] + FLAIR_EXT_OLD : null;
         }
 
+        function apply(url) {
+            if (longEvent) {
+                applyBanner(url);
+            } else {
+                applyBg(url);
+            }
+        }
+
         var img = new Image();
-        img.onload = function() { applyBg(imgUrl); };
+        img.onload = function() { apply(imgUrl); };
         img.onerror = function() {
             var v1 = fallbackUrl(imgUrl);
             if (!v1) return;
             var img2 = new Image();
-            img2.onload = function() { applyBg(v1); };
+            img2.onload = function() { apply(v1); };
             img2.onerror = function() {};
             img2.src = v1;
         };
