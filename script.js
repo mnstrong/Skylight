@@ -3615,41 +3615,46 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function applyImageToEl(el, imgUrl, tintColor, duration) {
         var longEvent = duration && duration > 90;
 
+        function bannerHeight() {
+            // Scale from 72px at 90 min up to 132px at 480 min (8 hrs), capped at 132px.
+            // That's +60px over the range, proportional to event length.
+            var MIN_DUR = 90;   // minutes — banner threshold
+            var MAX_DUR = 480;  // minutes — cap (8 hours)
+            var MIN_H   = 72;   // px at MIN_DUR
+            var MAX_H   = 132;  // px at MAX_DUR (72 + 60)
+            var clamped = Math.min(Math.max(duration, MIN_DUR), MAX_DUR);
+            var t = (clamped - MIN_DUR) / (MAX_DUR - MIN_DUR); // 0..1
+            return Math.round(MIN_H + t * (MAX_H - MIN_H));
+        }
+
         function applyBanner(url) {
-            // Top-banner style for long events (90min+):
-            // A fixed-height image strip across the top, text sits below it normally.
-            var BANNER_H = 72; // px — fits comfortably in a 180px+ tall event block
+            if (el.querySelector('.sg-event-banner')) return; // already applied
+            var BANNER_H = bannerHeight();
 
-            // Insert banner div as first child (only once)
-            if (!el.querySelector('.sg-event-banner')) {
-                var banner = document.createElement('div');
-                banner.className = 'sg-event-banner';
-                banner.style.cssText =
-                    'position:absolute;top:0;left:0;right:0;' +
-                    'height:' + BANNER_H + 'px;' +
-                    'background-image:url(' + url + ');' +
-                    'background-size:cover;' +
-                    'background-position:center top;' +
-                    'border-radius:8px 8px 0 0;' +
-                    'overflow:hidden;';
+            var banner = document.createElement('div');
+            banner.className = 'sg-event-banner';
+            banner.style.cssText =
+                'position:absolute;top:0;left:0;right:0;' +
+                'height:' + BANNER_H + 'px;' +
+                'background-image:url(' + url + ');' +
+                'background-size:cover;' +
+                'background-position:center top;' +
+                'border-radius:8px 8px 0 0;' +
+                'overflow:hidden;';
 
-                // Tinted colour wash over the banner image so it harmonises with the event colour
-                var color    = tintColor || '#888888';
-                var tintRgba = hexToRgba(color, 0.28);
-                var wash = document.createElement('div');
-                wash.style.cssText =
-                    'position:absolute;inset:0;' +
-                    'background:' + tintRgba + ';';
-                banner.appendChild(wash);
+            // Subtle colour wash so banner harmonises with the event colour
+            var wash = document.createElement('div');
+            wash.style.cssText =
+                'position:absolute;top:0;left:0;right:0;bottom:0;' +
+                'background:' + hexToRgba(tintColor || '#888888', 0.25) + ';';
+            banner.appendChild(wash);
 
-                el.insertBefore(banner, el.firstChild);
-                // Push text content down below the banner
-                el.style.paddingTop = (BANNER_H + 5) + 'px';
-            }
+            el.insertBefore(banner, el.firstChild);
+            el.style.paddingTop = (BANNER_H + 5) + 'px';
         }
 
         function applyBg(url) {
-            // Short-event style: background image fading in from bottom-right
+            // Short events: background image fading in from bottom-right
             var color    = tintColor || '#888888';
             var tintRgba = hexToRgba(color, 0.7);
             var tintFade = hexToRgba(color, 0.0);
@@ -3670,11 +3675,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         }
 
         function apply(url) {
-            if (longEvent) {
-                applyBanner(url);
-            } else {
-                applyBg(url);
-            }
+            if (longEvent) { applyBanner(url); } else { applyBg(url); }
         }
 
         var img = new Image();
