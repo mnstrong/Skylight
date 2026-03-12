@@ -3502,17 +3502,8 @@
 
         .sg-event:hover { filter: brightness(0.93); }
 
-        /* Banner image strip injected at top of long events (90min+) */
-        .sg-event-banner {
-            /* sized + positioned entirely via JS so it matches BANNER_H exactly */
-            pointer-events: none;
-        }
-
-        /* When a banner is present, keep text readable against the plain card colour below */
-        .sg-event.has-banner .sg-event-title,
-        .sg-event.has-banner .sg-event-time {
-            position: relative; /* stack above banner if card is short */
-        }
+        /* Banner image strip at top of long events (90min+), sized via JS */
+        .sg-event-banner { pointer-events: none; }
 
         .sg-event-title {
             font-size: 18px;
