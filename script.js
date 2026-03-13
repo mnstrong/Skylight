@@ -3620,7 +3620,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Formula: banner = 35.93 * ln(duration) - 87.42, capped at 132px.
         var bannerPx;
         if (longEvent) {
-            bannerPx = Math.min(Math.round(35.93 * Math.log(Math.max(duration, 90)) - 87.42), 132);
+            bannerPx = Math.min(Math.round(35.93 * Math.log(Math.max(duration, 90)) - 87.42), 132) + 80;
         }
 
         function applyBg(url) {
