@@ -3615,33 +3615,31 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function applyImageToEl(el, imgUrl, tintColor, duration) {
         var longEvent = duration && duration > 90;
 
-        // For long events (>90 min): image at top, no gradient.
-        // Image height scales: 90px at ~91 min, 200px at 240 min (4 hrs)+
-        // For short events (<=90 min): gradient with image bottom-right, smaller size.
-        var imgHeightPx;
+        // Banner height for long events: log curve fit to design spec.
+        // Points: 90min→72px, 2hr→86px, 3hr→99px, 4hr→112px, 6hr→125px, 8hr+→132px (cap)
+        // Formula: banner = 35.93 * ln(duration) - 87.42, capped at 132px.
+        var bannerPx;
         if (longEvent) {
-            var clamped = Math.min(Math.max(duration, 91), 240);
-            imgHeightPx = Math.round(90 + (clamped - 91) * (110 / 149));
+            bannerPx = Math.min(Math.round(35.93 * Math.log(Math.max(duration, 90)) - 87.42), 132);
         }
 
         function applyBg(url) {
-            var color    = tintColor || '#888888';
+            var color = tintColor || '#888888';
             el.style.borderLeft = 'none';
 
             if (longEvent) {
-                // Solid color block at top, image pinned to top-right corner at fixed height
+                // Image spans full width at top as a banner, no gradient.
+                // Solid tint fills the card below the banner.
                 var solidRgba = hexToRgba(color, 0.85);
-                // Image sits at top; below image is a solid tint band for text
                 el.style.backgroundImage    = 'url(' + url + ')';
-                el.style.backgroundSize     = imgHeightPx + 'px ' + imgHeightPx + 'px';
-                el.style.backgroundPosition = 'top right';
+                el.style.backgroundSize     = '100% ' + bannerPx + 'px';
+                el.style.backgroundPosition = 'top center';
                 el.style.backgroundRepeat   = 'no-repeat';
                 el.style.backgroundColor    = solidRgba;
-                // Push text content below the image via padding
-                el.style.paddingTop = imgHeightPx + 'px';
-                el.style.boxSizing  = 'border-box';
+                el.style.paddingTop         = bannerPx + 'px';
+                el.style.boxSizing          = 'border-box';
             } else {
-                // Short events: gradient + image at bottom-right, no top image band
+                // Short events (<=90 min): gradient + image at bottom-right.
                 var tintRgba = hexToRgba(color, 0.7);
                 var tintFade = hexToRgba(color, 0.0);
                 var grad = 'linear-gradient(to bottom right, ' + tintRgba + ' 30%, ' + tintFade + ' 75%)';
@@ -3651,6 +3649,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundRepeat   = 'no-repeat';
                 el.style.backgroundColor    = '';
                 el.style.paddingTop         = '';
+                el.style.boxSizing          = '';
             }
 
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
