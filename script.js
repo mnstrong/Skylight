@@ -3636,8 +3636,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundPosition = 'top center';
                 el.style.backgroundRepeat   = 'no-repeat';
                 el.style.backgroundColor    = solidRgba;
-                el.style.paddingTop         = bannerPx + 'px';
                 el.style.boxSizing          = 'border-box';
+                // Zero out the element's own padding so image sits flush to the top edge,
+                // then use bannerPx as top padding so text sits below the banner.
+                el.style.setProperty('padding', '0 7px 4px', 'important');
+                el.style.setProperty('padding-top', bannerPx + 'px', 'important');
             } else {
                 // Short events (<=90 min): gradient + image at bottom-right.
                 var tintRgba = hexToRgba(color, 0.7);
@@ -3650,6 +3653,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundColor    = '';
                 el.style.paddingTop         = '';
                 el.style.boxSizing          = '';
+                el.style.removeProperty('padding');
+                el.style.removeProperty('padding-top');
             }
 
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
