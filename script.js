@@ -3635,6 +3635,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundSize     = '100% ' + bannerPx + 'px';
                 el.style.backgroundPosition = 'top center';
                 el.style.backgroundRepeat   = 'no-repeat';
+                el.style.backgroundOrigin   = 'border-box';
                 el.style.backgroundColor    = solidRgba;
                 el.style.boxSizing          = 'border-box';
                 // Zero out the element's own padding so image sits flush to the top edge,
@@ -3651,6 +3652,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundPosition = 'bottom right';
                 el.style.backgroundRepeat   = 'no-repeat';
                 el.style.backgroundColor    = '';
+                el.style.backgroundOrigin   = '';
                 el.style.paddingTop         = '';
                 el.style.boxSizing          = '';
                 el.style.removeProperty('padding');
