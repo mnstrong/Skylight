@@ -95,21 +95,19 @@
     async function syncChores(chores) {
         if (!Array.isArray(chores)) return;
         
+        const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        
+        // ── Add new chores ───────────────────────────────────────────────────
         for (const chore of chores) {
-            // Skip if we've already synced this chore
-            if (syncedChores.has(chore.id)) continue;
+            if (syncedChores.has(String(chore.id))) continue;
             
-            // Skip if this chore already has a Supabase UUID
+            // Already a Supabase UUID — track it but don't re-add
             if (typeof chore.id === 'string' && chore.id.includes('-')) {
                 syncedChores.add(chore.id);
                 continue;
             }
             
-            // Find the member
-            const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
             const memberObj = familyMembers.find(m => m.name === chore.member);
-            
-            // Convert to Supabase format
             const supabaseTask = {
                 title: chore.title,
                 description: chore.icon || null,  // icon stored in description column
@@ -121,7 +119,6 @@
                 category: 'chore'
             };
             
-            // Add repeat pattern if exists
             if (chore.repeat) {
                 supabaseTask.recurring_pattern = `every_${chore.repeat.every}_${chore.repeat.unit}`;
                 if (chore.repeat.days) {
@@ -132,10 +129,27 @@
             
             try {
                 await window.SupabaseSync.syncTask(supabaseTask, 'add');
-                syncedChores.add(chore.id);
+                syncedChores.add(String(chore.id));
                 console.log('✓ Synced chore:', chore.title);
             } catch (error) {
                 console.error('Error syncing chore:', error);
+            }
+        }
+        
+        // ── Delete removed chores ────────────────────────────────────────────
+        // Any UUID we've tracked that is no longer in the array has been deleted
+        const currentIds = new Set(chores.map(c => String(c.id)));
+        for (const trackedId of syncedChores) {
+            // Only attempt delete on Supabase UUIDs (contain '-')
+            if (!trackedId.includes('-')) continue;
+            if (!currentIds.has(trackedId)) {
+                try {
+                    await window.SupabaseAPI.deleteTask(trackedId);
+                    syncedChores.delete(trackedId);
+                    console.log('✓ Deleted chore from Supabase:', trackedId);
+                } catch (error) {
+                    console.error('Error deleting chore:', error);
+                }
             }
         }
     }
