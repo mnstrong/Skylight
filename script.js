@@ -1168,7 +1168,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ingredientLines.forEach(ingredient => {
             if (ingredient.trim()) {
                 groceryList.items.push({
-                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    id: Date.now() + Math.random(),
                     text: ingredient.trim(),
                     completed: false,
                     section: 'Items'
@@ -4928,8 +4928,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function renderChoresView() {
-        if (window.chores !== chores) { chores = window.chores; }
-        if (window.routines !== routines) { routines = window.routines; }
         const container = document.getElementById('choresContainer');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -5386,17 +5384,18 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function initializeEditRewardEmojiPicker() {
-        var grid = document.getElementById('editRewardEmojiPickerGrid');
-        if (grid.innerHTML) return;
-        var emojiData = window.emojiData || [];
-        var html = '';
-        for (var i = 0; i < emojiData.length; i++) {
-            var item = emojiData[i];
-            html += '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditRewardEmoji(\'' + item.emoji + '\')">'+item.emoji+'</div>';
-        }
-        grid.innerHTML = html;
+        const grid = document.getElementById('editRewardEmojiPickerGrid');
+        if (grid.innerHTML) return; // Already initialized
+        
+        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
+        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
+        
+        // Parse emojis with Twemoji after populating
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+            twemoji.parse(grid, {
+                folder: 'svg',
+                ext: '.svg'
+            });
         }
     }
     
@@ -6444,6 +6443,56 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             { emoji: '🏅', keywords: 'sports medal achievement' },
             { emoji: '🎗️', keywords: 'reminder ribbon' },
             { emoji: '🎫', keywords: 'ticket admission' },
+            // Chores & Home
+            { emoji: '🧹', keywords: 'broom sweep clean chore floor' },
+            { emoji: '🧺', keywords: 'basket laundry clean chore clothes' },
+            { emoji: '🧻', keywords: 'toilet paper roll bathroom tissue' },
+            { emoji: '🪣', keywords: 'bucket water clean mop chore' },
+            { emoji: '🧼', keywords: 'soap clean wash bathroom hands' },
+            { emoji: '🧽', keywords: 'sponge clean wash dish chore scrub' },
+            { emoji: '🫧', keywords: 'bubbles clean soap wash' },
+            { emoji: '🪥', keywords: 'toothbrush teeth brush clean hygiene' },
+            { emoji: '🚿', keywords: 'shower bathroom clean water wash' },
+            { emoji: '🛁', keywords: 'bath bathtub bathroom clean tub' },
+            { emoji: '🪠', keywords: 'plunger toilet unclog bathroom' },
+            { emoji: '🚽', keywords: 'toilet bathroom clean scrub' },
+            { emoji: '🗑️', keywords: 'trash bin garbage waste rubbish' },
+            { emoji: '♻️', keywords: 'recycle recycling green' },
+            { emoji: '🧴', keywords: 'lotion bottle soap clean spray' },
+            { emoji: '🛏️', keywords: 'bed make bedroom tidy sleep' },
+            { emoji: '🪞', keywords: 'mirror clean wipe bathroom' },
+            { emoji: '🪟', keywords: 'window clean glass wipe' },
+            { emoji: '🍽️', keywords: 'plate dishes clean wash' },
+            { emoji: '🥄', keywords: 'spoon cutlery dishes wash' },
+            { emoji: '🍴', keywords: 'fork knife cutlery dishes' },
+            { emoji: '🫙', keywords: 'jar food storage pantry organize' },
+            { emoji: '🛒', keywords: 'shopping cart groceries errand' },
+            { emoji: '🛍️', keywords: 'shopping bag errand store' },
+            { emoji: '📦', keywords: 'box package organize unpack' },
+            { emoji: '🗂️', keywords: 'file folder organize sort' },
+            { emoji: '🌱', keywords: 'seedling plant water garden' },
+            { emoji: '🪴', keywords: 'potted plant water indoor garden' },
+            { emoji: '🌿', keywords: 'herb plant garden water' },
+            { emoji: '🌻', keywords: 'sunflower garden plant' },
+            { emoji: '🌾', keywords: 'grass mow lawn garden' },
+            { emoji: '🍂', keywords: 'leaves rake fall garden cleanup' },
+            { emoji: '❄️', keywords: 'snow shovel winter outside' },
+            { emoji: '🐾', keywords: 'paw prints pet care feed walk' },
+            { emoji: '🐕', keywords: 'dog walk pet care feed' },
+            { emoji: '🐈', keywords: 'cat pet care feed litter' },
+            { emoji: '🐟', keywords: 'fish pet feed tank clean' },
+            { emoji: '🐇', keywords: 'rabbit bunny pet care' },
+            { emoji: '🚗', keywords: 'car wash errand drive' },
+            { emoji: '🎒', keywords: 'backpack school pack unpack' },
+            { emoji: '👕', keywords: 'shirt fold laundry clothes' },
+            { emoji: '🧦', keywords: 'socks laundry fold match' },
+            { emoji: '👟', keywords: 'shoes put away tidy' },
+            { emoji: '📚', keywords: 'books homework study read' },
+            { emoji: '✏️', keywords: 'pencil homework study school' },
+            { emoji: '💊', keywords: 'pill medicine take health' },
+            { emoji: '💤', keywords: 'sleep bedtime routine night' },
+            { emoji: '☀️', keywords: 'sun morning routine wake up' },
+            { emoji: '🌙', keywords: 'moon night routine bedtime' },
         ];
         
         // Store globally for use by other emoji pickers
@@ -6926,14 +6975,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     function openTaskDetail(taskId, taskType, event) {
         if (event) event.stopPropagation();
-        if (window.chores !== chores) { chores = window.chores; }
-        if (window.routines !== routines) { routines = window.routines; }
+        
         currentEditTaskId = taskId;
         currentEditTaskType = taskType;
-        var _tid = Number(taskId);
-        var task = taskType === 'chore'
-            ? chores.find(function(c){ return c.id === _tid || String(c.id) === String(taskId); })
-            : routines.find(function(r){ return r.id === _tid || String(r.id) === String(taskId); });
+        
+        const task = taskType === 'chore' ? chores.find(c => c.id === taskId) : routines.find(r => r.id === taskId);
         if (!task) return;
         
         // Populate detail modal
@@ -7147,17 +7193,18 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function initializeEditEmojiPicker() {
-        var grid = document.getElementById('editEmojiPickerGrid');
-        if (grid.innerHTML) return;
-        var emojiData = window.emojiData || [];
-        var html = '';
-        for (var i = 0; i < emojiData.length; i++) {
-            var item = emojiData[i];
-            html += '<div class="emoji-picker-item" data-keywords="' + item.keywords + '" onclick="selectEditEmoji(\'' + item.emoji + '\')">'+item.emoji+'</div>';
-        }
-        grid.innerHTML = html;
+        const grid = document.getElementById('editEmojiPickerGrid');
+        if (grid.innerHTML) return; // Already initialized
+        
+        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
+        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditEmoji');
+        
+        // Parse emojis with Twemoji after populating
         if (typeof twemoji !== 'undefined') {
-            twemoji.parse(grid, { folder: 'svg', ext: '.svg' });
+            twemoji.parse(grid, {
+                folder: 'svg',
+                ext: '.svg'
+            });
         }
     }
     
@@ -7187,8 +7234,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function saveEditedTask() {
-        if (window.chores !== chores) { chores = window.chores; }
-        if (window.routines !== routines) { routines = window.routines; }
         const title = document.getElementById('editTaskTitle').value;
         const emoji = document.getElementById('editTaskEmoji').value;
         const date = document.getElementById('editTaskDate').value;
@@ -7241,11 +7286,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     window.toggleChore = function toggleChore(choreId) {
-        if (window.chores !== chores) { chores = window.chores; }
-        var numericId = Number(choreId);
-        var chore = chores.find(function(c) {
-            return c.id === numericId || String(c.id) === String(choreId);
-        });
+        console.log('toggleChore called with ID:', choreId);
+        console.log('toggleChore function type:', typeof toggleChore);
+        // Convert to number since IDs are timestamps
+        const numericId = typeof choreId === 'string' ? parseInt(choreId) : choreId;
+        const chore = chores.find(c => c.id === numericId);
+        console.log('Found chore:', chore);
         if (chore) {
             const wasCompleted = chore.completed;
             chore.completed = !chore.completed;
@@ -8365,15 +8411,7 @@ if (allChoresComplete || allRoutinesComplete) {
     setInterval(updateCurrentTimeIndicator, 60000);
 
     init();
-
-    document.addEventListener('supabaseChoresLoaded', function() {
-        if (window.chores) { chores = window.chores; }
-        if (window.routines) { routines = window.routines; }
-        if (currentSection === 'chores' && typeof renderChoresView === 'function') {
-            renderChoresView();
-        }
-    });
-
+    
     // Convert all emojis to images using Twemoji
     if (typeof twemoji !== 'undefined') {
         // Parse the entire page on load
