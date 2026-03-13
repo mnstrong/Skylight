@@ -503,7 +503,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         // Create the meal
         const newMeal = {
-            id: Date.now() + Math.random(),
+            id: Date.now() + Math.floor(Math.random() * 1000),
             date: currentMealDate,
             mealType: currentMealType,
             recipeId: recipeId
@@ -1168,7 +1168,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ingredientLines.forEach(ingredient => {
             if (ingredient.trim()) {
                 groceryList.items.push({
-                    id: Date.now() + Math.random(),
+                    id: Date.now() + Math.floor(Math.random() * 1000),
                     text: ingredient.trim(),
                     completed: false,
                     section: 'Items'
@@ -6861,7 +6861,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 else if (selectedTimeOfDay === 'evening') period = 'Evening';
                 
                 const newRoutine = {
-                    id: Date.now() + Math.random(),
+                    id: Date.now() + Math.floor(Math.random() * 1000),
                     member: profileName,
                     period: period,
                     title: title,
@@ -6879,7 +6879,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 const hasRepeat = document.getElementById('taskChoreRepeatToggle').checked;
                 
                 const choreData = {
-                    id: Date.now() + Math.random(),
+                    id: Date.now() + Math.floor(Math.random() * 1000),
                     member: profileName,
                     title: title,
                     icon: emoji,
@@ -6975,11 +6975,16 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     function openTaskDetail(taskId, taskType, event) {
         if (event) event.stopPropagation();
+        if (window.chores !== chores) { chores = window.chores; }
+        if (window.routines !== routines) { routines = window.routines; }
         
         currentEditTaskId = taskId;
         currentEditTaskType = taskType;
         
-        const task = taskType === 'chore' ? chores.find(c => c.id === taskId) : routines.find(r => r.id === taskId);
+        const numericId = Number(taskId);
+        const task = taskType === 'chore'
+            ? chores.find(function(c) { return String(c.id) === String(taskId) || c.id === numericId; })
+            : routines.find(function(r) { return String(r.id) === String(taskId) || r.id === numericId; });
         if (!task) return;
         
         // Populate detail modal
@@ -7234,6 +7239,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
     
     function saveEditedTask() {
+        if (window.chores !== chores) { chores = window.chores; }
+        if (window.routines !== routines) { routines = window.routines; }
         const title = document.getElementById('editTaskTitle').value;
         const emoji = document.getElementById('editTaskEmoji').value;
         const date = document.getElementById('editTaskDate').value;
@@ -7251,7 +7258,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         }
         
         if (currentEditTaskType === 'chore') {
-            const chore = chores.find(c => c.id === currentEditTaskId);
+            const numericEditId = Number(currentEditTaskId);
+            const chore = chores.find(function(c) { return String(c.id) === String(currentEditTaskId) || c.id === numericEditId; });
             if (chore) {
                 chore.title = title;
                 chore.icon = emoji;
@@ -7287,10 +7295,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     window.toggleChore = function toggleChore(choreId) {
         console.log('toggleChore called with ID:', choreId);
-        console.log('toggleChore function type:', typeof toggleChore);
-        // Convert to number since IDs are timestamps
-        const numericId = typeof choreId === 'string' ? parseInt(choreId) : choreId;
-        const chore = chores.find(c => c.id === numericId);
+        if (window.chores !== chores) { chores = window.chores; }
+        const numericId = Number(choreId);
+        const chore = chores.find(function(c) { return String(c.id) === String(choreId) || c.id === numericId; });
         console.log('Found chore:', chore);
         if (chore) {
             const wasCompleted = chore.completed;
@@ -8411,6 +8418,15 @@ if (allChoresComplete || allRoutinesComplete) {
     setInterval(updateCurrentTimeIndicator, 60000);
 
     init();
+
+    document.addEventListener('supabaseChoresLoaded', function() {
+        if (window.chores) { chores = window.chores; }
+        if (window.routines) { routines = window.routines; }
+        const section = document.querySelector('.section.active');
+        if (section && section.id === 'chores') {
+            renderChoresView();
+        }
+    });
     
     // Convert all emojis to images using Twemoji
     if (typeof twemoji !== 'undefined') {

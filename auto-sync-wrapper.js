@@ -97,7 +97,7 @@
         
         const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
         
-        // ── Add new chores ───────────────────────────────────────────────────
+        // ── Add new chores ──────────────────────────────────────────────────
         for (const chore of chores) {
             if (syncedChores.has(String(chore.id))) continue;
             
@@ -110,7 +110,7 @@
             const memberObj = familyMembers.find(m => m.name === chore.member);
             const supabaseTask = {
                 title: chore.title,
-                description: chore.icon || null,  // icon stored in description column
+                description: chore.icon || null,
                 assigned_to: memberObj ? memberObj.id : null,
                 due_date: chore.dueDate,
                 due_time: chore.time,
@@ -136,11 +136,9 @@
             }
         }
         
-        // ── Delete removed chores ────────────────────────────────────────────
-        // Any UUID we've tracked that is no longer in the array has been deleted
-        const currentIds = new Set(chores.map(c => String(c.id)));
+        // ── Delete removed chores ───────────────────────────────────────────
+        const currentIds = new Set(chores.map(function(c) { return String(c.id); }));
         for (const trackedId of syncedChores) {
-            // Only attempt delete on Supabase UUIDs (contain '-')
             if (!trackedId.includes('-')) continue;
             if (!currentIds.has(trackedId)) {
                 try {
