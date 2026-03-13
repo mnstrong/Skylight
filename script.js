@@ -3628,20 +3628,42 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             el.style.borderLeft = 'none';
 
             if (longEvent) {
-                // Image spans full width at top as a banner, no gradient.
-                // Solid tint fills the card below the banner.
+                // Inject an absolutely-positioned <img> flush to the top of the card.
+                // This avoids all background-origin/padding fighting.
                 var solidRgba = hexToRgba(color, 0.85);
-                el.style.backgroundImage    = 'url(' + url + ')';
-                el.style.backgroundSize     = '100% ' + bannerPx + 'px';
-                el.style.backgroundPosition = 'top center';
-                el.style.backgroundRepeat   = 'no-repeat';
-                el.style.backgroundOrigin   = 'border-box';
-                el.style.backgroundColor    = solidRgba;
-                el.style.boxSizing          = 'border-box';
-                // Zero out the element's own padding so image sits flush to the top edge,
-                // then use bannerPx as top padding so text sits below the banner.
-                el.style.setProperty('padding', '0 7px 4px', 'important');
-                el.style.setProperty('padding-top', bannerPx + 'px', 'important');
+                el.style.backgroundColor = solidRgba;
+                el.style.position = 'relative';
+                el.style.overflow = 'hidden';
+
+                // Remove any previously injected banner img
+                var old = el.querySelector('.ev-banner-img');
+                if (old) old.parentNode.removeChild(old);
+
+                var imgEl = document.createElement('img');
+                imgEl.className = 'ev-banner-img';
+                imgEl.src = url;
+                imgEl.style.position   = 'absolute';
+                imgEl.style.top        = '0';
+                imgEl.style.left       = '0';
+                imgEl.style.width      = '100%';
+                imgEl.style.height     = bannerPx + 'px';
+                imgEl.style.objectFit  = 'cover';
+                imgEl.style.objectPosition = 'center center';
+                imgEl.style.display    = 'block';
+                imgEl.style.pointerEvents = 'none';
+                // Insert as first child so it's behind text
+                el.insertBefore(imgEl, el.firstChild);
+
+                // Push text content below the banner
+                el.style.paddingTop = bannerPx + 'px';
+                el.style.boxSizing  = 'border-box';
+
+                // Clear any background image
+                el.style.backgroundImage    = 'none';
+                el.style.backgroundSize     = '';
+                el.style.backgroundPosition = '';
+                el.style.backgroundRepeat   = '';
+                el.style.backgroundOrigin   = '';
             } else {
                 // Short events (<=90 min): gradient + image at bottom-right.
                 var tintRgba = hexToRgba(color, 0.7);
@@ -3655,8 +3677,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 el.style.backgroundOrigin   = '';
                 el.style.paddingTop         = '';
                 el.style.boxSizing          = '';
-                el.style.removeProperty('padding');
-                el.style.removeProperty('padding-top');
+
+                // Remove any injected banner img
+                var old = el.querySelector('.ev-banner-img');
+                if (old) old.parentNode.removeChild(old);
             }
 
             el.querySelectorAll('.sg-event-title, .sg-event-time, .sg-event-avatar, .day-view-event-title, .day-view-event-time, .day-view-event-member').forEach(function(t) {
