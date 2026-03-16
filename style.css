@@ -4040,6 +4040,56 @@
             border-radius: 20px;
             transition: width 0.3s ease;
         }
+
+        .chore-list-menu-btn {
+            background: rgba(0,0,0,0.08);
+            border: none;
+            border-radius: 12px;
+            color: #555;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 6px 14px 10px;
+            cursor: pointer;
+            align-self: flex-start;
+            margin-left: 8px;
+            flex-shrink: 0;
+            letter-spacing: 2px;
+        }
+        .chore-list-menu-btn:active {
+            background: rgba(0,0,0,0.18);
+        }
+
+        .chore-manage-card {
+            border-radius: 15px;
+            padding: 24px 20px;
+            min-width: 280px;
+            max-width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(0,0,0,0.04);
+            border: 2px dashed rgba(0,0,0,0.13);
+            align-self: flex-start;
+        }
+
+        .chore-manage-btn {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid rgba(0,0,0,0.12);
+            border-radius: 14px;
+            color: #444;
+            font-size: 22px;
+            font-weight: 500;
+            padding: 18px 20px;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+        }
+        .chore-manage-btn:active {
+            background: rgba(0,0,0,0.08);
+        }
+        
         
         .chore-categories {
             display: flex;
