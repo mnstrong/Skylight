@@ -136,6 +136,8 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
     let routines = JSON.parse(localStorage.getItem('routines')) || [];
     window.chores = chores;
     window.routines = routines;
+    var hiddenChoreMembers = JSON.parse(localStorage.getItem('hiddenChoreMembers')) || [];
+    var showUpForGrabs = JSON.parse(localStorage.getItem('showUpForGrabs')) || false;
 
 let visiblePeriods = {
 'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
@@ -5006,7 +5008,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Filter out Google Calendar members
         const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar);
         
-        choreMembers.forEach(member => {
+        choreMembers.forEach(function(member) {
+            // Skip hidden members
+            if (hiddenChoreMembers.indexOf(member.name) > -1) return;
+
             const memberChores = chores.filter(c => c.member === member.name);
             const memberRoutines = routines.filter(r => r.member === member.name);
             
@@ -5019,22 +5024,19 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             
             const columnBg = hexToRgba(member.color, 0.2);
             
-            html += `<div class="chore-person-card" style="background: ${columnBg};">
-                <div class="chore-person-header">
-                    <div class="chore-person-avatar" style="background: ${member.color}; cursor: pointer;" onclick="openProfileDashboard('${member.name}')" title="View ${member.name}'s dashboard">
-                        ${member.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="chore-person-info">
-                        <div class="chore-person-name">${member.name}</div>
-                        <div class="chore-person-stats">
-                            <span class="chore-person-progress-text">${completedCount}/${totalCount}</span>
-                            ${starsEarned > 0 ? `<span class="chore-person-stars">⭐ ${starsEarned}</span>` : ''}
-                        </div>
-                        <div class="chore-progress-bar">
-                            <div class="chore-progress-fill" style="width: ${progressPercent}%; background: ${member.color}"></div>
-                        </div>
-                    </div>
-                </div>`;
+            html += '<div class="chore-person-card" style="background: ' + columnBg + ';">';
+            html += '<div class="chore-person-header">';
+            html += '<div class="chore-person-avatar" style="background: ' + member.color + '; cursor: pointer;" onclick="openProfileDashboard(\'' + member.name + '\')" title="View ' + member.name + '\'s dashboard">' + member.name.charAt(0).toUpperCase() + '</div>';
+            html += '<div class="chore-person-info">';
+            html += '<div class="chore-person-name">' + member.name + '</div>';
+            html += '<div class="chore-person-stats">';
+            html += '<span class="chore-person-progress-text">' + completedCount + '/' + totalCount + '</span>';
+            if (starsEarned > 0) html += '<span class="chore-person-stars">⭐ ' + starsEarned + '</span>';
+            html += '</div>';
+            html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + progressPercent + '%; background: ' + member.color + '"></div></div>';
+            html += '</div>';
+            html += '<button class="chore-list-menu-btn" data-member="' + member.name + '" onclick="openChoreListMenu(\'' + member.name + '\', event)">···</button>';
+            html += '</div>';
             
             // Show routine indicators if person has routines
             if (memberRoutines.length > 0) {
@@ -5198,6 +5200,74 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             
             html += '</div>';
         });
+
+        // Render Up for Grabs card if enabled
+        if (showUpForGrabs) {
+            var ufgChores = chores.filter(function(c) { return c.member === 'Up for Grabs'; });
+            var ufgCompleted = ufgChores.filter(function(c) { return c.completed; }).length;
+            var ufgTotal = ufgChores.length;
+            var ufgProgress = ufgTotal > 0 ? (ufgCompleted / ufgTotal) * 100 : 0;
+            var ufgColor = '#8b8b8b';
+            var ufgBg = 'rgba(139,139,139,0.15)';
+
+            html += '<div class="chore-person-card" style="background: ' + ufgBg + ';">';
+            html += '<div class="chore-person-header">';
+            html += '<div class="chore-person-avatar" style="background: ' + ufgColor + ';">🎲</div>';
+            html += '<div class="chore-person-info">';
+            html += '<div class="chore-person-name">Up for Grabs</div>';
+            html += '<div class="chore-person-stats"><span class="chore-person-progress-text">' + ufgCompleted + '/' + ufgTotal + '</span></div>';
+            html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + ufgProgress + '%; background: ' + ufgColor + '"></div></div>';
+            html += '</div>';
+            html += '<button class="chore-list-menu-btn" onclick="openChoreListMenu(\'Up for Grabs\', event)">···</button>';
+            html += '</div>';
+
+            var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
+            var sortedUfg = visibleUfg.slice().sort(function(a, b) {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return 0;
+            });
+            if (sortedUfg.length > 0) {
+                html += '<div class="chore-items">';
+                sortedUfg.forEach(function(chore) {
+                    var today2 = new Date(); today2.setHours(0,0,0,0);
+                    var isLate = chore.dueDate && new Date(chore.dueDate) < today2 && !chore.completed;
+                    var daysLate = isLate ? Math.floor((today2 - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
+                    var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
+                    var bgOpacity = chore.completed ? 0.5 : 0.19;
+                    var choreBg = hexToRgba(ufgColor, bgOpacity);
+                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)">';
+                    if (chore.icon) html += '<div class="chore-item-icon">' + chore.icon + '</div>';
+                    html += '<div class="chore-item-content">';
+                    html += '<div class="chore-item-title">' + chore.title + '</div>';
+                    if (chore.frequency || isLate) html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
+                    html += '</div>';
+                    if (chore.stars) html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
+                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + ufgColor + '; border-color: ' + ufgColor + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">';
+                    html += chore.completed ? '✓' : '';
+                    html += '</div></div>';
+                });
+                html += '</div>';
+            } else {
+                html += '<div style="color: rgba(0,0,0,0.4); font-size: 20px; text-align: center; padding: 30px 0;">No tasks yet</div>';
+            }
+            html += '</div>';
+        }
+
+        // Restore hidden lists / Up for Grabs controls
+        var hasHidden = hiddenChoreMembers.length > 0;
+        var showControls = hasHidden || !showUpForGrabs;
+        if (showControls) {
+            html += '<div class="chore-manage-card">';
+            if (!showUpForGrabs) {
+                html += '<button class="chore-manage-btn" onclick="toggleUpForGrabs()">🎲 Add Up for Grabs list</button>';
+            }
+            if (hasHidden) {
+                hiddenChoreMembers.forEach(function(name) {
+                    html += '<button class="chore-manage-btn" onclick="restoreChoreList(\'' + name + '\')">↩ Restore ' + name + '\'s list</button>';
+                });
+            }
+            html += '</div>';
+        }
         
         container.innerHTML = html;
         
@@ -5480,6 +5550,44 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             item.classList.toggle('hidden', !match);
         });
     }
+
+    function openChoreListMenu(memberName, event) {
+        if (event) event.stopPropagation();
+        var isUpForGrabs = memberName === 'Up for Grabs';
+        var msg = isUpForGrabs
+            ? 'Remove the "Up for Grabs" list?\n\nThe tasks will remain saved and can be restored by adding the list back.'
+            : 'Hide ' + memberName + '\'s chore list?\n\nYou can restore it from the bottom of the chores page.';
+        if (confirm(msg)) {
+            if (isUpForGrabs) {
+                showUpForGrabs = false;
+                localStorage.setItem('showUpForGrabs', JSON.stringify(false));
+            } else {
+                if (hiddenChoreMembers.indexOf(memberName) === -1) {
+                    hiddenChoreMembers.push(memberName);
+                    localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
+                }
+            }
+            renderChoresView();
+        }
+    }
+    window.openChoreListMenu = openChoreListMenu;
+
+    function restoreChoreList(memberName) {
+        var idx = hiddenChoreMembers.indexOf(memberName);
+        if (idx > -1) {
+            hiddenChoreMembers.splice(idx, 1);
+            localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
+            renderChoresView();
+        }
+    }
+    window.restoreChoreList = restoreChoreList;
+
+    function toggleUpForGrabs() {
+        showUpForGrabs = !showUpForGrabs;
+        localStorage.setItem('showUpForGrabs', JSON.stringify(showUpForGrabs));
+        renderChoresView();
+    }
+    window.toggleUpForGrabs = toggleUpForGrabs;
     
     window.toggleRoutine = function toggleRoutine(routineId) {
         console.log('toggleRoutine called with ID:', routineId);
@@ -6711,6 +6819,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 <div class="edit-profile-name">${member.name}</div>
             </div>`;
         });
+
+        // Up for Grabs option
+        var ufgSelected = selectedProfiles.includes('Up for Grabs');
+        html += '<div class="edit-profile-item" onclick="toggleProfile(\'Up for Grabs\')">';
+        html += '<div class="edit-profile-avatar ' + (ufgSelected ? 'selected' : '') + '" style="background: #8b8b8b; box-shadow: 0 0 0 5px #8b8b8b80; font-size: 24px;" data-member="Up for Grabs">🎲</div>';
+        html += '<div class="edit-profile-name">Up for Grabs</div>';
+        html += '</div>';
         
         html += `<div class="edit-profile-item">
             <div class="edit-profile-avatar" style="background: #e0e0e0; color: #666;">+</div>
@@ -6971,6 +7086,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chores.push(choreData);
             }
         });
+        
+        // Auto-enable Up for Grabs card if tasks were assigned to it
+        if (selectedProfiles.indexOf('Up for Grabs') > -1 && !showUpForGrabs) {
+            showUpForGrabs = true;
+            localStorage.setItem('showUpForGrabs', JSON.stringify(true));
+        }
         
         localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
         localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
