@@ -669,6 +669,28 @@
         </div>
     </div>
     
+    <!-- Chore List Edit Panel -->
+    <div class="edit-panel-overlay" id="choreListEditOverlay" onclick="closeChoreListEdit()"></div>
+    <div class="edit-side-panel" id="choreListEditPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeChoreListEdit()">←</button>
+            <div class="edit-panel-title" id="choreListEditTitle">Edit List</div>
+        </div>
+        <div class="edit-panel-body">
+            <div class="edit-form-group" id="choreListRenameRow">
+                <label class="edit-form-label">List Name</label>
+                <input type="text" class="edit-form-input" id="choreListEditName" placeholder="List name">
+                <button class="edit-save-btn" onclick="saveChoreListName()" style="margin-top: 14px;">Save Name</button>
+            </div>
+            <button class="edit-delete-btn" onclick="hideChoreList()" style="margin-top: 10px;">
+                <span>👁️</span><span>Hide this list</span>
+            </button>
+            <button class="edit-delete-btn" id="choreListDeleteBtn" onclick="deleteChoreListTasks()" style="margin-top: 10px; color: #dc3545;">
+                <span>🗑️</span><span>Delete all tasks in this list</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Meal Selector Side Panel -->
     <div class="edit-panel-overlay" id="mealSelectorOverlay" onclick="closeMealSelector()"></div>
     <div class="edit-side-panel" id="mealSelectorPanel">

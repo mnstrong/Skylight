@@ -5035,7 +5035,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             html += '</div>';
             html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + progressPercent + '%; background: ' + member.color + '"></div></div>';
             html += '</div>';
-            html += '<button class="chore-list-menu-btn" data-member="' + member.name + '" onclick="openChoreListMenu(\'' + member.name + '\', event)">···</button>';
+            html += '<button class="chore-list-edit-btn" data-member="' + member.name + '" onclick="openChoreListEdit(\'' + member.name + '\', event)">✏️</button>';
             html += '</div>';
             
             // Show routine indicators if person has routines
@@ -5208,55 +5208,47 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             var ufgTotal = ufgChores.length;
             var ufgProgress = ufgTotal > 0 ? (ufgCompleted / ufgTotal) * 100 : 0;
             var ufgColor = '#8b8b8b';
-            var ufgBg = 'rgba(139,139,139,0.15)';
 
-            html += '<div class="chore-person-card" style="background: ' + ufgBg + ';">';
+            html += '<div class="chore-person-card" style="background: rgba(139,139,139,0.15);">';
             html += '<div class="chore-person-header">';
-            html += '<div class="chore-person-avatar" style="background: ' + ufgColor + ';">🎲</div>';
+            html += '<div class="chore-person-avatar" style="background: ' + ufgColor + '; font-size: 32px;">🎲</div>';
             html += '<div class="chore-person-info">';
             html += '<div class="chore-person-name">Up for Grabs</div>';
             html += '<div class="chore-person-stats"><span class="chore-person-progress-text">' + ufgCompleted + '/' + ufgTotal + '</span></div>';
             html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + ufgProgress + '%; background: ' + ufgColor + '"></div></div>';
             html += '</div>';
-            html += '<button class="chore-list-menu-btn" onclick="openChoreListMenu(\'Up for Grabs\', event)">···</button>';
+            html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
             html += '</div>';
 
             var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
-            var sortedUfg = visibleUfg.slice().sort(function(a, b) {
-                if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                return 0;
-            });
-            if (sortedUfg.length > 0) {
+            visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
+            if (visibleUfg.length > 0) {
                 html += '<div class="chore-items">';
-                sortedUfg.forEach(function(chore) {
+                visibleUfg.forEach(function(chore) {
                     var today2 = new Date(); today2.setHours(0,0,0,0);
                     var isLate = chore.dueDate && new Date(chore.dueDate) < today2 && !chore.completed;
                     var daysLate = isLate ? Math.floor((today2 - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
                     var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
-                    var bgOpacity = chore.completed ? 0.5 : 0.19;
-                    var choreBg = hexToRgba(ufgColor, bgOpacity);
+                    var choreBg = hexToRgba(ufgColor, chore.completed ? 0.5 : 0.19);
                     html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)">';
                     if (chore.icon) html += '<div class="chore-item-icon">' + chore.icon + '</div>';
-                    html += '<div class="chore-item-content">';
-                    html += '<div class="chore-item-title">' + chore.title + '</div>';
+                    html += '<div class="chore-item-content"><div class="chore-item-title">' + chore.title + '</div>';
                     if (chore.frequency || isLate) html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
                     html += '</div>';
                     if (chore.stars) html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
-                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + ufgColor + '; border-color: ' + ufgColor + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">';
-                    html += chore.completed ? '✓' : '';
-                    html += '</div></div>';
+                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background:' + ufgColor + ';border-color:' + ufgColor + ';' : '') + '" onclick="event.stopPropagation();toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
+                    html += '</div>';
                 });
                 html += '</div>';
             } else {
-                html += '<div style="color: rgba(0,0,0,0.4); font-size: 20px; text-align: center; padding: 30px 0;">No tasks yet</div>';
+                html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
             }
             html += '</div>';
         }
 
-        // Restore hidden lists / Up for Grabs controls
+        // Restore hidden lists / Add Up for Grabs controls
         var hasHidden = hiddenChoreMembers.length > 0;
-        var showControls = hasHidden || !showUpForGrabs;
-        if (showControls) {
+        if (hasHidden || !showUpForGrabs) {
             html += '<div class="chore-manage-card">';
             if (!showUpForGrabs) {
                 html += '<button class="chore-manage-btn" onclick="toggleUpForGrabs()">🎲 Add Up for Grabs list</button>';
@@ -5551,26 +5543,105 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         });
     }
 
-    function openChoreListMenu(memberName, event) {
+    // ── Chore List Edit Panel ─────────────────────────────────────────────────
+
+    var currentEditChoreList = null; // member name being edited
+
+    function openChoreListEdit(memberName, event) {
         if (event) event.stopPropagation();
+        currentEditChoreList = memberName;
         var isUpForGrabs = memberName === 'Up for Grabs';
-        var msg = isUpForGrabs
-            ? 'Remove the "Up for Grabs" list?\n\nThe tasks will remain saved and can be restored by adding the list back.'
-            : 'Hide ' + memberName + '\'s chore list?\n\nYou can restore it from the bottom of the chores page.';
-        if (confirm(msg)) {
-            if (isUpForGrabs) {
-                showUpForGrabs = false;
-                localStorage.setItem('showUpForGrabs', JSON.stringify(false));
-            } else {
-                if (hiddenChoreMembers.indexOf(memberName) === -1) {
-                    hiddenChoreMembers.push(memberName);
-                    localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
-                }
-            }
-            renderChoresView();
-        }
+
+        var nameInput = document.getElementById('choreListEditName');
+        var deleteBtn = document.getElementById('choreListDeleteBtn');
+        var title = document.getElementById('choreListEditTitle');
+
+        if (nameInput) nameInput.value = isUpForGrabs ? '' : memberName;
+        if (title) title.textContent = isUpForGrabs ? 'Up for Grabs' : memberName + '\'s List';
+
+        // Hide rename row for Up for Grabs (name tied to a profile)
+        var renameRow = document.getElementById('choreListRenameRow');
+        if (renameRow) renameRow.style.display = isUpForGrabs ? 'none' : 'block';
+
+        // Update delete button label
+        if (deleteBtn) deleteBtn.querySelector('span:last-child').textContent = isUpForGrabs ? 'Delete all Up for Grabs tasks' : 'Delete all tasks in this list';
+
+        document.getElementById('choreListEditOverlay').classList.add('active');
+        document.getElementById('choreListEditPanel').classList.add('active');
     }
-    window.openChoreListMenu = openChoreListMenu;
+    window.openChoreListEdit = openChoreListEdit;
+
+    function closeChoreListEdit() {
+        document.getElementById('choreListEditOverlay').classList.remove('active');
+        document.getElementById('choreListEditPanel').classList.remove('active');
+        currentEditChoreList = null;
+    }
+    window.closeChoreListEdit = closeChoreListEdit;
+
+    function saveChoreListName() {
+        if (!currentEditChoreList || currentEditChoreList === 'Up for Grabs') return;
+        var newName = document.getElementById('choreListEditName').value.trim();
+        if (!newName) { alert('Please enter a list name.'); return; }
+        if (newName === currentEditChoreList) { closeChoreListEdit(); return; }
+
+        // Check name not already taken
+        var taken = familyMembers.some(function(m) { return m.name === newName; });
+        if (taken) { alert('A profile with that name already exists.'); return; }
+
+        // This renames the label only in chore/routine member fields (not the profile itself)
+        var oldName = currentEditChoreList;
+        if (window.chores !== chores) { chores = window.chores; }
+        if (window.routines !== routines) { routines = window.routines; }
+        chores.forEach(function(c) { if (c.member === oldName) c.member = newName; });
+        routines.forEach(function(r) { if (r.member === oldName) r.member = newName; });
+        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+
+        closeChoreListEdit();
+        renderChoresView();
+    }
+    window.saveChoreListName = saveChoreListName;
+
+    function hideChoreList() {
+        if (!currentEditChoreList) return;
+        if (currentEditChoreList === 'Up for Grabs') {
+            showUpForGrabs = false;
+            localStorage.setItem('showUpForGrabs', JSON.stringify(false));
+        } else {
+            if (hiddenChoreMembers.indexOf(currentEditChoreList) === -1) {
+                hiddenChoreMembers.push(currentEditChoreList);
+                localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
+            }
+        }
+        closeChoreListEdit();
+        renderChoresView();
+    }
+    window.hideChoreList = hideChoreList;
+
+    function deleteChoreListTasks() {
+        if (!currentEditChoreList) return;
+        var name = currentEditChoreList;
+        var taskCount = chores.filter(function(c) { return c.member === name; }).length;
+        var msg = taskCount > 0
+            ? 'Delete all ' + taskCount + ' task' + (taskCount > 1 ? 's' : '') + ' in ' + (name === 'Up for Grabs' ? 'Up for Grabs' : name + '\'s list') + '? This cannot be undone.'
+            : 'This list has no tasks. Nothing to delete.';
+        if (taskCount === 0) { alert(msg); return; }
+        if (!confirm(msg)) return;
+
+        if (window.chores !== chores) { chores = window.chores; }
+        var toDelete = chores.filter(function(c) { return c.member === name; });
+        chores = chores.filter(function(c) { return c.member !== name; });
+        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+
+        // Sync deletes to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+            toDelete.forEach(function(c) { window.SupabaseSync.syncChore(c, 'delete'); });
+        }
+
+        closeChoreListEdit();
+        renderChoresView();
+    }
+    window.deleteChoreListTasks = deleteChoreListTasks;
 
     function restoreChoreList(memberName) {
         var idx = hiddenChoreMembers.indexOf(memberName);
@@ -5588,7 +5659,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         renderChoresView();
     }
     window.toggleUpForGrabs = toggleUpForGrabs;
-    
+
     window.toggleRoutine = function toggleRoutine(routineId) {
         console.log('toggleRoutine called with ID:', routineId);
         console.log('toggleRoutine function type:', typeof toggleRoutine);
@@ -6823,7 +6894,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Up for Grabs option
         var ufgSelected = selectedProfiles.includes('Up for Grabs');
         html += '<div class="edit-profile-item" onclick="toggleProfile(\'Up for Grabs\')">';
-        html += '<div class="edit-profile-avatar ' + (ufgSelected ? 'selected' : '') + '" style="background: #8b8b8b; box-shadow: 0 0 0 5px #8b8b8b80; font-size: 24px;" data-member="Up for Grabs">🎲</div>';
+        html += '<div class="edit-profile-avatar' + (ufgSelected ? ' selected' : '') + '" style="background:#8b8b8b;box-shadow:0 0 0 5px #8b8b8b80;font-size:24px;" data-member="Up for Grabs">🎲</div>';
         html += '<div class="edit-profile-name">Up for Grabs</div>';
         html += '</div>';
         
@@ -7015,6 +7086,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return;
         }
         
+        var newChoresAdded = [];
         selectedProfiles.forEach(profileName => {
             if (currentTaskType === 'routine') {
                 // ROUTINE CREATION
@@ -7084,9 +7156,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
                 
                 chores.push(choreData);
+                newChoresAdded.push(choreData);
             }
         });
-        
+
         // Auto-enable Up for Grabs card if tasks were assigned to it
         if (selectedProfiles.indexOf('Up for Grabs') > -1 && !showUpForGrabs) {
             showUpForGrabs = true;
@@ -7095,6 +7168,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
         localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+
+        // Sync new chores to Supabase (fire-and-forget)
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+            newChoresAdded.forEach(function(c) { window.SupabaseSync.syncChore(c, 'add'); });
+        }
         
         // Reset form
         document.getElementById('taskChoreTitle').value = '';
@@ -7260,6 +7338,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (currentEditTaskType === 'chore') {
             const index = chores.findIndex(c => c.id === currentEditTaskId);
             if (index > -1) {
+                var choreToDelete = chores[index];
                 if (option === 'all' || !chores[index].repeat) {
                     // Delete the entire task
                     chores.splice(index, 1);
@@ -7272,6 +7351,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     chores.splice(index, 1);
                 }
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(choreToDelete, 'delete');
+                }
             }
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
@@ -7449,6 +7531,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(chore, 'update');
+                }
             }
         } else {
             const routine = routines.find(r => r.id === currentEditTaskId);
@@ -7489,6 +7574,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 delete chore.completedDate;
             }
             localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                window.SupabaseSync.syncChore(chore, 'update');
+            }
             
             // Check if member completed all their chores
             if (!wasCompleted && chore.completed) {
