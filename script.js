@@ -3436,11 +3436,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
         } else if (currentView === 'week') {
-            currentDate.setDate(currentDate.getDate() + (direction * 5));
+            currentDate.setDate(currentDate.getDate() + (direction * 7));
             renderWeekView();
         } else if (currentView === 'schedule') {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            currentDate.setDate(1);
+            currentDate.setDate(currentDate.getDate() + (direction * 5));
             renderScheduleView();
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
@@ -3487,7 +3486,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             todayNav.classList.add('active');
             
         } else if (currentView === 'schedule') {
-            // Schedule view: show only view dropdown (no additional nav)
+            weekNav.classList.add('active');
+            var end5 = new Date(currentDate);
+            end5.setDate(end5.getDate() + 4);
+            var opts5 = { month: 'short', day: 'numeric' };
+            weekDisplay.textContent = currentDate.toLocaleDateString('en-US', opts5) +
+                ' – ' + end5.toLocaleDateString('en-US', opts5);
         }
     }
 
@@ -3717,227 +3721,79 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var container = document.getElementById('weekView');
         var today = new Date();
         today.setHours(0, 0, 0, 0);
-
-        // currentDate always snaps to a 5-day window starting on that day
-        var windowStart = new Date(currentDate);
-        windowStart.setHours(0, 0, 0, 0);
-
+        var weekStart = new Date(currentDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // snap to Sunday
+        weekStart.setHours(0, 0, 0, 0);
         var allEvents = getAllEvents();
 
-        // Hours to display: 7am–10pm
-        var START_HOUR = 7;
-        var END_HOUR = 22;
-        var TOTAL_HOURS = END_HOUR - START_HOUR;
-        var HOUR_PX = 80; // pixels per hour
-        var GRID_HEIGHT = TOTAL_HOURS * HOUR_PX;
+        var html = '<div class="swg">';
 
-        // Build the 5 day columns
-        var days = [];
-        for (var d = 0; d < 5; d++) {
-            var day = new Date(windowStart);
-            day.setDate(windowStart.getDate() + d);
-            days.push(day);
-        }
-
-        // Collect all-day events and timed events per day
-        var allDayByDay = [];
-        var timedByDay = [];
-        for (var di = 0; di < 5; di++) {
-            var ds = days[di].toISOString().split('T')[0];
-            var dayEvts = allEvents.filter(function(e) {
-                return isEventOnDate(e, ds) && isEventVisible(e);
-            });
-            allDayByDay.push(dayEvts.filter(function(e) { return !e.time; }));
-            timedByDay.push(dayEvts.filter(function(e) { return !!e.time; }).sort(function(a, b) {
-                return a.time.localeCompare(b.time);
-            }));
-        }
-
-        var html = '<div class="wv5-outer">';
-
-        // ── Header row ──────────────────────────────────────────────
-        html += '<div class="wv5-header-row">';
-        html += '<div class="wv5-time-gutter-header"></div>';
-        for (var di = 0; di < 5; di++) {
-            var day = days[di];
+        for (var i = 0; i < 7; i++) {
+            var day = new Date(weekStart);
+            day.setDate(weekStart.getDate() + i);
             var isToday = day.getTime() === today.getTime();
-            var dayName = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            var dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
             var dayNum = day.getDate();
-            html += '<div class="wv5-day-header' + (isToday ? ' wv5-today-header' : '') + '">';
-            html += '<span class="wv5-hdr-name">' + dayName + '</span>';
-            html += '<span class="wv5-hdr-num' + (isToday ? ' wv5-today-num' : '') + '">' + dayNum + '</span>';
-            html += '</div>';
-        }
-        html += '</div>';
+            var dateStr = day.toISOString().split('T')[0];
 
-        // ── All-day strip ────────────────────────────────────────────
-        var hasAllDay = allDayByDay.some(function(a) { return a.length > 0; });
-        if (hasAllDay) {
-            html += '<div class="wv5-allday-row">';
-            html += '<div class="wv5-time-gutter-allday">all-day</div>';
-            for (var di = 0; di < 5; di++) {
-                html += '<div class="wv5-allday-cell">';
-                allDayByDay[di].forEach(function(ev) {
-                    var bgVal = getMultiMemberBg(ev, 0.85);
-                    var bgStyle = bgVal.indexOf('gradient') !== -1 ? 'background-image:' + bgVal : 'background-color:' + bgVal;
+            var dayEvents = allEvents.filter(function(e) {
+                return isEventOnDate(e, dateStr) && isEventVisible(e);
+            }).sort(function(a, b) {
+                if (!a.time) return -1;
+                if (!b.time) return 1;
+                return a.time.localeCompare(b.time);
+            });
+
+            html += '<div class="swg-row">';
+
+            // Left: day label
+            html += '<div class="swg-label' + (isToday ? ' swg-today' : '') + '">' +
+                '<span class="swg-day-name">' + dayName + '</span>' +
+                '<span class="swg-day-num">' + dayNum + '</span>' +
+                '</div>';
+
+            // Right: events column
+            html += '<div class="swg-events">';
+
+            if (dayEvents.length === 0) {
+                html += '<div class="swg-empty"></div>';
+            } else {
+                dayEvents.forEach(function(ev) {
+                    var members = getEventMembers(ev);
                     var primaryColor = getEventPrimaryColor(ev);
-                    html += '<div class="wv5-allday-pill" style="' + bgStyle + '" onclick="showEventDetails(\'' + ev.id + '\')">';
-                    html += '<span class="wv5-allday-title" style="color:' + primaryColor + '">' + (ev.title || '') + '</span>';
-                    html += '</div>';
+                    var bgVal = getMultiMemberBg(ev, 0.22);
+                    var bgStyle = bgVal.indexOf('gradient') !== -1
+                        ? 'background-image:' + bgVal
+                        : 'background-color:' + bgVal;
+
+                    var timeStr = 'All day';
+                    if (ev.time) {
+                        var parts = ev.time.split(':');
+                        var h = parseInt(parts[0], 10);
+                        var m = parts[1] || '00';
+                        var period = h >= 12 ? 'PM' : 'AM';
+                        h = h % 12 || 12;
+                        timeStr = h + ':' + m + ' ' + period;
+                    }
+
+                    var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
+
+                    html += '<div class="swg-event" data-eid="' + ev.id + '" style="' + bgStyle + '" onclick="event.stopPropagation();showEventDetails(this.getAttribute(\'data-eid\'))">' +
+                        '<div class="swg-event-body">' +
+                        '<div class="swg-event-time" style="color:' + primaryColor + '">' + timeStr + '</div>' +
+                        '<div class="swg-event-title">' + (ev.title || '') + '</div>' +
+                        '</div>' +
+                        (initial ? '<div class="swg-event-avatar" style="background:' + primaryColor + '">' + initial + '</div>' : '') +
+                        '</div>';
                 });
-                html += '</div>';
             }
-            html += '</div>';
+
+            html += '</div>'; // swg-events
+            html += '</div>'; // swg-row
         }
 
-        // ── Time grid ────────────────────────────────────────────────
-        html += '<div class="wv5-grid-scroll">';
-        html += '<div class="wv5-grid-inner" style="height:' + GRID_HEIGHT + 'px">';
-
-        // Time gutter
-        html += '<div class="wv5-time-gutter">';
-        for (var h = START_HOUR; h < END_HOUR; h++) {
-            var label = h === 12 ? '12 PM' : h < 12 ? h + ' AM' : (h - 12) + ' PM';
-            html += '<div class="wv5-time-label" style="top:' + ((h - START_HOUR) * HOUR_PX) + 'px">' + label + '</div>';
-        }
-        html += '</div>';
-
-        // Day columns
-        for (var di = 0; di < 5; di++) {
-            var isToday = days[di].getTime() === today.getTime();
-            html += '<div class="wv5-day-col' + (isToday ? ' wv5-today-col' : '') + '" style="left:calc(var(--wv5-gutter) + ' + di + ' * var(--wv5-col-w));width:var(--wv5-col-w)">';
-
-            // Hour lines
-            for (var h = 0; h < TOTAL_HOURS; h++) {
-                var isHalfHour = false;
-                html += '<div class="wv5-hour-line" style="top:' + (h * HOUR_PX) + 'px"></div>';
-                html += '<div class="wv5-half-line" style="top:' + (h * HOUR_PX + HOUR_PX / 2) + 'px"></div>';
-            }
-
-            // Current time indicator
-            if (isToday) {
-                var now = new Date();
-                var nowMins = now.getHours() * 60 + now.getMinutes();
-                var startMins = START_HOUR * 60;
-                var endMins = END_HOUR * 60;
-                if (nowMins >= startMins && nowMins <= endMins) {
-                    var topPx = ((nowMins - startMins) / 60) * HOUR_PX;
-                    html += '<div class="wv5-now-line" style="top:' + topPx + 'px"></div>';
-                }
-            }
-
-            // Events
-            // Simple overlap detection: sort by start, assign columns
-            var tevts = timedByDay[di];
-            var placed = []; // {ev, startMin, endMin, col, totalCols}
-            tevts.forEach(function(ev) {
-                var parts = ev.time.split(':');
-                var startMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
-                var endMin = startMin + 60; // default 1hr
-                if (ev.endTime) {
-                    var ep = ev.endTime.split(':');
-                    endMin = parseInt(ep[0], 10) * 60 + parseInt(ep[1] || '0', 10);
-                }
-                if (endMin <= startMin) endMin = startMin + 30;
-                placed.push({ ev: ev, startMin: startMin, endMin: endMin, col: 0, totalCols: 1 });
-            });
-
-            // Assign overlap columns
-            for (var pi = 0; pi < placed.length; pi++) {
-                var usedCols = [];
-                for (var pj = 0; pj < pi; pj++) {
-                    if (placed[pj].endMin > placed[pi].startMin && placed[pj].startMin < placed[pi].endMin) {
-                        usedCols.push(placed[pj].col);
-                    }
-                }
-                var col = 0;
-                while (usedCols.indexOf(col) !== -1) col++;
-                placed[pi].col = col;
-            }
-            // Compute totalCols per event
-            for (var pi = 0; pi < placed.length; pi++) {
-                var maxCol = placed[pi].col;
-                for (var pj = 0; pj < placed.length; pj++) {
-                    if (pj !== pi && placed[pj].endMin > placed[pi].startMin && placed[pj].startMin < placed[pi].endMin) {
-                        if (placed[pj].col > maxCol) maxCol = placed[pj].col;
-                    }
-                }
-                placed[pi].totalCols = maxCol + 1;
-            }
-
-            placed.forEach(function(p) {
-                var ev = p.ev;
-                var topPx = ((p.startMin - START_HOUR * 60) / 60) * HOUR_PX;
-                var heightPx = Math.max(((p.endMin - p.startMin) / 60) * HOUR_PX, 28);
-
-                // Clamp to visible grid
-                if (topPx < 0) { heightPx += topPx; topPx = 0; }
-                if (topPx > GRID_HEIGHT) return;
-                heightPx = Math.min(heightPx, GRID_HEIGHT - topPx);
-
-                var bgVal = getMultiMemberBg(ev, 0.25);
-                var bgStyle = bgVal.indexOf('gradient') !== -1 ? 'background-image:' + bgVal : 'background-color:' + bgVal;
-                var primaryColor = getEventPrimaryColor(ev);
-                var members = getEventMembers(ev);
-                var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
-
-                var colW = (100 / p.totalCols);
-                var colL = (p.col * colW);
-
-                var startH = Math.floor(p.startMin / 60);
-                var startM = p.startMin % 60;
-                var period = startH >= 12 ? 'PM' : 'AM';
-                var dispH = startH % 12 || 12;
-                var dispM = startM < 10 ? '0' + startM : '' + startM;
-                var timeLabel = dispH + ':' + dispM + ' ' + period;
-
-                if (ev.endTime) {
-                    var eh = Math.floor(p.endMin / 60);
-                    var em = p.endMin % 60;
-                    var ep2 = eh >= 12 ? 'PM' : 'AM';
-                    var edh = eh % 12 || 12;
-                    var edm = em < 10 ? '0' + em : '' + em;
-                    timeLabel += ' – ' + edh + ':' + edm + ' ' + ep2;
-                }
-
-                html += '<div class="wv5-event" data-eid="' + ev.id + '" style="' +
-                    bgStyle + ';top:' + topPx + 'px;height:' + heightPx + 'px;' +
-                    'left:' + colL + '%;width:calc(' + colW + '% - 4px);" ' +
-                    'onclick="event.stopPropagation();showEventDetails(this.getAttribute(\'data-eid\'))">';
-                html += '<div class="wv5-event-time" style="color:' + primaryColor + '">' + timeLabel + '</div>';
-                html += '<div class="wv5-event-title">' + (ev.title || '') + '</div>';
-                if (initial) html += '<div class="wv5-event-dot" style="background:' + primaryColor + '">' + initial + '</div>';
-                html += '</div>';
-            });
-
-            html += '</div>'; // wv5-day-col
-        }
-
-        html += '</div>'; // wv5-grid-inner
-        html += '</div>'; // wv5-grid-scroll
-
-        html += '</div>'; // wv5-outer
+        html += '</div>'; // swg
         container.innerHTML = html;
-
-        // Scroll to 8am on load
-        var scroll = container.querySelector('.wv5-grid-scroll');
-        if (scroll) scroll.scrollTop = (8 - START_HOUR) * HOUR_PX;
-
-        // Swipe support
-        var startX = null;
-        container.addEventListener('touchstart', function(e) {
-            startX = e.touches[0].clientX;
-        }, { passive: true });
-        container.addEventListener('touchend', function(e) {
-            if (startX === null) return;
-            var dx = e.changedTouches[0].clientX - startX;
-            startX = null;
-            if (Math.abs(dx) > 50) {
-                currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5));
-                renderWeekView();
-                updateViewHeader();
-            }
-        }, { passive: true });
     }
     function renderDayView() {
         const container = document.getElementById('dayView');
@@ -4083,9 +3939,10 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        let startDate = new Date(monthStart);
-        const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        // Show 5 days starting from currentDate
+        let startDate = new Date(currentDate);
+        startDate.setHours(0, 0, 0, 0);
+        const daysToShow = 5;
         scheduleDaysToShow = daysToShow;
         
         // Get all events ONCE outside the loop
@@ -4432,6 +4289,27 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const gridWrapper = container.querySelector('.sg-scroll-area');
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
+
+        // Swipe left/right to advance or retreat 5 days
+        var swipeStartX = null;
+        var swipeStartY = null;
+        container.addEventListener('touchstart', function(e) {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+        }, { passive: true });
+        container.addEventListener('touchend', function(e) {
+            if (swipeStartX === null) return;
+            var dx = e.changedTouches[0].clientX - swipeStartX;
+            var dy = e.changedTouches[0].clientY - swipeStartY;
+            swipeStartX = null;
+            swipeStartY = null;
+            // Only trigger on predominantly horizontal swipe
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5));
+                renderScheduleView();
+                updateViewHeader();
+            }
+        }, { passive: true });
     }
 
     function switchSection(section) {
@@ -7661,12 +7539,11 @@ if (allChoresComplete || allRoutinesComplete) {
             renderCalendar();
         } else if (view === 'week') {
             document.getElementById('weekView').classList.add('active');
-            // Always start from today when entering week view
-            var todayReset = new Date(); todayReset.setHours(0,0,0,0);
-            currentDate = todayReset;
             renderWeekView();
         } else if (view === 'schedule') {
             document.getElementById('scheduleView').classList.add('active');
+            var todayForSchedule = new Date(); todayForSchedule.setHours(0,0,0,0);
+            currentDate = todayForSchedule;
             renderScheduleView();
         } else if (view === 'day') {
             document.getElementById('dayView').classList.add('active');
