@@ -136,8 +136,6 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
     let routines = JSON.parse(localStorage.getItem('routines')) || [];
     window.chores = chores;
     window.routines = routines;
-    var hiddenChoreMembers = JSON.parse(localStorage.getItem('hiddenChoreMembers')) || [];
-    var showUpForGrabs = JSON.parse(localStorage.getItem('showUpForGrabs')) || false;
 
 let visiblePeriods = {
 'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
@@ -3438,7 +3436,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
         } else if (currentView === 'week') {
-            currentDate.setDate(currentDate.getDate() + (direction * 7));
+            currentDate.setDate(currentDate.getDate() + (direction * 5));
             renderWeekView();
         } else if (currentView === 'schedule') {
             currentDate.setMonth(currentDate.getMonth() + direction);
@@ -3719,79 +3717,227 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var container = document.getElementById('weekView');
         var today = new Date();
         today.setHours(0, 0, 0, 0);
-        var weekStart = new Date(currentDate);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // snap to Sunday
-        weekStart.setHours(0, 0, 0, 0);
+
+        // currentDate always snaps to a 5-day window starting on that day
+        var windowStart = new Date(currentDate);
+        windowStart.setHours(0, 0, 0, 0);
+
         var allEvents = getAllEvents();
 
-        var html = '<div class="swg">';
+        // Hours to display: 7am–10pm
+        var START_HOUR = 7;
+        var END_HOUR = 22;
+        var TOTAL_HOURS = END_HOUR - START_HOUR;
+        var HOUR_PX = 80; // pixels per hour
+        var GRID_HEIGHT = TOTAL_HOURS * HOUR_PX;
 
-        for (var i = 0; i < 7; i++) {
-            var day = new Date(weekStart);
-            day.setDate(weekStart.getDate() + i);
-            var isToday = day.getTime() === today.getTime();
-            var dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
-            var dayNum = day.getDate();
-            var dateStr = day.toISOString().split('T')[0];
-
-            var dayEvents = allEvents.filter(function(e) {
-                return isEventOnDate(e, dateStr) && isEventVisible(e);
-            }).sort(function(a, b) {
-                if (!a.time) return -1;
-                if (!b.time) return 1;
-                return a.time.localeCompare(b.time);
-            });
-
-            html += '<div class="swg-row">';
-
-            // Left: day label
-            html += '<div class="swg-label' + (isToday ? ' swg-today' : '') + '">' +
-                '<span class="swg-day-name">' + dayName + '</span>' +
-                '<span class="swg-day-num">' + dayNum + '</span>' +
-                '</div>';
-
-            // Right: events column
-            html += '<div class="swg-events">';
-
-            if (dayEvents.length === 0) {
-                html += '<div class="swg-empty"></div>';
-            } else {
-                dayEvents.forEach(function(ev) {
-                    var members = getEventMembers(ev);
-                    var primaryColor = getEventPrimaryColor(ev);
-                    var bgVal = getMultiMemberBg(ev, 0.22);
-                    var bgStyle = bgVal.indexOf('gradient') !== -1
-                        ? 'background-image:' + bgVal
-                        : 'background-color:' + bgVal;
-
-                    var timeStr = 'All day';
-                    if (ev.time) {
-                        var parts = ev.time.split(':');
-                        var h = parseInt(parts[0], 10);
-                        var m = parts[1] || '00';
-                        var period = h >= 12 ? 'PM' : 'AM';
-                        h = h % 12 || 12;
-                        timeStr = h + ':' + m + ' ' + period;
-                    }
-
-                    var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
-
-                    html += '<div class="swg-event" data-eid="' + ev.id + '" style="' + bgStyle + '" onclick="event.stopPropagation();showEventDetails(this.getAttribute(\'data-eid\'))">' +
-                        '<div class="swg-event-body">' +
-                        '<div class="swg-event-time" style="color:' + primaryColor + '">' + timeStr + '</div>' +
-                        '<div class="swg-event-title">' + (ev.title || '') + '</div>' +
-                        '</div>' +
-                        (initial ? '<div class="swg-event-avatar" style="background:' + primaryColor + '">' + initial + '</div>' : '') +
-                        '</div>';
-                });
-            }
-
-            html += '</div>'; // swg-events
-            html += '</div>'; // swg-row
+        // Build the 5 day columns
+        var days = [];
+        for (var d = 0; d < 5; d++) {
+            var day = new Date(windowStart);
+            day.setDate(windowStart.getDate() + d);
+            days.push(day);
         }
 
-        html += '</div>'; // swg
+        // Collect all-day events and timed events per day
+        var allDayByDay = [];
+        var timedByDay = [];
+        for (var di = 0; di < 5; di++) {
+            var ds = days[di].toISOString().split('T')[0];
+            var dayEvts = allEvents.filter(function(e) {
+                return isEventOnDate(e, ds) && isEventVisible(e);
+            });
+            allDayByDay.push(dayEvts.filter(function(e) { return !e.time; }));
+            timedByDay.push(dayEvts.filter(function(e) { return !!e.time; }).sort(function(a, b) {
+                return a.time.localeCompare(b.time);
+            }));
+        }
+
+        var html = '<div class="wv5-outer">';
+
+        // ── Header row ──────────────────────────────────────────────
+        html += '<div class="wv5-header-row">';
+        html += '<div class="wv5-time-gutter-header"></div>';
+        for (var di = 0; di < 5; di++) {
+            var day = days[di];
+            var isToday = day.getTime() === today.getTime();
+            var dayName = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            var dayNum = day.getDate();
+            html += '<div class="wv5-day-header' + (isToday ? ' wv5-today-header' : '') + '">';
+            html += '<span class="wv5-hdr-name">' + dayName + '</span>';
+            html += '<span class="wv5-hdr-num' + (isToday ? ' wv5-today-num' : '') + '">' + dayNum + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+
+        // ── All-day strip ────────────────────────────────────────────
+        var hasAllDay = allDayByDay.some(function(a) { return a.length > 0; });
+        if (hasAllDay) {
+            html += '<div class="wv5-allday-row">';
+            html += '<div class="wv5-time-gutter-allday">all-day</div>';
+            for (var di = 0; di < 5; di++) {
+                html += '<div class="wv5-allday-cell">';
+                allDayByDay[di].forEach(function(ev) {
+                    var bgVal = getMultiMemberBg(ev, 0.85);
+                    var bgStyle = bgVal.indexOf('gradient') !== -1 ? 'background-image:' + bgVal : 'background-color:' + bgVal;
+                    var primaryColor = getEventPrimaryColor(ev);
+                    html += '<div class="wv5-allday-pill" style="' + bgStyle + '" onclick="showEventDetails(\'' + ev.id + '\')">';
+                    html += '<span class="wv5-allday-title" style="color:' + primaryColor + '">' + (ev.title || '') + '</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        // ── Time grid ────────────────────────────────────────────────
+        html += '<div class="wv5-grid-scroll">';
+        html += '<div class="wv5-grid-inner" style="height:' + GRID_HEIGHT + 'px">';
+
+        // Time gutter
+        html += '<div class="wv5-time-gutter">';
+        for (var h = START_HOUR; h < END_HOUR; h++) {
+            var label = h === 12 ? '12 PM' : h < 12 ? h + ' AM' : (h - 12) + ' PM';
+            html += '<div class="wv5-time-label" style="top:' + ((h - START_HOUR) * HOUR_PX) + 'px">' + label + '</div>';
+        }
+        html += '</div>';
+
+        // Day columns
+        for (var di = 0; di < 5; di++) {
+            var isToday = days[di].getTime() === today.getTime();
+            html += '<div class="wv5-day-col' + (isToday ? ' wv5-today-col' : '') + '" style="left:calc(var(--wv5-gutter) + ' + di + ' * var(--wv5-col-w));width:var(--wv5-col-w)">';
+
+            // Hour lines
+            for (var h = 0; h < TOTAL_HOURS; h++) {
+                var isHalfHour = false;
+                html += '<div class="wv5-hour-line" style="top:' + (h * HOUR_PX) + 'px"></div>';
+                html += '<div class="wv5-half-line" style="top:' + (h * HOUR_PX + HOUR_PX / 2) + 'px"></div>';
+            }
+
+            // Current time indicator
+            if (isToday) {
+                var now = new Date();
+                var nowMins = now.getHours() * 60 + now.getMinutes();
+                var startMins = START_HOUR * 60;
+                var endMins = END_HOUR * 60;
+                if (nowMins >= startMins && nowMins <= endMins) {
+                    var topPx = ((nowMins - startMins) / 60) * HOUR_PX;
+                    html += '<div class="wv5-now-line" style="top:' + topPx + 'px"></div>';
+                }
+            }
+
+            // Events
+            // Simple overlap detection: sort by start, assign columns
+            var tevts = timedByDay[di];
+            var placed = []; // {ev, startMin, endMin, col, totalCols}
+            tevts.forEach(function(ev) {
+                var parts = ev.time.split(':');
+                var startMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
+                var endMin = startMin + 60; // default 1hr
+                if (ev.endTime) {
+                    var ep = ev.endTime.split(':');
+                    endMin = parseInt(ep[0], 10) * 60 + parseInt(ep[1] || '0', 10);
+                }
+                if (endMin <= startMin) endMin = startMin + 30;
+                placed.push({ ev: ev, startMin: startMin, endMin: endMin, col: 0, totalCols: 1 });
+            });
+
+            // Assign overlap columns
+            for (var pi = 0; pi < placed.length; pi++) {
+                var usedCols = [];
+                for (var pj = 0; pj < pi; pj++) {
+                    if (placed[pj].endMin > placed[pi].startMin && placed[pj].startMin < placed[pi].endMin) {
+                        usedCols.push(placed[pj].col);
+                    }
+                }
+                var col = 0;
+                while (usedCols.indexOf(col) !== -1) col++;
+                placed[pi].col = col;
+            }
+            // Compute totalCols per event
+            for (var pi = 0; pi < placed.length; pi++) {
+                var maxCol = placed[pi].col;
+                for (var pj = 0; pj < placed.length; pj++) {
+                    if (pj !== pi && placed[pj].endMin > placed[pi].startMin && placed[pj].startMin < placed[pi].endMin) {
+                        if (placed[pj].col > maxCol) maxCol = placed[pj].col;
+                    }
+                }
+                placed[pi].totalCols = maxCol + 1;
+            }
+
+            placed.forEach(function(p) {
+                var ev = p.ev;
+                var topPx = ((p.startMin - START_HOUR * 60) / 60) * HOUR_PX;
+                var heightPx = Math.max(((p.endMin - p.startMin) / 60) * HOUR_PX, 28);
+
+                // Clamp to visible grid
+                if (topPx < 0) { heightPx += topPx; topPx = 0; }
+                if (topPx > GRID_HEIGHT) return;
+                heightPx = Math.min(heightPx, GRID_HEIGHT - topPx);
+
+                var bgVal = getMultiMemberBg(ev, 0.25);
+                var bgStyle = bgVal.indexOf('gradient') !== -1 ? 'background-image:' + bgVal : 'background-color:' + bgVal;
+                var primaryColor = getEventPrimaryColor(ev);
+                var members = getEventMembers(ev);
+                var initial = members.length > 0 ? members[0].name.charAt(0).toUpperCase() : '';
+
+                var colW = (100 / p.totalCols);
+                var colL = (p.col * colW);
+
+                var startH = Math.floor(p.startMin / 60);
+                var startM = p.startMin % 60;
+                var period = startH >= 12 ? 'PM' : 'AM';
+                var dispH = startH % 12 || 12;
+                var dispM = startM < 10 ? '0' + startM : '' + startM;
+                var timeLabel = dispH + ':' + dispM + ' ' + period;
+
+                if (ev.endTime) {
+                    var eh = Math.floor(p.endMin / 60);
+                    var em = p.endMin % 60;
+                    var ep2 = eh >= 12 ? 'PM' : 'AM';
+                    var edh = eh % 12 || 12;
+                    var edm = em < 10 ? '0' + em : '' + em;
+                    timeLabel += ' – ' + edh + ':' + edm + ' ' + ep2;
+                }
+
+                html += '<div class="wv5-event" data-eid="' + ev.id + '" style="' +
+                    bgStyle + ';top:' + topPx + 'px;height:' + heightPx + 'px;' +
+                    'left:' + colL + '%;width:calc(' + colW + '% - 4px);" ' +
+                    'onclick="event.stopPropagation();showEventDetails(this.getAttribute(\'data-eid\'))">';
+                html += '<div class="wv5-event-time" style="color:' + primaryColor + '">' + timeLabel + '</div>';
+                html += '<div class="wv5-event-title">' + (ev.title || '') + '</div>';
+                if (initial) html += '<div class="wv5-event-dot" style="background:' + primaryColor + '">' + initial + '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>'; // wv5-day-col
+        }
+
+        html += '</div>'; // wv5-grid-inner
+        html += '</div>'; // wv5-grid-scroll
+
+        html += '</div>'; // wv5-outer
         container.innerHTML = html;
+
+        // Scroll to 8am on load
+        var scroll = container.querySelector('.wv5-grid-scroll');
+        if (scroll) scroll.scrollTop = (8 - START_HOUR) * HOUR_PX;
+
+        // Swipe support
+        var startX = null;
+        container.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+        }, { passive: true });
+        container.addEventListener('touchend', function(e) {
+            if (startX === null) return;
+            var dx = e.changedTouches[0].clientX - startX;
+            startX = null;
+            if (Math.abs(dx) > 50) {
+                currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5));
+                renderWeekView();
+                updateViewHeader();
+            }
+        }, { passive: true });
     }
     function renderDayView() {
         const container = document.getElementById('dayView');
@@ -5008,10 +5154,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Filter out Google Calendar members
         const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar);
         
-        choreMembers.forEach(function(member) {
-            // Skip hidden members
-            if (hiddenChoreMembers.indexOf(member.name) > -1) return;
-
+        choreMembers.forEach(member => {
             const memberChores = chores.filter(c => c.member === member.name);
             const memberRoutines = routines.filter(r => r.member === member.name);
             
@@ -5024,19 +5167,22 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             
             const columnBg = hexToRgba(member.color, 0.2);
             
-            html += '<div class="chore-person-card" style="background: ' + columnBg + ';">';
-            html += '<div class="chore-person-header">';
-            html += '<div class="chore-person-avatar" style="background: ' + member.color + '; cursor: pointer;" onclick="openProfileDashboard(\'' + member.name + '\')" title="View ' + member.name + '\'s dashboard">' + member.name.charAt(0).toUpperCase() + '</div>';
-            html += '<div class="chore-person-info">';
-            html += '<div class="chore-person-name">' + member.name + '</div>';
-            html += '<div class="chore-person-stats">';
-            html += '<span class="chore-person-progress-text">' + completedCount + '/' + totalCount + '</span>';
-            if (starsEarned > 0) html += '<span class="chore-person-stars">⭐ ' + starsEarned + '</span>';
-            html += '</div>';
-            html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + progressPercent + '%; background: ' + member.color + '"></div></div>';
-            html += '</div>';
-            html += '<button class="chore-list-edit-btn" data-member="' + member.name + '" onclick="openChoreListEdit(\'' + member.name + '\', event)">✏️</button>';
-            html += '</div>';
+            html += `<div class="chore-person-card" style="background: ${columnBg};">
+                <div class="chore-person-header">
+                    <div class="chore-person-avatar" style="background: ${member.color}; cursor: pointer;" onclick="openProfileDashboard('${member.name}')" title="View ${member.name}'s dashboard">
+                        ${member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="chore-person-info">
+                        <div class="chore-person-name">${member.name}</div>
+                        <div class="chore-person-stats">
+                            <span class="chore-person-progress-text">${completedCount}/${totalCount}</span>
+                            ${starsEarned > 0 ? `<span class="chore-person-stars">⭐ ${starsEarned}</span>` : ''}
+                        </div>
+                        <div class="chore-progress-bar">
+                            <div class="chore-progress-fill" style="width: ${progressPercent}%; background: ${member.color}"></div>
+                        </div>
+                    </div>
+                </div>`;
             
             // Show routine indicators if person has routines
             if (memberRoutines.length > 0) {
@@ -5200,66 +5346,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             
             html += '</div>';
         });
-
-        // Render Up for Grabs card if enabled
-        if (showUpForGrabs) {
-            var ufgChores = chores.filter(function(c) { return c.member === 'Up for Grabs'; });
-            var ufgCompleted = ufgChores.filter(function(c) { return c.completed; }).length;
-            var ufgTotal = ufgChores.length;
-            var ufgProgress = ufgTotal > 0 ? (ufgCompleted / ufgTotal) * 100 : 0;
-            var ufgColor = '#8b8b8b';
-
-            html += '<div class="chore-person-card" style="background: rgba(139,139,139,0.15);">';
-            html += '<div class="chore-person-header">';
-            html += '<div class="chore-person-avatar" style="background: ' + ufgColor + '; font-size: 32px;">🎲</div>';
-            html += '<div class="chore-person-info">';
-            html += '<div class="chore-person-name">Up for Grabs</div>';
-            html += '<div class="chore-person-stats"><span class="chore-person-progress-text">' + ufgCompleted + '/' + ufgTotal + '</span></div>';
-            html += '<div class="chore-progress-bar"><div class="chore-progress-fill" style="width: ' + ufgProgress + '%; background: ' + ufgColor + '"></div></div>';
-            html += '</div>';
-            html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
-            html += '</div>';
-
-            var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
-            visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
-            if (visibleUfg.length > 0) {
-                html += '<div class="chore-items">';
-                visibleUfg.forEach(function(chore) {
-                    var today2 = new Date(); today2.setHours(0,0,0,0);
-                    var isLate = chore.dueDate && new Date(chore.dueDate) < today2 && !chore.completed;
-                    var daysLate = isLate ? Math.floor((today2 - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
-                    var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
-                    var choreBg = hexToRgba(ufgColor, chore.completed ? 0.5 : 0.19);
-                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)">';
-                    if (chore.icon) html += '<div class="chore-item-icon">' + chore.icon + '</div>';
-                    html += '<div class="chore-item-content"><div class="chore-item-title">' + chore.title + '</div>';
-                    if (chore.frequency || isLate) html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
-                    html += '</div>';
-                    if (chore.stars) html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
-                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background:' + ufgColor + ';border-color:' + ufgColor + ';' : '') + '" onclick="event.stopPropagation();toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
-                    html += '</div>';
-                });
-                html += '</div>';
-            } else {
-                html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
-            }
-            html += '</div>';
-        }
-
-        // Restore hidden lists / Add Up for Grabs controls
-        var hasHidden = hiddenChoreMembers.length > 0;
-        if (hasHidden || !showUpForGrabs) {
-            html += '<div class="chore-manage-card">';
-            if (!showUpForGrabs) {
-                html += '<button class="chore-manage-btn" onclick="toggleUpForGrabs()">🎲 Add Up for Grabs list</button>';
-            }
-            if (hasHidden) {
-                hiddenChoreMembers.forEach(function(name) {
-                    html += '<button class="chore-manage-btn" onclick="restoreChoreList(\'' + name + '\')">↩ Restore ' + name + '\'s list</button>';
-                });
-            }
-            html += '</div>';
-        }
         
         container.innerHTML = html;
         
@@ -5542,124 +5628,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             item.classList.toggle('hidden', !match);
         });
     }
-
-    // ── Chore List Edit Panel ─────────────────────────────────────────────────
-
-    var currentEditChoreList = null; // member name being edited
-
-    function openChoreListEdit(memberName, event) {
-        if (event) event.stopPropagation();
-        currentEditChoreList = memberName;
-        var isUpForGrabs = memberName === 'Up for Grabs';
-
-        var nameInput = document.getElementById('choreListEditName');
-        var deleteBtn = document.getElementById('choreListDeleteBtn');
-        var title = document.getElementById('choreListEditTitle');
-
-        if (nameInput) nameInput.value = isUpForGrabs ? '' : memberName;
-        if (title) title.textContent = isUpForGrabs ? 'Up for Grabs' : memberName + '\'s List';
-
-        // Hide rename row for Up for Grabs (name tied to a profile)
-        var renameRow = document.getElementById('choreListRenameRow');
-        if (renameRow) renameRow.style.display = isUpForGrabs ? 'none' : 'block';
-
-        // Update delete button label
-        if (deleteBtn) deleteBtn.querySelector('span:last-child').textContent = isUpForGrabs ? 'Delete all Up for Grabs tasks' : 'Delete all tasks in this list';
-
-        document.getElementById('choreListEditOverlay').classList.add('active');
-        document.getElementById('choreListEditPanel').classList.add('active');
-    }
-    window.openChoreListEdit = openChoreListEdit;
-
-    function closeChoreListEdit() {
-        document.getElementById('choreListEditOverlay').classList.remove('active');
-        document.getElementById('choreListEditPanel').classList.remove('active');
-        currentEditChoreList = null;
-    }
-    window.closeChoreListEdit = closeChoreListEdit;
-
-    function saveChoreListName() {
-        if (!currentEditChoreList || currentEditChoreList === 'Up for Grabs') return;
-        var newName = document.getElementById('choreListEditName').value.trim();
-        if (!newName) { alert('Please enter a list name.'); return; }
-        if (newName === currentEditChoreList) { closeChoreListEdit(); return; }
-
-        // Check name not already taken
-        var taken = familyMembers.some(function(m) { return m.name === newName; });
-        if (taken) { alert('A profile with that name already exists.'); return; }
-
-        // This renames the label only in chore/routine member fields (not the profile itself)
-        var oldName = currentEditChoreList;
-        if (window.chores !== chores) { chores = window.chores; }
-        if (window.routines !== routines) { routines = window.routines; }
-        chores.forEach(function(c) { if (c.member === oldName) c.member = newName; });
-        routines.forEach(function(r) { if (r.member === oldName) r.member = newName; });
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
-
-        closeChoreListEdit();
-        renderChoresView();
-    }
-    window.saveChoreListName = saveChoreListName;
-
-    function hideChoreList() {
-        if (!currentEditChoreList) return;
-        if (currentEditChoreList === 'Up for Grabs') {
-            showUpForGrabs = false;
-            localStorage.setItem('showUpForGrabs', JSON.stringify(false));
-        } else {
-            if (hiddenChoreMembers.indexOf(currentEditChoreList) === -1) {
-                hiddenChoreMembers.push(currentEditChoreList);
-                localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
-            }
-        }
-        closeChoreListEdit();
-        renderChoresView();
-    }
-    window.hideChoreList = hideChoreList;
-
-    function deleteChoreListTasks() {
-        if (!currentEditChoreList) return;
-        var name = currentEditChoreList;
-        var taskCount = chores.filter(function(c) { return c.member === name; }).length;
-        var msg = taskCount > 0
-            ? 'Delete all ' + taskCount + ' task' + (taskCount > 1 ? 's' : '') + ' in ' + (name === 'Up for Grabs' ? 'Up for Grabs' : name + '\'s list') + '? This cannot be undone.'
-            : 'This list has no tasks. Nothing to delete.';
-        if (taskCount === 0) { alert(msg); return; }
-        if (!confirm(msg)) return;
-
-        if (window.chores !== chores) { chores = window.chores; }
-        var toDelete = chores.filter(function(c) { return c.member === name; });
-        chores = chores.filter(function(c) { return c.member !== name; });
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-
-        // Sync deletes to Supabase
-        if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-            toDelete.forEach(function(c) { window.SupabaseSync.syncChore(c, 'delete'); });
-        }
-
-        closeChoreListEdit();
-        renderChoresView();
-    }
-    window.deleteChoreListTasks = deleteChoreListTasks;
-
-    function restoreChoreList(memberName) {
-        var idx = hiddenChoreMembers.indexOf(memberName);
-        if (idx > -1) {
-            hiddenChoreMembers.splice(idx, 1);
-            localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
-            renderChoresView();
-        }
-    }
-    window.restoreChoreList = restoreChoreList;
-
-    function toggleUpForGrabs() {
-        showUpForGrabs = !showUpForGrabs;
-        localStorage.setItem('showUpForGrabs', JSON.stringify(showUpForGrabs));
-        renderChoresView();
-    }
-    window.toggleUpForGrabs = toggleUpForGrabs;
-
+    
     window.toggleRoutine = function toggleRoutine(routineId) {
         console.log('toggleRoutine called with ID:', routineId);
         console.log('toggleRoutine function type:', typeof toggleRoutine);
@@ -6890,13 +6859,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 <div class="edit-profile-name">${member.name}</div>
             </div>`;
         });
-
-        // Up for Grabs option
-        var ufgSelected = selectedProfiles.includes('Up for Grabs');
-        html += '<div class="edit-profile-item" onclick="toggleProfile(\'Up for Grabs\')">';
-        html += '<div class="edit-profile-avatar' + (ufgSelected ? ' selected' : '') + '" style="background:#8b8b8b;box-shadow:0 0 0 5px #8b8b8b80;font-size:24px;" data-member="Up for Grabs">🎲</div>';
-        html += '<div class="edit-profile-name">Up for Grabs</div>';
-        html += '</div>';
         
         html += `<div class="edit-profile-item">
             <div class="edit-profile-avatar" style="background: #e0e0e0; color: #666;">+</div>
@@ -7086,7 +7048,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return;
         }
         
-        var newChoresAdded = [];
         selectedProfiles.forEach(profileName => {
             if (currentTaskType === 'routine') {
                 // ROUTINE CREATION
@@ -7156,23 +7117,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
                 
                 chores.push(choreData);
-                newChoresAdded.push(choreData);
             }
         });
-
-        // Auto-enable Up for Grabs card if tasks were assigned to it
-        if (selectedProfiles.indexOf('Up for Grabs') > -1 && !showUpForGrabs) {
-            showUpForGrabs = true;
-            localStorage.setItem('showUpForGrabs', JSON.stringify(true));
-        }
         
         localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
         localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
-
-        // Sync new chores to Supabase (fire-and-forget)
-        if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-            newChoresAdded.forEach(function(c) { window.SupabaseSync.syncChore(c, 'add'); });
-        }
         
         // Reset form
         document.getElementById('taskChoreTitle').value = '';
@@ -7338,7 +7287,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (currentEditTaskType === 'chore') {
             const index = chores.findIndex(c => c.id === currentEditTaskId);
             if (index > -1) {
-                var choreToDelete = chores[index];
                 if (option === 'all' || !chores[index].repeat) {
                     // Delete the entire task
                     chores.splice(index, 1);
@@ -7351,9 +7299,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     chores.splice(index, 1);
                 }
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(choreToDelete, 'delete');
-                }
             }
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
@@ -7531,9 +7476,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
                 localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(chore, 'update');
-                }
             }
         } else {
             const routine = routines.find(r => r.id === currentEditTaskId);
@@ -7574,9 +7516,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 delete chore.completedDate;
             }
             localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-            if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                window.SupabaseSync.syncChore(chore, 'update');
-            }
             
             // Check if member completed all their chores
             if (!wasCompleted && chore.completed) {
@@ -7722,6 +7661,9 @@ if (allChoresComplete || allRoutinesComplete) {
             renderCalendar();
         } else if (view === 'week') {
             document.getElementById('weekView').classList.add('active');
+            // Always start from today when entering week view
+            var todayReset = new Date(); todayReset.setHours(0,0,0,0);
+            currentDate = todayReset;
             renderWeekView();
         } else if (view === 'schedule') {
             document.getElementById('scheduleView').classList.add('active');
