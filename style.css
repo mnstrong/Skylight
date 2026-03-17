@@ -3291,13 +3291,12 @@
         .sg-hours-col {
             width: 48px;
             flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #e8e8e8;
-            background: white;
             position: sticky;
             left: 0;
             z-index: 5;
+            background: white;
+            border-right: 1px solid #e8e8e8;
+            /* height set by JS padding-top + GRID_HEIGHT */
         }
 
         .sg-hours-spacer {
@@ -3352,18 +3351,15 @@
         }
 
         .sg-hour-label {
-            height: 120px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-end;
-            padding-right: 6px;
-            padding-top: 2px;
+            position: absolute;
+            right: 6px;
             font-size: 10px;
             font-weight: 500;
             color: #aaa;
-            flex-shrink: 0;
-            transform: translateY(-7px);
+            transform: translateY(-50%);
+            white-space: nowrap;
             background: white;
+            padding-right: 2px;
         }
 
         .sg-day-col {
