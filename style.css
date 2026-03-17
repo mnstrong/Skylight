@@ -522,7 +522,40 @@
         .week-view.active, .day-view.active {
             display: block;
         }
-        
+
+        /* ── 5-column week view ─────────────────────────────── */
+        .week-view { --wv5-gutter: 58px; --wv5-col-w: calc((100% - var(--wv5-gutter)) / 5); height: 100%; }
+        .wv5-outer { display:flex; flex-direction:column; height:calc(100vh - 160px); overflow:hidden; background:#fff; }
+        .wv5-header-row { display:flex; flex-shrink:0; border-bottom:2px solid #e8e8e8; background:#fff; }
+        .wv5-time-gutter-header { width:var(--wv5-gutter); flex-shrink:0; }
+        .wv5-day-header { flex:1; display:flex; flex-direction:column; align-items:center; padding:12px 4px 10px; border-left:1px solid #f0f0f0; gap:4px; }
+        .wv5-hdr-name { font-size:13px; font-weight:600; color:#aaa; letter-spacing:.06em; }
+        .wv5-today-header .wv5-hdr-name { color:#FF6B6B; }
+        .wv5-hdr-num { font-size:24px; font-weight:700; color:#333; width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+        .wv5-today-num { background:#FF6B6B; color:#fff !important; }
+        .wv5-allday-row { display:flex; flex-shrink:0; border-bottom:2px solid #e8e8e8; background:#fafafa; }
+        .wv5-time-gutter-allday { width:var(--wv5-gutter); flex-shrink:0; font-size:10px; color:#bbb; text-align:right; padding:10px 6px 0 0; }
+        .wv5-allday-cell { flex:1; padding:4px 3px; border-left:1px solid #f0f0f0; min-height:30px; }
+        .wv5-allday-pill { border-radius:20px; padding:4px 10px; margin-bottom:2px; cursor:pointer; }
+        .wv5-allday-title { font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+        .wv5-grid-scroll { flex:1; overflow-y:auto; overflow-x:hidden; position:relative; scrollbar-width:thin; scrollbar-color:#e0e0e0 transparent; }
+        .wv5-grid-scroll::-webkit-scrollbar { width:6px; }
+        .wv5-grid-scroll::-webkit-scrollbar-thumb { background:#e0e0e0; border-radius:3px; }
+        .wv5-grid-inner { position:relative; width:100%; }
+        .wv5-time-gutter { position:absolute; left:0; top:0; width:var(--wv5-gutter); height:100%; }
+        .wv5-time-label { position:absolute; right:8px; font-size:11px; color:#bbb; transform:translateY(-50%); white-space:nowrap; }
+        .wv5-day-col { position:absolute; top:0; bottom:0; border-left:1px solid #f0f0f0; }
+        .wv5-today-col { background:rgba(255,107,107,.025); }
+        .wv5-hour-line { position:absolute; left:0; right:0; height:0; border-top:1px solid #f0f0f0; }
+        .wv5-half-line { position:absolute; left:0; right:0; height:0; border-top:1px dashed #f7f7f7; }
+        .wv5-now-line { position:absolute; left:0; right:0; height:2px; background:#FF6B6B; z-index:10; pointer-events:none; }
+        .wv5-now-line::before { content:''; position:absolute; left:-5px; top:-5px; width:10px; height:10px; background:#FF6B6B; border-radius:50%; }
+        .wv5-event { position:absolute; border-radius:8px; padding:5px 7px; cursor:pointer; overflow:hidden; box-sizing:border-box; transition:box-shadow .15s; z-index:2; }
+        .wv5-event:active { box-shadow:0 3px 12px rgba(0,0,0,.2); z-index:20; }
+        .wv5-event-time { font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:1px; }
+        .wv5-event-title { font-size:13px; font-weight:600; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .wv5-event-dot { position:absolute; bottom:4px; right:4px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; }
+
         .simple-week-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -4036,7 +4069,48 @@
             border-radius: 20px;
             transition: width 0.3s ease;
         }
-        
+
+        .chore-list-edit-btn {
+            background: rgba(0,0,0,0.07);
+            border: none;
+            border-radius: 12px;
+            font-size: 26px;
+            padding: 8px 12px;
+            cursor: pointer;
+            align-self: flex-start;
+            margin-left: 8px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .chore-list-edit-btn:active { background: rgba(0,0,0,0.15); }
+
+        .chore-manage-card {
+            border-radius: 15px;
+            padding: 24px 20px;
+            min-width: 280px;
+            max-width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(0,0,0,0.04);
+            border: 2px dashed rgba(0,0,0,0.13);
+            align-self: flex-start;
+        }
+        .chore-manage-btn {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid rgba(0,0,0,0.12);
+            border-radius: 14px;
+            color: #444;
+            font-size: 22px;
+            font-weight: 500;
+            padding: 18px 20px;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+        }
+        .chore-manage-btn:active { background: rgba(0,0,0,0.08); }
+
         .chore-categories {
             display: flex;
             flex-direction: column;

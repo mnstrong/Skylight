@@ -85,7 +85,7 @@ async function loadAllDataFromSupabase() {
         const allTasks = await SupabaseAPI.getTasks();
         if (allTasks && allTasks.length > 0) {
             const choresFromSupabase = allTasks.map(t => {
-                // Find member name from ID; null assigned_to = Up for Grabs
+                // null assigned_to = Up for Grabs
                 const member = formattedMembers.find(m => m.id === t.assigned_to);
                 const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
                 
@@ -278,70 +278,48 @@ async function syncFamilyMemberColor(member) {
 async function syncChore(chore, operation) {
     operation = operation || 'update';
     if (!syncEnabled || !isSupabaseReady) return;
-
     try {
-        // Resolve member name → Supabase UUID; Up for Grabs → null
         var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
         var assignedTo = null;
         if (chore.member && chore.member !== 'Up for Grabs') {
             for (var mi = 0; mi < members.length; mi++) {
-                if (members[mi].name === chore.member) {
-                    assignedTo = members[mi].id || null;
-                    break;
-                }
+                if (members[mi].name === chore.member) { assignedTo = members[mi].id || null; break; }
             }
         }
-
         if (operation === 'add') {
             var dbChore = {
-                title:             chore.title || '',
-                description:       chore.icon  || '',
-                category:          'chore',
-                assigned_to:       assignedTo,
-                due_date:          chore.dueDate || null,
-                due_time:          chore.time    || null,
-                completed:         chore.completed || false,
-                points:            chore.stars    || 0,
+                title: chore.title || '', description: chore.icon || '', category: 'chore',
+                assigned_to: assignedTo, due_date: chore.dueDate || null, due_time: chore.time || null,
+                completed: chore.completed || false, points: chore.stars || 0,
                 recurring_pattern: (chore.repeat && chore.repeat.unit) ? chore.repeat.unit : null,
-                recurring_days:    (chore.repeat && chore.repeat.days) ? chore.repeat.days : null
+                recurring_days: (chore.repeat && chore.repeat.days) ? chore.repeat.days : null
             };
             var newRow = await SupabaseAPI.addTask(dbChore);
             if (newRow) {
                 chore.id = newRow.id;
                 var allChores = JSON.parse(localStorage.getItem('chores') || '[]');
                 for (var ci = 0; ci < allChores.length; ci++) {
-                    if (String(allChores[ci].title) === String(chore.title) &&
-                        String(allChores[ci].member) === String(chore.member) &&
-                        allChores[ci].id !== newRow.id) {
-                        allChores[ci].id = newRow.id;
-                        break;
+                    if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
+                        allChores[ci].id = newRow.id; break;
                     }
                 }
                 localStorage.setItem('chores', JSON.stringify(allChores));
                 if (window.chores) {
                     for (var wci = 0; wci < window.chores.length; wci++) {
-                        if (String(window.chores[wci].title) === String(chore.title) &&
-                            String(window.chores[wci].member) === String(chore.member) &&
-                            window.chores[wci].id !== newRow.id) {
-                            window.chores[wci].id = newRow.id;
-                            break;
+                        if (String(window.chores[wci].title) === String(chore.title) && String(window.chores[wci].member) === String(chore.member) && window.chores[wci].id !== newRow.id) {
+                            window.chores[wci].id = newRow.id; break;
                         }
                     }
                 }
                 console.log('✓ Chore synced to Supabase:', chore.title);
             }
         } else if (operation === 'update') {
-            var updates = {
-                title:        chore.title || '',
-                description:  chore.icon  || '',
-                assigned_to:  assignedTo,
-                due_date:     chore.dueDate || null,
-                due_time:     chore.time    || null,
-                completed:    chore.completed || false,
-                completed_at: chore.completed ? new Date().toISOString() : null,
-                points:       chore.stars  || 0
-            };
-            await SupabaseAPI.updateTask(chore.id, updates);
+            await SupabaseAPI.updateTask(chore.id, {
+                title: chore.title || '', description: chore.icon || '', assigned_to: assignedTo,
+                due_date: chore.dueDate || null, due_time: chore.time || null,
+                completed: chore.completed || false, completed_at: chore.completed ? new Date().toISOString() : null,
+                points: chore.stars || 0
+            });
             console.log('✓ Chore updated in Supabase:', chore.title);
         } else if (operation === 'delete') {
             await SupabaseAPI.deleteTask(chore.id);
