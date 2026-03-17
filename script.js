@@ -3439,7 +3439,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             currentDate.setDate(currentDate.getDate() + (direction * 7));
             renderWeekView();
         } else if (currentView === 'schedule') {
-            currentDate.setDate(currentDate.getDate() + (direction * 5));
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            currentDate.setDate(1);
             renderScheduleView();
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
@@ -3486,12 +3487,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             todayNav.classList.add('active');
             
         } else if (currentView === 'schedule') {
-            weekNav.classList.add('active');
-            var end5 = new Date(currentDate);
-            end5.setDate(end5.getDate() + 4);
-            var opts5 = { month: 'short', day: 'numeric' };
-            weekDisplay.textContent = currentDate.toLocaleDateString('en-US', opts5) +
-                ' – ' + end5.toLocaleDateString('en-US', opts5);
+            // Schedule view: show only view dropdown (no additional nav)
         }
     }
 
@@ -3939,10 +3935,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Show 5 days starting from currentDate
-        let startDate = new Date(currentDate);
-        startDate.setHours(0, 0, 0, 0);
-        const daysToShow = 5;
+        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        let startDate = new Date(monthStart);
+        const daysToShow = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
         scheduleDaysToShow = daysToShow;
         
         // Get all events ONCE outside the loop
@@ -4034,12 +4029,12 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return eventLayouts;
         }
 
-        // Build hour labels column HTML
+        // Build hour labels — absolutely positioned inside sg-time-grid coordinate system
         let hoursHtml = `<div class="sg-hours-col">`;
-        hoursHtml += `<div class="sg-hours-spacer"></div>`; // space for day header + meal bar
-        for (let h = START_HOUR; h <= END_HOUR; h++) {
-            const label = h === 0 ? '12 AM' : h < 12 ? `${h} am` : h === 12 ? '12 pm' : `${h - 12} pm`;
-            hoursHtml += `<div class="sg-hour-label">${label}</div>`;
+        for (let h = START_HOUR; h < END_HOUR; h++) {
+            const label = h < 12 ? `${h} am` : h === 12 ? '12 pm' : `${h - 12} pm`;
+            const topPx = (h - START_HOUR) * HOUR_HEIGHT;
+            hoursHtml += `<div class="sg-hour-label" style="top:${topPx}px">${label}</div>`;
         }
         hoursHtml += `</div>`;
 
@@ -4240,8 +4235,22 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 strips[ci].style.height = stripHeight + 'px';
             }
 
-            // 3. Sync hours-spacer to header + strip
+            // 3. Sync hours-col top padding so absolute labels align with the time grid
             var headerH = headers[0] ? headers[0].offsetHeight : 56;
+            var hoursCol = container.querySelector('.sg-hours-col');
+            var labelOffset = headerH + stripHeight;
+            if (hoursCol) {
+                hoursCol.style.position = 'relative';
+                hoursCol.style.height = (labelOffset + GRID_HEIGHT) + 'px';
+                // Shift each label down by the header+strip height so they align with grid lines
+                var labels = hoursCol.querySelectorAll('.sg-hour-label');
+                labels.forEach(function(lbl) {
+                    var gridTop = parseFloat(lbl.getAttribute('data-grid-top') || lbl.style.top) || 0;
+                    if (!lbl.getAttribute('data-grid-top')) lbl.setAttribute('data-grid-top', gridTop);
+                    lbl.style.top = (labelOffset + gridTop) + 'px';
+                });
+            }
+            // Keep spacer in sync too (legacy, may not exist now but harmless)
             var spacer = container.querySelector('.sg-hours-spacer');
             if (spacer) spacer.style.height = (headerH + stripHeight) + 'px';
 
@@ -4289,27 +4298,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const gridWrapper = container.querySelector('.sg-scroll-area');
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
-
-        // Swipe left/right to advance or retreat 5 days
-        var swipeStartX = null;
-        var swipeStartY = null;
-        container.addEventListener('touchstart', function(e) {
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-        }, { passive: true });
-        container.addEventListener('touchend', function(e) {
-            if (swipeStartX === null) return;
-            var dx = e.changedTouches[0].clientX - swipeStartX;
-            var dy = e.changedTouches[0].clientY - swipeStartY;
-            swipeStartX = null;
-            swipeStartY = null;
-            // Only trigger on predominantly horizontal swipe
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-                currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5));
-                renderScheduleView();
-                updateViewHeader();
-            }
-        }, { passive: true });
     }
 
     function switchSection(section) {
@@ -7542,8 +7530,6 @@ if (allChoresComplete || allRoutinesComplete) {
             renderWeekView();
         } else if (view === 'schedule') {
             document.getElementById('scheduleView').classList.add('active');
-            var todayForSchedule = new Date(); todayForSchedule.setHours(0,0,0,0);
-            currentDate = todayForSchedule;
             renderScheduleView();
         } else if (view === 'day') {
             document.getElementById('dayView').classList.add('active');
