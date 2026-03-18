@@ -3437,17 +3437,60 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         } else if (currentView === 'month') {
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
+            updateViewHeader();
         } else if (currentView === 'week') {
-            currentDate.setDate(currentDate.getDate() + (direction * 7));
-            renderWeekView();
+            var wvContainer = document.getElementById('weekView');
+            var wvOuter = wvContainer ? wvContainer.querySelector('.wv5-outer') : null;
+            var goForwardW = direction > 0;
+            if (wvOuter) {
+                wvOuter.style.transition = 'transform 0.18s ease-in, opacity 0.18s ease-in';
+                wvOuter.style.transform = goForwardW ? 'translateX(-60px)' : 'translateX(60px)';
+                wvOuter.style.opacity = '0';
+            }
+            setTimeout(function() {
+                currentDate.setDate(currentDate.getDate() + (direction * 5));
+                renderWeekView();
+                updateViewHeader();
+                var newOuter = wvContainer ? wvContainer.querySelector('.wv5-outer') : null;
+                if (newOuter) {
+                    newOuter.style.transition = 'none';
+                    newOuter.style.transform = goForwardW ? 'translateX(60px)' : 'translateX(-60px)';
+                    newOuter.style.opacity = '0';
+                    newOuter.offsetHeight;
+                    newOuter.style.transition = 'transform 0.18s ease-out, opacity 0.18s ease-out';
+                    newOuter.style.transform = 'translateX(0)';
+                    newOuter.style.opacity = '1';
+                }
+            }, 180);
         } else if (currentView === 'schedule') {
-            currentDate.setDate(currentDate.getDate() + (direction * 5));
-            renderScheduleView();
+            var sgContainer = document.getElementById('scheduleContainer');
+            var sgWrapper = sgContainer ? sgContainer.querySelector('.sg-wrapper') : null;
+            var goForwardS = direction > 0;
+            if (sgWrapper) {
+                sgWrapper.style.transition = 'transform 0.18s ease-in, opacity 0.18s ease-in';
+                sgWrapper.style.transform = goForwardS ? 'translateX(-60px)' : 'translateX(60px)';
+                sgWrapper.style.opacity = '0';
+            }
+            setTimeout(function() {
+                currentDate.setDate(currentDate.getDate() + (direction * 5));
+                renderScheduleView();
+                updateViewHeader();
+                var newWrapper = sgContainer ? sgContainer.querySelector('.sg-wrapper') : null;
+                if (newWrapper) {
+                    newWrapper.style.transition = 'none';
+                    newWrapper.style.transform = goForwardS ? 'translateX(60px)' : 'translateX(-60px)';
+                    newWrapper.style.opacity = '0';
+                    newWrapper.offsetHeight;
+                    newWrapper.style.transition = 'transform 0.18s ease-out, opacity 0.18s ease-out';
+                    newWrapper.style.transform = 'translateX(0)';
+                    newWrapper.style.opacity = '1';
+                }
+            }, 180);
         } else if (currentView === 'day') {
             currentDate.setDate(currentDate.getDate() + direction);
             renderDayView();
+            updateViewHeader();
         }
-        updateViewHeader();
     }
 
     function updateViewHeader() {
@@ -3876,13 +3919,42 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var scroll = container.querySelector('.wv5-grid-scroll');
         if (scroll) scroll.scrollTop = (8 - START_HOUR) * HOUR_PX;
 
-        // Swipe
+        // Swipe left = previous 5 days, swipe right = next 5 days
         var wvSwipeX = null;
-        container.addEventListener('touchstart', function(e) { wvSwipeX = e.touches[0].clientX; }, {passive:true});
+        var wvSwipeY = null;
+        container.addEventListener('touchstart', function(e) {
+            wvSwipeX = e.touches[0].clientX;
+            wvSwipeY = e.touches[0].clientY;
+        }, {passive:true});
         container.addEventListener('touchend', function(e) {
             if (wvSwipeX === null) return;
-            var dx = e.changedTouches[0].clientX - wvSwipeX; wvSwipeX = null;
-            if (Math.abs(dx) > 50) { currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5)); renderWeekView(); updateViewHeader(); }
+            var dx = e.changedTouches[0].clientX - wvSwipeX;
+            var dy = e.changedTouches[0].clientY - wvSwipeY;
+            wvSwipeX = null; wvSwipeY = null;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                var goForward = dx > 0;
+                var outer = container.querySelector('.wv5-outer');
+                if (outer) {
+                    outer.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
+                    outer.style.transform = goForward ? 'translateX(60px)' : 'translateX(-60px)';
+                    outer.style.opacity = '0';
+                }
+                setTimeout(function() {
+                    currentDate.setDate(currentDate.getDate() + (goForward ? 5 : -5));
+                    renderWeekView();
+                    updateViewHeader();
+                    var newOuter = container.querySelector('.wv5-outer');
+                    if (newOuter) {
+                        newOuter.style.transition = 'none';
+                        newOuter.style.transform = goForward ? 'translateX(-60px)' : 'translateX(60px)';
+                        newOuter.style.opacity = '0';
+                        newOuter.offsetHeight;
+                        newOuter.style.transition = 'transform 0.22s ease-out, opacity 0.22s ease-out';
+                        newOuter.style.transform = 'translateX(0)';
+                        newOuter.style.opacity = '1';
+                    }
+                }, 220);
+            }
         }, {passive:true});
     }
     function renderDayView() {
@@ -4175,17 +4247,16 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 '<button class="schedule-add-btn" onclick="openEventModalForDate(\'' + dateStr + '\')">+ Add</button>' +
                 '</div>';
 
-            // Time grid
+            // All-day strip OUTSIDE the time grid so it never offsets event top positions
+            daysHtml += '<div class="sg-allday-strip"></div>';
+
+            // Time grid — events use pure minutesToPx with no strip offset
             daysHtml += `<div class="sg-time-grid" style="height:${GRID_HEIGHT}px;" onclick="openEventModalForDate('${dateStr}')">`;
 
             // Hour lines
             for (let h = 0; h < TOTAL_HOURS; h++) {
                 daysHtml += `<div class="sg-hour-line" style="top:${h * HOUR_HEIGHT}px"></div>`;
             }
-
-            // All-day events rendered as spanning overlays after DOM is built
-            // Empty strip acts as vertical spacer to reserve room for the bars
-            daysHtml += '<div class="sg-allday-strip"></div>';
 
 
             // Timed events
@@ -4394,12 +4465,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
 
-        // Swipe left/right for ±5 days
+        // Swipe left = previous 5 days, swipe right = next 5 days
         var sgSwipeX = null;
         var sgSwipeY = null;
+        var sgSwiping = false;
         container.addEventListener('touchstart', function(e) {
             sgSwipeX = e.touches[0].clientX;
             sgSwipeY = e.touches[0].clientY;
+            sgSwiping = false;
         }, { passive: true });
         container.addEventListener('touchend', function(e) {
             if (sgSwipeX === null) return;
@@ -4407,9 +4480,41 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             var dy = e.changedTouches[0].clientY - sgSwipeY;
             sgSwipeX = null; sgSwipeY = null;
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-                currentDate.setDate(currentDate.getDate() + (dx < 0 ? 5 : -5));
-                renderScheduleView();
-                updateViewHeader();
+                // dx < 0 = swiped left = go back; dx > 0 = swiped right = go forward
+                var goForward = dx > 0;
+                var scrollArea = container.querySelector('.sg-scroll-area');
+                var scrollTop = scrollArea ? scrollArea.scrollTop : 0;
+
+                // Slide current view out
+                var wrapper = container.querySelector('.sg-wrapper');
+                if (wrapper) {
+                    wrapper.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
+                    wrapper.style.transform = goForward ? 'translateX(60px)' : 'translateX(-60px)';
+                    wrapper.style.opacity = '0';
+                }
+
+                setTimeout(function() {
+                    currentDate.setDate(currentDate.getDate() + (goForward ? 5 : -5));
+                    renderScheduleView();
+                    updateViewHeader();
+
+                    // Restore scroll position after render
+                    var newScrollArea = container.querySelector('.sg-scroll-area');
+                    if (newScrollArea) newScrollArea.scrollTop = scrollTop;
+
+                    // Slide new view in from opposite side
+                    var newWrapper = container.querySelector('.sg-wrapper');
+                    if (newWrapper) {
+                        newWrapper.style.transition = 'none';
+                        newWrapper.style.transform = goForward ? 'translateX(-60px)' : 'translateX(60px)';
+                        newWrapper.style.opacity = '0';
+                        // Force reflow
+                        newWrapper.offsetHeight;
+                        newWrapper.style.transition = 'transform 0.22s ease-out, opacity 0.22s ease-out';
+                        newWrapper.style.transform = 'translateX(0)';
+                        newWrapper.style.opacity = '1';
+                    }
+                }, 220);
             }
         }, { passive: true });
     }
