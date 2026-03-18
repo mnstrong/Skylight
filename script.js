@@ -10227,7 +10227,7 @@ function renderKidsScheduleView() {
 
         html += '<div class="day-view-event ks-block' + (isCur ? ' ks-block-current' : '') + '" style="'
             + 'position:absolute;left:0;right:0;'
-            + 'top:' + topPct + '%;height:' + htPct + '%;'
+            + 'top:calc(' + topPct + '% + 3px);height:calc(' + htPct + '% - 3px);'
             + 'background:' + colors.bg + ';'
             + 'border-left:3px solid ' + colors.border + ';'
             + 'border-radius:12px;padding:12px 16px;'
