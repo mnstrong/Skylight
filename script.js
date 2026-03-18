@@ -4581,6 +4581,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 </div>
                 
                 <div class="day-view" id="dayView"></div>
+
+                <div class="kids-schedule-view" id="kidsScheduleView"></div>
             `;
             renderFamilyPills();
             renderCalendarFilterList();
@@ -4609,6 +4611,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     else if (currentView === 'week') renderWeekView();
                     else if (currentView === 'schedule') renderScheduleView();
                     else if (currentView === 'day') renderDayView();
+                    else if (currentView === 'kids') renderKidsScheduleView();
                 });
             }
         } else if (section === 'chores') {
@@ -10112,7 +10115,7 @@ var KIDS_SCHEDULE_BLOCKS = [
     { id: 'ks9',  startTime: '11:30', endTime: '12:00', label: 'Lunch & Clean Up',             emoji: '🥪', category: 'meals'   },
     { id: 'ks10', startTime: '12:00', endTime: '14:00', label: 'Free Play',                    emoji: '🎮', category: 'free'    },
     { id: 'ks11', startTime: '14:00', endTime: '14:30', label: 'Chores',                       emoji: '✅', category: 'chores'  },
-    { id: 'ks12', startTime: '14:30', endTime: '15:00', label: 'Quiet Time in Bedrooms',       emoji: '📚', category: 'quiet'   },
+    { id: 'ks12', startTime: '14:30', endTime: '15:30', label: 'Quiet Time in Bedrooms',       emoji: '📚', category: 'quiet'   },
     { id: 'ks13', startTime: '15:00', endTime: '17:00', label: 'TV Allowed',                   emoji: '📺', category: 'screen'  }
 ];
 
