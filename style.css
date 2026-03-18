@@ -3698,186 +3698,207 @@
         .day-view-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 28px 24px 40px;
             display: flex;
             align-items: flex-start;
+            gap: 24px;
         }
-        
+
         .day-view-mini-calendar {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 16px 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            width: 320px;
             min-width: 320px;
             flex-shrink: 0;
         }
-        
+
         .day-view-main {
             flex: 1;
+            min-width: 0;
         }
-        
+
         .mini-calendar-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
-        
+
         .mini-calendar-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
+            color: #1a1a2e;
         }
-        
+
         .mini-calendar-nav {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 5px 10px;
+            padding: 2px 6px;
             color: #667eea;
-            border-radius: 5px;
+            border-radius: 6px;
+            line-height: 1;
         }
-        
+
         .mini-calendar-nav:hover {
             background: rgba(102, 126, 234, 0.1);
         }
-        
+
         .mini-calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
+            gap: 1px 0;
         }
-        
+
         .mini-calendar-day-header {
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            color: #999;
-            padding: 5px;
+            color: #aaa;
+            padding: 4px 0;
         }
-        
+
         .mini-calendar-day {
             aspect-ratio: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
             border-radius: 50%;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s;
+            color: #333;
         }
-        
+
         .mini-calendar-day:hover {
             background: rgba(102, 126, 234, 0.1);
         }
-        
+
         .mini-calendar-day.today {
             background: #FF6B6B;
             color: white;
             font-weight: 700;
         }
-        
+
         .mini-calendar-day.selected {
             background: #667eea;
             color: white;
             font-weight: 700;
         }
-        
+
         .mini-calendar-day.today.selected {
             background: #667eea;
+            color: white;
             box-shadow: 0 0 0 2px #FF6B6B;
         }
-        
+
+        /* Day header: WEDNESDAY 11 March — all on one line */
         .day-view-header {
-            margin-bottom: 40px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
+            gap: 12px;
         }
-        
+
         .day-view-title {
             display: flex;
             align-items: center;
+            gap: 10px;
         }
-        
+
         .day-view-title .week-day-name {
-            font-size: 24px;
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 0.8;
-        }
-        
-        .day-view-title .week-day-number {
-            font-size: 48px;
+            font-size: 18px;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #555;
         }
-        
+
+        .day-view-title .week-day-number {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1;
+            color: #1a1a2e;
+        }
+
         .day-view-title.today .week-day-number {
-            background: #FF6B6B;
+            background: #667eea;
             color: white;
-            width: 70px;
-            height: 70px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 26px;
+            font-weight: 800;
         }
-        
+
         .day-view-month {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 400;
-            color: #666;
+            color: #888;
         }
-        
+
+        /* Events list */
         .day-view-events {
             display: flex;
             flex-direction: column;
+            gap: 10px;
         }
-        
+
         .day-view-event {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 18px 20px;
+            border-radius: 14px;
+            border: none;
+            box-shadow: none;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.15s, box-shadow 0.15s;
             display: flex;
             flex-direction: column;
             position: relative;
+            min-height: 68px;
         }
-        
+
         .day-view-event:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.10);
         }
-        
+
         .day-view-event-time {
-            font-size: 16px;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(0,0,0,0.5);
+            margin-bottom: 4px;
         }
-        
+
         .day-view-event-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0;
         }
-        
+
         .day-view-event-member {
-            font-size: 16px;
-            color: #666;
+            font-size: 13px;
+            color: rgba(0,0,0,0.45);
+            margin-top: 3px;
         }
-        
+
         .day-view-event-dot {
             position: absolute;
-            top: 24px;
-            right: 24px;
-            width: 40px;
-            height: 40px;
+            top: 16px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: white;
         }
@@ -6448,199 +6469,3 @@ width: 80px;
             min-height: 80px;
             align-self: stretch;
         }
-
-/* ============================================================
-   DAILY SCHEDULE PAGE
-   ============================================================ */
-
-.daily-schedule-container {
-    padding: 0;
-    height: 100%;
-    overflow-y: auto;
-    background: var(--bg-primary, #f8f9fa);
-}
-
-.ds-page {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 24px 16px 40px;
-}
-
-/* Header */
-.ds-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.ds-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary, #1a1a2e);
-    letter-spacing: -0.3px;
-}
-
-.ds-members {
-    display: flex;
-    gap: 8px;
-}
-
-.ds-member-pill {
-    font-size: 13px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1.5px solid;
-    letter-spacing: 0.2px;
-}
-
-/* Timeline layout */
-.ds-timeline-wrap {
-    display: flex;
-    gap: 0;
-    position: relative;
-    /* total visual height for the 7am-5pm span */
-    height: 920px;
-}
-
-/* Left time axis */
-.ds-time-axis {
-    position: relative;
-    width: 42px;
-    flex-shrink: 0;
-}
-
-.ds-axis-tick {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    transform: translateY(-50%);
-}
-
-.ds-axis-tick span {
-    font-size: 11px;
-    color: var(--text-tertiary, #9ca3af);
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-/* Horizontal grid lines */
-.ds-blocks-col {
-    position: relative;
-    flex: 1;
-    border-left: 1.5px solid var(--border-color, #e5e7eb);
-}
-
-/* Faint hour lines drawn via background */
-.ds-blocks-col::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent,
-        transparent calc(10% - 1px),
-        rgba(0,0,0,0.045) calc(10% - 1px),
-        rgba(0,0,0,0.045) 10%
-    );
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Each time block */
-.ds-block {
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    border-radius: 10px;
-    border: 1.5px solid transparent;
-    overflow: hidden;
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-    z-index: 1;
-    box-sizing: border-box;
-    min-height: 28px;
-}
-
-.ds-block:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    transform: translateX(1px);
-    z-index: 2;
-}
-
-.ds-block-current {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    z-index: 3;
-}
-
-.ds-block-inner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.ds-block-emoji {
-    font-size: 18px;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-.ds-block-text {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.ds-block-label {
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-}
-
-.ds-block-time {
-    font-size: 11px;
-    color: var(--text-tertiary, #9ca3af);
-    margin-top: 1px;
-    font-weight: 400;
-}
-
-.ds-now-badge {
-    font-size: 10px;
-    font-weight: 700;
-    background: #ef4444;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 6px;
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .ds-page {
-        padding: 16px 12px 60px;
-    }
-    .ds-timeline-wrap {
-        height: 820px;
-    }
-    .ds-block-label {
-        font-size: 12px;
-    }
-    .ds-block-emoji {
-        font-size: 15px;
-    }
-    .ds-time-axis {
-        width: 36px;
-    }
-    .ds-axis-tick span {
-        font-size: 10px;
-    }
-}
