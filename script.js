@@ -10230,7 +10230,7 @@ function renderKidsScheduleView() {
             + 'top:' + topPct + '%;height:' + htPct + '%;'
             + 'background:' + colors.bg + ';'
             + 'border-left:3px solid ' + colors.border + ';'
-            + 'border-radius:12px;padding:8px 14px;'
+            + 'border-radius:12px;padding:12px 16px;'
             + 'min-height:0;box-sizing:border-box;'
             + (isCur ? 'box-shadow:0 4px 16px rgba(0,0,0,0.13);' : '')
             + '">';
