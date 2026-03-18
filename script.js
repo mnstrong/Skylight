@@ -7910,6 +7910,8 @@ if (allChoresComplete || allRoutinesComplete) {
         document.getElementById('weekView').classList.remove('active');
         document.getElementById('scheduleView').classList.remove('active');
         document.getElementById('dayView').classList.remove('active');
+        var kidsViewEl = document.getElementById('kidsScheduleView');
+        if (kidsViewEl) kidsViewEl.classList.remove('active');
         
         // Show floating add button for all calendar views
         document.getElementById('floatingAddBtn').classList.add('active');
@@ -7929,6 +7931,10 @@ if (allChoresComplete || allRoutinesComplete) {
         } else if (view === 'day') {
             document.getElementById('dayView').classList.add('active');
             renderDayView();
+        } else if (view === 'kids') {
+            var kv = document.getElementById('kidsScheduleView');
+            if (kv) kv.classList.add('active');
+            if (typeof renderKidsScheduleView === 'function') renderKidsScheduleView();
         }
         
         updateViewHeader();
@@ -10088,4 +10094,160 @@ try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected())
 
 function openProfileSettings() {
 if (window.innerWidth <= 768) alert('Profile settings coming soon!');
+}
+
+// ============================================================
+// KIDS SCHEDULE VIEW
+// ============================================================
+
+var KIDS_SCHEDULE_BLOCKS = [
+    { id: 'ks1',  startTime: '7:15',  endTime: '7:45',  label: 'Shower & Get Dressed',        emoji: '🚿', category: 'morning' },
+    { id: 'ks2',  startTime: '7:45',  endTime: '8:00',  label: 'Clean Room & Make Bed',        emoji: '🛏️', category: 'morning' },
+    { id: 'ks3',  startTime: '8:00',  endTime: '8:30',  label: 'Breakfast & Clean Up',         emoji: '🥣', category: 'meals'   },
+    { id: 'ks4',  startTime: '8:30',  endTime: '8:40',  label: 'Brush Teeth & Tidy Bathroom',  emoji: '🪥', category: 'morning' },
+    { id: 'ks5',  startTime: '8:40',  endTime: '9:00',  label: 'Pick Up Around the House',     emoji: '🧹', category: 'morning' },
+    { id: 'ks6',  startTime: '9:00',  endTime: '10:00', label: 'Outside Time',                 emoji: '🌞', category: 'outside' },
+    { id: 'ks7',  startTime: '10:00', endTime: '10:30', label: 'Chores',                       emoji: '✅', category: 'chores'  },
+    { id: 'ks8',  startTime: '10:30', endTime: '11:30', label: 'Free Time',                    emoji: '🎨', category: 'free'    },
+    { id: 'ks9',  startTime: '11:30', endTime: '12:00', label: 'Lunch & Clean Up',             emoji: '🥪', category: 'meals'   },
+    { id: 'ks10', startTime: '12:00', endTime: '14:00', label: 'Free Play',                    emoji: '🎮', category: 'free'    },
+    { id: 'ks11', startTime: '14:00', endTime: '14:30', label: 'Chores',                       emoji: '✅', category: 'chores'  },
+    { id: 'ks12', startTime: '14:30', endTime: '15:00', label: 'Quiet Time in Bedrooms',       emoji: '📚', category: 'quiet'   },
+    { id: 'ks13', startTime: '15:00', endTime: '17:00', label: 'TV Allowed',                   emoji: '📺', category: 'screen'  }
+];
+
+var KS_CATEGORY_COLORS = {
+    morning: { bg: 'rgba(254,215,170,0.45)', border: '#FED7AA', text: '#C2410C' },
+    outside: { bg: 'rgba(187,247,208,0.45)', border: '#BBF7D0', text: '#15803D' },
+    chores:  { bg: 'rgba(191,219,254,0.45)', border: '#BFDBFE', text: '#1D4ED8' },
+    free:    { bg: 'rgba(233,213,255,0.45)', border: '#E9D5FF', text: '#7E22CE' },
+    meals:   { bg: 'rgba(253,230,138,0.45)', border: '#FDE68A', text: '#B45309' },
+    quiet:   { bg: 'rgba(186,230,253,0.45)', border: '#BAE6FD', text: '#0369A1' },
+    screen:  { bg: 'rgba(254,205,211,0.45)', border: '#FECDD3', text: '#BE123C' }
+};
+
+function ksTimeToMins(t) {
+    var p = t.split(':');
+    return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+}
+
+function ksFormatTime(t) {
+    var p = t.split(':');
+    var h = parseInt(p[0], 10);
+    var m = p[1];
+    var ampm = h >= 12 ? 'pm' : 'am';
+    var h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+    return m === '00' ? h12 + ampm : h12 + ':' + m + ampm;
+}
+
+function ksCurrentBlockId() {
+    var now = new Date();
+    var nowM = now.getHours() * 60 + now.getMinutes();
+    for (var i = 0; i < KIDS_SCHEDULE_BLOCKS.length; i++) {
+        var b = KIDS_SCHEDULE_BLOCKS[i];
+        if (nowM >= ksTimeToMins(b.startTime) && nowM < ksTimeToMins(b.endTime)) return b.id;
+    }
+    return null;
+}
+
+function renderKidsScheduleView() {
+    var container = document.getElementById('kidsScheduleView');
+    if (!container) return;
+
+    var DAY_START = 7 * 60;   // 7:00am
+    var DAY_END   = 17 * 60;  // 5:00pm
+    var DAY_TOTAL = DAY_END - DAY_START;
+    var currentId = ksCurrentBlockId();
+
+    // Get Levi & Elsie colors from familyMembers
+    var leviColor = '#60A5FA';
+    var elsieColor = '#F472B6';
+    if (typeof familyMembers !== 'undefined') {
+        for (var fi = 0; fi < familyMembers.length; fi++) {
+            var fm = familyMembers[fi];
+            if (fm.name && fm.name.toLowerCase() === 'levi')  leviColor  = fm.color || leviColor;
+            if (fm.name && fm.name.toLowerCase() === 'elsie') elsieColor = fm.color || elsieColor;
+        }
+    }
+
+    var html = '<div class="day-view-container">';
+
+    // ---- LEFT: mini calendar (reuse existing renderMiniCalendar) ----
+    html += '<div class="day-view-mini-calendar">';
+    if (typeof renderMiniCalendar === 'function') {
+        html += renderMiniCalendar();
+    }
+    // Member pills below calendar
+    html += '<div class="ks-member-pills">';
+    html += '<span class="ks-pill" style="background:' + leviColor + '20;color:' + leviColor + ';border-color:' + leviColor + '60">Levi</span>';
+    html += '<span class="ks-pill" style="background:' + elsieColor + '20;color:' + elsieColor + ';border-color:' + elsieColor + '60">Elsie</span>';
+    html += '</div>';
+    html += '</div>';
+
+    // ---- RIGHT: schedule timeline ----
+    html += '<div class="day-view-main">';
+
+    // Header — same style as day view header
+    html += '<div class="day-view-header">';
+    html += '<div class="day-view-title">';
+    html += '<span class="week-day-name">NO-SCHOOL</span>';
+    html += '<span class="week-day-number" style="font-size:32px;margin-right:8px;">DAY</span>';
+    html += '</div>';
+    html += '<div class="day-view-month">Schedule</div>';
+    html += '</div>';
+
+    // Timeline
+    html += '<div class="ks-timeline-wrap">';
+
+    // Time axis
+    html += '<div class="ks-time-axis">';
+    var axisHours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+    for (var ai = 0; ai < axisHours.length; ai++) {
+        var ah = axisHours[ai];
+        var pct = ((ah * 60 - DAY_START) / DAY_TOTAL * 100).toFixed(2);
+        var lbl = ah > 12 ? (ah - 12) + 'pm' : (ah === 12 ? '12pm' : ah + 'am');
+        html += '<div class="ks-axis-tick" style="top:' + pct + '%"><span>' + lbl + '</span></div>';
+    }
+    html += '</div>';
+
+    // Blocks column
+    html += '<div class="ks-blocks-col">';
+    for (var bi = 0; bi < KIDS_SCHEDULE_BLOCKS.length; bi++) {
+        var block = KIDS_SCHEDULE_BLOCKS[bi];
+        var startM  = ksTimeToMins(block.startTime);
+        var endM    = ksTimeToMins(block.endTime);
+        var topPct  = ((startM - DAY_START) / DAY_TOTAL * 100).toFixed(3);
+        var htPct   = ((endM - startM) / DAY_TOTAL * 100).toFixed(3);
+        var colors  = KS_CATEGORY_COLORS[block.category] || KS_CATEGORY_COLORS.free;
+        var isCur   = block.id === currentId;
+        var durMins = endM - startM;
+
+        html += '<div class="day-view-event ks-block' + (isCur ? ' ks-block-current' : '') + '" style="'
+            + 'position:absolute;left:0;right:0;'
+            + 'top:' + topPct + '%;height:' + htPct + '%;'
+            + 'background:' + colors.bg + ';'
+            + 'border-left:3px solid ' + colors.border + ';'
+            + 'border-radius:12px;padding:8px 14px;'
+            + 'min-height:0;box-sizing:border-box;'
+            + (isCur ? 'box-shadow:0 4px 16px rgba(0,0,0,0.13);' : '')
+            + '">';
+        html += '<div style="display:flex;align-items:center;gap:8px;height:100%;">';
+        html += '<span style="font-size:18px;flex-shrink:0;">' + block.emoji + '</span>';
+        html += '<div style="flex:1;min-width:0;overflow:hidden;">';
+        html += '<div class="day-view-event-title" style="color:' + colors.text + ';font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + block.label + '</div>';
+        if (durMins >= 20) {
+            html += '<div class="day-view-event-time" style="font-size:11px;">' + ksFormatTime(block.startTime) + ' – ' + ksFormatTime(block.endTime) + '</div>';
+        }
+        html += '</div>';
+        if (isCur) {
+            html += '<span style="font-size:10px;font-weight:700;background:#ef4444;color:white;padding:2px 6px;border-radius:6px;flex-shrink:0;">NOW</span>';
+        }
+        html += '</div></div>';
+    }
+    html += '</div>'; // ks-blocks-col
+    html += '</div>'; // ks-timeline-wrap
+    html += '</div>'; // day-view-main
+    html += '</div>'; // day-view-container
+
+    container.innerHTML = html;
 }

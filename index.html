@@ -74,9 +74,6 @@
                 <div class="nav-icon icon-lists"></div>
                 <div>Lists</div>
             </a>
-            <a href="#/schedule" class="nav-item">
-                <div class="nav-icon" style="font-size: 28px;">🗓️</div>
-            </a>
             <a href="#/habits" class="nav-item">
                 <div class="nav-icon" style="font-size: 28px;">🌱</div>
                 <div>Habits</div>
@@ -105,6 +102,7 @@
                     <option value="week">Week</option>
                     <option value="schedule">Schedule</option>
                     <option value="day">Day</option>
+                    <option value="kids">Kids Schedule</option>
                 </select>
                 <div class="calendar-filter-btn" id="calendarFilterBtn" onclick="toggleCalendarFilter()">
                     <span class="calendar-filter-icon">🔍</span>
@@ -173,6 +171,7 @@
                 <div class="schedule-container" id="scheduleContainer"></div>
             </div>
             <div class="day-view" id="dayView"></div>
+            <div class="kids-schedule-view" id="kidsScheduleView"></div>
         </div>
 
         <div class="right-panel" style="display: none;">
@@ -1406,10 +1405,6 @@
         <div class="mobile-icon-item" onclick="goToSection('recipes')">
             <div class="mobile-icon-circle mobile-icon-recipes">📖<div class="mobile-icon-badge">+</div></div>
             <div class="mobile-icon-label">Recipes</div>
-        </div>
-        <div class="mobile-icon-item" onclick="goToSection('schedule')">
-            <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #FFF7ED, #FEF3C7);">🗓️</div>
-            <div class="mobile-icon-label">Schedule</div>
         </div>
         <div class="mobile-icon-item" onclick="goToSection('habits')">
             <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #EEF2FF, #FDF0FF);">🌱</div>

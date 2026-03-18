@@ -6472,3 +6472,100 @@ width: 80px;
             min-height: 80px;
             align-self: stretch;
         }
+
+/* ============================================================
+   KIDS SCHEDULE VIEW (calendar dropdown option)
+   ============================================================ */
+
+.kids-schedule-view {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.kids-schedule-view.active {
+    display: block;
+}
+
+/* Timeline layout */
+.ks-timeline-wrap {
+    display: flex;
+    gap: 0;
+    position: relative;
+    height: 860px;
+}
+
+.ks-time-axis {
+    position: relative;
+    width: 42px;
+    flex-shrink: 0;
+}
+
+.ks-axis-tick {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+}
+
+.ks-axis-tick span {
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ks-blocks-col {
+    position: relative;
+    flex: 1;
+    border-left: 1.5px solid #e5e7eb;
+}
+
+/* Faint hour grid lines */
+.ks-blocks-col::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(10% - 1px),
+        rgba(0,0,0,0.04) calc(10% - 1px),
+        rgba(0,0,0,0.04) 10%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Block hover — override day-view-event hover for blocks */
+.ks-block {
+    z-index: 1;
+    transition: box-shadow 0.15s, transform 0.15s !important;
+    transform: none !important;
+}
+
+.ks-block:hover {
+    transform: translateX(2px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.11) !important;
+    z-index: 2;
+}
+
+.ks-block-current {
+    z-index: 3 !important;
+}
+
+/* Member pills below mini calendar */
+.ks-member-pills {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.ks-pill {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1.5px solid;
+}
