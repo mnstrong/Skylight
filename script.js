@@ -10104,19 +10104,19 @@ if (window.innerWidth <= 768) alert('Profile settings coming soon!');
 // ============================================================
 
 var KIDS_SCHEDULE_BLOCKS = [
-    { id: 'ks1',  startTime: '7:15',  endTime: '7:45',  label: 'Shower & Get Dressed',        emoji: '🚿', category: 'morning' },
-    { id: 'ks2',  startTime: '7:45',  endTime: '8:00',  label: 'Clean Room & Make Bed',        emoji: '🛏️', category: 'morning' },
-    { id: 'ks3',  startTime: '8:00',  endTime: '8:30',  label: 'Breakfast & Clean Up',         emoji: '🥣', category: 'meals'   },
-    { id: 'ks4',  startTime: '8:30',  endTime: '8:40',  label: 'Brush Teeth & Tidy Bathroom',  emoji: '🪥', category: 'morning' },
-    { id: 'ks5',  startTime: '8:40',  endTime: '9:00',  label: 'Pick Up Around the House',     emoji: '🧹', category: 'morning' },
-    { id: 'ks6',  startTime: '9:00',  endTime: '10:00', label: 'Outside Time',                 emoji: '🌞', category: 'outside' },
-    { id: 'ks7',  startTime: '10:00', endTime: '10:30', label: 'Chores',                       emoji: '✅', category: 'chores'  },
-    { id: 'ks8',  startTime: '10:30', endTime: '11:30', label: 'Free Time',                    emoji: '🎨', category: 'free'    },
-    { id: 'ks9',  startTime: '11:30', endTime: '12:00', label: 'Lunch & Clean Up',             emoji: '🥪', category: 'meals'   },
-    { id: 'ks10', startTime: '12:00', endTime: '14:00', label: 'Free Play',                    emoji: '🎮', category: 'free'    },
-    { id: 'ks11', startTime: '14:00', endTime: '14:30', label: 'Chores',                       emoji: '✅', category: 'chores'  },
-    { id: 'ks12', startTime: '14:30', endTime: '15:30', label: 'Quiet Time in Bedrooms',       emoji: '📚', category: 'quiet'   },
-    { id: 'ks13', startTime: '15:00', endTime: '17:00', label: 'TV Allowed',                   emoji: '📺', category: 'screen'  }
+    { id: 'ks1',  startTime: '7:15',  endTime: '7:45',  label: 'Shower & Get Dressed',        emoji: '🚿', category: 'morning', detail: 'Take a shower if needed, then get dressed and ready for the day.' },
+    { id: 'ks2',  startTime: '7:45',  endTime: '8:00',  label: 'Clean Room & Make Bed',        emoji: '🛏️', category: 'morning', detail: 'Clean your room and make your bed before heading to breakfast.' },
+    { id: 'ks3',  startTime: '8:00',  endTime: '8:30',  label: 'Breakfast & Clean Up',         emoji: '🥣', category: 'meals',   detail: 'Eat breakfast and clean up. Put dirty dishes in the dishwasher.\n\nIf the dishwasher is clean, empty it first and then load the dirty dishes — the person who empties can start screen time 10 minutes early. No arguing or early bedtime.' },
+    { id: 'ks4',  startTime: '8:30',  endTime: '8:40',  label: 'Brush Teeth & Tidy Bathroom',  emoji: '🪥', category: 'morning', detail: 'Brush your teeth and tidy up the bathroom. The bathroom you used for your shower and brushing teeth should be left clean.' },
+    { id: 'ks5',  startTime: '8:40',  endTime: '9:00',  label: 'Pick Up Around the House',     emoji: '🧹', category: 'morning', detail: 'Walk around the house and pick up anything that doesn\'t belong where it is. Put everything back in its place.' },
+    { id: 'ks6',  startTime: '9:00',  endTime: '10:00', label: 'Outside Time',                 emoji: '🌞', category: 'outside', detail: 'Get outside and play!\n\nIdeas: trampoline, swing, chalk, jump rope.' },
+    { id: 'ks7',  startTime: '10:00', endTime: '10:30', label: 'Chores',                       emoji: '✅', category: 'chores',  detail: 'Time to do your assigned chores. All chores should be done by end of day Friday or no screen time and early bedtime on the weekend.' },
+    { id: 'ks8',  startTime: '10:30', endTime: '11:30', label: 'Free Time',                    emoji: '🎨', category: 'free',    detail: 'Enjoy some free time!\n\nIdeas: draw, craft, puzzles, board games, Lego, piano, outside play.' },
+    { id: 'ks9',  startTime: '11:30', endTime: '12:00', label: 'Lunch & Clean Up',             emoji: '🥪', category: 'meals',   detail: 'Eat lunch, clean up after yourself, and put dirty dishes in the dishwasher.' },
+    { id: 'ks10', startTime: '12:00', endTime: '14:00', label: 'Free Play',                    emoji: '🎮', category: 'free',    detail: 'Two hours of free play — go outside, play inside, use your imagination. Your choice!' },
+    { id: 'ks11', startTime: '14:00', endTime: '14:30', label: 'Chores',                       emoji: '✅', category: 'chores',  detail: 'Afternoon chore block. Check your chore list and get them done.' },
+    { id: 'ks12', startTime: '14:30', endTime: '15:30', label: 'Quiet Time in Bedrooms',       emoji: '📚', category: 'quiet',   detail: 'Stay in your bedroom for quiet time.\n\nIdeas: read a book, Legos, Barbies, write, take a nap, listen to music.' },
+    { id: 'ks13', startTime: '15:00', endTime: '17:00', label: 'TV Allowed',                   emoji: '📺', category: 'screen',  detail: 'Screen time is allowed starting at 3:00 PM.\n\n⚠️ NO ARGUING OR HITTING OR EARLY BEDTIME.' }
 ];
 
 var KS_CATEGORY_COLORS = {
@@ -10225,7 +10225,7 @@ function renderKidsScheduleView() {
         var isCur   = block.id === currentId;
         var durMins = endM - startM;
 
-        html += '<div class="day-view-event ks-block' + (isCur ? ' ks-block-current' : '') + '" style="'
+        html += '<div class="day-view-event ks-block' + (isCur ? ' ks-block-current' : '') + '" data-ksid="' + block.id + '" style="'
             + 'position:absolute;left:0;right:0;'
             + 'top:calc(' + topPct + '% + 3px);height:calc(' + htPct + '% - 3px);'
             + 'background:' + colors.bg + ';'
@@ -10253,4 +10253,46 @@ function renderKidsScheduleView() {
     html += '</div>'; // day-view-container
 
     container.innerHTML = html;
+
+    // Event delegation — safer on Android 8 WebView than inline onclick
+    container.addEventListener('click', function(e) {
+        var el = e.target;
+        while (el && el !== container) {
+            if (el.getAttribute('data-ksid')) {
+                showKsBlockDetail(el.getAttribute('data-ksid'));
+                return;
+            }
+            el = el.parentNode;
+        }
+    });
+}
+
+function showKsBlockDetail(blockId) {
+    var block = null;
+    for (var i = 0; i < KIDS_SCHEDULE_BLOCKS.length; i++) {
+        if (KIDS_SCHEDULE_BLOCKS[i].id === blockId) { block = KIDS_SCHEDULE_BLOCKS[i]; break; }
+    }
+    if (!block) return;
+
+    var colors = KS_CATEGORY_COLORS[block.category] || KS_CATEGORY_COLORS.free;
+    var modal = document.getElementById('ksBlockModal');
+    if (!modal) return;
+
+    document.getElementById('ksModalEmoji').textContent = block.emoji;
+    document.getElementById('ksModalTitle').textContent = block.label;
+    document.getElementById('ksModalTitle').style.color = colors.text;
+    document.getElementById('ksModalTime').textContent = ksFormatTime(block.startTime) + ' – ' + ksFormatTime(block.endTime);
+    document.getElementById('ksModalHeader').style.background = colors.bg;
+    document.getElementById('ksModalHeader').style.borderBottom = '2px solid ' + colors.border;
+
+    // Convert \n to <br> for line breaks
+    var detailHtml = (block.detail || '').replace(/\n/g, '<br>');
+    document.getElementById('ksModalDetail').innerHTML = detailHtml;
+
+    modal.classList.add('active');
+}
+
+function closeKsModal() {
+    var modal = document.getElementById('ksBlockModal');
+    if (modal) modal.classList.remove('active');
 }
