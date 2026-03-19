@@ -6569,3 +6569,81 @@ width: 80px;
     border-radius: 20px;
     border: 1.5px solid;
 }
+
+/* ============================================================
+   KIDS SCHEDULE BLOCK DETAIL MODAL
+   ============================================================ */
+
+.ks-modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 420px;
+    max-width: 90vw;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    animation: ksModalIn 0.2s ease;
+}
+
+@keyframes ksModalIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.ks-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 20px 18px;
+    border-bottom: 2px solid #eee;
+}
+
+.ks-modal-emoji {
+    font-size: 36px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.ks-modal-title-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.ks-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ks-modal-time {
+    font-size: 13px;
+    color: #888;
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.ks-modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.ks-modal-close:hover {
+    background: rgba(0,0,0,0.06);
+    color: #555;
+}
+
+.ks-modal-body {
+    padding: 20px 22px 24px;
+}
+
+.ks-modal-detail {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #444;
+}
