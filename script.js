@@ -4465,14 +4465,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
 
-        // Swipe left = previous 5 days, swipe right = next 5 days
+        // Attach swipe listeners only once — prevents stacking duplicate listeners on re-render
+        if (!container.dataset.swipeInit) {
+        container.dataset.swipeInit = '1';
         var sgSwipeX = null;
         var sgSwipeY = null;
-        var sgSwiping = false;
         container.addEventListener('touchstart', function(e) {
             sgSwipeX = e.touches[0].clientX;
             sgSwipeY = e.touches[0].clientY;
-            sgSwiping = false;
         }, { passive: true });
         container.addEventListener('touchend', function(e) {
             if (sgSwipeX === null) return;
@@ -4480,16 +4480,17 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             var dy = e.changedTouches[0].clientY - sgSwipeY;
             sgSwipeX = null; sgSwipeY = null;
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-                // dx < 0 = swiped left = go back; dx > 0 = swiped right = go forward
-                var goForward = dx > 0;
+                // Swipe left (dx < 0) = came from right side = go forward in time
+                // Swipe right (dx > 0) = came from left side = go backward in time
+                var goForward = dx < 0;
                 var scrollArea = container.querySelector('.sg-scroll-area');
                 var scrollTop = scrollArea ? scrollArea.scrollTop : 0;
 
-                // Slide current view out
+                // Slide current view out (forward = slide left, back = slide right)
                 var wrapper = container.querySelector('.sg-wrapper');
                 if (wrapper) {
                     wrapper.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
-                    wrapper.style.transform = goForward ? 'translateX(60px)' : 'translateX(-60px)';
+                    wrapper.style.transform = goForward ? 'translateX(-60px)' : 'translateX(60px)';
                     wrapper.style.opacity = '0';
                 }
 
@@ -4502,11 +4503,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     var newScrollArea = container.querySelector('.sg-scroll-area');
                     if (newScrollArea) newScrollArea.scrollTop = scrollTop;
 
-                    // Slide new view in from opposite side
+                    // Slide new view in from opposite side (forward = enter from right, back = enter from left)
                     var newWrapper = container.querySelector('.sg-wrapper');
                     if (newWrapper) {
                         newWrapper.style.transition = 'none';
-                        newWrapper.style.transform = goForward ? 'translateX(-60px)' : 'translateX(60px)';
+                        newWrapper.style.transform = goForward ? 'translateX(60px)' : 'translateX(-60px)';
                         newWrapper.style.opacity = '0';
                         // Force reflow
                         newWrapper.offsetHeight;
@@ -4517,6 +4518,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }, 220);
             }
         }, { passive: true });
+        } // end swipeInit guard
     }
 
     function switchSection(section) {
