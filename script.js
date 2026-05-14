@@ -2680,6 +2680,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     }
 
     function openManageProfiles() {
+        // Close the filter dropdown first
+        const dropdown = document.getElementById('calendarFilterDropdown');
+        if (dropdown) dropdown.classList.remove('active');
         document.getElementById('manageProfilesOverlay').classList.add('active');
         document.getElementById('manageProfilesPanel').classList.add('active');
         renderManageProfiles();
