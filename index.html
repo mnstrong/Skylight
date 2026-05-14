@@ -1475,6 +1475,18 @@
     </div>
 </div>
 
+<!-- Mobile Allowance Page -->
+<div class="mal-page" id="mobileAllowancePage" style="display:none;">
+    <div class="mal-header">
+        <button class="mch-back-btn" onclick="goToMobileHome()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="mch-title">Allowance</div>
+    </div>
+    <div class="mal-tabs" id="malTabs"></div>
+    <div class="mal-body" id="malBody"></div>
+</div>
+
 <!-- Mobile Search Overlay -->
 <div class="mobile-search-overlay" id="mobileSearchOverlay" onclick="closeMobileSearch()"></div>
 <div class="mobile-search-sheet" id="mobileSearchSheet">
@@ -1646,6 +1658,8 @@ function handleHashChange() {
             showMobileCalendar();
         } else if (section === 'chores') {
             showMobileChores();
+        } else if (section === 'allowance') {
+            showMobileAllowance();
         } else {
             showMobileSection(section);
         }
@@ -2004,6 +2018,12 @@ function showMobileChores() {
     document.body.classList.remove('calendar-view');
     currentMobileSection = 'chores';
 
+    // Always show Up for Grabs on mobile
+    localStorage.setItem('showUpForGrabs', 'true');
+    if (typeof toggleUpForGrabs === 'function' && !JSON.parse(localStorage.getItem('showUpForGrabs') || 'true')) {
+        toggleUpForGrabs();
+    }
+
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
     document.getElementById('mobileBackBtn').style.display = 'none';
@@ -2040,7 +2060,143 @@ function showMobileChores() {
     renderMobileChoresFull();
 }
 
-// ── Mobile Search ────────────────────────────────────────────────────
+
+// ── Mobile Allowance ─────────────────────────────────────────────────
+var malCurrentMember = null;
+
+function showMobileAllowance() {
+    document.getElementById('mobileAllowancePage').style.display = 'flex';
+    document.body.classList.add('viewing-section');
+    currentMobileSection = 'allowance';
+    var homeEl = document.getElementById('mobileHome');
+    if (homeEl) homeEl.style.display = 'none';
+    document.getElementById('mobileBackBtn').style.display = 'none';
+    document.getElementById('mobileHomeIndicator').style.display = 'none';
+    document.getElementById('mobileHeaderTitle').textContent = '';
+
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    malCurrentMember = members.length > 0 ? members[0].name : null;
+    renderMalTabs();
+    renderMalBody();
+}
+
+function hideMobileAllowance() {
+    document.getElementById('mobileAllowancePage').style.display = 'none';
+}
+
+function renderMalTabs() {
+    var container = document.getElementById('malTabs');
+    if (!container) return;
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    var html = '';
+    members.forEach(function(m) {
+        var active = malCurrentMember === m.name;
+        html += '<div class="mal-tab' + (active ? ' mal-tab-active' : '') + '" data-name="' + m.name + '" style="' + (active ? '--mal-color:' + m.color : '') + '">' +
+            '<div class="mal-tab-avatar" style="background:' + m.color + (active ? ';border:3px solid ' + m.color : '') + '">' + m.name.charAt(0).toUpperCase() + '</div>' +
+            '<span class="mal-tab-name">' + m.name + '</span>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+    container.onclick = function(e) {
+        var tab = e.target.closest('.mal-tab');
+        if (!tab) return;
+        malCurrentMember = tab.getAttribute('data-name');
+        renderMalTabs();
+        renderMalBody();
+    };
+}
+
+function renderMalBody() {
+    var container = document.getElementById('malBody');
+    if (!container || !malCurrentMember) return;
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var member = fm.find(function(m) { return m.name === malCurrentMember; });
+    if (!member) return;
+    var allAllowances = window.allowances || JSON.parse(localStorage.getItem('allowances') || '[]');
+    var data = allAllowances.find(function(a) { return a.member === malCurrentMember; }) || { transactions: [] };
+    var transactions = (data.transactions || []).slice().reverse();
+
+    var spending = 0, saving = 0;
+    transactions.forEach(function(t) {
+        if (t.type === 'spend') spending += Math.abs(t.amount);
+        else if (t.type === 'save') saving += t.amount;
+    });
+    var net = saving - spending;
+
+    var color = member.color;
+    var bgLight = _hexToRgba(color, 0.10);
+
+    var html = '';
+
+    // Balance card
+    html += '<div class="mal-balance-card" style="background:' + bgLight + ';border-color:' + _hexToRgba(color, 0.2) + '">' +
+        '<div class="mal-balance-label">Total Balance</div>' +
+        '<div class="mal-balance-amount" style="color:' + color + '">' + (net >= 0 ? '+' : '') + '$' + net.toFixed(2) + '</div>' +
+        '<div class="mal-balance-row">' +
+            '<div class="mal-balance-half">' +
+                '<div class="mal-balance-half-label">💰 Saving</div>' +
+                '<div class="mal-balance-half-val">$' + saving.toFixed(2) + '</div>' +
+            '</div>' +
+            '<div class="mal-balance-divider"></div>' +
+            '<div class="mal-balance-half">' +
+                '<div class="mal-balance-half-label">🛍️ Spending</div>' +
+                '<div class="mal-balance-half-val">$' + spending.toFixed(2) + '</div>' +
+            '</div>' +
+        '</div>' +
+        '</div>';
+
+    // Add transaction button
+    html += '<button class="mal-add-btn" style="background:' + color + '" onclick="malOpenAdd()">+ Add Transaction</button>';
+
+    // Transaction history
+    if (transactions.length > 0) {
+        html += '<div class="mal-history-label">Transaction History</div>';
+        html += '<div class="mal-history">';
+        transactions.forEach(function(t) {
+            var isSave = t.type === 'save';
+            var sign = isSave ? '+' : '-';
+            var amtColor = isSave ? '#34A853' : '#EA4335';
+            var icon = isSave ? '💰' : '🛍️';
+            var dateStr = new Date(t.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+            html += '<div class="mal-tx">' +
+                '<div class="mal-tx-icon">' + icon + '</div>' +
+                '<div class="mal-tx-info">' +
+                    '<div class="mal-tx-desc">' + (t.description || 'Transaction') + '</div>' +
+                    '<div class="mal-tx-date">' + dateStr + '</div>' +
+                '</div>' +
+                '<div class="mal-tx-amount" style="color:' + amtColor + '">' + sign + '$' + Math.abs(t.amount).toFixed(2) + '</div>' +
+                '</div>';
+        });
+        html += '</div>';
+    } else {
+        html += '<div class="mal-empty">No transactions yet.<br>Tap "+ Add Transaction" to get started.</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function malOpenAdd() {
+    // Use existing allowance modal — set currentAllowanceMember
+    if (typeof openAllowanceTransaction === 'function') {
+        openAllowanceTransaction(malCurrentMember);
+    }
+    // Patch saveAllowanceTransaction to re-render mobile after save
+    var _orig = window.saveAllowanceTransaction;
+    if (_orig && !_orig._malPatched) {
+        window.saveAllowanceTransaction = function() {
+            _orig.apply(this, arguments);
+            // Re-render mobile if visible
+            if (document.getElementById('mobileAllowancePage').style.display !== 'none') {
+                setTimeout(function() { renderMalTabs(); renderMalBody(); }, 150);
+            }
+        };
+        window.saveAllowanceTransaction._malPatched = true;
+    }
+}
+
+
 function openMobileSearch() {
     var overlay = document.getElementById('mobileSearchOverlay');
     var sheet = document.getElementById('mobileSearchSheet');
