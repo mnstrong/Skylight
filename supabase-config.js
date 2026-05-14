@@ -368,10 +368,17 @@ function deleteListItem(id) {
 // REWARDS
 // ============================================
 function getRewards() {
-    return _sbRequest('GET', 'rewards', { select: '*', order: 'points_cost.asc' })
+    return _sbRequest('GET', 'rewards', { select: '*' })
         .then(function(r) {
             if (r.error) { console.error('Error fetching rewards:', r.error); return []; }
-            return r.data || [];
+            var data = r.data || [];
+            // Sort client-side since column name may vary
+            data.sort(function(a, b) {
+                var ca = a.points_cost || a.stars_needed || a.star_cost || 0;
+                var cb = b.points_cost || b.stars_needed || b.star_cost || 0;
+                return ca - cb;
+            });
+            return data;
         });
 }
 
@@ -420,11 +427,14 @@ function getAllowanceBalance(memberId) {
 
 function getAllowanceTransactions() {
     return _sbRequest('GET', 'allowance_transactions', {
-        select: 'id,member_id,amount,transaction_type,description,date',
-        order: 'date.desc'
+        select: 'id,member_id,amount,transaction_type,description,created_at',
+        order: 'created_at.desc'
     }).then(function(r) {
         if (r.error) { console.error('Error fetching allowance transactions:', r.error); return []; }
-        return r.data || [];
+        // Normalize created_at → date for consistency with local format
+        return (r.data || []).map(function(t) {
+            return Object.assign({}, t, { date: t.date || t.created_at });
+        });
     });
 }
 
