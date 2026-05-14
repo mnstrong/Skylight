@@ -3295,11 +3295,17 @@
         /* ============================================
            TIME GRID (Schedule View)
            ============================================ */
+        #scheduleContainer {
+            overflow: hidden;
+            position: relative;
+        }
+
         .sg-wrapper {
             height: calc(100vh - 120px);
             min-height: 500px;
             overflow: hidden;
             font-family: 'Jost', sans-serif;
+            touch-action: pan-y; /* let vertical scroll work, we handle horizontal */
         }
 
         .sg-scroll-area {
