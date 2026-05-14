@@ -4676,58 +4676,110 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             if (gridWrapper) gridWrapper.scrollTop = Math.max(0, scrollTo);
         }, 50);
 
-        // Attach swipe listeners only once — prevents stacking duplicate listeners on re-render
+        // ── Pan-to-navigate swipe ─────────────────────────────────────
+        // Attaches only once per container; tracks the real-time finger position
+        // so the calendar content physically follows the user's finger before
+        // snapping to the next/previous week on release.
         if (!container.dataset.swipeInit) {
-        container.dataset.swipeInit = '1';
-        var sgSwipeX = null;
-        var sgSwipeY = null;
-        container.addEventListener('touchstart', function(e) {
-            sgSwipeX = e.touches[0].clientX;
-            sgSwipeY = e.touches[0].clientY;
-        }, { passive: true });
-        container.addEventListener('touchend', function(e) {
-            if (sgSwipeX === null) return;
-            var dx = e.changedTouches[0].clientX - sgSwipeX;
-            var dy = e.changedTouches[0].clientY - sgSwipeY;
-            sgSwipeX = null; sgSwipeY = null;
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-                // Swipe left (dx < 0) = came from right side = go forward in time
-                // Swipe right (dx > 0) = came from left side = go backward in time
-                var goForward = dx < 0;
-                var scrollArea = container.querySelector('.sg-scroll-area');
-                var scrollTop = scrollArea ? scrollArea.scrollTop : 0;
+            container.dataset.swipeInit = '1';
 
-                // Slide current view out (forward = slide left, back = slide right)
+            var sgSwipeX    = null;
+            var sgSwipeY    = null;
+            var sgSwipeT    = null;   // timestamp for velocity
+            var sgScrollTop = 0;
+            var sgDragging  = false;
+
+            container.addEventListener('touchstart', function(e) {
+                var t = e.touches[0];
+                sgSwipeX    = t.clientX;
+                sgSwipeY    = t.clientY;
+                sgSwipeT    = Date.now();
+                sgDragging  = false;
+
+                var scrollArea = container.querySelector('.sg-scroll-area');
+                sgScrollTop = scrollArea ? scrollArea.scrollTop : 0;
+
                 var wrapper = container.querySelector('.sg-wrapper');
                 if (wrapper) {
-                    wrapper.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
-                    wrapper.style.transform = goForward ? 'translateX(-60px)' : 'translateX(60px)';
-                    wrapper.style.opacity = '0';
+                    wrapper.style.transition = 'none';
+                    wrapper.style.willChange = 'transform';
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchmove', function(e) {
+                if (sgSwipeX === null) return;
+                var t = e.touches[0];
+                var dx = t.clientX - sgSwipeX;
+                var dy = t.clientY - sgSwipeY;
+
+                // Only take over once clearly horizontal
+                if (!sgDragging) {
+                    if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll wins
+                    if (Math.abs(dx) < 8) return;
+                    sgDragging = true;
                 }
 
-                setTimeout(function() {
-                    currentDate.setDate(currentDate.getDate() + (goForward ? 5 : -5));
-                    renderScheduleView();
-                    updateViewHeader();
+                // Rubber-band resistance beyond ±40px
+                var translate = dx;
+                var limit = container.offsetWidth * 0.5;
+                if (Math.abs(dx) > limit) {
+                    translate = Math.sign(dx) * (limit + (Math.abs(dx) - limit) * 0.2);
+                }
 
-                    // Restore scroll position after render
-                    var newScrollArea = container.querySelector('.sg-scroll-area');
-                    if (newScrollArea) newScrollArea.scrollTop = scrollTop;
+                var wrapper = container.querySelector('.sg-wrapper');
+                if (wrapper) wrapper.style.transform = 'translateX(' + translate + 'px)';
+            }, { passive: true });
 
-                    // Slide new view in from opposite side (forward = enter from right, back = enter from left)
-                    var newWrapper = container.querySelector('.sg-wrapper');
-                    if (newWrapper) {
-                        newWrapper.style.transition = 'none';
-                        newWrapper.style.transform = goForward ? 'translateX(60px)' : 'translateX(-60px)';
-                        newWrapper.style.opacity = '0';
-                        // Force reflow
-                        newWrapper.offsetHeight;
-                        newWrapper.style.transition = 'transform 0.22s ease-out, opacity 0.22s ease-out';
-                        newWrapper.style.transform = 'translateX(0)';
-                        newWrapper.style.opacity = '1';
-                    }
-                }, 220);
-            }
+            container.addEventListener('touchend', function(e) {
+                if (sgSwipeX === null) return;
+                var endX = e.changedTouches[0].clientX;
+                var dx   = endX - sgSwipeX;
+                var dt   = Date.now() - sgSwipeT;
+                var vx   = Math.abs(dx) / dt;   // px/ms
+                sgSwipeX = null;
+
+                var wrapper = container.querySelector('.sg-wrapper');
+                if (!wrapper) return;
+
+                // Commit if: fast flick (>0.3 px/ms) OR dragged > 30% of width
+                var threshold = container.offsetWidth * 0.30;
+                var goForward = dx < 0;
+                var shouldCommit = sgDragging && (Math.abs(dx) > threshold || vx > 0.3);
+
+                if (shouldCommit) {
+                    // Fly the current view all the way off screen
+                    var flyTo = goForward ? -container.offsetWidth : container.offsetWidth;
+                    wrapper.style.transition = 'transform 0.18s ease-in';
+                    wrapper.style.transform  = 'translateX(' + flyTo + 'px)';
+
+                    setTimeout(function() {
+                        currentDate.setDate(currentDate.getDate() + (goForward ? 5 : -5));
+                        renderScheduleView();
+                        updateViewHeader();
+
+                        // Restore scroll
+                        var newScroll = container.querySelector('.sg-scroll-area');
+                        if (newScroll) newScroll.scrollTop = sgScrollTop;
+
+                        // Enter from opposite side
+                        var newWrapper = container.querySelector('.sg-wrapper');
+                        if (newWrapper) {
+                            newWrapper.style.transition = 'none';
+                            newWrapper.style.transform  = 'translateX(' + (goForward ? container.offsetWidth : -container.offsetWidth) + 'px)';
+                            newWrapper.offsetHeight; // force reflow
+                            newWrapper.style.transition = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+                            newWrapper.style.transform  = 'translateX(0)';
+                        }
+                    }, 180);
+
+                } else {
+                    // Spring back
+                    wrapper.style.transition = 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
+                    wrapper.style.transform  = 'translateX(0)';
+                }
+
+                sgDragging = false;
+            }, { passive: true });
         }, { passive: true });
         } // end swipeInit guard
     }
