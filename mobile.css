@@ -2565,3 +2565,237 @@
         z-index: 999 !important;
     }
 }
+
+/* ============================================
+   MOBILE ALLOWANCE PAGE
+   ============================================ */
+@media screen and (max-width: 768px) {
+
+    .mal-page {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #F2F2F7;
+        z-index: 900;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .mal-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 56px 20px 14px;
+        background: #F2F2F7;
+        flex-shrink: 0;
+    }
+
+    /* Member tab row */
+    .mal-tabs {
+        display: flex;
+        gap: 12px;
+        padding: 0 20px 14px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-shrink: 0;
+    }
+    .mal-tabs::-webkit-scrollbar { display: none; }
+
+    .mal-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mal-tab-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+        box-sizing: border-box;
+        border: 3px solid transparent;
+        transition: border-color 0.15s;
+    }
+
+    .mal-tab-active .mal-tab-avatar {
+        border: 3px solid #1a1a1a;
+    }
+
+    .mal-tab-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .mal-tab-active .mal-tab-name {
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    /* Scrollable content body */
+    .mal-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 16px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Balance card */
+    .mal-balance-card {
+        border-radius: 20px;
+        padding: 22px 20px 16px;
+        border: 1.5px solid transparent;
+    }
+
+    .mal-balance-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .mal-balance-amount {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+        line-height: 1;
+    }
+
+    .mal-balance-row {
+        display: flex;
+        background: rgba(255,255,255,0.6);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .mal-balance-half {
+        flex: 1;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .mal-balance-divider {
+        width: 1px;
+        background: rgba(0,0,0,0.08);
+        margin: 10px 0;
+    }
+
+    .mal-balance-half-label {
+        font-size: 13px;
+        color: #888;
+        font-weight: 500;
+    }
+
+    .mal-balance-half-val {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    /* Add button */
+    .mal-add-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 50px;
+        border: none;
+        font-family: 'Jost', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 0;
+        transition: opacity 0.15s;
+    }
+    .mal-add-btn:active { opacity: 0.8; }
+
+    /* History label */
+    .mal-history-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 4px 4px 0;
+    }
+
+    /* Transaction list */
+    .mal-history {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .mal-tx {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #F5F5F7;
+    }
+    .mal-tx:last-child { border-bottom: none; }
+
+    .mal-tx-icon {
+        font-size: 22px;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        background: #F2F2F7;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mal-tx-info { flex: 1; min-width: 0; }
+
+    .mal-tx-desc {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mal-tx-date {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 2px;
+    }
+
+    .mal-tx-amount {
+        font-size: 16px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    /* Empty state */
+    .mal-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #aaa;
+        font-size: 15px;
+        line-height: 1.6;
+        background: white;
+        border-radius: 18px;
+    }
+
+}
