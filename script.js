@@ -764,18 +764,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         localStorage.setItem('allowances', JSON.stringify(allowances));
         
         // Sync to Supabase
-        if (window.SupabaseAPI && typeof window.SupabaseAPI.addAllowanceTransaction === 'function') {
-            const memberObj = familyMembers.find(m => m.name === currentAllowanceMember);
-            window.SupabaseAPI.addAllowanceTransaction({
-                member_id: memberObj ? memberObj.id : null,
-                amount: amount,
-                transaction_type: currentAllowanceType,
-                description: description,
-                date: newTransaction.date
-            }).then(r => {
-                if (r && !r.error) console.log('✓ Allowance transaction synced to Supabase');
-                else if (r && r.error) console.error('Supabase allowance sync error:', r.error);
-            }).catch(e => console.error('Supabase allowance sync failed:', e));
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncAllowanceTransaction === 'function') {
+            window.SupabaseSync.syncAllowanceTransaction(newTransaction, currentAllowanceMember);
         }
         
         // Close modal
@@ -5233,10 +5223,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             reward.redeemed = true;
             reward.redeemedDate = new Date().toISOString();
             localStorage.setItem('rewards', JSON.stringify(rewards));
-            
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+                window.SupabaseSync.syncReward(reward, 'update');
+            }
             // Trigger confetti!
             triggerConfetti();
-            
             // Re-render
             renderRewardsView();
         }
@@ -5611,16 +5602,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             reward.redeemed = true;
             reward.redeemedDate = new Date().toISOString().split('T')[0];
             localStorage.setItem('rewards', JSON.stringify(rewards));
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+                window.SupabaseSync.syncReward(reward, 'update');
+            }
             currentRedeemedRewardId = rewardId;
-            
             // Show celebration modal
             showRewardRedemptionModal(reward);
-            
             // Trigger star confetti after a short delay
-            setTimeout(() => {
-                triggerStarConfetti();
-            }, 400);
-            
+            setTimeout(() => { triggerStarConfetti(); }, 400);
             // Re-render rewards view
             renderRewardsView();
         }
@@ -5659,12 +5648,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     function unredeemCurrentReward() {
         if (!currentRedeemedRewardId) return;
-        
         const reward = rewards.find(r => r.id === currentRedeemedRewardId);
         if (reward) {
             reward.redeemed = false;
             delete reward.redeemedDate;
             localStorage.setItem('rewards', JSON.stringify(rewards));
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+                window.SupabaseSync.syncReward(reward, 'update');
+            }
             closeRewardRedemptionModal();
             renderRewardsView();
         }
@@ -5735,6 +5726,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         reward.stars = stars; // Keep both for compatibility
         
         localStorage.setItem('rewards', JSON.stringify(rewards));
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+            window.SupabaseSync.syncReward(reward, 'update');
+        }
         closeEditRewardPanel();
         renderRewardsView();
     }
@@ -5744,8 +5738,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         const index = rewards.findIndex(r => r.id === currentEditRewardId);
         if (index > -1) {
+            const deleted = rewards[index];
             rewards.splice(index, 1);
             localStorage.setItem('rewards', JSON.stringify(rewards));
+            // Sync to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+                window.SupabaseSync.syncReward(deleted, 'delete');
+            }
             closeEditRewardPanel();
             renderRewardsView();
         }
@@ -8745,6 +8744,11 @@ if (allChoresComplete || allRoutinesComplete) {
         
         rewards.push(newReward);
         localStorage.setItem('rewards', JSON.stringify(rewards));
+        
+        // Sync to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
+            window.SupabaseSync.syncReward(newReward, 'add');
+        }
         
         // Reset form
         document.getElementById('rewardTitle').value = '';
