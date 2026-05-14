@@ -418,6 +418,16 @@ function getAllowanceBalance(memberId) {
     });
 }
 
+function getAllowanceTransactions() {
+    return _sbRequest('GET', 'allowance_transactions', {
+        select: 'id,member_id,amount,transaction_type,description,date',
+        order: 'date.desc'
+    }).then(function(r) {
+        if (r.error) { console.error('Error fetching allowance transactions:', r.error); return []; }
+        return r.data || [];
+    });
+}
+
 function addAllowanceTransaction(transaction) {
     return _sbRequest('POST', 'allowance_transactions', { body: transaction, single: true })
         .then(function(r) {
@@ -482,6 +492,7 @@ window.SupabaseAPI = {
     deleteReward:              deleteReward,
 
     getAllowanceBalance:        getAllowanceBalance,
+    getAllowanceTransactions:   getAllowanceTransactions,
     addAllowanceTransaction:   addAllowanceTransaction,
 
     subscribeToCalendarEvents: subscribeToCalendarEvents,

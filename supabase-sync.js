@@ -224,6 +224,12 @@ async function loadAllDataFromSupabase() {
             window.events = formattedEvents;
             console.log('✓ Loaded', formattedEvents.length, 'calendar events');
         }
+
+        // Load rewards
+        await loadRewardsFromSupabase();
+
+        // Load allowance transactions
+        await loadAllowanceFromSupabase();
         
         console.log('✅ All data loaded from Supabase');
         
@@ -686,6 +692,81 @@ function handleListChange(payload) {
     loadListsFromSupabase();
 }
 
+
+async function loadRewardsFromSupabase() {
+    if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+    try {
+        const data = await SupabaseAPI.getRewards();
+        if (!data || !data.length) return;
+        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const formatted = data.map(r => ({
+            id: r.id,
+            title: r.name || r.title || '',
+            emoji: r.icon || '🎁',
+            icon: r.icon || '🎁',
+            member: (function() {
+                if (r.member_id) {
+                    const m = fm.find(function(m) { return m.id === r.member_id; });
+                    return m ? m.name : '';
+                }
+                return r.member || '';
+            })(),
+            starsNeeded: r.points_cost || r.starsNeeded || 25,
+            stars: r.points_cost || r.stars || 25,
+            redeemed: r.redeemed || false,
+            redeemedDate: r.redeemed_date || null
+        }));
+        localStorage.setItem('rewards', JSON.stringify(formatted));
+        window.rewards = formatted;
+        console.log('✓ Loaded', formatted.length, 'rewards from Supabase');
+        if (typeof currentSection !== 'undefined' && currentSection === 'rewards' && typeof renderRewardsView === 'function') {
+            renderRewardsView();
+        }
+    } catch(e) { console.error('Error loading rewards:', e); }
+}
+
+async function loadAllowanceFromSupabase() {
+    if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+    try {
+        const txns = await SupabaseAPI.getAllowanceTransactions();
+        if (!txns) return;
+        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        // Group by member into the existing allowances format
+        const byMember = {};
+        txns.forEach(function(t) {
+            const m = fm.find(function(m) { return m.id === t.member_id; });
+            const name = m ? m.name : (t.member_id || 'Unknown');
+            if (!byMember[name]) byMember[name] = { member: name, transactions: [] };
+            byMember[name].transactions.push({
+                id: t.id,
+                date: t.date || new Date().toISOString(),
+                amount: parseFloat(t.amount) || 0,
+                type: t.transaction_type || 'save',
+                description: t.description || ''
+            });
+        });
+        const formatted = Object.values(byMember);
+        localStorage.setItem('allowances', JSON.stringify(formatted));
+        window.allowances = formatted;
+        console.log('✓ Loaded allowance transactions for', formatted.length, 'members from Supabase');
+        // Refresh mobile allowance view if open
+        if (typeof renderMalBody === 'function' && document.getElementById('mobileAllowancePage') &&
+            document.getElementById('mobileAllowancePage').style.display !== 'none') {
+            renderMalTabs();
+            renderMalBody();
+        }
+        if (typeof renderAllowanceGrid === 'function' && typeof currentSection !== 'undefined' && currentSection === 'allowance') {
+            renderAllowanceGrid();
+        }
+    } catch(e) { console.error('Error loading allowance:', e); }
+}
+
+async function loadHabitsFromSupabase() {
+    // Habits are stored only in localStorage (no Supabase table yet).
+    // This is a no-op placeholder so the pattern is consistent.
+    // When a habits table is added to Supabase, implement here.
+}
+
 async function loadTasksFromSupabase() {
     const allTasks = await SupabaseAPI.getTasks();
     if (allTasks && allTasks.length > 0) {
@@ -866,6 +947,10 @@ function startPeriodicRefresh() {
             }
             
             console.log('✅ Data refreshed from Supabase + Google Calendar');
+
+            // Refresh rewards and allowance
+            await loadRewardsFromSupabase();
+            await loadAllowanceFromSupabase();
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
@@ -889,6 +974,55 @@ window.SupabaseSync = {
     syncCalendarEvent,
     syncFamilyMembers,
     syncFamilyMemberColor,
+
+    // Rewards
+    async syncReward(reward, operation) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const memberObj = fm.find(m => m.name === reward.member);
+        try {
+            if (operation === 'add') {
+                await SupabaseAPI.addReward({
+                    name: reward.title,
+                    icon: reward.emoji || reward.icon || '🎁',
+                    points_cost: reward.starsNeeded || reward.stars || 25,
+                    member_id: memberObj ? memberObj.id : null,
+                    redeemed: reward.redeemed || false,
+                    redeemed_date: reward.redeemedDate || null,
+                    available: true
+                });
+            } else if (operation === 'update') {
+                await SupabaseAPI.updateReward(reward.id, {
+                    name: reward.title,
+                    icon: reward.emoji || reward.icon || '🎁',
+                    points_cost: reward.starsNeeded || reward.stars || 25,
+                    redeemed: reward.redeemed || false,
+                    redeemed_date: reward.redeemedDate || null
+                });
+            } else if (operation === 'delete') {
+                await SupabaseAPI.deleteReward(reward.id);
+            }
+            console.log('✓ Reward synced:', operation, reward.title);
+        } catch(e) { console.error('Error syncing reward:', e); }
+    },
+
+    // Allowance — individual transaction sync (write path, called from script.js)
+    async syncAllowanceTransaction(transaction, memberName) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const memberObj = fm.find(m => m.name === memberName);
+        try {
+            await SupabaseAPI.addAllowanceTransaction({
+                member_id: memberObj ? memberObj.id : null,
+                amount: transaction.amount,
+                transaction_type: transaction.type,
+                description: transaction.description,
+                date: transaction.date
+            });
+            console.log('✓ Allowance transaction synced');
+        } catch(e) { console.error('Error syncing allowance:', e); }
+    },
+
     isReady: function() { return isSupabaseReady; },
     isEnabled: function() { return syncEnabled; }
 };
