@@ -3310,6 +3310,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     // Returns a CSS background string: split gradient for 2+ members, solid for 1
     function getMultiMemberBg(event, opacity) {
         opacity = opacity || 0.35;
+
+        // Check for keyword-driven background image override (e.g. Ignite)
+        if (event && typeof getEventKeywordBg === 'function') {
+            var kwBg = getEventKeywordBg(event);
+            if (kwBg) return 'url(' + kwBg + ')';
+        }
+
         var members = getEventMembers(event);
         if (members.length >= 2) {
             var c1 = hexToRgba(members[0].color, opacity);
@@ -8271,46 +8278,87 @@ if (allChoresComplete || allRoutinesComplete) {
         }
     }
 
+    // ── Profile keyword map ───────────────────────────────────────────
+    // Stored in localStorage as profileKeywords: [{ keyword, memberName, bgImage? }]
+    // bgImage: optional image URL to use as event background when keyword matches
+    function getProfileKeywords() {
+        try { return JSON.parse(localStorage.getItem('profileKeywords') || '[]'); } catch(e) { return []; }
+    }
+    function saveProfileKeywords(kws) {
+        localStorage.setItem('profileKeywords', JSON.stringify(kws));
+    }
+    // Seed defaults on first load
+    (function seedProfileKeywords() {
+        var existing = getProfileKeywords();
+        var defaults = [
+            { keyword: 'levi',   memberName: 'Chocobo' },
+            { keyword: 'ignite', memberName: 'Chocobo', bgImage: 'ignite.png' }
+        ];
+        var changed = false;
+        defaults.forEach(function(d) {
+            if (!existing.find(function(e) { return e.keyword === d.keyword; })) {
+                existing.push(d);
+                changed = true;
+            }
+        });
+        if (changed) saveProfileKeywords(existing);
+    })();
+    window.getProfileKeywords  = getProfileKeywords;
+    window.saveProfileKeywords = saveProfileKeywords;
+
+    // Returns { memberName, bgImage? } if the text matches any keyword, else null
+    function matchProfileKeyword(text) {
+        if (!text) return null;
+        var lower = text.toLowerCase();
+        var kws = getProfileKeywords();
+        for (var i = 0; i < kws.length; i++) {
+            if (lower.includes(kws[i].keyword.toLowerCase())) return kws[i];
+        }
+        return null;
+    }
+    window.matchProfileKeyword = matchProfileKeyword;
+
     function autoAssignEventMember(title) {
-        console.log('Auto-assigning for title:', title);
-        
-        // Check if title contains any family member's name
-        const lowerTitle = title.toLowerCase();
-        
-        // Custom keyword matching
-        const keywords = {
-            'Bret': ['josh', 'danny', 'mens', 'men\'s']
+        const lowerTitle = (title || '').toLowerCase();
+
+        // 1. Check persistent keyword map first
+        var kwMatch = matchProfileKeyword(title);
+        if (kwMatch) return kwMatch.memberName;
+
+        // 2. Legacy hardcoded keywords
+        const hardcoded = {
+            'Bret': ['josh', 'danny', 'mens', "men's"]
         };
-        
-        // First check custom keywords
-        for (let memberName in keywords) {
-            const memberKeywords = keywords[memberName];
-            for (let keyword of memberKeywords) {
-                if (lowerTitle.includes(keyword)) {
-                    return memberName;
-                }
+        for (let memberName in hardcoded) {
+            for (let keyword of hardcoded[memberName]) {
+                if (lowerTitle.includes(keyword)) return memberName;
             }
         }
-        
-        // Then check for family member names
+
+        // 3. Family member name match
         for (let member of familyMembers) {
             const lowerName = member.name.toLowerCase();
-            
-            // Check for exact name match (with word boundaries)
             const nameRegex = new RegExp(`\\b${lowerName}\\b`, 'i');
-            if (nameRegex.test(title)) {
-                return member.name;
-            }
-            
-            // Check for possessive forms like "Mary's" or "Bret's"
-            if (lowerTitle.includes(lowerName + "'s") || lowerTitle.includes(lowerName + "s")) {
-                return member.name;
-            }
+            if (nameRegex.test(title)) return member.name;
+            if (lowerTitle.includes(lowerName + "'s") || lowerTitle.includes(lowerName + 's')) return member.name;
         }
-        
-        // No match found, return empty string (unassigned)
+
         return '';
     }
+
+    // ── Keyword-aware background resolver ────────────────────────────
+    // Returns a bg image URL if the event title/notes matches a keyword with bgImage set
+    function getEventKeywordBg(event) {
+        var text = (event.title || '') + ' ' + (event.notes || '') + ' ' + (event.description || '');
+        var kws = getProfileKeywords();
+        for (var i = 0; i < kws.length; i++) {
+            if (kws[i].bgImage && text.toLowerCase().includes(kws[i].keyword.toLowerCase())) {
+                return kws[i].bgImage;
+            }
+        }
+        return null;
+    }
+    window.getEventKeywordBg = getEventKeywordBg;
     
     let selectedRepeatFrequency = 'weekly';
     let selectedRepeatEndType = 'on';
