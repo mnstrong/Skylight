@@ -751,15 +751,32 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         // Add transaction
         memberAllowance.transactions = memberAllowance.transactions || [];
-        memberAllowance.transactions.push({
+        const newTransaction = {
+            id: Date.now() + '-' + Math.random().toString(36).slice(2),
             date: new Date().toISOString(),
             amount: amount,
             type: currentAllowanceType,
             description: description
-        });
+        };
+        memberAllowance.transactions.push(newTransaction);
         
-        // Save
+        // Save locally
         localStorage.setItem('allowances', JSON.stringify(allowances));
+        
+        // Sync to Supabase
+        if (window.SupabaseAPI && typeof window.SupabaseAPI.addAllowanceTransaction === 'function') {
+            const memberObj = familyMembers.find(m => m.name === currentAllowanceMember);
+            window.SupabaseAPI.addAllowanceTransaction({
+                member_id: memberObj ? memberObj.id : null,
+                amount: amount,
+                transaction_type: currentAllowanceType,
+                description: description,
+                date: newTransaction.date
+            }).then(r => {
+                if (r && !r.error) console.log('✓ Allowance transaction synced to Supabase');
+                else if (r && r.error) console.error('Supabase allowance sync error:', r.error);
+            }).catch(e => console.error('Supabase allowance sync failed:', e));
+        }
         
         // Close modal
         closeAllowanceModal();
