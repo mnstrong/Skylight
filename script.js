@@ -8292,12 +8292,17 @@ if (allChoresComplete || allRoutinesComplete) {
         var existing = getProfileKeywords();
         var defaults = [
             { keyword: 'levi',   memberName: 'Chocobo' },
-            { keyword: 'ignite', memberName: 'Chocobo', bgImage: 'ignite.png' }
+            { keyword: 'ignite', memberName: 'Chocobo', bgImage: 'graphics/ignite.png' }
         ];
         var changed = false;
         defaults.forEach(function(d) {
-            if (!existing.find(function(e) { return e.keyword === d.keyword; })) {
+            var idx = existing.findIndex(function(e) { return e.keyword === d.keyword; });
+            if (idx === -1) {
                 existing.push(d);
+                changed = true;
+            } else if (d.bgImage && existing[idx].bgImage !== d.bgImage) {
+                // Update stale path
+                existing[idx].bgImage = d.bgImage;
                 changed = true;
             }
         });
