@@ -6791,3 +6791,25 @@ width: 80px;
     cursor: pointer;
     flex-shrink: 0;
 }
+
+/* ============================================
+   KEYWORD BACKGROUND IMAGE EVENTS
+   ============================================ */
+
+/* When an event has a background image (e.g. ignite.png), ensure it covers and text stays readable */
+[style*="url("][class*="event"],
+[style*="url("][class*="day-event"],
+[style*="url("][class*="week-event"],
+[style*="url("][class*="schedule-event"],
+[style*="url("][class*="month-event"] {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    color: white !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
+}
+
+[style*="url("][class*="event"] * {
+    color: white !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
+}
