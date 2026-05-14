@@ -603,7 +603,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function renderAllowanceGrid() {
         const grid = document.getElementById('allowanceGrid');
         // Only show Levi and Elsie
-        const allowanceMembers = familyMembers.filter(m => m.name === 'Levi' || m.name === 'Elsie');
+        const allowanceMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'allowance'));
         
         let html = '';
         allowanceMembers.forEach(member => {
@@ -2604,12 +2604,17 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function openEditProfileModal(memberName) {
         currentEditProfileName = memberName;
         const member = familyMembers.find(m => m.name === memberName);
-        
         if (!member) return;
-        
+
         document.getElementById('editProfileName').value = member.name;
         renderColorPicker(member.color);
-        
+
+        // Populate section toggles — default all on if sections not set
+        const sections = member.sections || ['chores','rewards','allowance','habits','meals'];
+        document.querySelectorAll('#profileSectionsGrid input[data-section]').forEach(cb => {
+            cb.checked = sections.includes(cb.dataset.section);
+        });
+
         document.getElementById('editProfileModal').classList.add('active');
     }
     
@@ -2851,6 +2856,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Update member
         member.name = newName;
         member.color = newColor;
+
+        // Save section toggles
+        const checkedSections = [];
+        document.querySelectorAll('#profileSectionsGrid input[data-section]').forEach(cb => {
+            if (cb.checked) checkedSections.push(cb.dataset.section);
+        });
+        member.sections = checkedSections;
         
         // Update localStorage
         localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
@@ -2884,6 +2896,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         else if (currentView === 'day') renderDayView();
     }
     
+    // Returns true if a member should appear in a given section.
+    // Defaults to true for existing profiles that don't have sections set.
+    function memberHasSection(member, section) {
+        if (!member.sections) return true; // legacy profiles: show everywhere
+        return member.sections.includes(section);
+    }
+    window.memberHasSection = memberHasSection;
+
     function updateMemberReferences(oldName, newName) {
         // Update events
         events.forEach(event => {
@@ -5307,8 +5327,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const container = document.getElementById('rewardsContainer');
         let html = '';
         
-        // Filter out Google Calendar members
-        const rewardMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+        const rewardMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'rewards'));
         
         rewardMembers.forEach(member => {
             // Get member's rewards
@@ -5425,11 +5444,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         let html = '';
         
-        // Filter out Google Calendar members
-        const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+        const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'chores'));
         
         choreMembers.forEach(function(member) {
-            // Skip hidden members
             if (hiddenChoreMembers.indexOf(member.name) > -1) return;
 
             const memberChores = chores.filter(c => c.member === member.name);
@@ -5693,7 +5710,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     
     function renderRewardsView() {
         const container = document.getElementById('rewardsContainer');
-        const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar);
+        const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'rewards'));
         
         let html = '';
         

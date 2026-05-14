@@ -131,7 +131,11 @@ function renderHabitsView() {
     var habits = getHabits();
 
     var members = (typeof familyMembers !== 'undefined' ? familyMembers : [])
-        .filter(function(m) { return !m.isGoogleCalendar; });
+        .filter(function(m) {
+            if (m.isGoogleCalendar) return false;
+            if (typeof memberHasSection === 'function') return memberHasSection(m, 'habits');
+            return true;
+        });
 
     if (members.length === 0) {
         container.innerHTML = '<div class="habits-empty"><div class="habits-empty-icon">👥</div><div class="habits-empty-text">No family members found</div></div>';
@@ -305,7 +309,11 @@ function openHabitModal(habitId, preselectedMember) {
     var habit = habitId ? habits.filter(function(h) { return h.id === habitId; })[0] : null;
 
     var members = (typeof familyMembers !== 'undefined' ? familyMembers : [])
-        .filter(function(m) { return !m.isGoogleCalendar; });
+        .filter(function(m) {
+            if (m.isGoogleCalendar) return false;
+            if (typeof memberHasSection === 'function') return memberHasSection(m, 'habits');
+            return true;
+        });
 
     var defaultEmojis = ['💧','🏃','📚','🧘','🥗','😴','💊','🎯','🎨','🎵','✍️','🧹','🚶','🏋️','🛁','🌿','☀️','🍎','🧸','🎮'];
     var selMember = habit ? habit.memberId : (preselectedMember || (members[0] ? members[0].name : ''));

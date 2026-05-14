@@ -1037,6 +1037,16 @@
                     <button class="color-picker-nav" onclick="scrollColorPicker(1)">›</button>
                 </div>
             </div>
+            <div class="edit-form-group">
+                <label class="edit-form-label">Show in sections</label>
+                <div class="profile-sections-grid" id="profileSectionsGrid">
+                    <label class="profile-section-toggle"><input type="checkbox" data-section="chores" checked> Chores</label>
+                    <label class="profile-section-toggle"><input type="checkbox" data-section="rewards" checked> Rewards</label>
+                    <label class="profile-section-toggle"><input type="checkbox" data-section="allowance" checked> Allowance</label>
+                    <label class="profile-section-toggle"><input type="checkbox" data-section="habits" checked> Habits</label>
+                    <label class="profile-section-toggle"><input type="checkbox" data-section="meals" checked> Meals</label>
+                </div>
+            </div>
             <button class="edit-save-btn" onclick="saveEditedProfile()">Save Changes</button>
             <button class="task-detail-btn" style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #666;" onclick="closeEditProfileModal()">Cancel</button>
             <button class="task-detail-btn" id="deleteProfileBtn" style="width: 100%; margin-top: 10px; background: #fff0f0; color: #d32f2f; border: 1px solid #ffcdd2;" onclick="deleteCurrentProfile()">🗑 Delete Profile</button>
@@ -1879,7 +1889,7 @@ function renderMobileChoresProfileFilter() {
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
     var showUfg = JSON.parse(localStorage.getItem('showUpForGrabs') || 'false');
-    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'chores') : true); });
     var html = '';
 
     if (showUfg) {
@@ -1927,7 +1937,7 @@ function renderMobileChoresList() {
     if (showUfg && (mobileChoresFilter === null || mobileChoresFilter === 'Up for Grabs')) {
         groups.push({ name: 'Up for Grabs', color: '#5ba8a0' });
     }
-    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'chores') : true); });
     members.forEach(function(m) {
         if (mobileChoresFilter === null || mobileChoresFilter === m.name) groups.push(m);
     });
@@ -2090,7 +2100,7 @@ function showMobileAllowance() {
     document.getElementById('mobileHeaderTitle').textContent = '';
 
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
-    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
     malCurrentMember = members.length > 0 ? members[0].name : null;
     renderMalTabs();
     renderMalBody();
@@ -2104,7 +2114,7 @@ function renderMalTabs() {
     var container = document.getElementById('malTabs');
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
-    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
     var html = '';
     members.forEach(function(m) {
         var active = malCurrentMember === m.name;
