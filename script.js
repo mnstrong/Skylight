@@ -4779,8 +4779,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 }
 
                 sgDragging = false;
-            }, { passive: true });
-        }, { passive: true });
+            });
         } // end swipeInit guard
     }
 
