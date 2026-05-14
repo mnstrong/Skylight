@@ -1039,7 +1039,20 @@
             </div>
             <button class="edit-save-btn" onclick="saveEditedProfile()">Save Changes</button>
             <button class="task-detail-btn" style="width: 100%; margin-top: 10px; background: #f0f0f0; color: #666;" onclick="closeEditProfileModal()">Cancel</button>
+            <button class="task-detail-btn" id="deleteProfileBtn" style="width: 100%; margin-top: 10px; background: #fff0f0; color: #d32f2f; border: 1px solid #ffcdd2;" onclick="deleteCurrentProfile()">🗑 Delete Profile</button>
         </div>
+    </div>
+
+    <!-- Manage Profiles Panel -->
+    <div class="side-panel-overlay" id="manageProfilesOverlay" onclick="closeManageProfiles()"></div>
+    <div class="side-panel" id="manageProfilesPanel">
+        <div class="side-panel-header">
+            <button class="side-panel-back" onclick="closeManageProfiles()">✕</button>
+            <div class="side-panel-title">Manage Profiles</div>
+        </div>
+        <div class="manage-profiles-hint">Drag ☰ to reorder · Tap ✏️ to edit · Tap 🗑 to delete</div>
+        <div id="manageProfilesList" class="manage-profiles-list"></div>
+        <button class="edit-save-btn" style="margin: 16px;" onclick="closeManageProfiles(); if(typeof addNewProfileFlow==='function') addNewProfileFlow()">+ Add Profile</button>
     </div>
     
     <!-- Reward Redemption Modal -->
