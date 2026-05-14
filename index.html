@@ -1374,16 +1374,16 @@
             <span class="mch-btn-label">Next</span>
         </div>
         <div class="mch-btn-item">
-            <button class="mch-btn" onclick="mobileChoresToggleProfiles()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </button>
-            <span class="mch-btn-label">Profiles</span>
-        </div>
-        <div class="mch-btn-item">
-            <button class="mch-btn" id="mchCompletedBtn" onclick="mobileChoresToggleCompleted()">
+            <button class="mch-btn" id="mchFilterBtn" onclick="mobileChoresToggleCompleted()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
             </button>
-            <span class="mch-btn-label">Completed</span>
+            <span class="mch-btn-label">Filter</span>
+        </div>
+        <div class="mch-btn-item">
+            <button class="mch-btn" onclick="openMobileTaskBoxPage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1l2 5h18l2-5z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            </button>
+            <span class="mch-btn-label">Task Box</span>
         </div>
     </div>
 </div>
@@ -1437,6 +1437,41 @@
         <div class="mobile-today-date" id="mobileTodayDate">Thursday, February 5</div>
         <div id="mobileTodayEvents"></div>
         <div id="mobileNoEvents" style="color: #666; font-size: 16px;">No upcoming events today 😌</div>
+    </div>
+</div>
+
+<!-- Mobile Task Box Full Page -->
+<div class="mch-taskbox-page" id="mobileTaskBoxPage" style="display:none;">
+    <div class="mch-taskbox-header">
+        <button class="mch-back-btn" onclick="closeMobileTaskBoxPage()" style="padding:4px 2px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="mch-title">Task Box</div>
+    </div>
+    <div class="mch-taskbox-btn-row">
+        <div class="mch-btn-item">
+            <button class="mch-btn" id="tbChoreBtn" onclick="mchTaskBoxFilter('chore')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4"/><circle cx="9" cy="19" r="1"/><circle cx="20" cy="19" r="1"/></svg>
+            </button>
+            <span class="mch-btn-label">Chore</span>
+        </div>
+        <div class="mch-btn-item">
+            <button class="mch-btn" id="tbRoutineBtn" onclick="mchTaskBoxFilter('routine')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+            <span class="mch-btn-label">Routine</span>
+        </div>
+        <div class="mch-btn-item" style="margin-left:auto;">
+            <button class="mch-btn mch-btn-active" id="tbTaskBoxBtn" onclick="mchTaskBoxFilter('all')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1l2 5h18l2-5z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            </button>
+            <span class="mch-btn-label">Task Box</span>
+        </div>
+    </div>
+    <div class="mch-taskbox-list" id="mchTaskBoxList"></div>
+    <div class="mch-taskbox-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search" class="mch-taskbox-search-input" id="mchTaskBoxSearchInput" oninput="mchTaskBoxSearch(this.value)">
     </div>
 </div>
 
@@ -1698,11 +1733,17 @@ function updateMobileTodayCard() {
     }
 })();
 
+
 // ── Mobile Chores ─────────────────────────────────────────────────────
 var mobileChoresDate = new Date();
-var mobileChoresFilter = null;       // null = all profiles
+var mobileChoresFilter = null;
 var mobileChoresShowCompleted = false;
-var mobileChoresProfilesVisible = true;
+
+function _hexToRgba(hex, alpha) {
+    if (typeof hexToRgba === 'function') return hexToRgba(hex, alpha);
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
 
 function updateMobileChoresDateTitle() {
     var el = document.getElementById('mobileChoresDateTitle');
@@ -1710,11 +1751,10 @@ function updateMobileChoresDateTitle() {
     var d = mobileChoresDate;
     var today = new Date(); today.setHours(0,0,0,0);
     var dc = new Date(d); dc.setHours(0,0,0,0);
-    var opts = { weekday:'short', month:'short', day:'numeric' };
     if (dc.getTime() === today.getTime()) {
         el.textContent = 'Today, ' + d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
     } else {
-        el.textContent = d.toLocaleDateString('en-US', opts).replace(',', '');
+        el.textContent = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }).replace(',','');
     }
 }
 
@@ -1731,21 +1771,77 @@ function mobileChoresGoToday() {
     renderMobileChoresFull();
 }
 
-function mobileChoresToggleProfiles() {
-    mobileChoresProfilesVisible = !mobileChoresProfilesVisible;
-    var row = document.getElementById('mchProfileRow');
-    if (row) row.style.display = mobileChoresProfilesVisible ? 'flex' : 'none';
-    // Update button active state
-    var btns = document.querySelectorAll('.mch-btn');
-    // profiles button is index 3
-    if (btns[3]) btns[3].classList.toggle('mch-btn-active', mobileChoresProfilesVisible);
-}
-
 function mobileChoresToggleCompleted() {
     mobileChoresShowCompleted = !mobileChoresShowCompleted;
-    var btn = document.getElementById('mchCompletedBtn');
+    var btn = document.getElementById('mchFilterBtn');
     if (btn) btn.classList.toggle('mch-btn-active', mobileChoresShowCompleted);
     renderMobileChoresList();
+}
+
+function _buildMemberCard(member, allChores, today) {
+    var color = member.color;
+    var isUfg = member.name === 'Up for Grabs';
+    var bgColor = _hexToRgba(color, 0.12);
+
+    var memberChores = allChores.filter(function(c) { return c.member === member.name; });
+    var total = memberChores.length;
+    var done = memberChores.filter(function(c) { return c.completed; }).length;
+    var visible = mobileChoresShowCompleted ? memberChores : memberChores.filter(function(c) { return !c.completed; });
+
+    var avatarContent = isUfg
+        ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+        : member.name.charAt(0).toUpperCase();
+
+    var html = '<div class="mch-card" style="background:' + bgColor + '">';
+    html += '<div class="mch-card-header">' +
+        '<div class="mch-card-avatar" style="background:' + color + '">' + avatarContent + '</div>' +
+        '<div class="mch-card-meta">' +
+            '<div class="mch-card-name">' + member.name + '</div>' +
+            '<div class="mch-card-progress-row">' +
+                '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+                '<span class="mch-card-count" style="color:' + color + '">' + done + '/' + total + '</span>' +
+                (total > 0 ? '<div class="mch-card-progress-bar"><div class="mch-card-progress-fill" style="width:' + Math.round((done/total)*100) + '%;background:' + color + '"></div></div>' : '') +
+            '</div>' +
+        '</div>' +
+        '</div>';
+
+    if (visible.length === 0) {
+        if (isUfg) {
+            html += '<div class="mch-ufg-empty">' +
+                '<div class="mch-ufg-emoji">🙂</div>' +
+                '<div class="mch-ufg-text">Shared chores that<br>anyone can tackle.</div>' +
+                '<div class="mch-ufg-link" onclick="openTaskModal()">Add Chore</div>' +
+                '</div>';
+        } else {
+            html += '<div class="mch-card-empty">🎉 All done!</div>';
+        }
+    } else {
+        visible.forEach(function(chore) {
+            var isLate = chore.dueDate && new Date(chore.dueDate + 'T00:00:00') < today && !chore.completed;
+            var lateText = '';
+            if (isLate) {
+                var dl = Math.floor((today - new Date(chore.dueDate + 'T00:00:00')) / 86400000);
+                lateText = dl >= 28 ? Math.round(dl/30) + ' month' + (Math.round(dl/30)>1?'s':'') + ' late' : dl + ' day' + (dl>1?'s':'') + ' late';
+            }
+            var subtitle = isLate ? lateText : (chore.frequency || 'Daily');
+            var isDone = !!chore.completed;
+            var checkBg = isDone ? color : 'rgba(255,255,255,0.7)';
+            var checkBorder = isDone ? color : 'rgba(0,0,0,0.15)';
+
+            html += '<div class="mch-card-task' + (isDone ? ' mch-card-task-done' : '') + '" data-cid="' + chore.id + '">' +
+                '<div class="mch-card-task-body">' +
+                    '<div class="mch-card-task-title">' + (chore.title || '') + (chore.icon ? ' ' + chore.icon : '') + '</div>' +
+                    '<div class="mch-card-task-sub' + (isLate ? ' mch-card-task-late' : '') + '">' + subtitle + '</div>' +
+                    (chore.stars ? '<div class="mch-card-task-stars">☆ ' + chore.stars + '</div>' : '') +
+                '</div>' +
+                '<div class="mch-card-task-check" data-cid="' + chore.id + '" style="background:' + checkBg + ';border-color:' + checkBorder + '">' +
+                    (isDone ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
+                '</div>' +
+                '</div>';
+        });
+    }
+    html += '</div>';
+    return html;
 }
 
 function renderMobileChoresProfileFilter() {
@@ -1753,21 +1849,31 @@ function renderMobileChoresProfileFilter() {
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
+    var showUfg = JSON.parse(localStorage.getItem('showUpForGrabs') || 'false');
     var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
     var html = '';
+
+    if (showUfg) {
+        var ufgSelected = mobileChoresFilter === 'Up for Grabs';
+        var ufgDim = mobileChoresFilter !== null && !ufgSelected;
+        html += '<div class="mch-profile-item' + (ufgSelected ? ' mch-profile-selected' : '') + (ufgDim ? ' mch-profile-dim' : '') + '" data-name="Up for Grabs">' +
+            '<div class="mch-profile-avatar" style="background:#5ba8a0">' +
+                '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
+            '</div>' +
+            '<div class="mch-profile-name">Up for Grabs</div>' +
+            '</div>';
+    }
+
     members.forEach(function(m) {
         var isSelected = mobileChoresFilter === m.name;
-        var isAll = mobileChoresFilter === null;
-        var dim = !isAll && !isSelected;
+        var dim = mobileChoresFilter !== null && !isSelected;
         var mc = allChores.filter(function(c) { return c.member === m.name; });
         var done = mc.filter(function(c) { return c.completed; }).length;
         var total = mc.length;
-        var stars = mc.reduce(function(s,c){ return s + (c.completed && c.stars ? (c.stars||0) : 0); }, 0);
         html += '<div class="mch-profile-item' + (isSelected ? ' mch-profile-selected' : '') + (dim ? ' mch-profile-dim' : '') + '" data-name="' + m.name + '">' +
             '<div class="mch-profile-avatar" style="background:' + m.color + '">' + m.name.charAt(0).toUpperCase() + '</div>' +
-            '<div class="mch-profile-name">' + m.name + '</div>' +
+            '<div class="mch-profile-name' + (isSelected ? ' mch-profile-name-bold' : '') + '">' + m.name + '</div>' +
             '<div class="mch-profile-count">' + done + '/' + total + '</div>' +
-            (stars > 0 ? '<div class="mch-profile-stars">⭐ ' + stars + '</div>' : '') +
             '</div>';
     });
     container.innerHTML = html;
@@ -1776,8 +1882,7 @@ function renderMobileChoresProfileFilter() {
         if (!item) return;
         var name = item.getAttribute('data-name');
         mobileChoresFilter = (mobileChoresFilter === name) ? null : name;
-        renderMobileChoresProfileFilter();
-        renderMobileChoresList();
+        renderMobileChoresFull();
     };
 }
 
@@ -1786,78 +1891,35 @@ function renderMobileChoresList() {
     if (!container) return;
     var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
-    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
-    if (mobileChoresFilter) {
-        members = members.filter(function(m) { return m.name === mobileChoresFilter; });
-    }
-
-    // When filtering to one member, show their name + avatar header card
-    var html = '';
-    var isSingleMember = !!mobileChoresFilter;
-    if (isSingleMember && members.length === 1) {
-        var hm = members[0];
-        html += '<div class="mch-member-header" style="border-color:' + hm.color + '44">' +
-            '<div class="mch-member-header-avatar" style="background:' + hm.color + '">' + hm.name.charAt(0).toUpperCase() + '</div>' +
-            '<div class="mch-member-header-name">' + hm.name + '</div>' +
-            '</div>';
-    }
-
+    var showUfg = JSON.parse(localStorage.getItem('showUpForGrabs') || 'false');
     var today = new Date(); today.setHours(0,0,0,0);
-    var anyTask = false;
 
-    members.forEach(function(member) {
-        var memberChores = allChores.filter(function(c) { return c.member === member.name; });
-        if (!mobileChoresShowCompleted) {
-            memberChores = memberChores.filter(function(c) { return !c.completed; });
-        }
-        if (memberChores.length === 0) return;
-        anyTask = true;
-
-        memberChores.forEach(function(chore) {
-            var isLate = chore.dueDate && new Date(chore.dueDate + 'T00:00:00') < today && !chore.completed;
-            var lateText = '';
-            if (isLate) {
-                var daysLate = Math.floor((today - new Date(chore.dueDate + 'T00:00:00')) / 86400000);
-                lateText = daysLate >= 28
-                    ? Math.round(daysLate / 30) + ' month' + (Math.round(daysLate/30) > 1 ? 's' : '') + ' late'
-                    : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late';
-            }
-            var subtitle = isLate ? lateText : (chore.frequency || 'Daily');
-            var isDone = !!chore.completed;
-            var checkFill = isDone ? member.color : 'transparent';
-            var checkBorder = isDone ? member.color : 'rgba(0,0,0,0.18)';
-
-            html += '<div class="mch-task' + (isDone ? ' mch-task-done' : '') + '" data-cid="' + chore.id + '">' +
-                '<div class="mch-task-body">' +
-                    '<div class="mch-task-title">' + (chore.title || '') + (chore.icon ? ' ' + chore.icon : '') + '</div>' +
-                    '<div class="mch-task-sub' + (isLate ? ' mch-task-late' : '') + '">' + subtitle + '</div>' +
-                    (chore.stars ? '<div class="mch-task-stars">☆ ' + chore.stars + '</div>' : '') +
-                '</div>' +
-                (!isSingleMember ? '<div class="mch-task-avatar" style="background:' + member.color + '">' + member.name.charAt(0).toUpperCase() + '</div>' : '') +
-                '<div class="mch-task-check" data-cid="' + chore.id + '" style="background:' + checkFill + ';border-color:' + checkBorder + '">' +
-                    (isDone ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
-                '</div>' +
-                '</div>';
-        });
+    var groups = [];
+    if (showUfg && (mobileChoresFilter === null || mobileChoresFilter === 'Up for Grabs')) {
+        groups.push({ name: 'Up for Grabs', color: '#5ba8a0' });
+    }
+    var members = fm.filter(function(m) { return !m.isGoogleCalendar; });
+    members.forEach(function(m) {
+        if (mobileChoresFilter === null || mobileChoresFilter === m.name) groups.push(m);
     });
 
-    if (!anyTask) {
-        html = '<div class="mch-empty">🎉 All done' + (mobileChoresShowCompleted ? '' : ' — or hide completed is on') + '</div>';
-    }
+    var html = '';
+    groups.forEach(function(member) { html += _buildMemberCard(member, allChores, today); });
+    if (!html) html = '<div class="mch-empty">No tasks found</div>';
     container.innerHTML = html;
 
     container.onclick = function(e) {
-        var check = e.target.closest('.mch-task-check');
+        var check = e.target.closest('.mch-card-task-check');
         if (check) {
             e.stopPropagation();
             var cid = check.getAttribute('data-cid');
             if (cid && typeof toggleChore === 'function') {
                 toggleChore(cid);
-                setTimeout(function() { renderMobileChoresProfileFilter(); renderMobileChoresList(); }, 120);
+                setTimeout(function() { renderMobileChoresFull(); }, 120);
             }
             return;
         }
-        var task = e.target.closest('.mch-task');
+        var task = e.target.closest('.mch-card-task');
         if (task) {
             var cid = task.getAttribute('data-cid');
             if (cid && typeof openTaskDetail === 'function') openTaskDetail(cid, 'chore', e);
@@ -1868,6 +1930,72 @@ function renderMobileChoresList() {
 function renderMobileChoresFull() {
     renderMobileChoresProfileFilter();
     renderMobileChoresList();
+}
+
+// ── Task Box Full Page ────────────────────────────────────────────────
+var mchTaskBoxCurrentFilter = 'all';
+
+function openMobileTaskBoxPage() {
+    document.getElementById('mobileTaskBoxPage').style.display = 'flex';
+    mchTaskBoxCurrentFilter = 'all';
+    document.getElementById('tbChoreBtn').classList.remove('mch-btn-active');
+    document.getElementById('tbRoutineBtn').classList.remove('mch-btn-active');
+    document.getElementById('tbTaskBoxBtn').classList.add('mch-btn-active');
+    renderMchTaskBoxList('', 'all');
+}
+
+function closeMobileTaskBoxPage() {
+    document.getElementById('mobileTaskBoxPage').style.display = 'none';
+}
+
+function mchTaskBoxFilter(type) {
+    mchTaskBoxCurrentFilter = type;
+    document.getElementById('tbChoreBtn').classList.toggle('mch-btn-active', type === 'chore');
+    document.getElementById('tbRoutineBtn').classList.toggle('mch-btn-active', type === 'routine');
+    document.getElementById('tbTaskBoxBtn').classList.toggle('mch-btn-active', type === 'all');
+    var q = document.getElementById('mchTaskBoxSearchInput');
+    renderMchTaskBoxList(q ? q.value : '', type);
+}
+
+function mchTaskBoxSearch(val) { renderMchTaskBoxList(val, mchTaskBoxCurrentFilter); }
+
+function renderMchTaskBoxList(query, type) {
+    var container = document.getElementById('mchTaskBoxList');
+    if (!container) return;
+    var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
+    var allRoutines = window.routines || JSON.parse(localStorage.getItem('routines') || '[]');
+    query = (query || '').toLowerCase().trim();
+
+    var items = [];
+    if (type === 'all' || type === 'chore') allChores.forEach(function(c) { items.push({ item: c, kind: 'chore' }); });
+    if (type === 'all' || type === 'routine') allRoutines.forEach(function(r) { items.push({ item: r, kind: 'routine' }); });
+    if (query) items = items.filter(function(x) { return (x.item.title || '').toLowerCase().indexOf(query) !== -1; });
+    items.sort(function(a,b) { return (a.item.title||'').localeCompare(b.item.title||''); });
+
+    if (items.length === 0) { container.innerHTML = '<div class="mch-empty">No tasks found</div>'; return; }
+
+    var html = '';
+    items.forEach(function(x) {
+        var isRoutine = x.kind === 'routine';
+        var typeIcon = isRoutine
+            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>'
+            : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4"/><circle cx="9" cy="19" r="1"/><circle cx="20" cy="19" r="1"/></svg>';
+        html += '<div class="mch-tb-row" data-id="' + x.item.id + '" data-kind="' + x.kind + '">' +
+            '<div class="mch-tb-row-icon">' + typeIcon + '</div>' +
+            (x.item.icon ? '<div class="mch-tb-row-emoji">' + x.item.icon + '</div>' : '') +
+            '<div class="mch-tb-row-title">' + (x.item.title || '') + '</div>' +
+            '<div class="mch-tb-row-more">···</div>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+    container.onclick = function(e) {
+        var row = e.target.closest('.mch-tb-row');
+        if (row) {
+            var id = row.getAttribute('data-id');
+            var kind = row.getAttribute('data-kind');
+            if (id && typeof openTaskDetail === 'function') openTaskDetail(id, kind, e);
+        }
+    };
 }
 
 function showMobileChores() {
@@ -1890,12 +2018,10 @@ function showMobileChores() {
     mobileChoresDate = new Date();
     mobileChoresFilter = null;
     mobileChoresShowCompleted = false;
-    mobileChoresProfilesVisible = true;
     updateMobileChoresDateTitle();
 
-    // Reset completed button
-    var completedBtn = document.getElementById('mchCompletedBtn');
-    if (completedBtn) completedBtn.classList.remove('mch-btn-active');
+    var filterBtn = document.getElementById('mchFilterBtn');
+    if (filterBtn) filterBtn.classList.remove('mch-btn-active');
 
     var monthNav = document.getElementById('monthNav');
     var todayNav = document.getElementById('todayNav');
@@ -1908,7 +2034,7 @@ function showMobileChores() {
     if (contentArea) {
         contentArea.innerHTML =
             '<div id="mchProfileRow" class="mch-profile-row"></div>' +
-            '<div id="mobileChoresList" class="mch-list"></div>';
+            '<div id="mobileChoresList" class="mch-card-list"></div>';
     }
 
     renderMobileChoresFull();
