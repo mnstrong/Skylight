@@ -1825,29 +1825,27 @@
        ============================================ */
     
     .floating-add-btn {
-        position: fixed !important;
-        bottom: 30px !important;
-        right: 30px !important;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 50% !important;
-        background: #1565C0 !important;
-        color: white !important;
-        border: none !important;
-        font-size: 28px !important;
-        display: flex !important;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #1565C0;
+        color: white;
+        border: none;
+        font-size: 28px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.4);
         cursor: pointer;
-        z-index: 999 !important;
+        z-index: 999;
     }
     
     /* Hide FAB on home screen */
-    @media (max-width: 768px) {
-        body:not(.viewing-section) .floating-add-btn {
-            display: none !important;
-        }
+    body:not(.viewing-section) .floating-add-btn {
+        display: none;
     }
     
     /* ============================================
@@ -2392,7 +2390,19 @@
     }
     
     .mobile-home,
-    .mobile-header {
+    .mobile-header,
+    #mobileCalendarNav,
+    #mobileChoresNav,
+    .mch-nav,
+    #mobileAllowancePage,
+    #mobileTaskBoxPage,
+    #mobileSearchOverlay,
+    #mobileSearchSheet,
+    #mobileTaskBoxOverlay,
+    #mobileTaskBoxSheet,
+    #mobileListsUI,
+    #mobileProfilePickerSheet,
+    #mobileProfilePickerOverlay {
         display: none !important;
     }
 }
@@ -2400,10 +2410,52 @@
 /* ============================================
    DESKTOP (1025px+)
    ============================================ */
-@media screen and (min-width: 1025px) {
+@media screen and (min-width: 769px) {
     .mobile-home,
-    .mobile-header {
+    .mobile-header,
+    #mobileCalendarNav,
+    #mobileChoresNav,
+    .mch-nav,
+    #mobileAllowancePage,
+    #mobileTaskBoxPage,
+    #mobileSearchOverlay,
+    #mobileSearchSheet,
+    #mobileTaskBoxOverlay,
+    #mobileTaskBoxSheet,
+    #mobileListsUI,
+    #mobileProfilePickerSheet,
+    #mobileProfilePickerOverlay {
         display: none !important;
+    }
+
+    /* Restore desktop FAB — undo any mobile !important overrides */
+    .floating-add-btn {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #4A90E2 !important;
+        font-size: 32px !important;
+        display: none !important; /* shown via .active class in JS */
+    }
+    .floating-add-btn.active {
+        display: flex !important;
+    }
+    .floating-add-task-btn {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #4A90E2 !important;
+        font-size: 32px !important;
+        display: none !important;
+    }
+    .floating-add-task-btn.active {
+        display: flex !important;
     }
 }
 
@@ -2547,22 +2599,22 @@
     }
 
     body.viewing-section.chores-view-active .floating-add-task-btn {
-        display: flex !important;
-        position: fixed !important;
-        bottom: 30px !important;
-        right: 30px !important;
-        width: 60px !important;
-        height: 60px !important;
-        border-radius: 50% !important;
-        background: #14607A !important;
-        color: white !important;
-        border: none !important;
-        font-size: 28px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 4px 14px rgba(20,96,122,0.4) !important;
+        display: flex;
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #14607A;
+        color: white;
+        border: none;
+        font-size: 28px;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(20,96,122,0.4);
         cursor: pointer;
-        z-index: 999 !important;
+        z-index: 999;
     }
 }
 
