@@ -10098,7 +10098,11 @@ try { if (typeof GoogleCalendar !== 'undefined' && GoogleCalendar.isConnected())
 }
 
 function openProfileSettings() {
-if (window.innerWidth <= 768) alert('Profile settings coming soon!');
+    // Mobile: handled by override in index.html
+    // Desktop fallback: open the profile picker panel
+    if (window.innerWidth > 768 && typeof openProfilePicker === 'function') {
+        openProfilePicker();
+    }
 }
 
 // ============================================================

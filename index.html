@@ -1339,7 +1339,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2V12.46L22 3z"/></svg>
             <span class="mobile-cal-btn-label">Filter</span>
         </button>
-        <button class="mobile-calendar-nav-btn" onclick="alert('Search coming soon!')">
+        <button class="mobile-calendar-nav-btn" onclick="openMobileSearch()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span class="mobile-cal-btn-label">Search</span>
         </button>
@@ -1371,7 +1371,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2V12.46L22 3z"/></svg>
             <span class="mobile-cal-btn-label">Filter</span>
         </button>
-        <button class="mobile-calendar-nav-btn" onclick="alert('Task Box coming soon!')">
+        <button class="mobile-calendar-nav-btn" onclick="openMobileTaskBox()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M23 3H1l2 5h18l2-5z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
             <span class="mobile-cal-btn-label">Task Box</span>
         </button>
@@ -1409,17 +1409,17 @@
             <div class="mobile-icon-circle" style="background: linear-gradient(135deg, #EEF2FF, #FDF0FF);">🌱</div>
             <div class="mobile-icon-label">Habits</div>
         </div>
-        <div class="mobile-icon-item" onclick="alert('Photos coming soon!')">
-            <div class="mobile-icon-circle mobile-icon-photos">🖼️</div>
-            <div class="mobile-icon-label">Photos</div>
+        <div class="mobile-icon-item" onclick="goToSection('allowance')">
+            <div class="mobile-icon-circle mobile-icon-allowance">💰</div>
+            <div class="mobile-icon-label">Allowance</div>
         </div>
         <div class="mobile-icon-item" onclick="openProfileSettings()">
             <div class="mobile-icon-circle mobile-icon-profiles">👥</div>
             <div class="mobile-icon-label">Profiles</div>
         </div>
-        <div class="mobile-icon-item" onclick="alert('Sidekick coming soon!')">
-            <div class="mobile-icon-circle mobile-icon-sidekick">✨<div class="mobile-icon-badge">+</div></div>
-            <div class="mobile-icon-label">Sidekick</div>
+        <div class="mobile-icon-item" onclick="goToSection('timer')">
+            <div class="mobile-icon-circle mobile-icon-timer">⏱️</div>
+            <div class="mobile-icon-label">Timer</div>
         </div>
     </div>
     
@@ -1428,6 +1428,26 @@
         <div id="mobileTodayEvents"></div>
         <div id="mobileNoEvents" style="color: #666; font-size: 16px;">No upcoming events today 😌</div>
     </div>
+</div>
+
+<!-- Mobile Search Overlay -->
+<div class="mobile-search-overlay" id="mobileSearchOverlay" onclick="closeMobileSearch()"></div>
+<div class="mobile-search-sheet" id="mobileSearchSheet">
+    <div class="lists-sheet-handle"></div>
+    <div class="mobile-search-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="mobile-search-input" id="mobileSearchInput" type="text" placeholder="Search events, tasks…" oninput="runMobileSearch(this.value)" autocomplete="off">
+        <button class="mobile-search-cancel" onclick="closeMobileSearch()">Cancel</button>
+    </div>
+    <div class="mobile-search-results" id="mobileSearchResults"></div>
+</div>
+
+<!-- Mobile Task Box Sheet -->
+<div class="mobile-search-overlay" id="mobileTaskBoxOverlay" onclick="closeMobileTaskBox()"></div>
+<div class="mobile-search-sheet" id="mobileTaskBoxSheet">
+    <div class="lists-sheet-handle"></div>
+    <div style="padding: 0 20px 8px; font-size: 20px; font-weight: 700; color: #1a1a1a;">Upcoming Tasks</div>
+    <div class="mobile-search-results" id="mobileTaskBoxList"></div>
 </div>
 
 <!-- Mobile Navigation JavaScript -->
@@ -1848,3 +1868,183 @@ function showMobileChores() {
     // Render immediately - containers are already in DOM
     renderMobileChoresProfileFilter();
 }
+
+// ── Mobile Search ────────────────────────────────────────────────────
+function openMobileSearch() {
+    var overlay = document.getElementById('mobileSearchOverlay');
+    var sheet = document.getElementById('mobileSearchSheet');
+    if (!overlay || !sheet) return;
+    overlay.classList.add('active');
+    sheet.classList.add('active');
+    document.getElementById('mobileSearchResults').innerHTML = '<div style="padding:20px;text-align:center;color:#999;font-size:14px;">Type to search events and tasks…</div>';
+    setTimeout(function() {
+        var inp = document.getElementById('mobileSearchInput');
+        if (inp) { inp.value = ''; inp.focus(); }
+    }, 300);
+}
+
+function closeMobileSearch() {
+    var overlay = document.getElementById('mobileSearchOverlay');
+    var sheet = document.getElementById('mobileSearchSheet');
+    if (overlay) overlay.classList.remove('active');
+    if (sheet) sheet.classList.remove('active');
+}
+
+function runMobileSearch(query) {
+    var container = document.getElementById('mobileSearchResults');
+    if (!container) return;
+    query = (query || '').trim().toLowerCase();
+    if (!query) {
+        container.innerHTML = '<div style="padding:20px;text-align:center;color:#999;font-size:14px;">Type to search events and tasks…</div>';
+        return;
+    }
+    var results = [];
+    // Search events
+    var allEvents = (typeof getAllEvents === 'function') ? getAllEvents() : (window.events || []);
+    allEvents.forEach(function(ev) {
+        if ((ev.title || '').toLowerCase().indexOf(query) !== -1 || (ev.notes || '').toLowerCase().indexOf(query) !== -1) {
+            results.push({ type: 'event', item: ev });
+        }
+    });
+    // Search chores/tasks
+    var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
+    allChores.forEach(function(c) {
+        if ((c.title || '').toLowerCase().indexOf(query) !== -1) {
+            results.push({ type: 'task', item: c });
+        }
+    });
+
+    if (results.length === 0) {
+        container.innerHTML = '<div style="padding:32px;text-align:center;color:#999;font-size:15px;">No results for "<b>' + query + '</b>"</div>';
+        return;
+    }
+
+    var html = '';
+    results.slice(0, 20).forEach(function(r) {
+        var item = r.item;
+        var icon = r.type === 'event' ? '📅' : '✅';
+        var subtitle = r.type === 'event'
+            ? (item.date ? new Date(item.date + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Event')
+            : (item.member ? item.member : 'Task');
+        html += '<div class="mobile-search-result-row" onclick="' + (r.type === 'event' ? 'closeMobileSearch();goToSection(\'calendar\')' : 'closeMobileSearch()') + '">' +
+            '<div class="mobile-search-result-icon">' + icon + '</div>' +
+            '<div class="mobile-search-result-body">' +
+                '<div class="mobile-search-result-title">' + (item.title || '') + '</div>' +
+                '<div class="mobile-search-result-sub">' + subtitle + '</div>' +
+            '</div>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+}
+
+// ── Mobile Task Box ──────────────────────────────────────────────────
+function openMobileTaskBox() {
+    var overlay = document.getElementById('mobileTaskBoxOverlay');
+    var sheet = document.getElementById('mobileTaskBoxSheet');
+    if (!overlay || !sheet) return;
+    overlay.classList.add('active');
+    sheet.classList.add('active');
+    renderMobileTaskBox();
+}
+
+function closeMobileTaskBox() {
+    var overlay = document.getElementById('mobileTaskBoxOverlay');
+    var sheet = document.getElementById('mobileTaskBoxSheet');
+    if (overlay) overlay.classList.remove('active');
+    if (sheet) sheet.classList.remove('active');
+}
+
+function renderMobileTaskBox() {
+    var container = document.getElementById('mobileTaskBoxList');
+    if (!container) return;
+    var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
+    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var pending = allChores.filter(function(c) { return !c.completed; });
+    if (pending.length === 0) {
+        container.innerHTML = '<div style="padding:32px;text-align:center;color:#999;font-size:15px;">🎉 All tasks complete!</div>';
+        return;
+    }
+    var html = '';
+    pending.slice(0, 30).forEach(function(c) {
+        var member = fm.find(function(m) { return m.name === c.member; });
+        var color = member ? member.color : '#888';
+        var initial = member ? member.name.charAt(0).toUpperCase() : '?';
+        html += '<div class="mobile-search-result-row">' +
+            '<div class="mobile-search-result-icon" style="background:' + color + '22;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;">' + (c.icon || '✅') + '</div>' +
+            '<div class="mobile-search-result-body">' +
+                '<div class="mobile-search-result-title">' + (c.title || '') + '</div>' +
+                '<div class="mobile-search-result-sub">' + (c.member || 'Unassigned') + '</div>' +
+            '</div>' +
+            '<div style="width:28px;height:28px;border-radius:50%;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">' + initial + '</div>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+}
+
+// ── Fix: openProfileSettings should show profile picker on mobile ────
+window.openProfileSettings = function() {
+    if (window.innerWidth <= 768) {
+        // Show a profile picker sheet
+        var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        var nonGoogle = fm.filter(function(m) { return !m.isGoogleCalendar; });
+        if (nonGoogle.length === 0) {
+            if (typeof addFamilyMember === 'function') addFamilyMember();
+            return;
+        }
+        if (nonGoogle.length === 1) {
+            if (typeof openProfileDashboard === 'function') openProfileDashboard(nonGoogle[0].name);
+            return;
+        }
+        // Multiple profiles — show picker sheet
+        var existing = document.getElementById('mobileProfilePickerSheet');
+        if (existing) existing.remove();
+        var existingOv = document.getElementById('mobileProfilePickerOverlay');
+        if (existingOv) existingOv.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'mobileProfilePickerOverlay';
+        overlay.className = 'mobile-search-overlay active';
+        overlay.onclick = function() { overlay.remove(); sheet.remove(); };
+
+        var sheet = document.createElement('div');
+        sheet.id = 'mobileProfilePickerSheet';
+        sheet.className = 'mobile-search-sheet active';
+        var html = '<div class="lists-sheet-handle"></div>' +
+            '<div style="padding:0 20px 16px;font-size:20px;font-weight:700;color:#1a1a1a;">Select Profile</div>' +
+            '<div style="padding:0 16px 40px;display:flex;flex-direction:column;gap:10px;">';
+        nonGoogle.forEach(function(m) {
+            html += '<div onclick="overlay.remove();sheet.remove();if(typeof openProfileDashboard===\'function\')openProfileDashboard(\'' + m.name.replace(/'/g, "\\'") + '\')" ' +
+                'style="display:flex;align-items:center;gap:14px;background:' + m.color + '18;border-radius:16px;padding:16px 18px;cursor:pointer;">' +
+                '<div style="width:44px;height:44px;border-radius:50%;background:' + m.color + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;">' + m.name.charAt(0).toUpperCase() + '</div>' +
+                '<div style="font-size:17px;font-weight:600;color:#1a1a1a;">' + m.name + '</div>' +
+                '</div>';
+        });
+        html += '</div>';
+        sheet.innerHTML = html;
+        // Fix onclick references
+        document.body.appendChild(overlay);
+        document.body.appendChild(sheet);
+        // Re-wire the onclick since inline can't close over outer vars
+        sheet.querySelectorAll('[onclick]').forEach(function(el, i) {
+            var name = nonGoogle[i].name;
+            el.onclick = function() {
+                overlay.remove(); sheet.remove();
+                if (typeof openProfileDashboard === 'function') openProfileDashboard(name);
+            };
+        });
+    } else {
+        // Desktop: open profile dashboard for first member or show picker
+        if (typeof openProfilePicker === 'function') openProfilePicker();
+    }
+};
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth <= 768) {
+        // Handle hash on load
+        handleHashChange();
+    }
+});
+</script>
+</body>
+</html>

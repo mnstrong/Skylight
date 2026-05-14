@@ -1858,3 +1858,162 @@
         display: none !important;
     }
 }
+
+/* ============================================
+   MOBILE SEARCH SHEET
+   ============================================ */
+@media screen and (max-width: 768px) {
+
+    .mobile-search-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 2500;
+    }
+    .mobile-search-overlay.active { display: block; }
+
+    .mobile-search-sheet {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: white;
+        border-radius: 20px 20px 0 0;
+        padding: 12px 0 0;
+        z-index: 2501;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .mobile-search-sheet.active { transform: translateY(0); }
+
+    .mobile-search-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 16px 12px;
+        border-bottom: 1px solid #F0F0F0;
+    }
+
+    .mobile-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-family: 'Jost', sans-serif;
+        font-size: 17px;
+        color: #1C1C1E;
+        background: transparent;
+        padding: 6px 0;
+    }
+    .mobile-search-input::placeholder { color: #AEAEB2; }
+
+    .mobile-search-cancel {
+        background: none;
+        border: none;
+        font-family: 'Jost', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        color: #007AFF;
+        cursor: pointer;
+        padding: 4px 0;
+        min-height: 0;
+        min-width: 0;
+        flex-shrink: 0;
+    }
+
+    .mobile-search-results {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 8px 0 40px;
+    }
+
+    .mobile-search-result-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 20px;
+        border-bottom: 1px solid #F5F5F7;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-search-result-row:active { background: #F5F5F7; }
+
+    .mobile-search-result-icon {
+        font-size: 22px;
+        flex-shrink: 0;
+        width: 36px;
+        text-align: center;
+    }
+
+    .mobile-search-result-body { flex: 1; min-width: 0; }
+
+    .mobile-search-result-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobile-search-result-sub {
+        font-size: 13px;
+        color: #888;
+        margin-top: 2px;
+    }
+
+    /* New mobile icon colors */
+    .mobile-icon-allowance { background: #E8F5E9; }
+    .mobile-icon-timer     { background: #FFF3E0; }
+
+    /* Safe-area for notched devices */
+    .mobile-home {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Today card - ensure proper padding from header */
+    .mobile-today-card {
+        margin-top: 20px;
+    }
+
+    /* Allowance & Timer section navigation */
+    body.viewing-section.allowance-view-active #contentArea,
+    body.viewing-section.timer-view-active #contentArea {
+        padding-top: calc(var(--mobile-header-height) + 16px) !important;
+    }
+
+    /* Floating add button - hide on home, show on section */
+    .floating-add-task-btn {
+        display: none !important;
+    }
+
+    body.viewing-section.calendar-view .floating-add-btn {
+        display: flex !important;
+    }
+
+    body:not(.viewing-section) .floating-add-btn,
+    body:not(.viewing-section) .floating-add-task-btn {
+        display: none !important;
+    }
+
+    body.viewing-section.chores-view-active .floating-add-task-btn {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #14607A !important;
+        color: white !important;
+        border: none !important;
+        font-size: 28px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 14px rgba(20,96,122,0.4) !important;
+        cursor: pointer;
+        z-index: 999 !important;
+    }
+}
