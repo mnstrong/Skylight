@@ -1044,15 +1044,17 @@
     </div>
 
     <!-- Manage Profiles Panel -->
-    <div class="side-panel-overlay" id="manageProfilesOverlay" onclick="closeManageProfiles()"></div>
-    <div class="side-panel" id="manageProfilesPanel">
-        <div class="side-panel-header">
-            <button class="side-panel-back" onclick="closeManageProfiles()">✕</button>
-            <div class="side-panel-title">Manage Profiles</div>
+    <div class="edit-panel-overlay" id="manageProfilesOverlay" onclick="closeManageProfiles()"></div>
+    <div class="edit-side-panel" id="manageProfilesPanel">
+        <div class="edit-panel-header">
+            <button class="edit-panel-back" onclick="closeManageProfiles()">✕</button>
+            <div class="edit-panel-title">Manage Profiles</div>
         </div>
         <div class="manage-profiles-hint">Drag ☰ to reorder · Tap ✏️ to edit · Tap 🗑 to delete</div>
         <div id="manageProfilesList" class="manage-profiles-list"></div>
-        <button class="edit-save-btn" style="margin: 16px;" onclick="closeManageProfiles(); if(typeof addNewProfileFlow==='function') addNewProfileFlow()">+ Add Profile</button>
+        <div style="padding: 0 16px 16px;">
+            <button class="edit-save-btn" onclick="closeManageProfiles(); addNewProfileFlow()">+ Add Profile</button>
+        </div>
     </div>
     
     <!-- Reward Redemption Modal -->
