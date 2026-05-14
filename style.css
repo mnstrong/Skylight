@@ -4602,34 +4602,34 @@
         }
         
         .meal-box.empty-box {
-            background: rgba(255, 179, 179, 0.15);
+            background: rgba(255, 229, 102, 0.18);  /* Breakfast yellow */
             cursor: pointer;
             border: 3px solid transparent;
             transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
         }
         
         .meal-box.empty-box.selected {
-            border-color: rgba(255, 179, 179, 1);
+            border-color: rgba(255, 229, 102, 1);
         }
         
         .meal-box.empty-box.lunch {
-            background: rgba(179, 229, 217, 0.15);
+            background: rgba(168, 221, 168, 0.18);  /* Lunch green */
         }
         
         .meal-box.empty-box.lunch.selected {
-            border-color: rgba(179, 229, 217, 1);
+            border-color: rgba(168, 221, 168, 1);
         }
         
         .meal-box.empty-box.dinner {
-            background: rgba(255, 217, 163, 0.15);
+            background: rgba(196, 176, 224, 0.18);  /* Dinner lavender */
         }
         
         .meal-box.empty-box.dinner.selected {
-            border-color: rgba(255, 217, 163, 1);
+            border-color: rgba(196, 176, 224, 1);
         }
         
         .meal-box.empty-box.snack {
-            background: rgba(229, 212, 179, 0.15);
+            background: rgba(255, 179, 198, 0.18);  /* Snack pink */
         }
         
         .meal-box.empty-box:hover {
