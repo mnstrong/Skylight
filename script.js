@@ -2493,6 +2493,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 </div>
             `;
         });
+        html += `<button class="manage-profiles-btn" onclick="openManageProfiles()">☰ Manage &amp; Reorder Profiles</button>`;
         list.innerHTML = html;
         
         // Update filter button state
@@ -2615,6 +2616,178 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').classList.remove('active');
         currentEditProfileName = null;
+    }
+
+    function deleteCurrentProfile() {
+        const name = currentEditProfileName;
+        if (!name) return;
+        if (!confirm(`Delete profile "${name}"? This will remove all their chores, events, rewards, and allowance data. This cannot be undone.`)) return;
+
+        // Remove from familyMembers
+        const idx = familyMembers.findIndex(m => m.name === name);
+        const deleted = familyMembers[idx];
+        if (idx === -1) return;
+        familyMembers.splice(idx, 1);
+        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        window.familyMembers = familyMembers;
+
+        // Remove from calendarFilterActive
+        const fIdx = calendarFilterActive.indexOf(name);
+        if (fIdx > -1) calendarFilterActive.splice(fIdx, 1);
+
+        // Remove their chores
+        if (window.chores) {
+            window.chores = window.chores.filter(c => c.member !== name);
+            localStorage.setItem('chores', JSON.stringify(window.chores));
+        }
+
+        // Remove their events
+        if (window.events) {
+            window.events = window.events.filter(e => {
+                if (e.member === name) return false;
+                if (Array.isArray(e.members)) e.members = e.members.filter(m => m !== name);
+                return true;
+            });
+            localStorage.setItem('events', JSON.stringify(window.events));
+        }
+
+        // Remove their rewards
+        if (window.rewards) {
+            window.rewards = window.rewards.filter(r => r.member !== name);
+            localStorage.setItem('rewards', JSON.stringify(window.rewards));
+        }
+
+        // Remove their allowance
+        const allowances = JSON.parse(localStorage.getItem('allowances') || '[]');
+        localStorage.setItem('allowances', JSON.stringify(allowances.filter(a => a.member !== name)));
+
+        // Sync delete to Supabase
+        if (deleted && deleted.id && window.SupabaseAPI && typeof window.SupabaseAPI.deleteFamilyMember === 'function') {
+            window.SupabaseAPI.deleteFamilyMember(deleted.id).catch(e => console.error('Supabase delete member error:', e));
+        }
+
+        closeEditProfileModal();
+
+        // Re-render everything that shows profiles
+        renderCalendarFilterList();
+        renderFamilyPillsLists();
+        if (typeof renderFamilyPills === 'function') renderFamilyPills();
+        if (typeof renderPersonAvatars === 'function') renderPersonAvatars();
+        if (typeof renderChoresView === 'function' && currentSection === 'chores') renderChoresView();
+        if (typeof renderRewardsView === 'function' && currentSection === 'rewards') renderRewardsView();
+        if (typeof renderAllowanceGrid === 'function' && currentSection === 'allowance') renderAllowanceGrid();
+        if (typeof renderCalendar === 'function' && currentSection === 'calendar') renderCalendar();
+    }
+
+    function openManageProfiles() {
+        document.getElementById('manageProfilesOverlay').classList.add('active');
+        document.getElementById('manageProfilesPanel').classList.add('active');
+        renderManageProfiles();
+    }
+
+    function closeManageProfiles() {
+        document.getElementById('manageProfilesOverlay').classList.remove('active');
+        document.getElementById('manageProfilesPanel').classList.remove('active');
+    }
+
+    function renderManageProfiles() {
+        const list = document.getElementById('manageProfilesList');
+        if (!list) return;
+        const members = familyMembers.filter(m => !m.isGoogleCalendar);
+        list.innerHTML = members.map((m, i) => `
+            <div class="mp-row" data-index="${i}" draggable="true">
+                <div class="mp-handle" title="Drag to reorder">☰</div>
+                <div class="mp-avatar" style="background:${m.color}">${m.name.charAt(0).toUpperCase()}</div>
+                <div class="mp-name">${m.name}</div>
+                <button class="mp-edit-btn" onclick="closeManageProfiles(); openEditProfileModal('${m.name}')">✏️</button>
+                <button class="mp-delete-btn" onclick="manageProfilesDelete('${m.name}')">🗑</button>
+            </div>
+        `).join('');
+        initManageProfilesDrag(list);
+    }
+
+    function manageProfilesDelete(name) {
+        currentEditProfileName = name;
+        deleteCurrentProfile();
+        // Re-render manage list if still open
+        const panel = document.getElementById('manageProfilesPanel');
+        if (panel && panel.classList.contains('active')) renderManageProfiles();
+    }
+
+    function initManageProfilesDrag(list) {
+        let dragSrc = null;
+        list.querySelectorAll('.mp-row').forEach(row => {
+            row.addEventListener('dragstart', function(e) {
+                dragSrc = this;
+                e.dataTransfer.effectAllowed = 'move';
+                this.style.opacity = '0.4';
+            });
+            row.addEventListener('dragend', function() {
+                this.style.opacity = '';
+                list.querySelectorAll('.mp-row').forEach(r => r.classList.remove('mp-drag-over'));
+            });
+            row.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                list.querySelectorAll('.mp-row').forEach(r => r.classList.remove('mp-drag-over'));
+                this.classList.add('mp-drag-over');
+            });
+            row.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (dragSrc === this) return;
+                const srcIdx = parseInt(dragSrc.getAttribute('data-index'));
+                const dstIdx = parseInt(this.getAttribute('data-index'));
+                // Reorder in familyMembers (non-google only)
+                const nonGoogle = familyMembers.filter(m => !m.isGoogleCalendar);
+                const googleOnly = familyMembers.filter(m => m.isGoogleCalendar);
+                const moved = nonGoogle.splice(srcIdx, 1)[0];
+                nonGoogle.splice(dstIdx, 0, moved);
+                // Recombine: non-google first, then google
+                familyMembers.length = 0;
+                nonGoogle.forEach(m => familyMembers.push(m));
+                googleOnly.forEach(m => familyMembers.push(m));
+                localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+                window.familyMembers = familyMembers;
+                // Re-render
+                renderManageProfiles();
+                renderCalendarFilterList();
+                renderFamilyPillsLists();
+                if (typeof renderFamilyPills === 'function') renderFamilyPills();
+                if (typeof renderPersonAvatars === 'function') renderPersonAvatars();
+                // Sync new order to Supabase (update each member's display_order if field exists)
+                if (window.SupabaseAPI && typeof window.SupabaseAPI.updateFamilyMember === 'function') {
+                    nonGoogle.forEach((m, i) => {
+                        if (m.id) window.SupabaseAPI.updateFamilyMember(m.id, { display_order: i }).catch(() => {});
+                    });
+                }
+            });
+        });
+    }
+
+    function addNewProfileFlow() {
+        const name = prompt('Enter new profile name:');
+        if (!name || !name.trim()) return;
+        if (familyMembers.some(m => m.name === name.trim())) {
+            alert('A profile with that name already exists.');
+            return;
+        }
+        const colors = ['#FF6B6B','#4ECDC4','#FFE66D','#95E1D3','#F38181','#AA96DA','#6BCB77','#F4A261','#E76F51','#457B9D'];
+        const usedColors = familyMembers.map(m => m.color);
+        const color = colors.find(c => !usedColors.includes(c)) || colors[familyMembers.length % colors.length];
+        const newMember = { name: name.trim(), color };
+        familyMembers.push(newMember);
+        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        window.familyMembers = familyMembers;
+        calendarFilterActive.push(name.trim());
+        renderCalendarFilterList();
+        renderFamilyPillsLists();
+        if (typeof renderFamilyPills === 'function') renderFamilyPills();
+        if (typeof renderPersonAvatars === 'function') renderPersonAvatars();
+        // Sync to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMembers === 'function') {
+            window.SupabaseSync.syncFamilyMembers();
+        }
+        openEditProfileModal(name.trim());
     }
     
     function renderColorPicker(selectedColor) {
