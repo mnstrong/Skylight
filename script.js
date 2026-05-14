@@ -3310,13 +3310,6 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     // Returns a CSS background string: split gradient for 2+ members, solid for 1
     function getMultiMemberBg(event, opacity) {
         opacity = opacity || 0.35;
-
-        // Check for keyword-driven background image override (e.g. Ignite)
-        if (event && typeof getEventKeywordBg === 'function') {
-            var kwBg = getEventKeywordBg(event);
-            if (kwBg) return 'url(' + kwBg + ')';
-        }
-
         var members = getEventMembers(event);
         if (members.length >= 2) {
             var c1 = hexToRgba(members[0].color, opacity);
@@ -3852,6 +3845,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 if (sources[si].indexOf(keys[i]) !== -1) {
                     return FLAIR_BASE + FLAIR_MAP[keys[i]] + FLAIR_EXT;
                 }
+            }
+        }
+        // Check profile keyword map for custom bgImage (e.g. ignite.png)
+        var kws = getProfileKeywords();
+        var combined = ((title || '') + ' ' + (notes || '')).toLowerCase();
+        for (var k = 0; k < kws.length; k++) {
+            if (kws[k].bgImage && combined.indexOf(kws[k].keyword.toLowerCase()) !== -1) {
+                return kws[k].bgImage;
             }
         }
         return null;
