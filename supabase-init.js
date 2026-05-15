@@ -22,22 +22,23 @@
             // Initialize Supabase sync (loads all data from cloud)
             await SupabaseSync.initialize();
             
-            // Reload all data arrays from Supabase-populated window globals
-            if (window.chores !== undefined) {
-                chores = window.chores || [];
-                console.log('✅ Reloaded', chores.length, 'chores');
-                document.dispatchEvent(new CustomEvent('supabaseChoresLoaded'));
-            }
-            if (window.routines !== undefined) routines = window.routines || [];
-            if (window.tasks !== undefined) tasks = window.tasks || [];
-            if (window.lists !== undefined) lists = window.lists || [];
-            if (window.recipes !== undefined) recipes = window.recipes || [];
-            if (window.mealPlan !== undefined) mealPlan = window.mealPlan || [];
-            if (window.rewards !== undefined) rewards = window.rewards || [];
-            if (window.allowances !== undefined) allowances = window.allowances || [];
-            if (window.mealCategories !== undefined) mealCategories = window.mealCategories;
-            if (window.hiddenChoreMembers !== undefined) hiddenChoreMembers = window.hiddenChoreMembers;
-            if (window.showUpForGrabs !== undefined) showUpForGrabs = window.showUpForGrabs;
+            // Sync Supabase-loaded window globals back into script.js closures via events
+            document.dispatchEvent(new CustomEvent('supabaseChoresLoaded'));
+            document.dispatchEvent(new CustomEvent('supabaseDataLoaded', {
+                detail: {
+                    chores: window.chores,
+                    routines: window.routines,
+                    tasks: window.tasks,
+                    lists: window.lists,
+                    recipes: window.recipes,
+                    mealPlan: window.mealPlan,
+                    rewards: window.rewards,
+                    allowances: window.allowances,
+                    mealCategories: window.mealCategories,
+                    hiddenChoreMembers: window.hiddenChoreMembers,
+                    showUpForGrabs: window.showUpForGrabs
+                }
+            }));
             
             // After loading, render the current section to show updated data
             // Only render if we're actually on that page

@@ -76,7 +76,7 @@ async function loadAllDataFromSupabase() {
                 return true;
             });
             // Also preserve any local-only members (e.g. isGoogleCalendar) not in Supabase
-            const localForGcal = window.familyMembers || [];
+            const localForGcal = Array.isArray(window.familyMembers) ? window.familyMembers : [];
             localForGcal.forEach(lm => {
                 if (lm.isGoogleCalendar && !formattedMembers.find(m => m.name === lm.name)) {
                     formattedMembers.push(lm);

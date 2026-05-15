@@ -89,7 +89,7 @@ let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
-let familyMembers = window.familyMembers || [
+let familyMembers = (Array.isArray(window.familyMembers) ? window.familyMembers : null) || [
 { name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' }
 ];
 window.familyMembers = familyMembers;
@@ -9221,6 +9221,27 @@ if (allChoresComplete || allRoutinesComplete) {
         const section = document.querySelector('.section.active');
         if (section && section.id === 'chores') {
             renderChoresView();
+        }
+    });
+
+    // Sync all Supabase-loaded data into closure variables
+    document.addEventListener('supabaseDataLoaded', function(e) {
+        const d = e.detail || {};
+        if (d.chores)              { chores = d.chores; window.chores = chores; }
+        if (d.routines)            { routines = d.routines; window.routines = routines; }
+        if (d.tasks)               { tasks = d.tasks; }
+        if (d.lists)               { lists = d.lists; }
+        if (d.recipes)             { recipes = d.recipes; }
+        if (d.mealPlan)            { mealPlan = d.mealPlan; }
+        if (d.rewards)             { rewards = d.rewards; }
+        if (d.allowances)          { allowances = d.allowances; }
+        if (d.mealCategories)      { mealCategories = d.mealCategories; }
+        if (d.hiddenChoreMembers)  { hiddenChoreMembers = d.hiddenChoreMembers; window.hiddenChoreMembers = hiddenChoreMembers; }
+        if (d.showUpForGrabs !== undefined) { showUpForGrabs = d.showUpForGrabs; window.showUpForGrabs = showUpForGrabs; }
+
+        // Re-render current section
+        if (typeof renderSection === 'function' && typeof currentSection !== 'undefined') {
+            try { renderSection(currentSection); } catch(e) {}
         }
     });
 
