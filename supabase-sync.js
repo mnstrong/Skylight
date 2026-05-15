@@ -60,7 +60,7 @@ async function loadAllDataFromSupabase() {
         if (members && members.length > 0) {
             // Preserve locally-stored sections (Supabase doesn't store per-member section toggles)
             const localMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
-            formattedMembers = members.map(m => {
+            const rawFormatted = members.map(m => {
                 const local = localMembers.find(lm => lm.name === m.name || lm.id === m.id);
                 return {
                     id: m.id,
@@ -71,8 +71,23 @@ async function loadAllDataFromSupabase() {
                     display_order: local ? local.display_order : undefined
                 };
             });
+            // Deduplicate by name — keep first occurrence only
+            const seenNames = new Set();
+            formattedMembers = rawFormatted.filter(m => {
+                if (seenNames.has(m.name)) return false;
+                seenNames.add(m.name);
+                return true;
+            });
+            // Also preserve any local-only members (e.g. isGoogleCalendar) not in Supabase
+            localMembers.forEach(lm => {
+                if (lm.isGoogleCalendar && !formattedMembers.find(m => m.name === lm.name)) {
+                    formattedMembers.push(lm);
+                }
+            });
             localStorage.setItem('familyMembers', JSON.stringify(formattedMembers));
             window.familyMembers = formattedMembers;
+            // Tell script.js closure to re-sync its local familyMembers array
+            document.dispatchEvent(new CustomEvent('supabaseFamilyMembersLoaded', { detail: formattedMembers }));
             console.log('✓ Loaded', members.length, 'family members');
             
             // Re-initialize calendar filter so new members are visible
