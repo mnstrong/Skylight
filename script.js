@@ -9245,21 +9245,21 @@ if (allChoresComplete || allRoutinesComplete) {
     document.addEventListener('supabaseFamilyMembersLoaded', function(e) {
         const loaded = e.detail;
         if (!Array.isArray(loaded)) return;
-        // Merge loaded members into the closure array in-place
-        // preserving any local-only fields (sections, display_order)
+        // Only update existing members in the closure — never push new ones.
+        // New members should only come in via addFamilyMember flow.
         loaded.forEach(function(lm) {
-            const idx = familyMembers.findIndex(function(m) {
-                return m.name === lm.name || (lm.id && m.id === lm.id);
+            const existing = familyMembers.find(function(m) {
+                return m.name === lm.name;
             });
-            if (idx > -1) {
-                // Update id/color from Supabase but keep sections from loaded (already merged)
-                familyMembers[idx].id = lm.id;
-                familyMembers[idx].color = lm.color;
-                if (lm.sections !== undefined) familyMembers[idx].sections = lm.sections;
-            } else {
-                familyMembers.push(lm);
+            if (existing) {
+                existing.id = lm.id;
+                existing.color = lm.color;
+                // Restore sections from the merged Supabase result (already includes local sections)
+                if (lm.sections !== undefined) existing.sections = lm.sections;
             }
         });
+        // Re-save to localStorage so the closure and localStorage stay in sync
+        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
     });
     
     // Convert all emojis to images using Twemoji
