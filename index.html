@@ -1329,7 +1329,9 @@
 
 <!-- Mobile Header -->
 <div class="mobile-header">
-    <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">←</div>
+    <div class="mobile-header-left" id="mobileBackBtn" onclick="goToMobileHome()" style="display: none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
     <div class="mobile-header-left" id="mobileHomeIndicator" style="display: block;"></div>
     <div class="mobile-header-title" id="mobileHeaderTitle">strongcalendar23</div>
     <div class="mobile-header-right" onclick="openProfileSettings()">👤</div>
@@ -1566,7 +1568,7 @@ function showMobileCalendar() {
     currentMobileSection = 'calendar';
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'block';
+    // mobileBackBtn shown via CSS body.viewing-section
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
     if (typeof switchSection === 'function') switchSection('calendar');
@@ -1581,7 +1583,7 @@ function showMobileSection(sectionName) {
     currentMobileSection = sectionName;
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'block';
+    // mobileBackBtn shown via CSS body.viewing-section
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     var titles = {chores:'Tasks', rewards:'Rewards', meals:'Meals', recipes:'Recipes', habits:'Habits'};
     document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
@@ -1599,7 +1601,7 @@ function showMobileHome() {
     if (homeEl) homeEl.style.display = 'block';
     var listsUI = document.getElementById('mobileListsUI');
     if (listsUI) listsUI.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'none';
+    // mobileBackBtn hidden via CSS :not(.viewing-section)
     document.getElementById('mobileHomeIndicator').style.display = 'block';
     document.getElementById('mobileHeaderTitle').textContent = 'strongcalendar23';
     updateMobileTodayCard();
@@ -1630,7 +1632,7 @@ function handleHashChange() {
             if (typeof listsShowUI === 'function') {
                 listsShowUI();
             }
-            document.getElementById('mobileBackBtn').style.display = 'block';
+            // mobileBackBtn shown via CSS body.viewing-section
             document.getElementById('mobileHomeIndicator').style.display = 'none';
             document.getElementById('mobileHeaderTitle').textContent = '';
             return;
@@ -2198,7 +2200,7 @@ function showMobileChores() {
 
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'none';
+    // mobileBackBtn hidden via CSS :not(.viewing-section)
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
 
@@ -2242,7 +2244,7 @@ function showMobileAllowance() {
     currentMobileSection = 'allowance';
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
-    document.getElementById('mobileBackBtn').style.display = 'none';
+    // mobileBackBtn hidden via CSS :not(.viewing-section)
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
 
