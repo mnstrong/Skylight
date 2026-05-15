@@ -2808,11 +2808,20 @@ let rewards = window.rewards || [];
         // Sync to Supabase — name/color and sections
         window.familyMembers = familyMembers;
         if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberColor === 'function') {
-            window.SupabaseSync.syncFamilyMemberColor(member);
-        }
-        // Sync sections to Supabase family_members.sections column
-        if (window.SupabaseAPI && member.id && typeof window.SupabaseAPI.updateFamilyMemberSections === 'function') {
-            window.SupabaseAPI.updateFamilyMemberSections(member.id, checkedSections).catch(console.error);
+            // Ensure member has a real Supabase UUID — if it's a local integer, try to find UUID from window.familyMembers
+            if (member.id && String(member.id).includes('-')) {
+                // Has UUID — good to go
+                window.SupabaseSync.syncFamilyMemberColor(member);
+            } else {
+                // Look up UUID from window.familyMembers (set by Supabase)
+                const wm = (window.familyMembers || []).find(function(m) { return m.name === member.name; });
+                if (wm && wm.id && String(wm.id).includes('-')) {
+                    member.id = wm.id;
+                    window.SupabaseSync.syncFamilyMemberColor(member);
+                } else {
+                    console.warn('Could not find Supabase UUID for member:', member.name);
+                }
+            }
         }
         
         // Update all references in other data
