@@ -2137,6 +2137,7 @@ function renderMalBody() {
     var container = document.getElementById('malBody');
     if (!container || !malCurrentMember) return;
     var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var member = fm.find(function(m) { return m.name === malCurrentMember; });
     if (!member) return;
     var allAllowances = window.allowances || JSON.parse(localStorage.getItem('allowances') || '[]');
     var data = allAllowances.find(function(a) { return a.member === malCurrentMember; }) || { transactions: [] };
