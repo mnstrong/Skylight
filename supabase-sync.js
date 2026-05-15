@@ -137,9 +137,17 @@ async function loadAllDataFromSupabase() {
         );
         if (plansRaw) {
             const plans = plansRaw.map(mealPlanFromDb);
-            localStorage.setItem('mealPlan', JSON.stringify(plans));
-            window.mealPlan = plans;
-            console.log('✓ Loaded', plans.length, 'meal plans');
+            // Deduplicate: if same date+mealType+recipeId appears more than once, keep only first
+            const seen = new Set();
+            const deduped = plans.filter(p => {
+                const key = p.date + '|' + p.mealType + '|' + (p.recipeId || '');
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            localStorage.setItem('mealPlan', JSON.stringify(deduped));
+            window.mealPlan = deduped;
+            console.log('✓ Loaded', deduped.length, 'meal plans');
         }
         
         // Load lists
@@ -178,9 +186,10 @@ async function loadAllDataFromSupabase() {
         // Load meal categories
         const categories = await SupabaseAPI.getMealCategories();
         if (categories && categories.length > 0) {
+            const CANONICAL_COLORS = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
             const formattedCategories = categories.map(c => ({
                 name: c.name,
-                color: c.color,
+                color: CANONICAL_COLORS[c.name] || c.color,  // always enforce canonical colors
                 visible: true
             }));
             localStorage.setItem('mealCategories', JSON.stringify(formattedCategories));
@@ -510,6 +519,19 @@ async function syncMealPlanEntry(entry, operation = 'update') {
         if (operation === 'add') {
             const newEntry = await SupabaseAPI.addMealPlan(mealPlanToDb(entry));
             if (newEntry) {
+                // Update local entry id to Supabase UUID so future loads don't duplicate
+                const localPlan = JSON.parse(localStorage.getItem('mealPlan') || '[]');
+                const idx = localPlan.findIndex(p =>
+                    p.date === entry.date &&
+                    p.mealType === entry.mealType &&
+                    String(p.recipeId) === String(entry.recipeId) &&
+                    String(p.id) === String(entry.id)
+                );
+                if (idx > -1) {
+                    localPlan[idx].id = newEntry.id;
+                    localStorage.setItem('mealPlan', JSON.stringify(localPlan));
+                    if (window.mealPlan) window.mealPlan = localPlan;
+                }
                 entry.id = newEntry.id;
                 console.log('✓ Meal plan synced to Supabase');
             }
@@ -711,8 +733,8 @@ async function loadRewardsFromSupabase() {
                 }
                 return r.member || '';
             })(),
-            starsNeeded: r.points_cost || r.starsNeeded || 25,
-            stars: r.points_cost || r.stars || 25,
+            starsNeeded: r.points_cost || r.stars_needed || r.star_cost || r.starsNeeded || 25,
+            stars: r.points_cost || r.stars_needed || r.star_cost || r.stars || 25,
             redeemed: r.redeemed || false,
             redeemedDate: r.redeemed_date || null
         }));
@@ -818,8 +840,15 @@ async function loadMealPlansFromSupabase() {
     );
     if (plansRaw2) {
         const plans = plansRaw2.map(mealPlanFromDb);
-        localStorage.setItem('mealPlan', JSON.stringify(plans));
-        window.mealPlan = plans;
+        const seenP = new Set();
+        const dedupedP = plans.filter(p => {
+            const key = p.date + '|' + p.mealType + '|' + (p.recipeId || '');
+            if (seenP.has(key)) return false;
+            seenP.add(key);
+            return true;
+        });
+        localStorage.setItem('mealPlan', JSON.stringify(dedupedP));
+        window.mealPlan = dedupedP;
         
         // Refresh UI if on meals section
         if (typeof renderSection === 'function' && currentSection === 'meals') {
@@ -1016,8 +1045,8 @@ window.SupabaseSync = {
                 member_id: memberObj ? memberObj.id : null,
                 amount: transaction.amount,
                 transaction_type: transaction.type,
-                description: transaction.description,
-                date: transaction.date
+                description: transaction.description
+                // created_at is set automatically by Supabase
             });
             console.log('✓ Allowance transaction synced');
         } catch(e) { console.error('Error syncing allowance:', e); }
