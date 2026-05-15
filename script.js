@@ -84,20 +84,17 @@ return to;
 console.log('Script started loading…');
 let currentDate = new Date();
 window.currentDate = currentDate;
-let currentView = localStorage.getItem('lastCalendarView') || 'month';
+let currentView = window.lastCalendarView || window.lastCalendarViewFromServer || 'month';
 let currentSection = 'calendar';
 let showCompletedChores = false;
 window.showCompletedListItems = false;
 let scheduleDaysToShow = 14;
-let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('familyMembers')) || [
-{ name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' },
-{ name: 'Mary', color: '#54eef3' },
-{ name: 'Bret', color: '#43AEDE' },
-{ name: 'Levi', color: '#f2c342' },
-{ name: 'Elsie', color: '#d9aafa' }
+let familyMembers = window.familyMembers || [
+{ name: 'Family', color: '#9B59B6', isGoogleCalendar: true, calendarId: 'family' }
 ];
+window.familyMembers = familyMembers;
 
-    // Deduplicate family members by name (keep first occurrence) and always save
+    // Deduplicate family members by name (keep first occurrence)
     const seenNames = new Set();
     familyMembers = familyMembers.filter(member => {
         if (seenNames.has(member.name)) return false;
@@ -107,22 +104,19 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
     familyMembers.forEach((member, index) => {
         if (!member.id) member.id = index + 1;
     });
-    localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
     window.familyMembers = familyMembers;
     
-    // Events data
-    let events = JSON.parse(localStorage.getItem('events')) || [];
-    window.events = events; // Expose globally so supabase-init can refresh it
+    // Events data — Supabase is source of truth, window.events populated by supabase-sync
+    let events = window.events || [];
+    window.events = events;
     
-    // No sample events seeded - all events come from Supabase or user input
-    
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    let chores = JSON.parse(localStorage.getItem('chores')) || [];
-    let routines = JSON.parse(localStorage.getItem('routines')) || [];
+    let tasks = window.tasks || [];
+    let chores = window.chores || [];
+    let routines = window.routines || [];
     window.chores = chores;
     window.routines = routines;
-    var hiddenChoreMembers = JSON.parse(localStorage.getItem('hiddenChoreMembers')) || [];
-    var showUpForGrabs = JSON.parse(localStorage.getItem('showUpForGrabs')) || false;
+    var hiddenChoreMembers = window.hiddenChoreMembers || [];
+    var showUpForGrabs = window.showUpForGrabs || false;
 
 let visiblePeriods = {
 'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
@@ -139,15 +133,15 @@ needsSave = true;
 }
 });
 if (needsSave) {
-localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+// [synced to Supabase]
 }
-let meals = JSON.parse(localStorage.getItem('meals')) || [];
-let allowances = JSON.parse(localStorage.getItem('allowances')) || [];
-let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
+let meals = window.meals || [];
+let allowances = window.allowances || [];
+let rewards = window.rewards || [];
 
     // Meal planning data
     let recipes = (function() {
-        var stored = JSON.parse(localStorage.getItem('recipes')) || [];
+        var stored = window.recipes || [];
         // Deduplicate by id (Supabase UUIDs take priority over local numeric ids)
         var seen = {};
         return stored.filter(function(r) {
@@ -157,7 +151,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             return true;
         });
     })();
-    let mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || [];
+    let mealPlan = window.mealPlan || [];
     // Skylight-matched meal category colors
     const MEAL_CATEGORY_DEFAULTS = [
         { name: 'Breakfast', color: '#FFCF9C', visible: true },
@@ -167,24 +161,24 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     ];
     const MEAL_CATEGORY_COLORS = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
 
-    let mealCategories = JSON.parse(localStorage.getItem('mealCategories')) || MEAL_CATEGORY_DEFAULTS;
+    let mealCategories = window.mealCategories || MEAL_CATEGORY_DEFAULTS;
 
     // Always enforce canonical colors — never let stale localStorage colors win
     mealCategories.forEach(function(cat) {
         if (MEAL_CATEGORY_COLORS[cat.name]) cat.color = MEAL_CATEGORY_COLORS[cat.name];
     });
-    localStorage.setItem('mealCategories', JSON.stringify(mealCategories));
+    // [synced to Supabase]
     
     // Save meal categories to localStorage
     function saveMealCategories() {
-        localStorage.setItem('mealCategories', JSON.stringify(mealCategories));
+        // [synced to Supabase]
     }
     
     let currentMealWeekStart = new Date();
     currentMealWeekStart.setHours(0, 0, 0, 0); // Start on today
     
     // Lists data
-    let lists = JSON.parse(localStorage.getItem('lists')) || [];
+    let lists = window.lists || [];
     let currentListId = null;
     
     // Google Calendar - Using Cloudflare Worker (keeps private key secure!)
@@ -519,7 +513,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Always add a new meal (allow multiple meals per day/type)
         mealPlan.push(newMeal);
         
-        localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+        // [synced to Supabase]
         // Sync add to Supabase
         if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
             SupabaseSync.syncMealPlanEntry(newMeal, 'add');
@@ -579,7 +573,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             if (index > -1) {
                 const deletedEntry = mealPlan[index];
                 mealPlan.splice(index, 1);
-                localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+                // [synced to Supabase]
                 // Sync deletion to Supabase
                 if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
                     SupabaseSync.syncMealPlanEntry(deletedEntry, 'delete');
@@ -757,7 +751,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         memberAllowance.transactions.push(newTransaction);
         
         // Save locally
-        localStorage.setItem('allowances', JSON.stringify(allowances));
+        // [synced to Supabase]
         
         // Sync to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncAllowanceTransaction === 'function') {
@@ -935,7 +929,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 recipe.mealType = mealType;
                 recipe.ingredients = ingredients;
                 recipe.instructions = instructions;
-                localStorage.setItem('recipes', JSON.stringify(recipes));
+                // [synced to Supabase]
                 
                 delete document.getElementById('addRecipePanel').dataset.editingId;
                 closeAddRecipePanel();
@@ -960,7 +954,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             };
             
             recipes.push(newRecipe);
-            localStorage.setItem('recipes', JSON.stringify(recipes));
+            // [synced to Supabase]
             
             closeAddRecipePanel();
             
@@ -1133,7 +1127,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const index = recipes.findIndex(r => r.id === recipeId);
         if (index > -1) {
             recipes.splice(index, 1);
-            localStorage.setItem('recipes', JSON.stringify(recipes));
+            // [synced to Supabase]
             selectedRecipeId = null;
             renderRecipesView();
             
@@ -1181,7 +1175,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             }
         });
         
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         alert('Ingredients added to Grocery List!');
     }
     
@@ -1203,7 +1197,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 { id: 11, name: 'Fruit Bowl', mealType: 'Snack', category: 'Healthy', ingredients: 'Mixed fruits', instructions: 'Cut and combine fresh fruits.' },
                 { id: 12, name: 'Crackers & Cheese', mealType: 'Snack', category: 'Quick', ingredients: 'Crackers, cheese slices', instructions: 'Arrange on plate.' }
             ];
-            localStorage.setItem('recipes', JSON.stringify(recipes));
+            // [synced to Supabase]
         }
     }
     
@@ -1258,7 +1252,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     ]
                 }
             ];
-            localStorage.setItem('lists', JSON.stringify(lists));
+            // [synced to Supabase]
         }
     }
     
@@ -1440,7 +1434,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         };
         
         list.items.push(newItem);
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         inputElement.value = '';
         renderListsColumns();
     }
@@ -1461,7 +1455,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         list.items.push(newItem);
         inputElement.value = '';
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         renderListsColumns();
 
         // Sync to Supabase via syncListItem
@@ -1509,7 +1503,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         };
         
         list.items.push(newItem);
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         
         closeModal('addSectionModal');
         renderListsColumns();
@@ -1537,7 +1531,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             // Mark as completed instead of deleting
             item.completed = true;
             item.completedDate = new Date().toISOString().split('T')[0];
-            localStorage.setItem('lists', JSON.stringify(lists));
+            // [synced to Supabase]
             renderListsColumns();
         }
     }
@@ -1665,7 +1659,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                             const [movedItem] = list.items.splice(draggedIndex, 1);
                             list.items.splice(targetIndex, 0, movedItem);
                             
-                            localStorage.setItem('lists', JSON.stringify(lists));
+                            // [synced to Supabase]
                         }
                     }
                 }
@@ -1803,7 +1797,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                         list.items = [...otherItems, ...targetSectionItems];
                     }
                     
-                    localStorage.setItem('lists', JSON.stringify(lists));
+                    // [synced to Supabase]
                     renderListsColumns();
                 }
             }
@@ -1887,7 +1881,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     // Rebuild array with dragged item at end of target section
                     list.items = [...nonTargetItems, ...targetSectionItems, draggedItem];
                     
-                    localStorage.setItem('lists', JSON.stringify(lists));
+                    // [synced to Supabase]
                     renderListsColumns();
                 }
             }
@@ -1940,7 +1934,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         };
         
         lists.push(newList);
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         
         // Reset
         selectedAddListProfile = null;
@@ -2028,7 +2022,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (itemIndex > -1) {
             const deletedItem = list.items[itemIndex];
             list.items.splice(itemIndex, 1);
-            localStorage.setItem('lists', JSON.stringify(lists));
+            // [synced to Supabase]
 
             // Sync deletion to Supabase
             if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
@@ -2258,7 +2252,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         };
         
         list.items.push(newItem);
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         closeAddListItemPanel();
         renderListsColumns();
 
@@ -2309,7 +2303,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         list.name = newName;
         list.assignedTo = newAssignedTo;
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
 
         // Sync update to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function') {
@@ -2379,7 +2373,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             console.warn('[DELETE] No Supabase connection available');
         }
 
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
         closeEditListPanel();
         renderListsColumns();
     }
@@ -2433,7 +2427,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         
         item.text = newText;
         item.assignedTo = selectedListItemMember;
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
 
         // Sync item update to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
@@ -2629,7 +2623,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const deleted = familyMembers[idx];
         if (idx === -1) return;
         familyMembers.splice(idx, 1);
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        // [synced to Supabase]
         window.familyMembers = familyMembers;
 
         // Remove from calendarFilterActive
@@ -2639,7 +2633,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Remove their chores
         if (window.chores) {
             window.chores = window.chores.filter(c => c.member !== name);
-            localStorage.setItem('chores', JSON.stringify(window.chores));
+            // [synced to Supabase]
         }
 
         // Remove their events
@@ -2649,18 +2643,18 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 if (Array.isArray(e.members)) e.members = e.members.filter(m => m !== name);
                 return true;
             });
-            localStorage.setItem('events', JSON.stringify(window.events));
+            // [synced to Supabase]
         }
 
         // Remove their rewards
         if (window.rewards) {
             window.rewards = window.rewards.filter(r => r.member !== name);
-            localStorage.setItem('rewards', JSON.stringify(window.rewards));
+            // [synced to Supabase]
         }
 
         // Remove their allowance
-        const allowances = JSON.parse(localStorage.getItem('allowances') || '[]');
-        localStorage.setItem('allowances', JSON.stringify(allowances.filter(a => a.member !== name)));
+        const allowances = window.allowances || [];
+        // [synced to Supabase]
 
         // Sync delete to Supabase
         if (deleted && deleted.id && window.SupabaseAPI && typeof window.SupabaseAPI.deleteFamilyMember === 'function') {
@@ -2750,7 +2744,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 familyMembers.length = 0;
                 nonGoogle.forEach(m => familyMembers.push(m));
                 googleOnly.forEach(m => familyMembers.push(m));
-                localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+                // [synced to Supabase]
                 window.familyMembers = familyMembers;
                 // Re-render
                 renderManageProfiles();
@@ -2780,7 +2774,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         const color = colors.find(c => !usedColors.includes(c)) || colors[familyMembers.length % colors.length];
         const newMember = { name: name.trim(), color };
         familyMembers.push(newMember);
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        // [synced to Supabase]
         window.familyMembers = familyMembers;
         calendarFilterActive.push(name.trim());
         renderCalendarFilterList();
@@ -2860,15 +2854,14 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         });
         member.sections = checkedSections;
         
-        // Update localStorage
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
-        
-        // Sync color/name change to Supabase
+        // Sync to Supabase — name/color and sections
+        window.familyMembers = familyMembers;
         if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberColor === 'function') {
-            console.log('[Profile] Syncing member to Supabase:', member.name, member.color, 'id:', member.id);
             window.SupabaseSync.syncFamilyMemberColor(member);
-        } else {
-            console.warn('[Profile] SupabaseSync.syncFamilyMemberColor not available');
+        }
+        // Sync sections to Supabase family_members.sections column
+        if (window.SupabaseAPI && member.id && typeof window.SupabaseAPI.updateFamilyMemberSections === 'function') {
+            window.SupabaseAPI.updateFamilyMemberSections(member.id, checkedSections).catch(console.error);
         }
         
         // Update all references in other data
@@ -2907,7 +2900,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 event.member = newName;
             }
         });
-        localStorage.setItem('events', JSON.stringify(events));
+        // [synced to Supabase]
         
         // Update tasks
         tasks.forEach(task => {
@@ -2915,7 +2908,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 task.member = newName;
             }
         });
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        // [synced to Supabase]
         
         // Update chores
         chores.forEach(chore => {
@@ -2923,7 +2916,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.member = newName;
             }
         });
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+        // [synced to Supabase]
         
         // Update routines
         routines.forEach(routine => {
@@ -2931,7 +2924,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 routine.member = newName;
             }
         });
-        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+        // [synced to Supabase]
         
         // Update rewards
         rewards.forEach(reward => {
@@ -2939,7 +2932,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 reward.member = newName;
             }
         });
-        localStorage.setItem('rewards', JSON.stringify(rewards));
+        // [synced to Supabase]
         
         // Update lists
         lists.forEach(list => {
@@ -2948,7 +2941,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 if (member) list.assignedTo = member.id || member.name;
             }
         });
-        localStorage.setItem('lists', JSON.stringify(lists));
+        // [synced to Supabase]
     }
     
     function isEventVisible(event) {
@@ -3106,7 +3099,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ];
         
         routines = sampleRoutines;
-        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+        // [synced to Supabase]
     }
     
     function initializeSampleChores() {
@@ -3140,7 +3133,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ];
         
         chores = sampleChores;
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+        // [synced to Supabase]
     }
     
     function initializeSampleRewards() {
@@ -3163,7 +3156,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         ];
         
         rewards = sampleRewards;
-        localStorage.setItem('rewards', JSON.stringify(rewards));
+        // [synced to Supabase]
     }
     
     // Auth check and session restore is now handled by GoogleCalendar.init()
@@ -3375,7 +3368,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA'];
             const color = colors[familyMembers.length % colors.length];
             familyMembers.push({ name, color });
-            localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
+            // [synced to Supabase] window.familyMembers = familyMembers;
             // Add new member to calendar filter
             calendarFilterActive.push(name);
             // Re-render pills everywhere
@@ -4856,7 +4849,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     switchView('schedule');
                 }, 10);
             } else {
-                var savedView = localStorage.getItem('lastCalendarView') || 'month';
+                var savedView = window.lastCalendarViewFromServer || window.lastCalendarView || 'month';
                 setTimeout(function() {
                     switchView(savedView);
                 }, 10);
@@ -5474,7 +5467,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (totalStarsEarned >= reward.stars) {
             reward.redeemed = true;
             reward.redeemedDate = new Date().toISOString();
-            localStorage.setItem('rewards', JSON.stringify(rewards));
+            // [synced to Supabase]
             if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
                 window.SupabaseSync.syncReward(reward, 'update');
             }
@@ -5851,7 +5844,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (totalStarsEarned >= reward.starsNeeded && !reward.redeemed) {
             reward.redeemed = true;
             reward.redeemedDate = new Date().toISOString().split('T')[0];
-            localStorage.setItem('rewards', JSON.stringify(rewards));
+            // [synced to Supabase]
             if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
                 window.SupabaseSync.syncReward(reward, 'update');
             }
@@ -5902,7 +5895,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (reward) {
             reward.redeemed = false;
             delete reward.redeemedDate;
-            localStorage.setItem('rewards', JSON.stringify(rewards));
+            // [synced to Supabase]
             if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
                 window.SupabaseSync.syncReward(reward, 'update');
             }
@@ -5975,7 +5968,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         reward.starsNeeded = stars;
         reward.stars = stars; // Keep both for compatibility
         
-        localStorage.setItem('rewards', JSON.stringify(rewards));
+        // [synced to Supabase]
         if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
             window.SupabaseSync.syncReward(reward, 'update');
         }
@@ -5990,7 +5983,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (index > -1) {
             const deleted = rewards[index];
             rewards.splice(index, 1);
-            localStorage.setItem('rewards', JSON.stringify(rewards));
+            // [synced to Supabase]
             // Sync to Supabase
             if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
                 window.SupabaseSync.syncReward(deleted, 'delete');
@@ -6076,8 +6069,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (window.routines !== routines) routines = window.routines;
         chores.forEach(function(c) { if (c.member === oldName) c.member = newName; });
         routines.forEach(function(r) { if (r.member === oldName) r.member = newName; });
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+        // [synced to Supabase]
+        // [synced to Supabase]
         closeChoreListEdit();
         renderChoresView();
     }
@@ -6087,11 +6080,13 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (!currentEditChoreList) return;
         if (currentEditChoreList === 'Up for Grabs') {
             showUpForGrabs = false;
-            localStorage.setItem('showUpForGrabs', JSON.stringify(false));
+            window.showUpForGrabs = false;
+            if (window.SupabaseAPI) SupabaseAPI.setAppSetting('showUpForGrabs', false).catch(console.error);
         } else {
             if (hiddenChoreMembers.indexOf(currentEditChoreList) === -1) {
                 hiddenChoreMembers.push(currentEditChoreList);
-                localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
+                window.hiddenChoreMembers = hiddenChoreMembers;
+                if (window.SupabaseAPI) SupabaseAPI.setAppSetting('hiddenChoreMembers', hiddenChoreMembers).catch(console.error);
             }
         }
         closeChoreListEdit();
@@ -6108,7 +6103,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         if (window.chores !== chores) chores = window.chores;
         var toDelete = chores.filter(function(c) { return c.member === name; });
         chores = chores.filter(function(c) { return c.member !== name; });
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+        // [synced to Supabase]
         if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
             toDelete.forEach(function(c) { window.SupabaseSync.syncChore(c, 'delete'); });
         }
@@ -6121,7 +6116,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         var idx = hiddenChoreMembers.indexOf(memberName);
         if (idx > -1) {
             hiddenChoreMembers.splice(idx, 1);
-            localStorage.setItem('hiddenChoreMembers', JSON.stringify(hiddenChoreMembers));
+            window.hiddenChoreMembers = hiddenChoreMembers;
+            if (window.SupabaseAPI) SupabaseAPI.setAppSetting('hiddenChoreMembers', hiddenChoreMembers).catch(console.error);
             renderChoresView();
         }
     }
@@ -6129,7 +6125,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
 
     function toggleUpForGrabs() {
         showUpForGrabs = !showUpForGrabs;
-        localStorage.setItem('showUpForGrabs', JSON.stringify(showUpForGrabs));
+        window.showUpForGrabs = showUpForGrabs;
+        if (window.SupabaseAPI) SupabaseAPI.setAppSetting('showUpForGrabs', showUpForGrabs).catch(console.error);
         renderChoresView();
     }
     window.toggleUpForGrabs = toggleUpForGrabs;
@@ -6149,7 +6146,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             } else {
                 delete routine.completedDate;
             }
-            localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+            // [synced to Supabase]
             
             // Check if member completed all their tasks
             if (!wasCompleted && routine.completed) {
@@ -6244,7 +6241,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                         }
                     });
                     
-                    localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+                    // [synced to Supabase]
                     renderChoresView();
                 }
             }
@@ -7636,11 +7633,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         // Auto-enable Up for Grabs if tasks assigned to it
         if (selectedProfiles.indexOf('Up for Grabs') > -1 && !showUpForGrabs) {
             showUpForGrabs = true;
-            localStorage.setItem('showUpForGrabs', JSON.stringify(true));
+            // [synced to Supabase]
         }
 
-        localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
-        localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+        // [synced to Supabase]
+        // [synced to Supabase]
 
         // Sync new chores to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
@@ -7819,7 +7816,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 } else if (option === 'future') {
                     chores.splice(index, 1);
                 }
-                localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                // [synced to Supabase]
                 if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
                     window.SupabaseSync.syncChore(choreToDelete, 'delete');
                 }
@@ -7834,7 +7831,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     // Delete the routine (future instances won't be generated)
                     routines.splice(index, 1);
                 }
-                localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+                // [synced to Supabase]
             }
         }
         
@@ -7999,7 +7996,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 chore.dueDate = hasDate ? date : null;
                 chore.time = hasTime ? time : null;
                 chore.stars = stars;
-                localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+                // [synced to Supabase]
                 if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
                     window.SupabaseSync.syncChore(chore, 'update');
                 }
@@ -8020,7 +8017,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                     else routine.period = 'Morning';
                 }
                 
-                localStorage.setItem('routines', JSON.stringify(routines)); window.routines = routines;
+                // [synced to Supabase]
             }
         }
         
@@ -8042,7 +8039,7 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             } else {
                 delete chore.completedDate;
             }
-            localStorage.setItem('chores', JSON.stringify(chores)); window.chores = chores;
+            // [synced to Supabase]
             if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
                 window.SupabaseSync.syncChore(chore, 'update');
             }
@@ -8170,7 +8167,8 @@ if (allChoresComplete || allRoutinesComplete) {
 
     function switchView(view) {
         currentView = view;
-        localStorage.setItem('lastCalendarView', view);
+        window.lastCalendarView = view;
+        if (window.SupabaseAPI) SupabaseAPI.setAppSetting('lastCalendarView', view).catch(console.error);
         
         // Update dropdown
         const dropdown = document.getElementById('mainViewSelector');
@@ -8332,10 +8330,11 @@ if (allChoresComplete || allRoutinesComplete) {
     // Stored in localStorage as profileKeywords: [{ keyword, memberName, bgImage? }]
     // bgImage: optional image URL to use as event background when keyword matches
     function getProfileKeywords() {
-        try { return JSON.parse(localStorage.getItem('profileKeywords') || '[]'); } catch(e) { return []; }
+        return window.profileKeywords || [];
     }
     function saveProfileKeywords(kws) {
-        localStorage.setItem('profileKeywords', JSON.stringify(kws));
+        window.profileKeywords = kws;
+        if (window.SupabaseAPI) SupabaseAPI.setAppSetting('profileKeywords', kws).catch(console.error);
     }
     // Seed defaults on first load
     (function seedProfileKeywords() {
@@ -8590,7 +8589,7 @@ if (allChoresComplete || allRoutinesComplete) {
         for (const ev of newEvents) {
             events.push(ev);
         }
-        localStorage.setItem('events', JSON.stringify(events));
+        // [synced to Supabase]
         window.events = events; // Keep window reference in sync
 
         // Sync to Supabase
@@ -8650,7 +8649,7 @@ if (allChoresComplete || allRoutinesComplete) {
             completed: false
         };
         tasks.push(task);
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        // [synced to Supabase]
         closeModal('taskModal');
         renderTasks();
         renderAllTasks();
@@ -8803,7 +8802,7 @@ if (allChoresComplete || allRoutinesComplete) {
             var idx = events.findIndex(function(e) { return e.id == eventId; });
             if (idx > -1) {
                 events.splice(idx, 1);
-                localStorage.setItem('events', JSON.stringify(events));
+                // [synced to Supabase]
                 window.events = events;
             }
             // Sync delete to Supabase
@@ -8836,7 +8835,7 @@ if (allChoresComplete || allRoutinesComplete) {
             name: document.getElementById('mealName').value
         };
         meals.push(meal);
-        localStorage.setItem('meals', JSON.stringify(meals));
+        window.meals = meals;
         closeModal('mealModal');
         renderMeals();
         document.getElementById('mealName').value = '';
@@ -9039,7 +9038,7 @@ if (allChoresComplete || allRoutinesComplete) {
         };
         
         rewards.push(newReward);
-        localStorage.setItem('rewards', JSON.stringify(rewards));
+        // [synced to Supabase]
         
         // Sync to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncReward === 'function') {
@@ -9083,7 +9082,7 @@ if (allChoresComplete || allRoutinesComplete) {
         const task = tasks.find(t => t.id === id);
         if (task) {
             task.completed = !task.completed;
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+            // [synced to Supabase]
             renderTasks();
             renderAllTasks();
             // Update family pills if on calendar view
@@ -9247,7 +9246,7 @@ if (allChoresComplete || allRoutinesComplete) {
             return true;
         });
         // Re-save so closure and localStorage stay in sync
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        // [synced to Supabase]
         window.familyMembers = familyMembers;
     });
     
@@ -9597,7 +9596,7 @@ document.getElementById('listCardsContainer').innerHTML =
 if (!listsHasAPI()) {
 try {
 // Prefer mobile-specific key; fall back to shared 'lists' (written by desktop/sync)
-var s = localStorage.getItem('lists_mobile') || localStorage.getItem('lists');
+var s = window.lists ? JSON.stringify(window.lists) : null;
 listsMemo = s ? JSON.parse(s) : [];
 listsMemo.forEach(function(l){
 if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
@@ -9638,7 +9637,7 @@ listsSaveLocal();
 listsRenderLists();
 }
 
-function listsSaveLocal() { try { localStorage.setItem('lists_mobile', JSON.stringify(listsMemo)); } catch(e){} }
+function listsSaveLocal() { window.lists = listsMemo; }
 
 // Find the family member assigned to a list.
 // Lists store assignedTo (id/name) locally, but Supabase only has list.color = member.color.
@@ -10020,7 +10019,7 @@ var members = [];
 if (window.familyMembers && window.familyMembers.length) {
 members = window.familyMembers.filter(function(m){ return !m.isGoogleCalendar; });
 } else {
-try { members = JSON.parse(localStorage.getItem('familyMembers') || '[]').filter(function(m){ return !m.isGoogleCalendar; }); } catch(e){}
+try { members = (window.familyMembers || []).filter(function(m){ return !m.isGoogleCalendar; }); } catch(e){}
 }
 grid.innerHTML = '';
 if (!members.length) {
@@ -10302,7 +10301,7 @@ if (typeof initGoogleCalendar === 'function') initGoogleCalendar();
 
 function openProfilePicker() {
 var seen = {};
-var members = (window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]'))
+var members = (window.familyMembers || [])
 .filter(function(m) {
 if (m.isGoogleCalendar || m.name === 'Family') return false;
 if (seen[m.name]) return false;
@@ -10411,7 +10410,7 @@ found = true;
 }
 if (found) {
 console.log('[updateEvent] Saving event:', updatedEvent.title, 'member:', updatedEvent.member);
-try { localStorage.setItem('events', JSON.stringify(evs)); } catch(e) {}
+// [synced to Supabase]
 window.events = evs;
 
     // Sync to Supabase

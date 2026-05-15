@@ -43,7 +43,11 @@ function _sbRequest(method, table, opts) {
     };
 
     if (method === 'POST' || method === 'PATCH' || method === 'DELETE') {
-        headers['Prefer'] = 'return=representation';
+        headers['Prefer'] = opts.upsert ? 'resolution=merge-duplicates,return=representation' : 'return=representation';
+    }
+    if (opts.upsert && method === 'POST') {
+        // PostgREST upsert requires the on_conflict param
+        url += (url.includes('?') ? '&' : '?') + 'on_conflict=key';
     }
 
     var fetchOpts = { method: method, headers: headers };
@@ -447,10 +451,138 @@ function addAllowanceTransaction(transaction) {
 }
 
 // ============================================
+// HABITS
+// ============================================
+function getHabits() {
+    return _sbRequest('GET', 'habits', { select: '*', order: 'created_at.asc' })
+        .then(function(r) {
+            if (r.error) { console.error('Error fetching habits:', r.error); return []; }
+            return r.data || [];
+        });
+}
+function addHabit(habit) {
+    return _sbRequest('POST', 'habits', { body: habit, single: true })
+        .then(function(r) {
+            if (r.error) { console.error('Error adding habit:', r.error); return null; }
+            return r.data;
+        });
+}
+function updateHabit(id, updates) {
+    return _sbRequest('PATCH', 'habits', {
+        filters: [{ col: 'id', op: 'eq', val: id }], body: updates, single: true
+    }).then(function(r) {
+        if (r.error) { console.error('Error updating habit:', r.error); return null; }
+        return r.data;
+    });
+}
+function deleteHabit(id) {
+    return _sbRequest('DELETE', 'habits', {
+        filters: [{ col: 'id', op: 'eq', val: id }]
+    }).then(function(r) {
+        if (r.error) { console.error('Error deleting habit:', r.error); return false; }
+        return true;
+    });
+}
+
+// ============================================
+// HABIT COMPLETIONS
+// ============================================
+function getHabitCompletions(since) {
+    var filters = since ? [{ col: 'completed_on', op: 'gte', val: since }] : [];
+    return _sbRequest('GET', 'habit_completions', { select: '*', filters: filters })
+        .then(function(r) {
+            if (r.error) { console.error('Error fetching habit completions:', r.error); return []; }
+            return r.data || [];
+        });
+}
+function addHabitCompletion(habitId, dateStr) {
+    return _sbRequest('POST', 'habit_completions', {
+        body: { habit_id: habitId, completed_on: dateStr }, single: true
+    }).then(function(r) {
+        if (r.error && r.error.code !== '23505') { // ignore unique violation (already done)
+            console.error('Error adding habit completion:', r.error);
+            return null;
+        }
+        return r.data;
+    });
+}
+function deleteHabitCompletion(habitId, dateStr) {
+    return _sbRequest('DELETE', 'habit_completions', {
+        filters: [
+            { col: 'habit_id', op: 'eq', val: habitId },
+            { col: 'completed_on', op: 'eq', val: dateStr }
+        ]
+    }).then(function(r) {
+        if (r.error) { console.error('Error deleting habit completion:', r.error); return false; }
+        return true;
+    });
+}
+
+// ============================================
+// APP SETTINGS
+// ============================================
+function getAppSettings() {
+    return _sbRequest('GET', 'app_settings', { select: '*' })
+        .then(function(r) {
+            if (r.error) { console.error('Error fetching app settings:', r.error); return {}; }
+            var out = {};
+            (r.data || []).forEach(function(row) {
+                try { out[row.key] = JSON.parse(row.value); }
+                catch(e) { out[row.key] = row.value; }
+            });
+            return out;
+        });
+}
+function setAppSetting(key, value) {
+    var strVal = JSON.stringify(value);
+    return _sbRequest('POST', 'app_settings', {
+        body: { key: key, value: strVal, updated_at: new Date().toISOString() },
+        single: true,
+        upsert: true
+    }).then(function(r) {
+        if (r.error) {
+            // Fallback: try PATCH if POST fails
+            return _sbRequest('PATCH', 'app_settings', {
+                filters: [{ col: 'key', op: 'eq', val: key }],
+                body: { value: strVal, updated_at: new Date().toISOString() },
+                single: true
+            });
+        }
+        return r.data;
+    });
+}
+
+// ============================================
+// MEAL CATEGORIES (write)
+// ============================================
+function upsertMealCategory(name, color, displayOrder) {
+    return _sbRequest('POST', 'meal_categories', {
+        body: { name: name, color: color, display_order: displayOrder || 0 },
+        single: true,
+        upsert: true
+    }).then(function(r) {
+        if (r.error) { console.error('Error upserting meal category:', r.error); return null; }
+        return r.data;
+    });
+}
+
+// ============================================
+// FAMILY MEMBERS — update sections
+// ============================================
+function updateFamilyMemberSections(id, sections) {
+    return _sbRequest('PATCH', 'family_members', {
+        filters: [{ col: 'id', op: 'eq', val: id }],
+        body: { sections: sections },
+        single: true
+    }).then(function(r) {
+        if (r.error) { console.error('Error updating member sections:', r.error); return null; }
+        return r.data;
+    });
+}
+
+// ============================================
 // REAL-TIME SUBSCRIPTIONS (stubs)
 // ============================================
-// Realtime requires WebSockets — not supported on Android 8.
-// Cross-device sync is handled by periodic polling instead.
 function subscribeToCalendarEvents() { return null; }
 function subscribeToTasks()          { return null; }
 function subscribeToMealPlans()      { return null; }
@@ -464,6 +596,7 @@ window.SupabaseAPI = {
     addFamilyMember:           addFamilyMember,
     updateFamilyMember:        updateFamilyMember,
     deleteFamilyMember:        deleteFamilyMember,
+    updateFamilyMemberSections: updateFamilyMemberSections,
 
     getCalendarEvents:         getCalendarEvents,
     addCalendarEvent:          addCalendarEvent,
@@ -486,12 +619,12 @@ window.SupabaseAPI = {
     updateMealPlan:            updateMealPlan,
     deleteMealPlan:            deleteMealPlan,
     getMealCategories:         getMealCategories,
+    upsertMealCategory:        upsertMealCategory,
 
     getLists:                  getLists,
     addList:                   addList,
     updateList:                updateList,
     deleteList:                deleteList,
-
     addListItem:               addListItem,
     updateListItem:            updateListItem,
     deleteListItem:            deleteListItem,
@@ -504,6 +637,18 @@ window.SupabaseAPI = {
     getAllowanceBalance:        getAllowanceBalance,
     getAllowanceTransactions:   getAllowanceTransactions,
     addAllowanceTransaction:   addAllowanceTransaction,
+
+    getHabits:                 getHabits,
+    addHabit:                  addHabit,
+    updateHabit:               updateHabit,
+    deleteHabit:               deleteHabit,
+
+    getHabitCompletions:       getHabitCompletions,
+    addHabitCompletion:        addHabitCompletion,
+    deleteHabitCompletion:     deleteHabitCompletion,
+
+    getAppSettings:            getAppSettings,
+    setAppSetting:             setAppSetting,
 
     subscribeToCalendarEvents: subscribeToCalendarEvents,
     subscribeToTasks:          subscribeToTasks,

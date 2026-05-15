@@ -58,17 +58,14 @@ async function loadAllDataFromSupabase() {
         let formattedMembers = [];
         const members = await SupabaseAPI.getFamilyMembers();
         if (members && members.length > 0) {
-            // Preserve locally-stored sections (Supabase doesn't store per-member section toggles)
-            const localMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
             const rawFormatted = members.map(m => {
-                const local = localMembers.find(lm => lm.name === m.name || lm.id === m.id);
                 return {
                     id: m.id,
                     name: m.name,
                     color: m.color,
                     avatar_url: m.avatar_url,
-                    sections: local ? local.sections : undefined,
-                    display_order: local ? local.display_order : undefined
+                    sections: m.sections || undefined,  // from DB column
+                    display_order: m.display_order || undefined
                 };
             });
             // Deduplicate by name — keep first occurrence only
@@ -79,12 +76,12 @@ async function loadAllDataFromSupabase() {
                 return true;
             });
             // Also preserve any local-only members (e.g. isGoogleCalendar) not in Supabase
-            localMembers.forEach(lm => {
+            const localForGcal = window.familyMembers || [];
+            localForGcal.forEach(lm => {
                 if (lm.isGoogleCalendar && !formattedMembers.find(m => m.name === lm.name)) {
                     formattedMembers.push(lm);
                 }
             });
-            localStorage.setItem('familyMembers', JSON.stringify(formattedMembers));
             window.familyMembers = formattedMembers;
             // Tell script.js closure to re-sync its local familyMembers array
             document.dispatchEvent(new CustomEvent('supabaseFamilyMembersLoaded', { detail: formattedMembers }));
@@ -96,10 +93,9 @@ async function loadAllDataFromSupabase() {
             }
         } else {
             // Try to get from localStorage if Supabase has none
-            const localMembers = localStorage.getItem('familyMembers');
-            if (localMembers) {
-                formattedMembers = JSON.parse(localMembers);
-                console.log('✓ Using', formattedMembers.length, 'family members from localStorage');
+            if (window.familyMembers && window.familyMembers.length > 0) {
+                formattedMembers = window.familyMembers;
+                console.log('✓ Using', formattedMembers.length, 'family members from memory');
             }
         }
         
@@ -130,7 +126,6 @@ async function loadAllDataFromSupabase() {
                 };
             });
             
-            localStorage.setItem('chores', JSON.stringify(choresFromSupabase));
             window.chores = choresFromSupabase;
             console.log('✓ Loaded', allTasks.length, 'chores from Supabase');
         }
@@ -140,7 +135,6 @@ async function loadAllDataFromSupabase() {
         if (allRecipesRaw) {
             const allRecipes = allRecipesRaw.map(recipeFromDb);
             // Fully replace local recipes with Supabase data (removes sample/duplicate entries)
-            localStorage.setItem('recipes', JSON.stringify(allRecipes));
             window.recipes = allRecipes;
             // If the in-page recipes variable exists, sync it too
             if (typeof recipes !== 'undefined') recipes = allRecipes;
@@ -167,7 +161,6 @@ async function loadAllDataFromSupabase() {
                 seen.add(key);
                 return true;
             });
-            localStorage.setItem('mealPlan', JSON.stringify(deduped));
             window.mealPlan = deduped;
             console.log('✓ Loaded', deduped.length, 'meal plans');
         }
@@ -200,7 +193,6 @@ async function loadAllDataFromSupabase() {
                     section: item.section || 'Items'
                 })).sort((a,b) => (a.displayOrder||0) - (b.displayOrder||0)) : []
             }));
-            localStorage.setItem('lists', JSON.stringify(formattedLists));
             window.lists = formattedLists;
             console.log('✓ Loaded', allLists.length, 'lists');
         }
@@ -226,7 +218,6 @@ async function loadAllDataFromSupabase() {
                 visible: fromDb ? true : def.visible
             };
         });
-        localStorage.setItem('mealCategories', JSON.stringify(mergedCategories));
         window.mealCategories = mergedCategories;
         console.log('✓ Meal categories ready:', mergedCategories.map(c => c.name).join(', '));
         
@@ -262,7 +253,6 @@ async function loadAllDataFromSupabase() {
                     isGoogle: false
                 };
             });
-            localStorage.setItem('events', JSON.stringify(formattedEvents));
             window.events = formattedEvents;
             console.log('✓ Loaded', formattedEvents.length, 'calendar events');
         }
@@ -272,7 +262,13 @@ async function loadAllDataFromSupabase() {
 
         // Load allowance transactions
         await loadAllowanceFromSupabase();
-        
+
+        // Load habits
+        await loadHabitsFromSupabase();
+
+        // Load app settings
+        await loadAppSettingsFromSupabase();
+
         console.log('✅ All data loaded from Supabase');
         
     } catch (error) {
@@ -287,7 +283,6 @@ async function loadAllDataFromSupabase() {
 
 // Sync Family Members
 async function syncFamilyMembers(members) {
-    localStorage.setItem('familyMembers', JSON.stringify(members));
     window.familyMembers = members;
     
     if (!syncEnabled || !isSupabaseReady) return;
@@ -306,7 +301,7 @@ async function syncFamilyMembers(members) {
 
 // Sync a single family member's color/name change to Supabase
 async function syncFamilyMemberColor(member) {
-    localStorage.setItem('familyMembers', JSON.stringify(window.familyMembers || []));
+    // familyMembers synced via window.familyMembers
     
     if (!syncEnabled || !isSupabaseReady) return;
     if (!member || !member.id) {
@@ -327,7 +322,7 @@ async function syncChore(chore, operation) {
     operation = operation || 'update';
     if (!syncEnabled || !isSupabaseReady) return;
     try {
-        var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        var members = window.familyMembers || [];
         var assignedTo = null;
         if (chore.member && chore.member !== 'Up for Grabs') {
             for (var mi = 0; mi < members.length; mi++) {
@@ -345,13 +340,13 @@ async function syncChore(chore, operation) {
             var newRow = await SupabaseAPI.addTask(dbChore);
             if (newRow) {
                 chore.id = newRow.id;
-                var allChores = JSON.parse(localStorage.getItem('chores') || '[]');
+                var allChores = window.chores || [];
                 for (var ci = 0; ci < allChores.length; ci++) {
                     if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
                         allChores[ci].id = newRow.id; break;
                     }
                 }
-                localStorage.setItem('chores', JSON.stringify(allChores));
+                window.chores = allChores;
                 if (window.chores) {
                     for (var wci = 0; wci < window.chores.length; wci++) {
                         if (String(window.chores[wci].title) === String(chore.title) && String(window.chores[wci].member) === String(chore.member) && window.chores[wci].id !== newRow.id) {
@@ -380,8 +375,6 @@ async function syncChore(chore, operation) {
 
 // Sync Tasks
 async function syncTasks(tasks) {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-    
     if (!syncEnabled || !isSupabaseReady) return;
     
     // Tasks are synced individually through addTask, updateTask, etc.
@@ -439,8 +432,6 @@ async function syncTask(task, operation = 'update') {
 
 // Sync Recipes
 async function syncRecipes(recipes) {
-    localStorage.setItem('recipes', JSON.stringify(recipes));
-    
     if (!syncEnabled || !isSupabaseReady) return;
     
     // Recipes are synced individually
@@ -537,8 +528,6 @@ async function syncRecipe(recipe, operation = 'update') {
 
 // Sync Meal Plans
 async function syncMealPlan(mealPlan) {
-    localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
-    
     if (!syncEnabled || !isSupabaseReady) return;
     
     // Meal plans are synced individually
@@ -553,7 +542,7 @@ async function syncMealPlanEntry(entry, operation = 'update') {
             const newEntry = await SupabaseAPI.addMealPlan(mealPlanToDb(entry));
             if (newEntry) {
                 // Update local entry id to Supabase UUID so future loads don't duplicate
-                const localPlan = JSON.parse(localStorage.getItem('mealPlan') || '[]');
+                const localPlan = window.mealPlan || [];
                 const idx = localPlan.findIndex(p =>
                     p.date === entry.date &&
                     p.mealType === entry.mealType &&
@@ -562,8 +551,7 @@ async function syncMealPlanEntry(entry, operation = 'update') {
                 );
                 if (idx > -1) {
                     localPlan[idx].id = newEntry.id;
-                    localStorage.setItem('mealPlan', JSON.stringify(localPlan));
-                    if (window.mealPlan) window.mealPlan = localPlan;
+                    window.mealPlan = localPlan;
                 }
                 entry.id = newEntry.id;
                 console.log('✓ Meal plan synced to Supabase');
@@ -582,8 +570,6 @@ async function syncMealPlanEntry(entry, operation = 'update') {
 
 // Sync Lists
 async function syncLists(lists) {
-    localStorage.setItem('lists', JSON.stringify(lists));
-    
     if (!syncEnabled || !isSupabaseReady) return;
     
     // Lists are synced individually
@@ -659,7 +645,7 @@ async function syncCalendarEvent(event, operation) {
 
     try {
         // Resolve family_member_id from member name using loaded familyMembers
-        var members = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        var members = window.familyMembers || [];
         var memberName = event.member || '';
         var memberObj = null;
         for (var mi = 0; mi < members.length; mi++) {
@@ -753,7 +739,7 @@ async function loadRewardsFromSupabase() {
     try {
         const data = await SupabaseAPI.getRewards();
         if (!data || !data.length) return;
-        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const fm = window.familyMembers || [];
         const formatted = data.map(r => ({
             id: r.id,
             title: r.name || r.title || '',
@@ -771,7 +757,6 @@ async function loadRewardsFromSupabase() {
             redeemed: r.redeemed || false,
             redeemedDate: r.redeemed_date || null
         }));
-        localStorage.setItem('rewards', JSON.stringify(formatted));
         window.rewards = formatted;
         console.log('✓ Loaded', formatted.length, 'rewards from Supabase');
         if (typeof currentSection !== 'undefined' && currentSection === 'rewards' && typeof renderRewardsView === 'function') {
@@ -785,7 +770,7 @@ async function loadAllowanceFromSupabase() {
     try {
         const txns = await SupabaseAPI.getAllowanceTransactions();
         if (!txns) return;
-        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const fm = window.familyMembers || [];
         // Group by member into the existing allowances format
         const byMember = {};
         txns.forEach(function(t) {
@@ -801,7 +786,6 @@ async function loadAllowanceFromSupabase() {
             });
         });
         const formatted = Object.values(byMember);
-        localStorage.setItem('allowances', JSON.stringify(formatted));
         window.allowances = formatted;
         console.log('✓ Loaded allowance transactions for', formatted.length, 'members from Supabase');
         // Refresh mobile allowance view if open (body only — tabs don't change on allowance load)
@@ -816,16 +800,88 @@ async function loadAllowanceFromSupabase() {
 }
 
 async function loadHabitsFromSupabase() {
-    // Habits are stored only in localStorage (no Supabase table yet).
-    // This is a no-op placeholder so the pattern is consistent.
-    // When a habits table is added to Supabase, implement here.
+    if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+    try {
+        const habits = await SupabaseAPI.getHabits();
+        const formatted = (habits || []).map(h => ({
+            id: h.id,
+            name: h.name,
+            emoji: h.emoji || '⭐',
+            memberId: h.member_name || (function() {
+                var fm = window.familyMembers || [];
+                var m = fm.find(function(m) { return m.id === h.member_id; });
+                return m ? m.name : '';
+            })(),
+            createdAt: h.created_at
+        }));
+
+        // Load completions for the past 90 days
+        var since = new Date();
+        since.setDate(since.getDate() - 90);
+        var sinceStr = since.toISOString().split('T')[0];
+        var completions = await SupabaseAPI.getHabitCompletions(sinceStr);
+        var completionMap = {};
+        (completions || []).forEach(function(c) {
+            completionMap[c.habit_id + '_' + c.completed_on] = c.completed_at || Date.now();
+        });
+
+        window.skylightHabits = formatted;
+        window.skylightHabitCompletions = completionMap;
+        console.log('✓ Loaded', formatted.length, 'habits from Supabase');
+
+        if (typeof renderHabitsView === 'function' && typeof currentSection !== 'undefined' && currentSection === 'habits') {
+            renderHabitsView();
+        }
+    } catch(e) { console.error('Error loading habits:', e); }
+}
+
+async function loadAppSettingsFromSupabase() {
+    if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+    try {
+        var settings = await SupabaseAPI.getAppSettings();
+        if (!settings) return;
+
+        // showUpForGrabs
+        if (settings.showUpForGrabs !== undefined) {
+            window.showUpForGrabs = settings.showUpForGrabs;
+            if (typeof toggleUpForGrabs === 'function' && window.showUpForGrabs !== window._localShowUpForGrabs) {
+                // sync to closure via global
+            }
+        }
+
+        // hiddenChoreMembers
+        if (settings.hiddenChoreMembers !== undefined) {
+            window.hiddenChoreMembers = settings.hiddenChoreMembers;
+        }
+
+        // profileKeywords
+        if (settings.profileKeywords !== undefined) {
+            window.profileKeywords = settings.profileKeywords;
+        }
+
+        // mealCategoryColors — enforce canonical colors
+        if (settings.mealCategoryColors) {
+            var colors = settings.mealCategoryColors;
+            var cats = window.mealCategories || [];
+            cats.forEach(function(c) { if (colors[c.name]) c.color = colors[c.name]; });
+            window.mealCategories = cats;
+        }
+
+        // lastCalendarView
+        if (settings.lastCalendarView !== undefined) {
+            window.lastCalendarViewFromServer = settings.lastCalendarView;
+        }
+
+        console.log('✓ App settings loaded from Supabase');
+        document.dispatchEvent(new CustomEvent('supabaseSettingsLoaded', { detail: settings }));
+    } catch(e) { console.error('Error loading app settings:', e); }
 }
 
 async function loadTasksFromSupabase() {
     const allTasks = await SupabaseAPI.getTasks();
     if (allTasks && allTasks.length > 0) {
         // Get family members for name lookup
-        const familyMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const familyMembers = window.familyMembers || [];
         
         const choresFromSupabase = allTasks.map(t => {
             const member = familyMembers.find(m => m.id === t.assigned_to);
@@ -850,7 +906,6 @@ async function loadTasksFromSupabase() {
             };
         });
         
-        localStorage.setItem('chores', JSON.stringify(choresFromSupabase));
         window.chores = choresFromSupabase;
         
         // Refresh UI if on tasks/chores section
@@ -879,7 +934,6 @@ async function loadMealPlansFromSupabase() {
             seenP.add(key);
             return true;
         });
-        localStorage.setItem('mealPlan', JSON.stringify(dedupedP));
         window.mealPlan = dedupedP;
         
         // Refresh UI if on meals section
@@ -918,7 +972,6 @@ async function loadListsFromSupabase() {
                 displayOrder: item.display_order
             })) : []
         }));
-        localStorage.setItem('lists', JSON.stringify(formattedLists));
         window.lists = formattedLists;
         
         // Refresh UI if on lists section
@@ -987,7 +1040,6 @@ function startPeriodicRefresh() {
                         isGoogle: false
                     };
                 });
-                localStorage.setItem('events', JSON.stringify(formattedEvents));
                 window.events = formattedEvents;
                 
                 // Re-render the calendar view with the updated events
@@ -1012,6 +1064,8 @@ function startPeriodicRefresh() {
             // Refresh rewards and allowance
             await loadRewardsFromSupabase();
             await loadAllowanceFromSupabase();
+            await loadHabitsFromSupabase();
+            await loadAppSettingsFromSupabase();
         } catch (error) {
             console.error('Error refreshing data:', error);
         }
@@ -1039,7 +1093,7 @@ window.SupabaseSync = {
     // Rewards
     async syncReward(reward, operation) {
         if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
-        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const fm = window.familyMembers || [];
         const memberObj = fm.find(m => m.name === reward.member);
         try {
             if (operation === 'add') {
@@ -1070,7 +1124,7 @@ window.SupabaseSync = {
     // Allowance — individual transaction sync (write path, called from script.js)
     async syncAllowanceTransaction(transaction, memberName) {
         if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
-        const fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        const fm = window.familyMembers || [];
         const memberObj = fm.find(m => m.name === memberName);
         try {
             await SupabaseAPI.addAllowanceTransaction({
