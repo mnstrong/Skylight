@@ -1,18 +1,19 @@
 /* ============================================================
-   SKYLIGHT HOMEPAGE — homepage.js
-   Drop this script tag AFTER script.js in index.html
+   SKYLIGHT HOMEPAGE — homepage.js  v2
+   Add AFTER script.js in index.html:
+     <script src="homepage.js"></script>
    ============================================================ */
 
-(function() {
+(function () {
 'use strict';
 
-// ── State ──────────────────────────────────────────────────
-var hpTaskPage    = 0;   // which "page" of task cards is visible
-var hpListPage    = 0;   // which "page" of list cards is visible
-var hpTaskCount   = 0;   // total task card count (one per family member)
-var hpListCount   = 0;   // total list card count
+// ── State ────────────────────────────────────────────────────
+var hpTaskPage = 0;
+var hpListPage = 0;
 
-// Homepage sections the user wants shown (saved to localStorage)
+// Week offset: 0 = current week, -1 = last week, +1 = next week
+var hpWeekOffset = 0;
+
 var HP_STORAGE_KEY = 'skylight_homepage_widgets';
 var hpWidgets = loadHpWidgets();
 
@@ -20,103 +21,88 @@ function loadHpWidgets() {
     try {
         var raw = localStorage.getItem(HP_STORAGE_KEY);
         if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    // Defaults: calendar always on, tasks and lists on
+    } catch (e) {}
     return { calendar: true, tasks: true, lists: true };
 }
-
 function saveHpWidgets() {
-    try { localStorage.setItem(HP_STORAGE_KEY, JSON.stringify(hpWidgets)); } catch(e) {}
+    try { localStorage.setItem(HP_STORAGE_KEY, JSON.stringify(hpWidgets)); } catch (e) {}
 }
 
-// ── Register "Home" as a section ──────────────────────────
-// Wrap switchSection so 'home' renders our homepage
-var _prevSwitchSection = window.switchSection;
-window.switchSection = function(section) {
-    if (section === 'home') {
-        renderHomepage();
-        return;
-    }
-    if (_prevSwitchSection) _prevSwitchSection.call(this, section);
+// ── Hook into switchSection ──────────────────────────────────
+var _prevSwitch = window.switchSection;
+window.switchSection = function (section) {
+    if (section === 'home') { renderHomepage(); return; }
+    if (_prevSwitch) _prevSwitch.call(this, section);
 };
 
-// ── Add Home nav item to sidebar ──────────────────────────
+// ── Add Home nav item ────────────────────────────────────────
 function addHomeNavItem() {
     var sidebar = document.querySelector('.nav-sidebar');
-    if (!sidebar) return;
-    if (document.querySelector('.nav-item[href="#/home"]')) return; // already added
-
-    var homeItem = document.createElement('a');
-    homeItem.href    = '#/home';
-    homeItem.className = 'nav-item';
-    homeItem.innerHTML =
-        '<div class="nav-icon" style="font-size:26px;">🏠</div>' +
-        '<div>Home</div>';
-
-    // Insert as the very first item
-    sidebar.insertBefore(homeItem, sidebar.firstChild);
+    if (!sidebar || document.querySelector('.nav-item[href="#/home"]')) return;
+    var a = document.createElement('a');
+    a.href = '#/home';
+    a.className = 'nav-item';
+    a.innerHTML = '<div class="nav-icon" style="font-size:26px;">🏠</div><div>Home</div>';
+    sidebar.insertBefore(a, sidebar.firstChild);
 }
 
-// ── Main render ───────────────────────────────────────────
+// ── Main render ──────────────────────────────────────────────
 function renderHomepage() {
-    var currentSection = 'home';
-    window._currentSection = 'home';
-
-    // Sync currentSection on the outer scope (script.js uses it)
-    if (typeof window.currentSection !== 'undefined') {
-        // Can't assign to let in outer scope, but we set a flag
-    }
-
-    // Update nav highlighting
-    document.querySelectorAll('.nav-item').forEach(function(item) {
+    // Nav highlighting
+    document.querySelectorAll('.nav-item').forEach(function (item) {
         item.classList.remove('active');
         if (item.getAttribute('href') === '#/home') item.classList.add('active');
     });
 
-    // Update URL
     if (window.location.hash !== '#/home') {
         window.history.replaceState(null, null, '#/home');
     }
 
-    // Hide header controls not needed for home
-    var monthNav  = document.getElementById('monthNav');
-    var todayNav  = document.getElementById('todayNav');
-    var weekNav   = document.getElementById('weekNav');
-    var viewSel   = document.getElementById('mainViewSelector');
+    // Hide header controls
+    ['monthNav','todayNav','weekNav'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    var viewSel = document.getElementById('mainViewSelector');
     var filterBtn = document.getElementById('calendarFilterBtn');
-    if (monthNav)  monthNav.style.display  = 'none';
-    if (todayNav)  todayNav.style.display  = 'none';
-    if (weekNav)   weekNav.style.display   = 'none';
     if (viewSel)   viewSel.style.display   = 'none';
     if (filterBtn) filterBtn.style.display = 'none';
 
-    // Hide floating buttons
+    // Floating buttons
     var fab1 = document.getElementById('floatingAddBtn');
     var fab2 = document.getElementById('floatingAddTaskBtn');
     if (fab1) fab1.classList.remove('active');
     if (fab2) fab2.classList.remove('active');
 
-    // Reset scroll positions
+    // Reset state
     hpTaskPage = 0;
     hpListPage = 0;
+    hpWeekOffset = 0;
 
     var contentArea = document.getElementById('contentArea');
     if (!contentArea) return;
 
-    contentArea.style.padding = '0';
+    contentArea.style.padding  = '0';
     contentArea.style.overflow = 'hidden';
-    contentArea.style.height = '100%';
+    contentArea.style.height   = '100%';
 
-    contentArea.innerHTML = buildHomepageHTML();
-    attachHomepageEvents();
-    renderHpCalendar();
+    contentArea.innerHTML = buildHTML();
+
+    // Render panels
+    renderHpWeekCal();
     renderHpTasks();
     renderHpLists();
+
+    // Wire calendar nav
+    var prev = document.getElementById('hpCalPrev');
+    var next = document.getElementById('hpCalNext');
+    if (prev) prev.addEventListener('click', function () { hpWeekOffset--; renderHpWeekCal(); });
+    if (next) next.addEventListener('click', function () { hpWeekOffset++; renderHpWeekCal(); });
 }
 
-// ── HTML skeleton ─────────────────────────────────────────
-function buildHomepageHTML() {
-    return '' +
+// ── HTML skeleton ────────────────────────────────────────────
+function buildHTML() {
+    return (
     '<div class="homepage-layout">' +
 
       /* ── LEFT: Calendar ── */
@@ -125,9 +111,9 @@ function buildHomepageHTML() {
           '<div style="display:flex;align-items:center;gap:10px;">' +
             '<div class="hp-panel-title"><span class="hp-panel-title-icon">📅</span>CALENDAR</div>' +
             '<div class="hp-cal-nav">' +
-              '<button class="hp-arrow-btn" id="hpCalPrev" title="Previous">&#8249;</button>' +
+              '<button class="hp-arrow-btn" id="hpCalPrev">&#8249;</button>' +
               '<span class="hp-cal-nav-label" id="hpCalLabel"></span>' +
-              '<button class="hp-arrow-btn" id="hpCalNext" title="Next">&#8250;</button>' +
+              '<button class="hp-arrow-btn" id="hpCalNext">&#8250;</button>' +
             '</div>' +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
@@ -135,22 +121,20 @@ function buildHomepageHTML() {
             '<button class="hp-customize-btn" onclick="openHpCustomize()">⚙ Customize</button>' +
           '</div>' +
         '</div>' +
-        '<div class="hp-panel-body">' +
-          '<div class="hp-calendar-embed" id="hpCalendarEmbed"></div>' +
-        '</div>' +
+        '<div class="hp-panel-body" id="hpCalBody"></div>' +
       '</div>' +
 
       /* ── RIGHT col ── */
       '<div class="hp-right-col">' +
 
-        /* Today's Tasks panel */
-        '<div class="hp-right-panel" id="hpTasksPanel">' +
+        /* Today's Tasks */
+        '<div class="hp-right-panel">' +
           '<div class="hp-panel-header">' +
-            '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
               '<div class="hp-panel-title"><span class="hp-panel-title-icon">✅</span>TODAY\'S TASKS</div>' +
               '<div class="hp-scroll-indicator" id="hpTaskDots"></div>' +
             '</div>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<div style="display:flex;align-items:center;gap:5px;">' +
               '<a class="hp-goto-link" onclick="switchSection(\'chores\')">Open →</a>' +
               '<div class="hp-panel-arrows">' +
                 '<button class="hp-arrow-btn" id="hpTaskPrev" onclick="hpScrollTasks(-1)">&#8249;</button>' +
@@ -159,18 +143,20 @@ function buildHomepageHTML() {
             '</div>' +
           '</div>' +
           '<div class="hp-cards-viewport">' +
-            '<div class="hp-cards-track" id="hpTasksTrack"></div>' +
+            '<div class="hp-cards-scroller" id="hpTasksScroller">' +
+              '<div class="hp-cards-track" id="hpTasksTrack"></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
 
-        /* Lists panel */
-        '<div class="hp-right-panel" id="hpListsPanel">' +
+        /* Lists */
+        '<div class="hp-right-panel">' +
           '<div class="hp-panel-header">' +
-            '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
               '<div class="hp-panel-title"><span class="hp-panel-title-icon">📋</span>LISTS</div>' +
               '<div class="hp-scroll-indicator" id="hpListDots"></div>' +
             '</div>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<div style="display:flex;align-items:center;gap:5px;">' +
               '<a class="hp-goto-link" onclick="switchSection(\'lists\')">Open →</a>' +
               '<div class="hp-panel-arrows">' +
                 '<button class="hp-arrow-btn" id="hpListPrev" onclick="hpScrollLists(-1)">&#8249;</button>' +
@@ -179,7 +165,9 @@ function buildHomepageHTML() {
             '</div>' +
           '</div>' +
           '<div class="hp-cards-viewport">' +
-            '<div class="hp-cards-track" id="hpListsTrack"></div>' +
+            '<div class="hp-cards-scroller" id="hpListsScroller">' +
+              '<div class="hp-cards-track" id="hpListsTrack"></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
 
@@ -187,7 +175,7 @@ function buildHomepageHTML() {
 
     '</div>' + /* end homepage-layout */
 
-    /* ── Customize modal ── */
+    /* Customize modal */
     '<div class="hp-customize-modal" id="hpCustomizeModal">' +
       '<div class="hp-customize-backdrop" onclick="closeHpCustomize()"></div>' +
       '<div class="hp-customize-panel">' +
@@ -196,246 +184,289 @@ function buildHomepageHTML() {
         '<div class="hp-customize-items" id="hpCustomizeItems"></div>' +
         '<button class="hp-customize-close-btn" onclick="closeHpCustomize()">Done</button>' +
       '</div>' +
-    '</div>';
+    '</div>'
+    );
 }
 
-// ── Calendar embed ────────────────────────────────────────
-function renderHpCalendar() {
-    var embed = document.getElementById('hpCalendarEmbed');
-    if (!embed) return;
+// ─────────────────────────────────────────────────────────────
+// WEEK CALENDAR — 2 rows: Sun-Wed (top) | Thu-Sat + Next Wk (bottom)
+// ─────────────────────────────────────────────────────────────
+function renderHpWeekCal() {
+    var body = document.getElementById('hpCalBody');
+    if (!body) return;
 
-    // We render a mini month view inline
-    embed.innerHTML =
-        '<div class="family-pills" id="hpFamilyPills" style="padding:8px 12px 0; flex-shrink:0;"></div>' +
-        '<div class="calendar-grid" id="hpCalGrid" style="flex:1; overflow:auto;"></div>' +
-        '<div class="week-view" id="hpWeekView" style="display:none; flex:1; overflow:auto;"></div>' +
-        '<div class="schedule-view" id="hpScheduleView" style="display:none; flex:1; overflow:auto;">' +
-            '<div class="schedule-container" id="hpScheduleContainer"></div>' +
-        '</div>' +
-        '<div class="day-view" id="hpDayView" style="display:none; flex:1; overflow:auto;"></div>';
-    embed.style.display = 'flex';
-    embed.style.flexDirection = 'column';
-    embed.style.height = '100%';
+    // Get the Sunday of the current display week
+    var today = new Date(); today.setHours(0,0,0,0);
 
-    // Render family pills using the real function, re-targeted
-    if (typeof renderFamilyPills === 'function') {
-        // Temporarily redirect familyPills container
-        var origPills = document.getElementById('familyPills');
-        var hpPills   = document.getElementById('hpFamilyPills');
+    // Find this week's Sunday
+    var sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay()); // back to Sunday
+    // Apply week offset
+    sunday.setDate(sunday.getDate() + hpWeekOffset * 7);
 
-        // Clone family pills into hp container
-        if (typeof familyMembers !== 'undefined' && familyMembers.length) {
-            var pillsHtml = '';
-            familyMembers.forEach(function(m) {
-                var progress = getHpMemberProgress(m);
-                var bgRgba = hexToRgbaHp(m.color, 0.15);
-                pillsHtml +=
-                    '<div class="family-pill" style="background:' + bgRgba + ';color:' + m.color + ';font-size:13px;min-width:unset;padding:8px 14px;" ' +
-                    'onclick="toggleCalendarFilterMember && toggleCalendarFilterMember(\'' + m.name + '\')">' +
-                    '<div class="family-pill-progress" style="background:' + m.color + ';width:' + progress + '%"></div>' +
-                    '<div class="family-pill-content">' +
-                    '<div class="family-pill-avatar" style="background:' + m.color + ';width:22px;height:22px;font-size:11px;">' + m.name.charAt(0) + '</div>' +
-                    '<div class="family-pill-info">' +
-                    '<div class="family-pill-name">' + m.name + '</div>' +
-                    '</div></div></div>';
+    // Build the 7 days of this week
+    var weekDays = [];
+    for (var i = 0; i < 7; i++) {
+        var d = new Date(sunday);
+        d.setDate(sunday.getDate() + i);
+        weekDays.push(d);
+    }
+
+    // Next week: Mon–Sun
+    var nextWeekStart = new Date(sunday);
+    nextWeekStart.setDate(sunday.getDate() + 7);
+    var nextWeekEnd = new Date(nextWeekStart);
+    nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+
+    // Get all events
+    var allEvts = [];
+    if (typeof getAllEvents === 'function') {
+        allEvts = getAllEvents();
+    } else if (typeof window.events !== 'undefined') {
+        allEvts = window.events;
+    }
+
+    // Helper: events for a date string
+    function eventsForDay(dt) {
+        var ds = toDateStr(dt);
+        return allEvts.filter(function(e) {
+            if (typeof isEventVisible === 'function' && !isEventVisible(e)) return false;
+            if (typeof isEventOnDate === 'function') return isEventOnDate(e, ds);
+            return e.date === ds;
+        });
+    }
+
+    function eventsForRange(startDt, endDt) {
+        var result = [];
+        var cur = new Date(startDt);
+        while (cur <= endDt) {
+            eventsForDay(cur).forEach(function(e) {
+                if (!result.find(function(x) { return x.id === e.id; })) result.push(e);
             });
-            if (hpPills) hpPills.innerHTML = pillsHtml;
+            cur.setDate(cur.getDate() + 1);
         }
+        return result;
     }
 
-    // Render the month calendar — redirect grid ID
-    renderHpMonthView();
-    updateHpCalLabel();
-}
-
-// Which hp view is showing: 'month' | 'week' | 'schedule' | 'day'
-var hpCalView = window.lastCalendarViewFromServer || window.lastCalendarView || 'month';
-
-function renderHpMonthView() {
-    // We piggyback on the real renderCalendar / renderWeekView etc.,
-    // but those write to fixed IDs. Instead, re-render directly.
-    showHpCalView(hpCalView);
-}
-
-function showHpCalView(view) {
-    hpCalView = view;
-    var grid     = document.getElementById('hpCalGrid');
-    var weekV    = document.getElementById('hpWeekView');
-    var schedV   = document.getElementById('hpScheduleView');
-    var dayV     = document.getElementById('hpDayView');
-    var schedC   = document.getElementById('hpScheduleContainer');
-
-    if (!grid) return;
-
-    // Hide all
-    [grid, weekV, schedV, dayV].forEach(function(el) { if (el) el.style.display = 'none'; });
-
-    // We'll use a trick: temporarily swap element IDs, call the real renderer, swap back
-    if (view === 'month' && grid) {
-        grid.style.display = '';
-        swapIdAndRender('calendarGrid', 'hpCalGrid', function() {
-            if (typeof renderCalendar === 'function') renderCalendar();
-        });
-    } else if (view === 'week' && weekV) {
-        weekV.style.display = '';
-        swapIdAndRender('weekView', 'hpWeekView', function() {
-            if (typeof renderWeekView === 'function') renderWeekView();
-        });
-    } else if (view === 'schedule' && schedV) {
-        schedV.style.display = '';
-        // Schedule uses scheduleContainer inside scheduleView
-        var realSched  = document.getElementById('scheduleView');
-        var realSchedC = document.getElementById('scheduleContainer');
-        if (realSched && schedV) {
-            var origId  = 'scheduleView';
-            var origCId = 'scheduleContainer';
-            schedV.id  = origId;
-            if (schedC) schedC.id = origCId;
-            if (typeof renderScheduleView === 'function') renderScheduleView();
-            schedV.id  = 'hpScheduleView';
-            if (schedC) schedC.id = 'hpScheduleContainer';
-        }
-    } else if (view === 'day' && dayV) {
-        dayV.style.display = '';
-        swapIdAndRender('dayView', 'hpDayView', function() {
-            if (typeof renderDayView === 'function') renderDayView();
-        });
-    }
-
-    updateHpCalLabel();
-}
-
-function swapIdAndRender(realId, hpId, renderFn) {
-    var realEl = document.getElementById(realId);
-    var hpEl   = document.getElementById(hpId);
-    if (!hpEl) return;
-
-    // Temporarily give hpEl the real ID so the render function finds it
-    if (realEl) realEl.id = realId + '__hidden';
-    hpEl.id = realId;
-
-    try { renderFn(); } catch(e) {}
-
-    // Restore
-    hpEl.id = hpId;
-    if (realEl) realEl.id = realId;
-}
-
-function updateHpCalLabel() {
+    // Update label
     var label = document.getElementById('hpCalLabel');
-    if (!label) return;
-
-    var d = window.currentDate || new Date();
-    var months = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-
-    if (hpCalView === 'month') {
-        label.textContent = months[d.getMonth()] + ' ' + d.getFullYear();
-    } else if (hpCalView === 'week') {
-        // Show week range
-        var dayOfWeek = d.getDay();
-        var start = new Date(d); start.setDate(d.getDate() - dayOfWeek);
-        var end   = new Date(start); end.setDate(start.getDate() + 6);
-        var fmt = function(dt) { return months[dt.getMonth()].slice(0,3) + ' ' + dt.getDate(); };
-        label.textContent = fmt(start) + ' – ' + fmt(end);
-    } else if (hpCalView === 'day') {
-        var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        label.textContent = days[d.getDay()] + ', ' + months[d.getMonth()].slice(0,3) + ' ' + d.getDate();
-    } else {
-        label.textContent = 'Schedule';
+    if (label) {
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        label.textContent = months[sunday.getMonth()] + ' ' + sunday.getDate() +
+            ' – ' + months[weekDays[6].getMonth()] + ' ' + weekDays[6].getDate() +
+            ', ' + sunday.getFullYear();
     }
+
+    // Row 1: Sun Mon Tue Wed  (indices 0-3)
+    // Row 2: Thu Fri Sat + "Next Week" (indices 4-6 + next week cell)
+
+    var row1Days = weekDays.slice(0, 4);  // Sun–Wed
+    var row2Days = weekDays.slice(4, 7);  // Thu–Sat
+
+    var nextWeekEvts = eventsForRange(nextWeekStart, nextWeekEnd);
+
+    var html =
+        '<div class="hp-week-cal">' +
+
+        /* Header */
+        '<div class="hp-week-header">' +
+        row1Days.map(function(d) {
+            return '<div class="hp-week-header-cell">' + dayName(d) + '</div>';
+        }).join('') +
+        '<div class="hp-week-header-cell" style="color:#667eea;"></div>' + /* placeholder for row1 4th col label */
+        '</div>' +
+
+        '<div class="hp-week-rows">' +
+
+        /* Row 1: Sun Wed */
+        '<div class="hp-week-row">' +
+        row1Days.map(function(d) { return buildDayCell(d, today, eventsForDay(d)); }).join('') +
+        /* 4th column of row 1 is Thu header — but we use the header row for names, so row 1 only has 4 cols */
+        '</div>' +
+
+        /* Row 2: Thu Fri Sat + Next Week */
+        '<div class="hp-week-row">' +
+        row2Days.map(function(d) { return buildDayCell(d, today, eventsForDay(d)); }).join('') +
+        buildNextWeekCell(nextWeekStart, nextWeekEnd, nextWeekEvts) +
+        '</div>' +
+
+        '</div>' + /* end hp-week-rows */
+        '</div>';  /* end hp-week-cal */
+
+    body.innerHTML = html;
+
+    // Rebuild header with correct day names for both rows
+    rebuildWeekHeader(row1Days, row2Days);
 }
 
-function attachHomepageEvents() {
-    // Calendar prev/next
-    var calPrev = document.getElementById('hpCalPrev');
-    var calNext = document.getElementById('hpCalNext');
-    if (calPrev) calPrev.addEventListener('click', function() { hpCalNavigate(-1); });
-    if (calNext) calNext.addEventListener('click', function() { hpCalNavigate(1); });
+function rebuildWeekHeader(row1Days, row2Days) {
+    // The header we built above was wrong — we need two separate header rows
+    // Actually the design uses a single shared header across both rows
+    // Row 1 cols: Sun Mon Tue Wed; Row 2 cols: Thu Fri Sat Next Wk
+    // So build one header that labels all 4 visible columns with the row-specific day names
+    // by using two stacked sub-headers inside hp-week-cal.
+    // Let's replace the .hp-week-header to show row 1 names, and add a second inside hp-week-rows row 2.
+    var weekCal = document.querySelector('.hp-week-cal');
+    if (!weekCal) return;
+
+    var oldHeader = weekCal.querySelector('.hp-week-header');
+    if (!oldHeader) return;
+
+    // Row 1 names: Sun Mon Tue Wed
+    oldHeader.innerHTML =
+        row1Days.map(function(d) {
+            return '<div class="hp-week-header-cell">' + dayName(d) + '</div>';
+        }).join('') +
+        '<div class="hp-week-header-cell" style="opacity:0;"></div>'; // placeholder 4th col
+
+    // Insert a second sub-header before row 2
+    var rows = weekCal.querySelector('.hp-week-rows');
+    if (!rows) return;
+    var row2 = rows.querySelectorAll('.hp-week-row')[1];
+    if (!row2) return;
+
+    var subHeader = document.createElement('div');
+    subHeader.className = 'hp-week-header';
+    subHeader.style.borderTop = '1px solid #E8EBF0';
+    subHeader.innerHTML =
+        row2Days.map(function(d) {
+            return '<div class="hp-week-header-cell">' + dayName(d) + '</div>';
+        }).join('') +
+        '<div class="hp-week-header-cell" style="color:#667eea;font-size:10px;">NEXT WEEK</div>';
+
+    rows.insertBefore(subHeader, row2);
 }
 
-function hpCalNavigate(dir) {
-    // Use the real navigate functions, then re-render into hp elements
-    if (typeof navigateView === 'function') {
-        navigateView(dir);
-    } else {
-        // Fallback: manually move currentDate
-        var d = window.currentDate || new Date();
-        if (hpCalView === 'month') {
-            d.setMonth(d.getMonth() + dir);
-        } else if (hpCalView === 'week') {
-            d.setDate(d.getDate() + dir * 7);
-        } else {
-            d.setDate(d.getDate() + dir);
-        }
+function buildDayCell(d, today, evts) {
+    var isToday = d.getTime() === today.getTime();
+    var classes = 'hp-day-cell' + (isToday ? ' today' : '');
+
+    // Limit to 3 visible events
+    var shown  = evts.slice(0, 3);
+    var extras = evts.length - shown.length;
+
+    var evtHtml = shown.map(function(e) {
+        var color = getHpEventColor(e);
+        var textColor = color;
+        var bg = hexToRgbaHp(color, 0.15);
+        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + textColor + ';">' +
+            esc(e.title || '') + '</div>';
+    }).join('');
+
+    if (extras > 0) {
+        evtHtml += '<div class="hp-more-events">+' + extras + ' more</div>';
     }
-    // Re-render into hp elements
-    showHpCalView(hpCalView);
+
+    return '<div class="' + classes + '">' +
+        '<div class="hp-day-number-row">' +
+          '<div class="hp-day-number' + (isToday ? ' today-num' : '') + '">' + d.getDate() + '</div>' +
+          (evts.length > 0 ? '<div class="hp-day-event-count">' + evts.length + '</div>' : '') +
+        '</div>' +
+        '<div class="hp-day-events">' + evtHtml + '</div>' +
+        '</div>';
 }
 
-// ── Tasks panel ───────────────────────────────────────────
+function buildNextWeekCell(start, end, evts) {
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dateRange = months[start.getMonth()] + ' ' + start.getDate() +
+        ' – ' + months[end.getMonth()] + ' ' + end.getDate();
+
+    var shown  = evts.slice(0, 4);
+    var extras = evts.length - shown.length;
+
+    var evtHtml = shown.map(function(e) {
+        var color = getHpEventColor(e);
+        var bg = hexToRgbaHp(color, 0.15);
+        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + color + ';">' +
+            esc(e.title || '') + '</div>';
+    }).join('');
+    if (extras > 0) evtHtml += '<div class="hp-more-events">+' + extras + ' more</div>';
+
+    return '<div class="hp-day-cell next-week-cell">' +
+        '<div class="hp-next-week-label">Next Week</div>' +
+        '<div class="hp-next-week-dates">' + dateRange + '</div>' +
+        '<div class="hp-next-week-events">' + evtHtml + '</div>' +
+        '</div>';
+}
+
+function dayName(d) {
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+}
+
+function toDateStr(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+}
+
+function getHpEventColor(ev) {
+    // Try to get the primary member color
+    if (ev.member && typeof familyMembers !== 'undefined') {
+        var m = familyMembers.find(function(fm) { return fm.name === ev.member; });
+        if (m) return m.color;
+    }
+    if (ev.color) return ev.color;
+    return '#667eea';
+}
+
+// ─────────────────────────────────────────────────────────────
+// TASKS PANEL
+// ─────────────────────────────────────────────────────────────
 function renderHpTasks() {
-    var track = document.getElementById('hpTasksTrack');
-    if (!track) return;
+    var track    = document.getElementById('hpTasksTrack');
+    var scroller = document.getElementById('hpTasksScroller');
+    if (!track || !scroller) return;
 
     var members = (typeof familyMembers !== 'undefined') ? familyMembers : [];
-    var todayStr = getTodayStr();
-
-    hpTaskCount = members.length;
-    var html = '';
 
     if (members.length === 0) {
         track.innerHTML = '<div class="hp-empty-state"><div class="hp-empty-icon">✅</div><div>No family members yet</div></div>';
+        updateHpDots('hpTaskDots', 0, 0);
+        updateHpArrows('hpTaskPrev','hpTaskNext', 0, 0);
         return;
     }
 
-    members.forEach(function(member) {
+    // Build all cards
+    var html = '';
+    members.forEach(function (member) {
         var routineItems = [];
         var choreItems   = [];
 
-        // Routines for this member
         if (typeof routines !== 'undefined') {
             routineItems = routines.filter(function(r) { return r.member === member.name; });
         }
-
-        // Chores for this member (active today)
         if (typeof chores !== 'undefined') {
-            choreItems = chores.filter(function(c) {
-                if (c.member !== member.name) return false;
-                if (c.completed) return false;
-                return true;
-            });
+            choreItems = chores.filter(function(c) { return c.member === member.name; });
         }
 
         var allItems = routineItems.concat(choreItems);
         var total    = allItems.length;
         var done     = allItems.filter(function(i) { return i.completed; }).length;
+        var cardBg   = hexToRgbaHp(member.color, 0.08);
+        var cardBdr  = hexToRgbaHp(member.color, 0.2);
 
-        var cardBg = hexToRgbaHp(member.color, 0.08);
-
-        html += '<div class="hp-task-card" style="background:' + cardBg + ';border-color:' + hexToRgbaHp(member.color, 0.18) + ';">' +
+        html += '<div class="hp-task-card" style="background:' + cardBg + ';border-color:' + cardBdr + ';">' +
             '<div class="hp-task-card-header">' +
             '<div class="hp-task-avatar" style="background:' + member.color + ';">' + member.name.charAt(0) + '</div>' +
             '<div class="hp-task-member-info">' +
-            '<div class="hp-task-member-name">' + member.name + '</div>' +
+            '<div class="hp-task-member-name">' + esc(member.name) + '</div>' +
             '<div class="hp-task-meta">✓ ' + done + '/' + total + '</div>' +
-            '</div>' +
-            '</div>' +
+            '</div></div>' +
             '<div class="hp-task-items">';
 
         if (allItems.length === 0) {
-            html += '<div style="font-size:12px;color:#BBBFC8;padding:4px 0;">No tasks for today</div>';
+            html += '<div style="font-size:12px;color:#BBBFC8;">No tasks for today</div>';
         } else {
-            allItems.slice(0, 8).forEach(function(item) {
+            allItems.slice(0, 10).forEach(function (item) {
                 var isRoutine  = (typeof item.period !== 'undefined');
                 var completed  = !!item.completed;
-                var itemId     = item.id;
                 var itemType   = isRoutine ? 'routine' : 'chore';
-                var toggleCall = 'hpToggleTask(\'' + itemType + '\',' + itemId + ')';
+                var toggleCall = 'hpToggleTask(\'' + itemType + '\',' + JSON.stringify(item.id) + ')';
 
                 html += '<div class="hp-task-row">' +
                     '<div class="hp-task-row-text' + (completed ? ' completed' : '') + '">' +
-                    (item.icon ? item.icon + ' ' : '') + escHtml(item.title || '') +
+                    (item.icon ? item.icon + ' ' : '') + esc(item.title || '') +
                     '</div>' +
                     '<button class="hp-task-toggle' + (completed ? ' on' : '') + '" onclick="' + toggleCall + '"></button>' +
                     '</div>';
@@ -446,11 +477,18 @@ function renderHpTasks() {
     });
 
     track.innerHTML = html;
-    updateHpTaskDots();
-    updateHpTaskArrows();
+
+    // Set card widths and track width based on scroller dimensions
+    // Do this after paint so offsetWidth is accurate
+    requestAnimationFrame(function() {
+        resizeHpCards(scroller, track, 'hp-task-card');
+        var pages = Math.ceil(members.length / 2);
+        updateHpDots('hpTaskDots', hpTaskPage, pages);
+        updateHpArrows('hpTaskPrev', 'hpTaskNext', hpTaskPage, pages);
+    });
 }
 
-window.hpToggleTask = function(type, id) {
+window.hpToggleTask = function (type, id) {
     if (type === 'routine' && typeof routines !== 'undefined') {
         var r = routines.find(function(x) { return String(x.id) === String(id); });
         if (r) {
@@ -468,53 +506,56 @@ window.hpToggleTask = function(type, id) {
             }
         }
     }
+    var savedPage = hpTaskPage;
     renderHpTasks();
-    // Restore scroll position
-    hpSetTaskPage(hpTaskPage);
+    // Restore page after rerender
+    setTimeout(function() { hpGoTaskPage(savedPage); }, 20);
 };
 
-// ── Lists panel ───────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// LISTS PANEL
+// ─────────────────────────────────────────────────────────────
 function renderHpLists() {
-    var track = document.getElementById('hpListsTrack');
-    if (!track) return;
+    var track    = document.getElementById('hpListsTrack');
+    var scroller = document.getElementById('hpListsScroller');
+    if (!track || !scroller) return;
 
     var listsData = (typeof lists !== 'undefined') ? lists : [];
-    hpListCount = listsData.length;
 
     if (listsData.length === 0) {
-        track.innerHTML = '<div class="hp-empty-state"><div class="hp-empty-icon">📋</div><div>No lists yet — open Lists to create one</div></div>';
+        track.innerHTML = '<div class="hp-empty-state"><div class="hp-empty-icon">📋</div><div>No lists yet</div></div>';
+        updateHpDots('hpListDots', 0, 0);
+        updateHpArrows('hpListPrev', 'hpListNext', 0, 0);
         return;
     }
 
     var html = '';
-    listsData.forEach(function(list) {
+    listsData.forEach(function (list) {
         var member = null;
         if (typeof familyMembers !== 'undefined' && list.assignedTo) {
-            member = familyMembers.find(function(m) { return String(m.id) === String(list.assignedTo) || m.name === list.assignedTo; });
+            member = familyMembers.find(function(m) {
+                return String(m.id) === String(list.assignedTo) || m.name === list.assignedTo;
+            });
         }
         var color   = member ? member.color : '#667eea';
-        var initial = member ? member.name.charAt(0) : '?';
         var cardBg  = hexToRgbaHp(color, 0.07);
-        var borderC = hexToRgbaHp(color, 0.18);
-
-        // Count non-completed items
+        var cardBdr = hexToRgbaHp(color, 0.2);
         var activeItems = (list.items || []).filter(function(i) { return i.text && !i.completed; });
-        var totalItems  = (list.items || []).filter(function(i) { return i.text; });
 
-        html += '<div class="hp-list-card" style="background:' + cardBg + ';border-color:' + borderC + ';" onclick="hpOpenList(\'' + list.id + '\')">' +
+        html += '<div class="hp-list-card" style="background:' + cardBg + ';border-color:' + cardBdr + ';" onclick="hpOpenList(\'' + list.id + '\')">' +
             '<div class="hp-list-card-header">' +
-            '<div class="hp-list-name">' + escHtml(list.name) + '</div>' +
+            '<div class="hp-list-name">' + esc(list.name) + '</div>' +
             '<div class="hp-list-count-badge" style="background:' + color + ';">' + activeItems.length + '</div>' +
             '</div>' +
             '<div class="hp-list-items">';
 
         if (activeItems.length === 0) {
-            html += '<div style="font-size:12px;color:#BBBFC8;padding:4px 0;">No items</div>';
+            html += '<div style="font-size:12px;color:#BBBFC8;">No items</div>';
         } else {
-            activeItems.slice(0, 6).forEach(function(item) {
+            activeItems.slice(0, 8).forEach(function(item) {
                 html += '<div class="hp-list-item-row">' +
                     '<div class="hp-list-item-dot" style="background:' + color + ';"></div>' +
-                    '<div class="hp-list-item-text' + (item.completed ? ' completed' : '') + '">' + escHtml(item.text) + '</div>' +
+                    '<div class="hp-list-item-text">' + esc(item.text) + '</div>' +
                     '</div>';
             });
         }
@@ -527,231 +568,213 @@ function renderHpLists() {
     });
 
     track.innerHTML = html;
-    updateHpListDots();
-    updateHpListArrows();
+
+    requestAnimationFrame(function() {
+        resizeHpCards(scroller, track, 'hp-list-card');
+        var pages = Math.ceil(listsData.length / 2);
+        updateHpDots('hpListDots', hpListPage, pages);
+        updateHpArrows('hpListPrev', 'hpListNext', hpListPage, pages);
+    });
 }
 
-window.hpOpenList = function(listId) {
+window.hpOpenList = function (listId) {
     switchSection('lists');
-    // After lists render, try to open the list detail
     setTimeout(function() {
-        if (typeof openEditListPanel === 'function') {
-            openEditListPanel(listId);
-        }
+        if (typeof openEditListPanel === 'function') openEditListPanel(listId);
     }, 150);
 };
 
-window.hpAddListItem = function(listId, inputEl) {
+window.hpAddListItem = function (listId, inputEl) {
     var text = inputEl.value.trim();
     if (!text) return;
     var list = (typeof lists !== 'undefined') ? lists.find(function(l) { return String(l.id) === String(listId); }) : null;
     if (!list) return;
 
-    var newItem = {
-        id: Date.now(),
-        text: text,
-        completed: false,
-        section: list.items && list.items.length > 0 ? (list.items[0].section || 'Items') : 'Items'
-    };
+    var firstSection = (list.items && list.items.length > 0) ? (list.items[0].section || 'Items') : 'Items';
     list.items = list.items || [];
-    list.items.push(newItem);
+    list.items.push({ id: Date.now(), text: text, completed: false, section: firstSection });
 
-    // Sync
     if (window.SupabaseSync && typeof window.SupabaseSync.saveList === 'function') {
         window.SupabaseSync.saveList(list);
     }
-
     inputEl.value = '';
+    var savedPage = hpListPage;
     renderHpLists();
-    hpSetListPage(hpListPage);
+    setTimeout(function() { hpGoListPage(savedPage); }, 20);
 };
 
-// ── Scroll / pagination ───────────────────────────────────
-// 2 cards visible at a time (each card is 50% of track width)
-// We scroll by moving the track translate-X
+// ─────────────────────────────────────────────────────────────
+// SCROLL / PAGINATION — uses scrollLeft, NOT transform
+// ─────────────────────────────────────────────────────────────
 
-window.hpScrollTasks = function(dir) {
+/*
+  resizeHpCards():
+  - Measures the scroller's inner width
+  - Sets each card's width to (scrollerWidth - padding*2 - gap) / 2
+  - Sets the track's total width so scrollLeft has room
+*/
+function resizeHpCards(scroller, track, cardClass) {
+    if (!scroller || !track) return;
+    var scrollerW = scroller.clientWidth;
+    var padH      = 13;  // padding: 11px 13px → horizontal = 13px each side
+    var gap       = 10;
+    var usable    = scrollerW - padH * 2;  // total usable width inside padding
+    var cardW     = Math.floor((usable - gap) / 2);
+
+    var cards = track.querySelectorAll('.' + cardClass);
+    cards.forEach(function(card) {
+        card.style.width = cardW + 'px';
+        card.style.minWidth = cardW + 'px';
+    });
+
+    // Track width = all cards + all gaps + 2× padding
+    var n = cards.length;
+    if (n > 0) {
+        var trackW = padH * 2 + n * cardW + (n - 1) * gap;
+        track.style.width = trackW + 'px';
+    }
+}
+
+window.hpScrollTasks = function (dir) {
     var members = (typeof familyMembers !== 'undefined') ? familyMembers : [];
     var pages   = Math.ceil(members.length / 2);
     hpTaskPage  = Math.max(0, Math.min(pages - 1, hpTaskPage + dir));
-    hpSetTaskPage(hpTaskPage);
+    hpGoTaskPage(hpTaskPage);
 };
 
-window.hpScrollLists = function(dir) {
+window.hpScrollLists = function (dir) {
     var listsData = (typeof lists !== 'undefined') ? lists : [];
     var pages     = Math.ceil(listsData.length / 2);
     hpListPage    = Math.max(0, Math.min(pages - 1, hpListPage + dir));
-    hpSetListPage(hpListPage);
+    hpGoListPage(hpListPage);
 };
 
-function hpSetTaskPage(page) {
+function hpGoTaskPage(page) {
     hpTaskPage = page;
-    var track = document.getElementById('hpTasksTrack');
-    if (track) {
+    var scroller = document.getElementById('hpTasksScroller');
+    var track    = document.getElementById('hpTasksTrack');
+    if (scroller && track) {
+        resizeHpCards(scroller, track, 'hp-task-card');
         var card = track.querySelector('.hp-task-card');
         if (card) {
-            var cardWidth = card.offsetWidth + 12; // gap=12
-            track.style.transform = 'translateX(-' + (page * cardWidth * 2) + 'px)';
+            var step = (card.offsetWidth + 10) * 2; // 2 cards per page
+            scroller.scrollLeft = page * step;
         }
     }
-    updateHpTaskDots();
-    updateHpTaskArrows();
+    var members = (typeof familyMembers !== 'undefined') ? familyMembers : [];
+    var pages = Math.ceil(members.length / 2);
+    updateHpDots('hpTaskDots', page, pages);
+    updateHpArrows('hpTaskPrev', 'hpTaskNext', page, pages);
 }
 
-function hpSetListPage(page) {
+function hpGoListPage(page) {
     hpListPage = page;
-    var track = document.getElementById('hpListsTrack');
-    if (track) {
+    var scroller = document.getElementById('hpListsScroller');
+    var track    = document.getElementById('hpListsTrack');
+    if (scroller && track) {
+        resizeHpCards(scroller, track, 'hp-list-card');
         var card = track.querySelector('.hp-list-card');
         if (card) {
-            var cardWidth = card.offsetWidth + 12;
-            track.style.transform = 'translateX(-' + (page * cardWidth * 2) + 'px)';
+            var step = (card.offsetWidth + 10) * 2;
+            scroller.scrollLeft = page * step;
         }
     }
-    updateHpListDots();
-    updateHpListArrows();
+    var listsData = (typeof lists !== 'undefined') ? lists : [];
+    var pages = Math.ceil(listsData.length / 2);
+    updateHpDots('hpListDots', page, pages);
+    updateHpArrows('hpListPrev', 'hpListNext', page, pages);
 }
 
-function updateHpTaskDots() {
-    var members = (typeof familyMembers !== 'undefined') ? familyMembers : [];
-    var pages   = Math.ceil(members.length / 2);
-    var dots    = document.getElementById('hpTaskDots');
-    if (!dots) return;
+// ─────────────────────────────────────────────────────────────
+// UI helpers
+// ─────────────────────────────────────────────────────────────
+function updateHpDots(containerId, page, pages) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
     var html = '';
     for (var i = 0; i < pages; i++) {
-        html += '<div class="hp-scroll-dot' + (i === hpTaskPage ? ' active' : '') + '"></div>';
+        html += '<div class="hp-scroll-dot' + (i === page ? ' active' : '') + '"></div>';
     }
-    dots.innerHTML = html;
+    el.innerHTML = html;
 }
 
-function updateHpListDots() {
-    var listsData = (typeof lists !== 'undefined') ? lists : [];
-    var pages     = Math.ceil(listsData.length / 2);
-    var dots      = document.getElementById('hpListDots');
-    if (!dots) return;
-    var html = '';
-    for (var i = 0; i < pages; i++) {
-        html += '<div class="hp-scroll-dot' + (i === hpListPage ? ' active' : '') + '"></div>';
-    }
-    dots.innerHTML = html;
+function updateHpArrows(prevId, nextId, page, pages) {
+    var prev = document.getElementById(prevId);
+    var next = document.getElementById(nextId);
+    if (prev) prev.style.opacity = page <= 0 ? '0.3' : '1';
+    if (next) next.style.opacity = page >= pages - 1 ? '0.3' : '1';
 }
 
-function updateHpTaskArrows() {
-    var members = (typeof familyMembers !== 'undefined') ? familyMembers : [];
-    var pages   = Math.ceil(members.length / 2);
-    var prev = document.getElementById('hpTaskPrev');
-    var next = document.getElementById('hpTaskNext');
-    if (prev) prev.style.opacity = hpTaskPage === 0 ? '0.35' : '1';
-    if (next) next.style.opacity = hpTaskPage >= pages - 1 ? '0.35' : '1';
-}
-
-function updateHpListArrows() {
-    var listsData = (typeof lists !== 'undefined') ? lists : [];
-    var pages     = Math.ceil(listsData.length / 2);
-    var prev = document.getElementById('hpListPrev');
-    var next = document.getElementById('hpListNext');
-    if (prev) prev.style.opacity = hpListPage === 0 ? '0.35' : '1';
-    if (next) next.style.opacity = hpListPage >= pages - 1 ? '0.35' : '1';
-}
-
-// ── Customize modal ───────────────────────────────────────
-window.openHpCustomize = function() {
+// ─────────────────────────────────────────────────────────────
+// CUSTOMIZE MODAL
+// ─────────────────────────────────────────────────────────────
+window.openHpCustomize = function () {
     var modal = document.getElementById('hpCustomizeModal');
     var items = document.getElementById('hpCustomizeItems');
     if (!modal || !items) return;
 
-    var widgets = [
-        { key: 'calendar', icon: '📅', label: 'Calendar',     sub: 'Full-height calendar view' },
-        { key: 'tasks',    icon: '✅', label: "Today's Tasks", sub: 'Routines & chores by person' },
-        { key: 'lists',    icon: '📋', label: 'Lists',         sub: 'Your shared lists & items' }
+    var defs = [
+        { key: 'calendar', icon: '📅', label: 'Calendar',      sub: 'Weekly calendar view' },
+        { key: 'tasks',    icon: '✅', label: "Today's Tasks",  sub: 'Routines & chores by person' },
+        { key: 'lists',    icon: '📋', label: 'Lists',          sub: 'Your shared lists & items' }
     ];
 
-    var html = '';
-    widgets.forEach(function(w) {
+    items.innerHTML = defs.map(function(w) {
         var on = hpWidgets[w.key] !== false;
-        html += '<div class="hp-customize-item" onclick="hpToggleWidget(\'' + w.key + '\')">' +
+        return '<div class="hp-customize-item" onclick="hpToggleWidget(\'' + w.key + '\')">' +
             '<div class="hp-customize-item-left">' +
             '<div class="hp-customize-item-icon">' + w.icon + '</div>' +
-            '<div>' +
-            '<div class="hp-customize-item-label">' + w.label + '</div>' +
-            '<div class="hp-customize-item-sublabel">' + w.sub + '</div>' +
-            '</div>' +
+            '<div><div class="hp-customize-item-label">' + w.label + '</div>' +
+            '<div class="hp-customize-item-sublabel">' + w.sub + '</div></div>' +
             '</div>' +
             '<div class="hp-toggle-switch' + (on ? ' on' : '') + '" id="hpToggle_' + w.key + '"></div>' +
             '</div>';
-    });
-    items.innerHTML = html;
+    }).join('');
+
     modal.classList.add('active');
 };
 
-window.closeHpCustomize = function() {
+window.closeHpCustomize = function () {
     var modal = document.getElementById('hpCustomizeModal');
     if (modal) modal.classList.remove('active');
-    // Re-render homepage to reflect changes
-    renderHomepage();
 };
 
-window.hpToggleWidget = function(key) {
+window.hpToggleWidget = function (key) {
     hpWidgets[key] = !hpWidgets[key];
     saveHpWidgets();
-    // Update toggle visual immediately
     var toggle = document.getElementById('hpToggle_' + key);
     if (toggle) toggle.classList.toggle('on', !!hpWidgets[key]);
 };
 
-// ── Helpers ───────────────────────────────────────────────
-function getTodayStr() {
-    var d = new Date();
-    return d.toISOString().split('T')[0];
-}
-
-function getHpMemberProgress(member) {
-    var total = 0, done = 0;
-    if (typeof routines !== 'undefined') {
-        routines.forEach(function(r) { if (r.member === member.name) { total++; if (r.completed) done++; } });
-    }
-    if (typeof chores !== 'undefined') {
-        chores.forEach(function(c) { if (c.member === member.name) { total++; if (c.completed) done++; } });
-    }
-    return total > 0 ? Math.round((done / total) * 100) : 0;
-}
-
+// ─────────────────────────────────────────────────────────────
+// UTILITY
+// ─────────────────────────────────────────────────────────────
 function hexToRgbaHp(hex, alpha) {
     if (typeof hexToRgba === 'function') return hexToRgba(hex, alpha);
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return 'rgba(102,126,234,' + alpha + ')';
-    return 'rgba(' +
-        parseInt(result[1], 16) + ',' +
-        parseInt(result[2], 16) + ',' +
-        parseInt(result[3], 16) + ',' + alpha + ')';
+    var r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!r) return 'rgba(102,126,234,' + alpha + ')';
+    return 'rgba(' + parseInt(r[1],16) + ',' + parseInt(r[2],16) + ',' + parseInt(r[3],16) + ',' + alpha + ')';
 }
 
-function escHtml(str) {
+function esc(str) {
     return String(str)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;');
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Init: add Home nav + go to home if hash says so ──────
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
 function init() {
     addHomeNavItem();
-
-    // If hash is #/home, navigate there after scripts fully load
     if (window.location.hash === '#/home') {
-        setTimeout(renderHomepage, 80);
+        setTimeout(renderHomepage, 100);
     }
-
-    // Listen for hash changes
     window.addEventListener('hashchange', function() {
-        if (window.location.hash === '#/home') {
-            renderHomepage();
-        }
+        if (window.location.hash === '#/home') renderHomepage();
     });
 }
 
-// Run after DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
