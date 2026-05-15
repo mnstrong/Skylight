@@ -175,20 +175,25 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
     let mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || [];
     // Skylight-matched meal category colors
     const MEAL_CATEGORY_DEFAULTS = [
-        { name: 'Breakfast', color: '#FFE566', visible: true },
-        { name: 'Lunch',     color: '#A8DDA8', visible: true },
+        { name: 'Breakfast', color: '#FFCF9C', visible: true },
+        { name: 'Lunch',     color: '#B8D8F0', visible: true },
         { name: 'Dinner',    color: '#C4B0E0', visible: true },
         { name: 'Snack',     color: '#FFB3C6', visible: true }
     ];
     let mealCategories = JSON.parse(localStorage.getItem('mealCategories')) || MEAL_CATEGORY_DEFAULTS;
 
-    // Migrate: update colors on existing installs if they have old values
+    // Migrate: update colors on existing installs
     (function migrateMealColors() {
-        const colorMap = { Breakfast: '#FFE566', Lunch: '#A8DDA8', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
-        const oldColors = { Breakfast: '#FFB3B3', Lunch: '#B3E5D9', Dinner: '#FFD9A3', Snack: '#E5D4B3' };
+        const colorMap = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
+        const oldColors = {
+            Breakfast: ['#FFB3B3', '#FFE566'],
+            Lunch:     ['#B3E5D9', '#A8DDA8'],
+            Dinner:    ['#FFD9A3', '#C4B0E0'],
+            Snack:     ['#E5D4B3', '#FFB3C6']
+        };
         let changed = false;
         mealCategories.forEach(function(cat) {
-            if (oldColors[cat.name] && cat.color === oldColors[cat.name]) {
+            if (oldColors[cat.name] && oldColors[cat.name].includes(cat.color)) {
                 cat.color = colorMap[cat.name];
                 changed = true;
             }
@@ -4460,8 +4465,8 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const dinnerMeal = dayMeals.find(m => m.mealType === 'Dinner');
             const dinnerPillHtml = dinnerMeal ? (function() {
                 var cat = mealCategories.find(function(c){ return c.name === 'Dinner'; }) || { color: '#C4B0E0' };
-                var recipe = recipes.find(function(r){ return r.id === dinnerMeal.recipeId; });
-                var title = (recipe && (recipe.title || recipe.name)) || dinnerMeal.recipeName || dinnerMeal.name || 'Dinner';
+                var recipe = recipes.find(function(r){ return r.id == dinnerMeal.recipeId; }); // == handles string/number mismatch
+                var title = (recipe && recipe.name) || 'Dinner';
                 return '<div class="sg-meal-pill sg-meal-pill-header" style="background:' + cat.color + ';" onclick="event.stopPropagation()">' +
                     '<span class="sg-meal-emoji">🍽️</span>' +
                     '<span class="sg-meal-name">' + title + '</span>' +
