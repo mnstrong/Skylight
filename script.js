@@ -9193,25 +9193,49 @@ if (allChoresComplete || allRoutinesComplete) {
     document.addEventListener('supabaseFamilyMembersLoaded', function(e) {
         const loaded = e.detail;
         if (!Array.isArray(loaded)) return;
-        // Only update existing members in the closure — never push new ones.
+
+        // Replace closure contents with Supabase members, preserving Google Calendar entries
+        const gcal = familyMembers.filter(function(m) { return m.isGoogleCalendar; });
+
+        // Update or add each Supabase member into the closure
         loaded.forEach(function(lm) {
-            const existing = familyMembers.find(function(m) { return m.name === lm.name; });
-            if (existing) {
-                existing.id = lm.id;
-                existing.color = lm.color;
-                if (lm.sections !== undefined) existing.sections = lm.sections;
+            const idx = familyMembers.findIndex(function(m) { return m.name === lm.name; });
+            if (idx > -1) {
+                familyMembers[idx].id = lm.id;
+                familyMembers[idx].color = lm.color;
+                if (lm.sections !== undefined) familyMembers[idx].sections = lm.sections;
+            } else {
+                familyMembers.push(lm);
             }
         });
-        // Dedup the closure by name before saving, just in case
+
+        // Re-add any Google Calendar members that weren't in Supabase
+        gcal.forEach(function(g) {
+            if (!familyMembers.find(function(m) { return m.name === g.name; })) {
+                familyMembers.push(g);
+            }
+        });
+
+        // Dedup by name
         const seen = new Set();
         familyMembers = familyMembers.filter(function(m) {
             if (seen.has(m.name)) return false;
             seen.add(m.name);
             return true;
         });
-        // Re-save so closure and localStorage stay in sync
-        // [synced to Supabase]
+
         window.familyMembers = familyMembers;
+
+        // Re-render current section with real member data
+        try {
+            if (currentSection === 'chores') renderChoresView();
+            else if (currentSection === 'rewards') renderRewardsView();
+            else if (currentSection === 'allowance') renderAllowanceGrid();
+            else if (currentSection === 'calendar') renderCalendarFilterList();
+            renderFamilyPillsLists();
+            if (typeof renderFamilyPills === 'function') renderFamilyPills();
+            if (typeof renderPersonAvatars === 'function') renderPersonAvatars();
+        } catch(err) { console.warn('Re-render after members load:', err); }
     });
     
     // Convert all emojis to images using Twemoji
