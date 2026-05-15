@@ -2411,7 +2411,8 @@
     #mobileTaskBoxSheet,
     #mobileListsUI,
     #mobileProfilePickerSheet,
-    #mobileProfilePickerOverlay {
+    #mobileProfilePickerOverlay,
+    .mcal-week-list {
         display: none !important;
     }
 
@@ -2835,6 +2836,213 @@
         line-height: 1.6;
         background: white;
         border-radius: 18px;
+    }
+
+}
+
+/* ============================================
+   MOBILE CALENDAR — Month & Week views
+   ============================================ */
+@media screen and (max-width: 768px) {
+
+    /* ── Month view ───────────────────────────────── */
+
+    /* Hide desktop month header (we use the mobile nav title) */
+    body.viewing-section.calendar-view #monthYear,
+    body.viewing-section.calendar-view .calendar-header,
+    body.viewing-section.calendar-view .month-nav-btn,
+    body.viewing-section.calendar-view .today-nav-btn,
+    body.viewing-section.calendar-view .tab {
+        display: none !important;
+    }
+
+    /* Calendar grid — full width, compact cells */
+    body.viewing-section.calendar-view #calendarGrid {
+        font-size: 11px;
+        border-top: 1px solid #e8e8e8;
+    }
+
+    body.viewing-section.calendar-view .calendar-day-header {
+        font-size: 12px;
+        font-weight: 700;
+        color: #888;
+        padding: 6px 0 4px;
+        text-align: center;
+    }
+
+    body.viewing-section.calendar-view .day-cell {
+        min-height: 72px;
+        padding: 4px 3px 2px;
+        font-size: 11px;
+    }
+
+    body.viewing-section.calendar-view .day-number {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    /* Today circle */
+    body.viewing-section.calendar-view .day-cell.today .day-number {
+        background: #E05C2A;
+        color: white;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    /* Event pills in month cells */
+    body.viewing-section.calendar-view .cal-event {
+        font-size: 10px;
+        padding: 1px 4px;
+        border-radius: 3px;
+        margin-bottom: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.6;
+    }
+
+    /* ── Week agenda view ─────────────────────────── */
+
+    .mcal-week-list {
+        padding: 8px 16px 100px;
+        background: white;
+    }
+
+    /* Day row — label left, events right */
+    .mcal-day-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 4px;
+        padding-bottom: 4px;
+    }
+
+    .mcal-day-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 36px;
+        flex-shrink: 0;
+        padding-top: 10px;
+    }
+
+    .mcal-day-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .mcal-day-num {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .mcal-day-today {
+        background: #E05C2A;
+        color: white !important;
+    }
+
+    .mcal-day-events {
+        flex: 1;
+        min-width: 0;
+        padding: 8px 0 8px;
+        border-bottom: 1px solid #F0F0F0;
+    }
+
+    /* No events placeholder */
+    .mcal-no-events {
+        background: #F5F5F7;
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: #aaa;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Event card — large rounded pastel */
+    .mcal-event-card {
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mcal-event-card:active { opacity: 0.8; }
+    .mcal-event-card:last-child { margin-bottom: 0; }
+
+    .mcal-event-body { flex: 1; min-width: 0; }
+
+    .mcal-event-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+    }
+
+    .mcal-event-allday {
+        font-weight: 700;
+    }
+
+    .mcal-event-time {
+        font-size: 13px;
+        color: #888;
+        font-weight: 400;
+    }
+
+    /* Member avatar dot */
+    .mcal-event-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    /* Content offset when calendar nav is showing */
+    body.viewing-section.calendar-view #contentArea {
+        padding-top: 148px !important;
+        background: white !important;
+    }
+
+    /* Hide desktop week-view chrome on mobile (we render our own) */
+    body.viewing-section.calendar-view .wv5-outer,
+    body.viewing-section.calendar-view .week-nav-btn {
+        display: none !important;
+    }
+
+    /* Show our mcal-week-list inside weekView */
+    body.viewing-section.calendar-view #weekView {
+        display: block;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        height: calc(100vh - 148px);
     }
 
 }
