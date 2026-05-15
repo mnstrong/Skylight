@@ -1255,8 +1255,6 @@ let rewards = window.rewards || [];
                 }
             ];
             // [synced to Supabase]
-        }
-    }
     
     let selectedListsPerson = 'all';
     
