@@ -9161,22 +9161,31 @@ if (allChoresComplete || allRoutinesComplete) {
     // Sync all Supabase-loaded data into closure variables
     document.addEventListener('supabaseDataLoaded', function(e) {
         const d = e.detail || {};
-        if (d.chores)              { chores = d.chores; window.chores = chores; }
-        if (d.routines)            { routines = d.routines; window.routines = routines; }
-        if (d.tasks)               { tasks = d.tasks; }
-        if (d.lists)               { lists = d.lists; }
-        if (d.recipes)             { recipes = d.recipes; }
-        if (d.mealPlan)            { mealPlan = d.mealPlan; }
-        if (d.rewards)             { rewards = d.rewards; }
-        if (d.allowances)          { allowances = d.allowances; }
-        if (d.mealCategories)      { mealCategories = d.mealCategories; }
-        if (d.hiddenChoreMembers)  { hiddenChoreMembers = d.hiddenChoreMembers; window.hiddenChoreMembers = hiddenChoreMembers; }
-        if (d.showUpForGrabs !== undefined) { showUpForGrabs = d.showUpForGrabs; window.showUpForGrabs = showUpForGrabs; }
+        if (d.chores !== undefined)            { chores = d.chores || []; window.chores = chores; }
+        if (d.routines !== undefined)          { routines = d.routines || []; window.routines = routines; }
+        if (d.tasks !== undefined)             { tasks = d.tasks || []; }
+        if (d.lists !== undefined)             { lists = d.lists || []; }
+        if (d.recipes !== undefined)           { recipes = d.recipes || []; }
+        if (d.mealPlan !== undefined)          { mealPlan = d.mealPlan || []; }
+        if (d.rewards !== undefined)           { rewards = d.rewards || []; }
+        if (d.allowances !== undefined)        { allowances = d.allowances || []; }
+        if (d.mealCategories !== undefined)    { mealCategories = d.mealCategories || mealCategories; }
+        if (d.hiddenChoreMembers !== undefined){ hiddenChoreMembers = d.hiddenChoreMembers || []; window.hiddenChoreMembers = hiddenChoreMembers; }
+        if (d.showUpForGrabs !== undefined)    { showUpForGrabs = !!d.showUpForGrabs; window.showUpForGrabs = showUpForGrabs; }
 
-        // Re-render current section
-        if (typeof renderSection === 'function' && typeof currentSection !== 'undefined') {
-            try { renderSection(currentSection); } catch(e) {}
-        }
+        // Re-render the active section with fresh data
+        try {
+            if (currentSection === 'chores') renderChoresView();
+            else if (currentSection === 'rewards') renderRewardsView();
+            else if (currentSection === 'allowance') renderAllowanceGrid();
+            else if (currentSection === 'meals') renderMeals();
+            else if (currentSection === 'recipes') renderRecipes();
+            else if (currentSection === 'habits' && typeof renderHabitsView === 'function') renderHabitsView();
+            else if (currentSection === 'calendar') {
+                if (currentView === 'month') renderCalendar();
+                else if (currentView === 'week') renderWeekView();
+            }
+        } catch(err) { console.warn('Re-render after Supabase load:', err); }
     });
 
     // When Supabase reloads family members, sync back into the local closure
