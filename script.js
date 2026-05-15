@@ -1206,55 +1206,6 @@ let rewards = window.rewards || [];
         // Lists are loaded from Supabase — no sample data needed
         return;
     }
-            lists = [
-                {
-                    id: 1,
-                    name: 'Grocery List',
-                    color: familyMembers[0].color,
-                    assignedTo: familyMembers[0].id,
-                    items: [
-                        { id: 1, text: '🥚 Eggs', completed: false },
-                        { id: 2, text: '🥛 Milk', completed: false },
-                        { id: 3, text: '🍞 Bread', completed: false },
-                        { id: 4, text: '🍎 Apples', completed: false },
-                        { id: 5, text: '🥬 Lettuce', completed: false }
-                    ]
-                },
-                {
-                    id: 2,
-                    name: 'Packing List',
-                    color: familyMembers[1].color,
-                    assignedTo: familyMembers[1].id,
-                    items: [
-                        { id: 1, text: '👕 Shirts x5', completed: false },
-                        { id: 2, text: '👖 Jeans x2', completed: false },
-                        { id: 3, text: '🩲 Undies x7', completed: false }
-                    ]
-                },
-                {
-                    id: 3,
-                    name: 'To-Do',
-                    color: familyMembers[2].color,
-                    assignedTo: familyMembers[2].id,
-                    items: [
-                        { id: 1, text: 'Pack for trip', completed: false },
-                        { id: 2, text: 'Pet sitter (Allie?)', completed: false },
-                        { id: 3, text: 'Stop mail', completed: false }
-                    ]
-                },
-                {
-                    id: 4,
-                    name: 'Travel Bucket List',
-                    color: familyMembers[3].color,
-                    assignedTo: familyMembers[3].id,
-                    items: [
-                        { id: 1, text: '🗾 Japan', completed: false },
-                        { id: 2, text: '🇮🇪 Ireland', completed: false },
-                        { id: 3, text: '🇭🇷 Croatia', completed: false }
-                    ]
-                }
-            ];
-            // [synced to Supabase]
     
     let selectedListsPerson = 'all';
     
