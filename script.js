@@ -4460,9 +4460,11 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
             const dinnerMeal = dayMeals.find(m => m.mealType === 'Dinner');
             const dinnerPillHtml = dinnerMeal ? (function() {
                 var cat = mealCategories.find(function(c){ return c.name === 'Dinner'; }) || { color: '#C4B0E0' };
+                var recipe = recipes.find(function(r){ return r.id === dinnerMeal.recipeId; });
+                var title = (recipe && (recipe.title || recipe.name)) || dinnerMeal.recipeName || dinnerMeal.name || 'Dinner';
                 return '<div class="sg-meal-pill sg-meal-pill-header" style="background:' + cat.color + ';" onclick="event.stopPropagation()">' +
                     '<span class="sg-meal-emoji">🍽️</span>' +
-                    '<span class="sg-meal-name">' + (dinnerMeal.recipeName || dinnerMeal.name || 'Dinner') + '</span>' +
+                    '<span class="sg-meal-name">' + title + '</span>' +
                     '</div>';
             })() : '';
             daysHtml += '<div class="sg-day-header">' +
