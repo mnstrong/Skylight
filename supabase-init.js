@@ -41,13 +41,22 @@
             }));
             
             // After loading, render the current section to show updated data
-            // Only render if we're actually on that page
-            if (typeof renderSection === 'function' && typeof currentSection !== 'undefined') {
+            if (typeof currentSection !== 'undefined') {
                 console.log('🔄 Refreshing UI for section:', currentSection);
                 try {
-                    renderSection(currentSection);
+                    if (currentSection === 'chores' && typeof renderChoresView === 'function') renderChoresView();
+                    else if (currentSection === 'rewards' && typeof renderRewardsView === 'function') renderRewardsView();
+                    else if (currentSection === 'allowance' && typeof renderAllowanceGrid === 'function') renderAllowanceGrid();
+                    else if (currentSection === 'meals' && typeof renderMeals === 'function') renderMeals();
+                    else if (currentSection === 'recipes' && typeof renderRecipes === 'function') renderRecipes();
+                    else if (currentSection === 'calendar') {
+                        if (typeof currentView !== 'undefined') {
+                            if (currentView === 'month' && typeof renderCalendar === 'function') renderCalendar();
+                            else if (currentView === 'week' && typeof renderWeekView === 'function') renderWeekView();
+                        }
+                    }
                 } catch (e) {
-                    console.log('⚠️ Could not render section (page may not be ready yet)');
+                    console.log('⚠️ Could not render section:', e);
                 }
             }
             
