@@ -180,26 +180,15 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
         { name: 'Dinner',    color: '#C4B0E0', visible: true },
         { name: 'Snack',     color: '#FFB3C6', visible: true }
     ];
+    const MEAL_CATEGORY_COLORS = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
+
     let mealCategories = JSON.parse(localStorage.getItem('mealCategories')) || MEAL_CATEGORY_DEFAULTS;
 
-    // Migrate: update colors on existing installs
-    (function migrateMealColors() {
-        const colorMap = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
-        const oldColors = {
-            Breakfast: ['#FFB3B3', '#FFE566'],
-            Lunch:     ['#B3E5D9', '#A8DDA8'],
-            Dinner:    ['#FFD9A3', '#C4B0E0'],
-            Snack:     ['#E5D4B3', '#FFB3C6']
-        };
-        let changed = false;
-        mealCategories.forEach(function(cat) {
-            if (oldColors[cat.name] && oldColors[cat.name].includes(cat.color)) {
-                cat.color = colorMap[cat.name];
-                changed = true;
-            }
-        });
-        if (changed) localStorage.setItem('mealCategories', JSON.stringify(mealCategories));
-    })();
+    // Always enforce canonical colors — never let stale localStorage colors win
+    mealCategories.forEach(function(cat) {
+        if (MEAL_CATEGORY_COLORS[cat.name]) cat.color = MEAL_CATEGORY_COLORS[cat.name];
+    });
+    localStorage.setItem('mealCategories', JSON.stringify(mealCategories));
     
     // Save meal categories to localStorage
     function saveMealCategories() {
