@@ -58,12 +58,19 @@ async function loadAllDataFromSupabase() {
         let formattedMembers = [];
         const members = await SupabaseAPI.getFamilyMembers();
         if (members && members.length > 0) {
-            formattedMembers = members.map(m => ({
-                id: m.id,
-                name: m.name,
-                color: m.color,
-                avatar_url: m.avatar_url
-            }));
+            // Preserve locally-stored sections (Supabase doesn't store per-member section toggles)
+            const localMembers = JSON.parse(localStorage.getItem('familyMembers') || '[]');
+            formattedMembers = members.map(m => {
+                const local = localMembers.find(lm => lm.name === m.name || lm.id === m.id);
+                return {
+                    id: m.id,
+                    name: m.name,
+                    color: m.color,
+                    avatar_url: m.avatar_url,
+                    sections: local ? local.sections : undefined,
+                    display_order: local ? local.display_order : undefined
+                };
+            });
             localStorage.setItem('familyMembers', JSON.stringify(formattedMembers));
             window.familyMembers = formattedMembers;
             console.log('✓ Loaded', members.length, 'family members');
@@ -782,10 +789,9 @@ async function loadAllowanceFromSupabase() {
         localStorage.setItem('allowances', JSON.stringify(formatted));
         window.allowances = formatted;
         console.log('✓ Loaded allowance transactions for', formatted.length, 'members from Supabase');
-        // Refresh mobile allowance view if open
+        // Refresh mobile allowance view if open (body only — tabs don't change on allowance load)
         if (typeof renderMalBody === 'function' && document.getElementById('mobileAllowancePage') &&
             document.getElementById('mobileAllowancePage').style.display !== 'none') {
-            renderMalTabs();
             renderMalBody();
         }
         if (typeof renderAllowanceGrid === 'function' && typeof currentSection !== 'undefined' && currentSection === 'allowance') {
