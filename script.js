@@ -1203,7 +1203,9 @@ let rewards = window.rewards || [];
     
     // Lists Functions
     function initializeSampleLists() {
-        if (lists.length === 0) {
+        // Lists are loaded from Supabase — no sample data needed
+        return;
+    }
             lists = [
                 {
                     id: 1,
@@ -3024,26 +3026,9 @@ let rewards = window.rewards || [];
         renderFamilyMembers();
         initCalendarFilter();
         
-        // Initialize sample chores if none exist
-        if (chores.length === 0) {
-            initializeSampleChores();
-        }
-        
-        // Initialize sample routines if none exist
-        if (routines.length === 0) {
-            initializeSampleRoutines();
-        }
-        
-        // Initialize sample recipes
-        initializeSampleRecipes();
-        
-        // Initialize sample lists
-        initializeSampleLists();
-        
-        // Initialize sample rewards if none exist
-        if (rewards.length === 0) {
-            initializeSampleRewards();
-        }
+        // All data loads from Supabase — sample initializers disabled
+        // initializeSampleChores / initializeSampleRoutines / initializeSampleRecipes
+        // initializeSampleLists / initializeSampleRewards are no-ops
         
         // Handle hash-based routing on desktop
         if (window.innerWidth > 768) {
