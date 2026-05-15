@@ -1,0 +1,636 @@
+/* ============================================================
+   SKYLIGHT HOMEPAGE — Desktop Only (hidden on mobile)
+   ============================================================ */
+
+/* ── Hidden on mobile ── */
+@media screen and (max-width: 768px) {
+    .homepage-layout,
+    .hp-customize-modal {
+        display: none !important;
+    }
+}
+
+/* ── Homepage Layout ── */
+.homepage-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: 1fr;
+    gap: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ── Left: Full-height Calendar panel ── */
+.hp-calendar-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #E8EBF0;
+    height: 100%;
+}
+
+.hp-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid #E8EBF0;
+    flex-shrink: 0;
+    background: white;
+}
+
+.hp-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #5C6370;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.hp-panel-title-icon {
+    font-size: 15px;
+    opacity: 0.7;
+}
+
+.hp-panel-arrows {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hp-arrow-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: #E8EBF0;
+    color: #5C6370;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.hp-arrow-btn:hover {
+    background: #D5D9E0;
+    transform: scale(1.08);
+}
+
+.hp-arrow-btn:active {
+    transform: scale(0.94);
+}
+
+.hp-panel-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Calendar embed fills the entire left panel body */
+.hp-calendar-embed {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Make the calendar grid inside homepage fill the space nicely */
+.hp-calendar-embed .calendar-grid {
+    height: 100%;
+}
+
+.hp-calendar-embed .week-view,
+.hp-calendar-embed .day-view,
+.hp-calendar-embed .schedule-view {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* ── Right: Stacked panels ── */
+.hp-right-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #F4F6F9;
+    height: 100%;
+}
+
+/* Each right panel takes exactly half the height */
+.hp-right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white;
+}
+
+.hp-right-panel + .hp-right-panel {
+    border-top: 1px solid #E8EBF0;
+}
+
+/* ── Scrollable card strip inside right panels ── */
+.hp-cards-viewport {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.hp-cards-track {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
+/* ── TODAY'S TASKS: one card per person ── */
+.hp-task-card {
+    flex: 0 0 calc(50% - 6px);
+    background: #F7F9FC;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid #EDF0F5;
+}
+
+.hp-task-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.hp-task-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.hp-task-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.hp-task-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.hp-task-member-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hp-task-meta {
+    font-size: 11px;
+    color: #8A8F9A;
+    margin-top: 1px;
+}
+
+.hp-task-items {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hp-task-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.hp-task-row-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hp-task-row-text.completed {
+    text-decoration: line-through;
+    color: #AAB0BC;
+}
+
+.hp-task-toggle {
+    width: 26px;
+    height: 16px;
+    border-radius: 8px;
+    background: #E2E7EF;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    padding: 0;
+}
+
+.hp-task-toggle::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s, background 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.hp-task-toggle.on {
+    background: #5CB85C;
+}
+
+.hp-task-toggle.on::after {
+    left: 12px;
+}
+
+/* ── LISTS: one card per list ── */
+.hp-list-card {
+    flex: 0 0 calc(50% - 6px);
+    background: #F7F9FC;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid #EDF0F5;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+
+.hp-list-card:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.hp-list-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.hp-list-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hp-list-count-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.hp-list-items {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hp-list-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #444;
+    flex-shrink: 0;
+}
+
+.hp-list-item-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.hp-list-item-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hp-list-item-text.completed {
+    text-decoration: line-through;
+    color: #AAB0BC;
+}
+
+.hp-list-add-input {
+    border: none;
+    background: rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: #555;
+    width: 100%;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    outline: none;
+}
+
+.hp-list-add-input:focus {
+    background: rgba(0,0,0,0.07);
+}
+
+.hp-list-add-input::placeholder {
+    color: #BBBFC8;
+}
+
+/* ── Scrollbar arrows indicator ── */
+.hp-scroll-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.hp-scroll-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #D5D9E0;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.hp-scroll-dot.active {
+    background: #667eea;
+    transform: scale(1.3);
+}
+
+/* ── Customize button in header ── */
+.hp-customize-btn {
+    background: none;
+    border: 1px solid #D5D9E0;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5C6370;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.hp-customize-btn:hover {
+    background: #F0F2F5;
+}
+
+/* ── Customize Modal ── */
+.hp-customize-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.hp-customize-modal.active {
+    display: flex;
+}
+
+.hp-customize-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+}
+
+.hp-customize-panel {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: 18px;
+    padding: 28px 28px 24px;
+    width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.hp-customize-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+}
+
+.hp-customize-subtitle {
+    font-size: 13px;
+    color: #8A8F9A;
+    margin-bottom: 20px;
+}
+
+.hp-customize-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.hp-customize-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #F7F9FC;
+    border: 1px solid #EDF0F5;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.hp-customize-item:hover {
+    background: #EEF1F7;
+}
+
+.hp-customize-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hp-customize-item-icon {
+    font-size: 20px;
+    width: 36px;
+    text-align: center;
+}
+
+.hp-customize-item-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.hp-customize-item-sublabel {
+    font-size: 11px;
+    color: #9A9FA8;
+    margin-top: 1px;
+}
+
+/* Toggle switch inside customize */
+.hp-toggle-switch {
+    width: 42px;
+    height: 24px;
+    border-radius: 12px;
+    background: #D5D9E0;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.hp-toggle-switch.on {
+    background: #667eea;
+}
+
+.hp-toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.hp-toggle-switch.on::after {
+    left: 21px;
+}
+
+.hp-customize-close-btn {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.hp-customize-close-btn:hover {
+    background: #5568d9;
+}
+
+/* ── Calendar nav controls inside homepage header ── */
+.hp-cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hp-cal-nav-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5C6370;
+    padding: 0 4px;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* ── Go to section link ── */
+.hp-goto-link {
+    font-size: 11px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.hp-goto-link:hover {
+    background: rgba(102,126,234,0.1);
+}
+
+/* ── Empty states ── */
+.hp-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #BBBFC8;
+    font-size: 13px;
+    gap: 8px;
+    padding: 20px;
+}
+
+.hp-empty-icon {
+    font-size: 28px;
+    opacity: 0.5;
+}
+
+/* ── Scrollbar hiding for cards track ── */
+.hp-cards-viewport::-webkit-scrollbar,
+.hp-task-items::-webkit-scrollbar,
+.hp-list-items::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/* nav-item for home */
+.nav-item[href="#/home"] .nav-icon {
+    font-size: 28px;
+}
