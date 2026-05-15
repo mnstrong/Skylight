@@ -97,33 +97,18 @@ let familyMembers = window.familyMembers = JSON.parse(localStorage.getItem('fami
 { name: 'Elsie', color: '#d9aafa' }
 ];
 
-    // Deduplicate family members by name (keep first occurrence)
+    // Deduplicate family members by name (keep first occurrence) and always save
     const seenNames = new Set();
     familyMembers = familyMembers.filter(member => {
-        if (seenNames.has(member.name)) {
-            return false;
-        }
+        if (seenNames.has(member.name)) return false;
         seenNames.add(member.name);
         return true;
     });
-    
-    // Ensure all family members have IDs (migration for existing data)
-    let needsUpdate = false;
     familyMembers.forEach((member, index) => {
-        if (!member.id) {
-            member.id = index + 1;
-            needsUpdate = true;
-        }
+        if (!member.id) member.id = index + 1;
     });
-    if (needsUpdate) {
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
-    }
-    
-    // Save deduplicated array if we removed duplicates
-    if (seenNames.size !== JSON.parse(localStorage.getItem('familyMembers') || '[]').length) {
-        localStorage.setItem('familyMembers', JSON.stringify(familyMembers)); window.familyMembers = familyMembers;
-        console.log('Removed duplicate family members');
-    }
+    localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+    window.familyMembers = familyMembers;
     
     // Events data
     let events = JSON.parse(localStorage.getItem('events')) || [];
@@ -9246,20 +9231,24 @@ if (allChoresComplete || allRoutinesComplete) {
         const loaded = e.detail;
         if (!Array.isArray(loaded)) return;
         // Only update existing members in the closure — never push new ones.
-        // New members should only come in via addFamilyMember flow.
         loaded.forEach(function(lm) {
-            const existing = familyMembers.find(function(m) {
-                return m.name === lm.name;
-            });
+            const existing = familyMembers.find(function(m) { return m.name === lm.name; });
             if (existing) {
                 existing.id = lm.id;
                 existing.color = lm.color;
-                // Restore sections from the merged Supabase result (already includes local sections)
                 if (lm.sections !== undefined) existing.sections = lm.sections;
             }
         });
-        // Re-save to localStorage so the closure and localStorage stay in sync
+        // Dedup the closure by name before saving, just in case
+        const seen = new Set();
+        familyMembers = familyMembers.filter(function(m) {
+            if (seen.has(m.name)) return false;
+            seen.add(m.name);
+            return true;
+        });
+        // Re-save so closure and localStorage stay in sync
         localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        window.familyMembers = familyMembers;
     });
     
     // Convert all emojis to images using Twemoji
