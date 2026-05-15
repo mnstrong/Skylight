@@ -184,18 +184,29 @@ async function loadAllDataFromSupabase() {
         }
         
         // Load meal categories
+        const CANONICAL_COLORS = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
+        const CATEGORY_DEFAULTS = [
+            { name: 'Breakfast', color: '#FFCF9C', visible: true },
+            { name: 'Lunch',     color: '#B8D8F0', visible: true },
+            { name: 'Dinner',    color: '#C4B0E0', visible: true },
+            { name: 'Snack',     color: '#FFB3C6', visible: true }
+        ];
         const categories = await SupabaseAPI.getMealCategories();
-        if (categories && categories.length > 0) {
-            const CANONICAL_COLORS = { Breakfast: '#FFCF9C', Lunch: '#B8D8F0', Dinner: '#C4B0E0', Snack: '#FFB3C6' };
-            const formattedCategories = categories.map(c => ({
-                name: c.name,
-                color: CANONICAL_COLORS[c.name] || c.color,  // always enforce canonical colors
-                visible: true
-            }));
-            localStorage.setItem('mealCategories', JSON.stringify(formattedCategories));
-            window.mealCategories = formattedCategories;
-            console.log('✓ Loaded', categories.length, 'meal categories');
-        }
+        // Start with defaults, then overlay anything Supabase returns
+        // This ensures missing DB rows (e.g. Snack) never disappear
+        const mergedCategories = CATEGORY_DEFAULTS.map(def => {
+            const fromDb = categories && categories.find(c =>
+                c.name && c.name.toLowerCase() === def.name.toLowerCase()
+            );
+            return {
+                name: def.name,
+                color: CANONICAL_COLORS[def.name], // always enforce canonical color
+                visible: fromDb ? true : def.visible
+            };
+        });
+        localStorage.setItem('mealCategories', JSON.stringify(mergedCategories));
+        window.mealCategories = mergedCategories;
+        console.log('✓ Meal categories ready:', mergedCategories.map(c => c.name).join(', '));
         
         // Load calendar events
         const evtStart = new Date();
