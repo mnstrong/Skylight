@@ -1886,7 +1886,7 @@ function _buildMemberCard(member, allChores, today) {
 function renderMobileChoresProfileFilter() {
     var container = document.getElementById('mchProfileRow');
     if (!container) return;
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
     var showUfg = JSON.parse(localStorage.getItem('showUpForGrabs') || 'false');
     var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'chores') : true); });
@@ -1928,7 +1928,7 @@ function renderMobileChoresProfileFilter() {
 function renderMobileChoresList() {
     var container = document.getElementById('mobileChoresList');
     if (!container) return;
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
     var showUfg = JSON.parse(localStorage.getItem('showUpForGrabs') || 'false');
     var today = new Date(); today.setHours(0,0,0,0);
@@ -2099,9 +2099,8 @@ function showMobileAllowance() {
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
 
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
-    malCurrentMember = members.length > 0 ? members[0].name : null;
     renderMalTabs();
     renderMalBody();
 }
@@ -2113,7 +2112,8 @@ function hideMobileAllowance() {
 function renderMalTabs() {
     var container = document.getElementById('malTabs');
     if (!container) return;
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    // Always read from localStorage so sections are preserved across Supabase reloads
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
     var html = '';
     members.forEach(function(m) {
@@ -2136,8 +2136,7 @@ function renderMalTabs() {
 function renderMalBody() {
     var container = document.getElementById('malBody');
     if (!container || !malCurrentMember) return;
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
-    var member = fm.find(function(m) { return m.name === malCurrentMember; });
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     if (!member) return;
     var allAllowances = window.allowances || JSON.parse(localStorage.getItem('allowances') || '[]');
     var data = allAllowances.find(function(a) { return a.member === malCurrentMember; }) || { transactions: [] };
@@ -2310,7 +2309,7 @@ function renderMobileTaskBox() {
     var container = document.getElementById('mobileTaskBoxList');
     if (!container) return;
     var allChores = window.chores || JSON.parse(localStorage.getItem('chores') || '[]');
-    var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+    var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
     var pending = allChores.filter(function(c) { return !c.completed; });
     if (pending.length === 0) {
         container.innerHTML = '<div style="padding:32px;text-align:center;color:#999;font-size:15px;">🎉 All tasks complete!</div>';
@@ -2337,7 +2336,7 @@ function renderMobileTaskBox() {
 window.openProfileSettings = function() {
     if (window.innerWidth <= 768) {
         // Show a profile picker sheet
-        var fm = window.familyMembers || JSON.parse(localStorage.getItem('familyMembers') || '[]');
+        var fm = JSON.parse(localStorage.getItem('familyMembers') || '[]');
         var nonGoogle = fm.filter(function(m) { return !m.isGoogleCalendar; });
         if (nonGoogle.length === 0) {
             if (typeof addFamilyMember === 'function') addFamilyMember();
