@@ -253,8 +253,9 @@ let rewards = JSON.parse(localStorage.getItem('rewards')) || [];
                 html += `<div class="meal-cell">`;
                 
                 if (meals.length === 0) {
-                    // Show single empty box
-                    html += `<div class="meal-box empty-box ${mealTypeClass}" onclick="toggleMealBoxSelection(event, '${dateStr}', '${category.name}'); openMealSelector('${dateStr}', '${category.name}')"></div>`;
+                    // Show single empty box — use inline style so category.color always wins
+                    const emptyBg = hexToRgba(category.color, 0.25);
+                    html += `<div class="meal-box empty-box ${mealTypeClass}" style="background:${emptyBg};" onclick="toggleMealBoxSelection(event, '${dateStr}', '${category.name}'); openMealSelector('${dateStr}', '${category.name}')"></div>`;
                 } else {
                     // Show existing meals
                     meals.forEach(meal => {
