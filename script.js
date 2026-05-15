@@ -9239,6 +9239,28 @@ if (allChoresComplete || allRoutinesComplete) {
             renderChoresView();
         }
     });
+
+    // When Supabase reloads family members, sync back into the local closure
+    // so writes from saveEditedProfile etc. don't overwrite sections
+    document.addEventListener('supabaseFamilyMembersLoaded', function(e) {
+        const loaded = e.detail;
+        if (!Array.isArray(loaded)) return;
+        // Merge loaded members into the closure array in-place
+        // preserving any local-only fields (sections, display_order)
+        loaded.forEach(function(lm) {
+            const idx = familyMembers.findIndex(function(m) {
+                return m.name === lm.name || (lm.id && m.id === lm.id);
+            });
+            if (idx > -1) {
+                // Update id/color from Supabase but keep sections from loaded (already merged)
+                familyMembers[idx].id = lm.id;
+                familyMembers[idx].color = lm.color;
+                if (lm.sections !== undefined) familyMembers[idx].sections = lm.sections;
+            } else {
+                familyMembers.push(lm);
+            }
+        });
+    });
     
     // Convert all emojis to images using Twemoji
     if (typeof twemoji !== 'undefined') {
