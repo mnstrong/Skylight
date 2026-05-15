@@ -4778,9 +4778,9 @@ let rewards = window.rewards || [];
             
             // On mobile, default to schedule view, on desktop restore last used view
             if (window.innerWidth <= 768) {
-                // Use setTimeout to ensure DOM is ready
-                setTimeout(() => {
-                    switchView('schedule');
+                // mobileSetView handles rendering — don't override with switchView
+                setTimeout(function() {
+                    mobileSetView(typeof currentView !== 'undefined' && currentView === 'week' ? 'week' : 'month');
                 }, 10);
             } else {
                 var savedView = window.lastCalendarViewFromServer || window.lastCalendarView || 'month';
