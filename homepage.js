@@ -333,6 +333,74 @@ function hpEvtColor(ev) {
 // ─────────────────────────────────────────────────────────────
 // TASKS PANEL
 // ─────────────────────────────────────────────────────────────
+
+// Track which period is selected per member (defaults to current time period)
+var hpSelectedPeriod = {}; // { 'MemberName': 'Morning' | 'Afternoon' | 'Evening' | 'Chores' }
+
+function getCurrentPeriod() {
+    var h = new Date().getHours();
+    if (h >= 18) return 'Evening';
+    if (h >= 12) return 'Afternoon';
+    return 'Morning';
+}
+
+function buildPeriodIndicators(member, rItems, cItems, color) {
+    var periods = ['Morning', 'Afternoon', 'Evening', 'Chores'];
+    var icons   = { Morning: '⛅', Afternoon: '☀️', Evening: '🌙', Chores: '🧹' };
+    var circ    = 2 * Math.PI * 20;
+    var selected = hpSelectedPeriod[member] || getCurrentPeriod();
+    var html = '<div class="hp-period-indicators">';
+
+    periods.forEach(function(period) {
+        var items, total, done;
+        if (period === 'Chores') {
+            items = cItems;
+        } else {
+            items = rItems.filter(function(r) { return r.period === period; });
+        }
+        total = items.length;
+        done  = items.filter(function(i) { return i.completed; }).length;
+
+        if (total === 0) return; // skip periods with no tasks
+
+        var pct     = total > 0 ? done / total : 0;
+        var offset  = circ * (1 - pct);
+        var icon    = (done === total && total > 0) ? '✓' : icons[period];
+        var isSelected = (period === selected);
+
+        var btnStyle = isSelected
+            ? 'background:' + color + ';color:white;'
+            : 'background:rgba(0,0,0,0.05);color:#555;';
+
+        html +=
+            '<button class="hp-period-btn' + (isSelected ? ' active' : '') + '" ' +
+            'style="' + btnStyle + '" ' +
+            'onclick="hpSelectPeriod(\'' + esc(member) + '\',\'' + period + '\')" ' +
+            'title="' + period + ': ' + done + '/' + total + '">' +
+            '<div class="hp-period-btn-inner">' +
+            '<svg class="hp-period-ring" viewBox="0 0 50 50">' +
+            '<circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3.5"></circle>' +
+            '<circle cx="25" cy="25" r="20" fill="none" stroke="' + (isSelected ? 'rgba(255,255,255,0.9)' : color) + '" ' +
+            'stroke-width="3.5" stroke-dasharray="' + circ.toFixed(2) + '" stroke-dashoffset="' + offset.toFixed(2) + '" ' +
+            'stroke-linecap="round" transform="rotate(-90 25 25)"></circle>' +
+            '</svg>' +
+            '<span class="hp-period-icon">' + icon + '</span>' +
+            '</div>' +
+            '<span class="hp-period-label">' + period + '</span>' +
+            '</button>';
+    });
+
+    html += '</div>';
+    return html;
+}
+
+window.hpSelectPeriod = function(memberName, period) {
+    hpSelectedPeriod[memberName] = period;
+    var pg = hpTaskPage;
+    renderHpTasks();
+    setTimeout(function() { goTaskPage(pg); }, 20);
+};
+
 function renderHpTasks() {
     var track    = document.getElementById('hpTasksTrack');
     var scroller = document.getElementById('hpTasksScroller');
@@ -351,31 +419,52 @@ function renderHpTasks() {
     members.forEach(function(member) {
         var rItems = (typeof routines !== 'undefined') ? routines.filter(function(r){ return r.member === member.name; }) : [];
         var cItems = (typeof chores   !== 'undefined') ? chores.filter(function(c){   return c.member === member.name; }) : [];
-        var all    = rItems.concat(cItems);
-        var done   = all.filter(function(i){ return i.completed; }).length;
+        var allItems = rItems.concat(cItems);
+        var done   = allItems.filter(function(i){ return i.completed; }).length;
+
+        // Determine which period's tasks to show in the list
+        var selPeriod = hpSelectedPeriod[member.name] || getCurrentPeriod();
+        var listItems;
+        if (selPeriod === 'Chores') {
+            listItems = cItems;
+        } else {
+            // Show selected period routines; fall back to all if that period is empty
+            var periodItems = rItems.filter(function(r){ return r.period === selPeriod; });
+            listItems = periodItems.length > 0 ? periodItems : rItems;
+        }
 
         html += '<div class="hp-task-card" style="background:' + hexRgba(member.color,.08) + ';border-color:' + hexRgba(member.color,.2) + ';">' +
+
+            // Header: avatar + name + overall progress
             '<div class="hp-task-card-header">' +
             '<div class="hp-task-avatar" style="background:' + member.color + ';">' + member.name.charAt(0) + '</div>' +
             '<div class="hp-task-member-info">' +
             '<div class="hp-task-member-name">' + esc(member.name) + '</div>' +
-            '<div class="hp-task-meta">✓ ' + done + '/' + all.length + '</div>' +
+            '<div class="hp-task-meta">✓ ' + done + '/' + allItems.length + '</div>' +
             '</div></div>' +
+
+            // Period indicator buttons row
+            buildPeriodIndicators(member.name, rItems, cItems, member.color) +
+
+            // Task list for selected period
             '<div class="hp-task-items">';
 
-        if (all.length === 0) {
-            html += '<div style="font-size:12px;color:#BBBFC8;">No tasks today</div>';
+        if (listItems.length === 0) {
+            html += '<div style="font-size:12px;color:#BBBFC8;padding:4px 0;">No tasks for this period</div>';
         } else {
-            all.slice(0,10).forEach(function(item) {
+            listItems.slice(0, 10).forEach(function(item) {
                 var isRoutine = typeof item.period !== 'undefined';
-                var done2     = !!item.completed;
-                var call      = 'hpToggleTask(\'' + (isRoutine?'routine':'chore') + '\',' + JSON.stringify(item.id) + ')';
+                var isDone    = !!item.completed;
+                var call      = 'hpToggleTask(\'' + (isRoutine ? 'routine' : 'chore') + '\',' + JSON.stringify(item.id) + ')';
                 html += '<div class="hp-task-row">' +
-                    '<div class="hp-task-row-text' + (done2?' completed':'') + '">' + (item.icon?item.icon+' ':'') + esc(item.title||'') + '</div>' +
-                    '<button class="hp-task-toggle' + (done2?' on':'') + '" onclick="' + call + '"></button>' +
+                    '<div class="hp-task-row-text' + (isDone ? ' completed' : '') + '">' +
+                    (item.icon ? item.icon + ' ' : '') + esc(item.title || '') +
+                    '</div>' +
+                    '<button class="hp-task-toggle' + (isDone ? ' on' : '') + '" onclick="' + call + '"></button>' +
                     '</div>';
             });
         }
+
         html += '</div></div>';
     });
 
