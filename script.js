@@ -118,11 +118,25 @@ window.familyMembers = familyMembers;
     var hiddenChoreMembers = window.hiddenChoreMembers || [];
     var showUpForGrabs = window.showUpForGrabs || false;
 
-let visiblePeriods = {
-'Mary-Morning': true, 'Mary-Afternoon': true, 'Mary-Evening': true,
-'Bret-Morning': true, 'Bret-Afternoon': true, 'Bret-Evening': true,
-'Levi-Morning': true, 'Levi-Afternoon': true, 'Levi-Evening': true,
-'Elsie-Morning': true, 'Elsie-Afternoon': true, 'Elsie-Evening': true
+let visiblePeriods = {};
+// Populate visiblePeriods dynamically for all family members
+(function() {
+    var members = window.familyMembers || [];
+    members.forEach(function(m) {
+        ['Morning','Afternoon','Evening','Chores'].forEach(function(p) {
+            visiblePeriods[m.name + '-' + p] = true;
+        });
+    });
+})();
+// Also expose a function so supabase-init can re-run after members load
+window._rebuildVisiblePeriods = function() {
+    var members = window.familyMembers || [];
+    members.forEach(function(m) {
+        ['Morning','Afternoon','Evening','Chores'].forEach(function(p) {
+            var key = m.name + '-' + p;
+            if (visiblePeriods[key] === undefined) visiblePeriods[key] = true;
+        });
+    });
 };  
 // Initialize sortOrder for all routines if not set
 let needsSave = false;
@@ -5425,6 +5439,15 @@ let rewards = window.rewards || [];
         const container = document.getElementById('choresContainer');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
+        // Ensure visiblePeriods has entries for all current family members
+        // (familyMembers loads from Supabase after script parses, so rebuild here)
+        familyMembers.forEach(function(m) {
+            ['Morning','Afternoon','Evening','Chores'].forEach(function(p) {
+                var key = m.name + '-' + p;
+                if (visiblePeriods[key] === undefined) visiblePeriods[key] = true;
+            });
+        });
         
         // Determine current time period
         const currentHour = new Date().getHours();
