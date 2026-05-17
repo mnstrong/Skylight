@@ -88,6 +88,14 @@ function renderHomepage() {
     ca.style.overflow = 'hidden';
     ca.style.height   = '100%';
 
+    // Also zero out the parent .main-content padding so homepage fills edge-to-edge
+    var mc = document.querySelector('.main-content');
+    if (mc) {
+        mc.style.padding  = '0';
+        mc.style.overflow = 'hidden';
+        mc.style.height   = '100%';
+    }
+
     ca.innerHTML = buildHTML();
 
     // Wire calendar nav arrows
@@ -761,10 +769,23 @@ function init() {
     var _inner = window.switchSection;
     window.switchSection = function(section) {
         if (section === 'home') { renderHomepage(); return; }
-        // Restore filter button whenever leaving homepage
+        // Restore everything the homepage overrode
         var fb = document.getElementById('calendarFilterBtn');
         if (fb) fb.style.display = '';
-        window._hpActive = false;
+        // Reset contentArea inline styles so other sections render normally
+        var ca = document.getElementById('contentArea');
+        if (ca) {
+            ca.style.padding  = '';
+            ca.style.overflow = '';
+            ca.style.height   = '';
+        }
+        // Reset main-content overflow too
+        var mc = document.querySelector('.main-content');
+        if (mc) {
+            mc.style.padding  = '';
+            mc.style.overflow = '';
+            mc.style.height   = '';
+        }
         if (_inner) _inner.call(this, section);
     };
 
