@@ -91,9 +91,9 @@ function renderHomepage() {
     // Also zero out the parent .main-content padding so homepage fills edge-to-edge
     var mc = document.querySelector('.main-content');
     if (mc) {
-        mc.style.padding  = '0';
-        mc.style.overflow = 'hidden';
-        mc.style.height   = '100%';
+        mc.style.padding   = '0';
+        mc.style.overflowY = 'hidden';
+        mc.style.height    = '100%';
     }
 
     ca.innerHTML = buildHTML();
@@ -779,12 +779,13 @@ function init() {
             ca.style.overflow = '';
             ca.style.height   = '';
         }
-        // Reset main-content overflow too
+        // Reset main-content — critically restores overflow-y:auto so chore indicators aren't clipped
         var mc = document.querySelector('.main-content');
         if (mc) {
-            mc.style.padding  = '';
-            mc.style.overflow = '';
-            mc.style.height   = '';
+            mc.style.padding    = '';
+            mc.style.overflow   = '';
+            mc.style.overflowY  = 'auto';
+            mc.style.height     = '';
         }
         if (_inner) _inner.call(this, section);
     };
