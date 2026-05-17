@@ -753,3 +753,77 @@
 .hp-task-items::-webkit-scrollbar,
 .hp-list-items::-webkit-scrollbar,
 .hp-cards-scroller::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ── Period indicator buttons (Tasks panel) ── */
+.hp-period-indicators {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 2px 0 4px;
+}
+
+.hp-period-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 3px 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s;
+    position: relative;
+    min-width: 0;
+}
+
+.hp-period-btn:hover {
+    filter: brightness(0.93);
+}
+
+.hp-period-btn:active {
+    transform: scale(0.95);
+}
+
+.hp-period-btn-inner {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hp-period-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hp-period-icon {
+    font-size: 14px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.hp-period-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.hp-period-btn.active .hp-period-label {
+    opacity: 1;
+}
