@@ -1259,29 +1259,27 @@ let rewards = window.rewards || [];
         if (selectedListsPerson !== 'all') {
             filteredLists = lists.filter(list => String(list.assignedTo) === String(selectedListsPerson));
         }
-
-        // Dynamic column width: 1→100%, 2→50%, 3→33.33%, 4+→25% (min)
-        const count = filteredLists.length;
-        const colWidthPct = count === 0 ? 100 : Math.max(25, Math.floor(100 / count));
-        const colStyle = `flex: 0 0 calc(${colWidthPct}% - 20px);`;
-
+        
         let html = '';
         
         filteredLists.forEach(list => {
             const member = listsFindMember(list);
+            // Lists created on mobile may have no assignedTo — show them anyway
             const memberColor = member ? member.color : '#8E8E93';
             const memberInitial = member ? member.name.charAt(0).toUpperCase() : '?';
+            
+            // Convert hex color to rgba with 20% opacity for column background
             const columnBg = hexToRgba(memberColor, 0.2);
             
-            html += `<div class="chore-column lists-col" style="background: ${columnBg}; ${colStyle}">`;
+            html += `<div class="chore-column" style="background: ${columnBg}">`;
             
-            // Sticky header — list title + assigned avatar
+            // Show list card with title and assigned person avatar
             html += `
-                <div class="list-col-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
-                    <div class="list-card-title">${list.name}</div>
-                    <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
-                </div>
-                <div class="list-col-scroll">
+                <div class="list-card">
+                    <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
+                        <div class="list-card-title">${list.name}</div>
+                        <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
+                    </div>
             `;
             
             // Group items by section
@@ -1297,11 +1295,13 @@ let rewards = window.rewards || [];
                 itemsBySection[sectionName].push(item);
             });
             
+            // If no sections exist, create default "Items" section
             if (sections.length === 0) {
                 sections.push('Items');
                 itemsBySection['Items'] = [];
             }
             
+            // Render each section
             sections.forEach(sectionName => {
                 const sectionItems = itemsBySection[sectionName] || [];
                 const sectionId = sectionName.replace(/\s+/g, '-').toLowerCase();
@@ -1322,13 +1322,17 @@ let rewards = window.rewards || [];
                 `;
                 
                 sectionItems.forEach((item, index) => {
+                    // Skip empty items (section placeholders)
                     if (!item.text) return;
+                    
+                    // Skip completed items if filter is off
                     if (item.completed && !window.showCompletedListItems) return;
                     
                     const checkedClass = item.completed ? 'checked' : '';
                     const textClass = item.completed ? 'completed' : '';
                     const itemBg = hexToRgba(memberColor, 0.4);
                     
+                    // Get assigned member for this item
                     const assignedMember = item.assignedTo ? familyMembers.find(m => m.name === item.assignedTo) : null;
                     const assignedInitial = assignedMember ? assignedMember.name.charAt(0).toUpperCase() : '';
                     const assignedColor = assignedMember ? assignedMember.color : '#ccc';
@@ -1367,17 +1371,17 @@ let rewards = window.rewards || [];
                         Add section
                     </div>
                 </div>
-            </div>`; // close list-col-scroll + lists-col
-        });
-
-        if (count === 0) {
-            html = `<div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:#aaa;font-family:'Jost',sans-serif;">
-                <div style="font-size:48px;margin-bottom:16px;">📋</div>
-                <div style="font-size:20px;font-weight:600;margin-bottom:8px;color:#888;">No lists yet</div>
-                <div style="font-size:15px;color:#bbb;">Tap + to create your first list</div>
             </div>`;
-        }
-
+        });
+        
+        // Add "New List" button as the last column
+        html += `
+            <div class="chore-column lists-add-column" style="background:rgba(0,0,0,0.03); border:2px dashed rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; min-height:120px; cursor:pointer;" onclick="openAddListPanel()">
+                <div style="text-align:center; color:rgba(0,0,0,0.35); pointer-events:none;">
+                    <div style="font-size:32px; line-height:1; margin-bottom:8px;">+</div>
+                    <div style="font-size:13px; font-weight:500;">New List</div>
+                </div>
+            </div>`;
         container.innerHTML = html;
     }
     
@@ -3142,7 +3146,73 @@ let rewards = window.rewards || [];
         }
     }
 
-    function getAllEvents() {
+    // ── Countdown Bar ─────────────────────────────────────────────────────
+    function renderCountdownBar() {
+        var bar = document.getElementById('countdownBar');
+        if (!bar) return;
+
+        // Only show on the calendar section
+        if (currentSection !== 'calendar') {
+            bar.style.display = 'none';
+            return;
+        }
+
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Gather all countdown events from local + google events
+        var allEvts = getAllEvents ? getAllEvents() : (window.events || []);
+        var countdownEvts = allEvts.filter(function(e) { return e.countdown; });
+
+        if (countdownEvts.length === 0) {
+            bar.style.display = 'none';
+            return;
+        }
+
+        // For each, compute next occurrence (handle yearly repeats)
+        var items = [];
+        countdownEvts.forEach(function(ev) {
+            var evDate = new Date(ev.date + 'T00:00:00');
+            // If event is in the past and repeats yearly, advance to next year's occurrence
+            if (ev.repeat && ev.repeat.unit === 'year' || ev.repeatFrequency === 'yearly') {
+                while (evDate < today) {
+                    evDate.setFullYear(evDate.getFullYear() + 1);
+                }
+            }
+            var diff = Math.round((evDate - today) / (1000 * 60 * 60 * 24));
+            if (diff >= 0) {
+                items.push({ ev: ev, diff: diff, evDate: evDate });
+            }
+        });
+
+        // Sort by soonest
+        items.sort(function(a, b) { return a.diff - b.diff; });
+
+        if (items.length === 0) {
+            bar.style.display = 'none';
+            return;
+        }
+
+        var html = '';
+        items.forEach(function(item) {
+            var label = item.ev.title || 'Event';
+            var daysClass = item.diff === 0 ? 'today' : item.diff <= 7 ? 'soon' : '';
+            var daysText = item.diff === 0 ? 'Today!' : item.diff === 1 ? '1 day' : item.diff + ' days';
+            // Pick an emoji from the title or use a default
+            var emoji = (label.match(/[\u{1F300}-\u{1FFFF}]|[\u2600-\u27FF]/u) || ['🗓️'])[0];
+            html += '<div class="countdown-item">' +
+                '<span>' + emoji + ' ' + label + '</span>' +
+                '<span class="countdown-item-days ' + daysClass + '">' + daysText + '</span>' +
+                '</div>';
+        });
+
+        bar.innerHTML = html;
+        bar.style.display = 'flex';
+    }
+
+    function renderCalendarAndCountdown() {
+        renderCountdownBar();
+    }
         // Always read from window.events (kept in sync) so Supabase/tab reloads are reflected
         const localEvents = window.events || events;
         
@@ -3569,9 +3639,8 @@ let rewards = window.rewards || [];
             };
             grid.appendChild(barEl);
         });
+        renderCountdownBar();
     }
-
-    function navigateMonth(direction) {
         currentDate.setMonth(currentDate.getMonth() + direction);
         renderCalendar();
     }
@@ -4109,6 +4178,7 @@ let rewards = window.rewards || [];
                 }, 220);
             }
         }, {passive:true});
+        renderCountdownBar();
     }
     function renderDayView() {
         const container = document.getElementById('dayView');
@@ -4178,6 +4248,7 @@ let rewards = window.rewards || [];
         html += '</div>'; // Close day-view-container
         container.innerHTML = html;
         applyEventImages(container);
+        renderCountdownBar();
     }
     
     function renderMiniCalendar() {
@@ -4725,6 +4796,7 @@ let rewards = window.rewards || [];
                 sgDragging = false;
             });
         } // end swipeInit guard
+        renderCountdownBar();
     }
 
     function switchSection(section) {
@@ -4794,6 +4866,7 @@ let rewards = window.rewards || [];
             `;
             renderFamilyPills();
             renderCalendarFilterList();
+            renderCountdownBar();
             
             // On mobile, default to schedule view, on desktop restore last used view
             if (window.innerWidth <= 768) {
@@ -5751,8 +5824,7 @@ let rewards = window.rewards || [];
                             <span>${totalStarsEarned}</span>
                         </div>
                     </div>
-                </div>
-                <div class="rewards-scroll-body">`;
+                </div>`;
             
             // Render reward cards
             memberRewards.forEach(reward => {
@@ -5785,7 +5857,7 @@ let rewards = window.rewards || [];
                 </div>`;
             });
             
-            html += `</div></div>`; // close rewards-scroll-body + rewards-person-column
+            html += `</div>`;
         });
         
         container.innerHTML = html;
@@ -8541,6 +8613,7 @@ if (allChoresComplete || allRoutinesComplete) {
             endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
             notes: document.getElementById('eventNotes').value,
             isAllDay: isAllDay,
+            countdown: document.getElementById('eventCountdownToggle').checked,
             member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || ''),
             members: selectedEventProfiles.length > 0 ? [...selectedEventProfiles] : (selectedEventProfile ? [selectedEventProfile] : [])
         };
@@ -8584,6 +8657,7 @@ if (allChoresComplete || allRoutinesComplete) {
         document.getElementById('eventAllDayToggle').checked = true;
         document.getElementById('eventRepeatToggle').checked = false;
         document.getElementById('eventRepeatUntilToggle').checked = false;
+        document.getElementById('eventCountdownToggle').checked = false;
         document.getElementById('repeatOptionsSection').style.display = 'none';
         document.getElementById('repeatUntilSection').style.display = 'none';
         selectedEventProfile = ''; selectedEventProfiles = [];
@@ -8808,7 +8882,7 @@ if (allChoresComplete || allRoutinesComplete) {
         if (currentSection === 'rewards') {
             openRewardModal();
         } else if (currentSection === 'lists') {
-            openAddListPanel();
+            openAddListItemPanel();
         } else if (currentSection === 'recipes') {
             openAddRecipePanel();
         } else {
@@ -10368,6 +10442,7 @@ document.getElementById('eventEndDate').value = evEndDate;
 document.getElementById('eventNotes').value = evNotes;
 document.getElementById('eventAllDayToggle').checked = evIsAllDay;
 if (!evIsAllDay) { document.getElementById('eventTime').value = evTime; document.getElementById('eventEndTime').value = evEndTime; }
+document.getElementById('eventCountdownToggle').checked = !!ev.countdown;
 if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
 if (typeof selectedEventProfiles !== 'undefined') {
 selectedEventProfile = ev.member || '';
@@ -10403,6 +10478,7 @@ time: isAllDay ? '' : document.getElementById('eventTime').value,
 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
 notes: document.getElementById('eventNotes').value,
 isAllDay: isAllDay,
+countdown: document.getElementById('eventCountdownToggle').checked,
 member: member,
 members: membersArr
 };

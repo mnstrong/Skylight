@@ -143,6 +143,7 @@
         </div>
 
         <div class="main-content">
+            <div id="countdownBar" class="countdown-bar" style="display:none;"></div>
             <div id="contentArea"></div>
         </div>
 
@@ -498,6 +499,19 @@
                     </div>
                 </div>
             </div>
+            <div class="edit-form-group">
+                <div class="edit-toggle-row">
+                    <div class="edit-toggle-label">
+                        <span class="edit-toggle-icon">⏳</span>
+                        <span>Countdown</span>
+                    </div>
+                    <label class="task-toggle">
+                        <input type="checkbox" id="eventCountdownToggle">
+                        <span class="task-toggle-slider countdown-slider"></span>
+                    </label>
+                </div>
+                <div class="countdown-toggle-hint">Show a countdown to this event on the calendar</div>
+            </div>
             <button class="edit-save-btn" id="eventSaveBtn" onclick="saveEvent()">Add Event</button>
         </div>
     </div>
@@ -699,39 +713,13 @@
 
     <!-- Meal Selector Side Panel -->
     <div class="edit-panel-overlay" id="mealSelectorOverlay" onclick="closeMealSelector()"></div>
-    <div class="edit-side-panel meal-selector-panel" id="mealSelectorPanel">
-        <div class="edit-panel-header meal-selector-header">
+    <div class="edit-side-panel" id="mealSelectorPanel">
+        <div class="edit-panel-header">
             <button class="edit-panel-back" onclick="closeMealSelector()">←</button>
-            <div class="edit-panel-title" id="mealSelectorTitle">Plan Meal</div>
+            <div class="edit-panel-title" id="mealSelectorTitle">Select Meal</div>
         </div>
-        <!-- From Recipes / New Entry tab bar -->
-        <div class="meal-selector-tabs">
-            <button class="meal-selector-tab active" id="mealTabRecipes" onclick="switchMealTab('recipes')">From Recipes</button>
-            <button class="meal-selector-tab" id="mealTabNew" onclick="switchMealTab('new')">New Entry</button>
-        </div>
-        <!-- Meal type category pills -->
-        <div class="meal-selector-category-row" id="mealSelectorCategoryRow"></div>
-        <!-- Recipe list -->
-        <div id="mealSelectorList" class="meal-selector-list"></div>
-        <!-- New Entry form (hidden by default) -->
-        <div id="mealNewEntryForm" class="meal-new-entry-form" style="display:none;">
-            <input type="text" class="edit-form-input" id="mealNewEntryName" placeholder="Meal name…" style="margin:16px 20px 0;width:calc(100% - 40px);box-sizing:border-box;">
-            <button class="edit-save-btn" style="margin:16px 20px;" onclick="saveNewMealEntry()">Add Meal</button>
-        </div>
+        <div id="mealSelectorList" class="edit-panel-body" style="padding: 0;"></div>
     </div>
-
-    <!-- Grocery Confirm Popup -->
-    <div class="grocery-confirm-overlay" id="groceryConfirmOverlay" onclick="closeGroceryConfirm()"></div>
-    <div class="grocery-confirm-popup" id="groceryConfirmPopup">
-        <div class="grocery-confirm-icon">🛒</div>
-        <div class="grocery-confirm-title" id="groceryConfirmTitle">Add to Grocery List?</div>
-        <div class="grocery-confirm-body" id="groceryConfirmBody">Add ingredients to your Grocery List.</div>
-        <button class="grocery-confirm-btn-primary" id="groceryConfirmBtn" onclick="confirmAddToGrocery()">Grocery List</button>
-        <button class="grocery-confirm-btn-secondary" onclick="closeGroceryConfirm()">No Thanks</button>
-    </div>
-
-    <!-- Grocery Added Toast -->
-    <div class="grocery-added-toast" id="groceryAddedToast"></div>
     
     <!-- Add Recipe Side Panel -->
     <div class="edit-panel-overlay" id="addRecipePanelOverlay" onclick="closeAddRecipePanel()"></div>
