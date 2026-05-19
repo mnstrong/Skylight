@@ -3213,6 +3213,8 @@ let rewards = window.rewards || [];
     function renderCalendarAndCountdown() {
         renderCountdownBar();
     }
+
+    function getAllEvents() {
         // Always read from window.events (kept in sync) so Supabase/tab reloads are reflected
         const localEvents = window.events || events;
         
@@ -3641,6 +3643,8 @@ let rewards = window.rewards || [];
         });
         renderCountdownBar();
     }
+
+    function navigateMonth(direction) {
         currentDate.setMonth(currentDate.getMonth() + direction);
         renderCalendar();
     }
