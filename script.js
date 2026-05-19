@@ -4397,17 +4397,18 @@ let rewards = window.rewards || [];
                     '<span class="sg-meal-name">' + title + '</span>' +
                     '</div>';
             })() : '';
-            daysHtml += '<div class="sg-day-header">' +
+            daysHtml += '<div class="sg-day-sticky">' +
+                '<div class="sg-day-header">' +
                 '<div class="sg-day-title ' + (isToday ? 'today' : '') + '">' +
                     '<span class="sg-day-name">' + dayName + '</span>' +
                     '<span class="sg-day-num">' + dayNum + '</span>' +
                 '</div>' +
                 dinnerPillHtml +
                 '<button class="schedule-add-btn" onclick="openEventModalForDate(\'' + dateStr + '\')">+ Add</button>' +
+                '</div>' +
+                // All-day strip inside the sticky wrapper so it stays with the header
+                '<div class="sg-allday-strip"></div>' +
                 '</div>';
-
-            // All-day strip OUTSIDE the time grid so it never offsets event top positions
-            daysHtml += '<div class="sg-allday-strip"></div>';
 
             // Time grid — events use pure minutesToPx with no strip offset
             daysHtml += `<div class="sg-time-grid" style="height:${GRID_HEIGHT}px;" onclick="openEventModalForDate('${dateStr}')">`;
