@@ -253,8 +253,7 @@ let rewards = window.rewards || [];
                     // Show existing meals
                     meals.forEach(meal => {
                         const recipe = recipes.find(r => r.id === meal.recipeId);
-                        const displayName = recipe ? recipe.name : (meal.customName || '');
-                        if (displayName) {
+                        if (recipe) {
                             html += `<div class="meal-box" 
                                           style="background: ${category.color};" 
                                           onmousedown="startMealHold(event, '${meal.id}', '${dateStr}', '${category.name}')"
@@ -262,7 +261,7 @@ let rewards = window.rewards || [];
                                           onmouseleave="cancelMealHold()"
                                           ontouchstart="startMealHold(event, '${meal.id}', '${dateStr}', '${category.name}')"
                                           ontouchend="endMealHold(event, '${meal.id}')"
-                                          ontouchcancel="cancelMealHold()">${displayName}</div>`;
+                                          ontouchcancel="cancelMealHold()">${recipe.name}</div>`;
                         }
                     });
                 }
@@ -410,197 +409,131 @@ let rewards = window.rewards || [];
     let currentMealType = '';
     let currentMealDate = '';
     
-    // ── Meal Selector state ────────────────────────────────────────────────
-    let mealSelectorTab = 'recipes';       // 'recipes' | 'new'
-    let mealSelectorCategory = null;       // active category filter (null = current mealType)
-    let pendingGroceryRecipeId = null;     // recipe waiting for grocery confirmation
-    let pendingGroceryMealTitle = '';
-
     function openMealSelector(date, mealType) {
         currentMealDate = date;
         currentMealType = mealType;
-        mealSelectorCategory = mealType;   // default to the clicked row's category
-        mealSelectorTab = 'recipes';
-
+        
         const panel = document.getElementById('mealSelectorPanel');
         const overlay = document.getElementById('mealSelectorOverlay');
-        document.getElementById('mealSelectorTitle').textContent = 'Plan Meal';
-
-        // Reset tabs
-        document.getElementById('mealTabRecipes').classList.add('active');
-        document.getElementById('mealTabNew').classList.remove('active');
-        document.getElementById('mealNewEntryForm').style.display = 'none';
-        document.getElementById('mealSelectorList').style.display = '';
-
-        renderMealSelectorCategories();
+        const title = document.getElementById('mealSelectorTitle');
+        
+        title.textContent = `Select ${mealType}`;
+        
         renderMealSelectorList();
-
+        
         overlay.classList.add('active');
         panel.classList.add('active');
     }
-
-    function switchMealTab(tab) {
-        mealSelectorTab = tab;
-        document.getElementById('mealTabRecipes').classList.toggle('active', tab === 'recipes');
-        document.getElementById('mealTabNew').classList.toggle('active', tab === 'new');
-        document.getElementById('mealSelectorList').style.display = tab === 'recipes' ? '' : 'none';
-        document.getElementById('mealSelectorCategoryRow').style.display = tab === 'recipes' ? '' : 'none';
-        document.getElementById('mealNewEntryForm').style.display = tab === 'new' ? '' : 'none';
-        if (tab === 'new') {
-            setTimeout(function() {
-                var inp = document.getElementById('mealNewEntryName');
-                if (inp) inp.focus();
-            }, 100);
-        }
-    }
-
-    function renderMealSelectorCategories() {
-        const row = document.getElementById('mealSelectorCategoryRow');
-        const visibleCats = mealCategories.filter(c => c.visible !== false);
-        let html = '';
-        visibleCats.forEach(cat => {
-            const isActive = cat.name === mealSelectorCategory;
-            html += '<button class="meal-cat-pill' + (isActive ? ' active' : '') + '" ' +
-                'style="' + (isActive ? 'background:' + cat.color + ';color:#fff;border-color:' + cat.color + ';' : '') + '" ' +
-                'onclick="selectMealCategory(\'' + cat.name.replace(/'/g, "\\'") + '\')">' +
-                cat.name + '</button>';
-        });
-        row.innerHTML = html;
-    }
-
-    function selectMealCategory(catName) {
-        mealSelectorCategory = catName;
-        renderMealSelectorCategories();
-        renderMealSelectorList();
-    }
-
+    
     function toggleMealBoxSelection(event, date, mealType) {
-        // Clear all selected boxes first
-        document.querySelectorAll('.meal-box.selected').forEach(function(b) { b.classList.remove('selected'); });
-        // Find the actual meal-box (may have clicked a child)
-        let box = event.target;
-        while (box && !box.classList.contains('meal-box')) box = box.parentElement;
-        if (box) box.classList.add('selected');
+        const box = event.target;
+        box.classList.toggle('selected');
     }
-
+    
     function closeMealSelector() {
         document.getElementById('mealSelectorPanel').classList.remove('active');
         document.getElementById('mealSelectorOverlay').classList.remove('active');
-        // Deselect all boxes
-        document.querySelectorAll('.meal-box.selected').forEach(function(b) { b.classList.remove('selected'); });
     }
-
+    
     function renderMealSelectorList() {
         const list = document.getElementById('mealSelectorList');
-        const filterCat = mealSelectorCategory || currentMealType;
-        // Filter recipes: match by mealType if present, else show all
-        const categoryRecipes = recipes.filter(function(r) {
-            if (!r.mealType) return true;
-            return r.mealType === filterCat;
+        // Show all recipes regardless of mealType (mealType is local-only, not in DB)
+        const categoryRecipes = recipes.slice();
+        
+        let html = `<div style="padding: 0 20px;">`;
+        
+        // Repeat controls
+        html += `
+            <div class="edit-form-group" style="margin-top: 20px;">
+                <div class="edit-toggle-row">
+                    <span>Repeats</span>
+                    <input type="checkbox" id="mealRepeatEnabled" onchange="toggleMealRepeatOptions()">
+                </div>
+            </div>
+            
+            <div id="mealRepeatOptions" style="display: none;">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Repeat Every</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" class="edit-form-input" id="mealRepeatEvery" value="1" min="1" style="flex: 1;">
+                        <select class="edit-form-input" id="mealRepeatUnit" style="flex: 1;">
+                            <option value="day">Day(s)</option>
+                            <option value="week" selected>Week(s)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Repeats Until (Optional)</label>
+                    <input type="date" class="edit-form-input" id="mealRepeatUntil">
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #e0e0e0; margin: 20px 0;"></div>
+        `;
+        
+        html += `<div class="add-recipe-btn" onclick="openAddRecipePanel()">+ Add recipe</div>`;
+        
+        categoryRecipes.forEach(recipe => {
+            html += `
+                <div class="recipe-list-item" onclick="selectRecipe('${recipe.id}')">
+                    <span class="recipe-list-item-name">${recipe.name}</span>
+                    <span class="recipe-list-item-menu">⋯</span>
+                </div>
+            `;
         });
-
-        let html = '';
-
-        // Add recipe shortcut at top
-        html += '<div class="meal-selector-add-btn" onclick="openAddRecipePanel()">+ Add recipe</div>';
-
+        
         if (categoryRecipes.length === 0) {
-            html += '<div style="padding:40px 20px;text-align:center;color:#aaa;font-size:15px;">No recipes for ' + filterCat + '.<br>Try another category or add one!</div>';
-        } else {
-            categoryRecipes.forEach(function(recipe) {
-                html += '<div class="meal-selector-recipe-row" onclick="selectRecipe(\'' + recipe.id + '\')">' +
-                    '<span class="meal-selector-recipe-name">' + (recipe.name || '') + '</span>' +
-                    '<span class="meal-selector-recipe-dots">···</span>' +
-                    '</div>';
-            });
+            html += '<div style="padding: 40px; text-align: center; color: #999;">No recipes yet. Add one!</div>';
         }
-
+        
+        html += `</div>`;
+        
         list.innerHTML = html;
     }
-
-    function saveNewMealEntry() {
-        const name = (document.getElementById('mealNewEntryName').value || '').trim();
-        if (!name) return;
-        // Create a minimal recipe-less meal entry
-        const newMeal = {
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            date: currentMealDate,
-            mealType: currentMealType,
-            customName: name,
-            recipeId: null
-        };
-        mealPlan.push(newMeal);
-        if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
-            SupabaseSync.syncMealPlanEntry(newMeal, 'add');
-        }
-        document.getElementById('mealNewEntryName').value = '';
-        closeMealSelector();
-        renderMealPlanGrid();
+    
+    function toggleMealRepeatOptions() {
+        const enabled = document.getElementById('mealRepeatEnabled').checked;
+        document.getElementById('mealRepeatOptions').style.display = enabled ? 'block' : 'none';
     }
-
+    
     function selectRecipe(recipeId) {
-        const recipe = recipes.find(function(r) { return r.id == recipeId; });
-        if (!recipe) return;
-
-        // Create the meal first
+        const mealRepeatEnabledEl = document.getElementById('mealRepeatEnabled');
+        const repeatEnabled = mealRepeatEnabledEl ? mealRepeatEnabledEl.checked : false;
+        const mealRepeatEveryEl = document.getElementById('mealRepeatEvery');
+        const repeatEvery = repeatEnabled ? parseInt((mealRepeatEveryEl ? mealRepeatEveryEl.value : null) || 1) : null;
+        const mealRepeatUnitEl = document.getElementById('mealRepeatUnit');
+        const repeatUnit = repeatEnabled ? ((mealRepeatUnitEl ? mealRepeatUnitEl.value : null) || 'week') : null;
+        const mealRepeatUntilEl = document.getElementById('mealRepeatUntil');
+        const repeatUntil = repeatEnabled ? ((mealRepeatUntilEl ? mealRepeatUntilEl.value : null) || null) : null;
+        
+        // Create the meal
         const newMeal = {
             id: Date.now() + Math.floor(Math.random() * 1000),
             date: currentMealDate,
             mealType: currentMealType,
             recipeId: recipeId
         };
+        
+        // Add repeat data if enabled
+        if (repeatEnabled && repeatEvery && repeatUnit) {
+            newMeal.repeat = {
+                every: repeatEvery,
+                unit: repeatUnit,
+                until: repeatUntil
+            };
+        }
+        
+        // Always add a new meal (allow multiple meals per day/type)
         mealPlan.push(newMeal);
+        
+        // [synced to Supabase]
+        // Sync add to Supabase
         if (typeof SupabaseSync !== 'undefined' && SupabaseSync.syncMealPlanEntry) {
             SupabaseSync.syncMealPlanEntry(newMeal, 'add');
         }
         closeMealSelector();
         renderMealPlanGrid();
-
-        // Show grocery confirm popup if recipe has ingredients
-        if (recipe.ingredients && recipe.ingredients.trim()) {
-            showGroceryConfirm(recipeId, recipe.name, currentMealDate, currentMealType);
-        }
-    }
-
-    // ── Grocery Confirm Popup ─────────────────────────────────────────────
-    function showGroceryConfirm(recipeId, recipeName, date, mealType) {
-        pendingGroceryRecipeId = recipeId;
-        pendingGroceryMealTitle = recipeName;
-
-        const dateLabel = (function() {
-            try {
-                const d = new Date(date + 'T12:00:00');
-                const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-                const monthDay = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-                return recipeName + ' planned on ' + dayName + ', ' + monthDay;
-            } catch(e) { return recipeName; }
-        })();
-
-        document.getElementById('groceryConfirmTitle').textContent = 'Add to Grocery List?';
-        document.getElementById('groceryConfirmBody').textContent = 'Add ' + recipeName + ' ingredients to your Grocery List.';
-
-        document.getElementById('groceryConfirmOverlay').classList.add('active');
-        document.getElementById('groceryConfirmPopup').classList.add('active');
-    }
-
-    function closeGroceryConfirm() {
-        document.getElementById('groceryConfirmOverlay').classList.remove('active');
-        document.getElementById('groceryConfirmPopup').classList.remove('active');
-        pendingGroceryRecipeId = null;
-    }
-
-    function confirmAddToGrocery() {
-        if (!pendingGroceryRecipeId) return;
-        addRecipeToGroceryList(pendingGroceryRecipeId);
-        closeGroceryConfirm();
-        showGroceryAddedToast(pendingGroceryMealTitle);
-    }
-
-    function showGroceryAddedToast(mealName) {
-        const toast = document.getElementById('groceryAddedToast');
-        toast.textContent = mealName + ' planned and will be added to your Grocery List soon.';
-        toast.classList.add('active');
-        setTimeout(function() { toast.classList.remove('active'); }, 4000);
     }
     
     function showMealDetail(mealId) {
@@ -1257,7 +1190,7 @@ let rewards = window.rewards || [];
         });
         
         // [synced to Supabase]
-        // Toast is shown by confirmAddToGrocery
+        alert('Ingredients added to Grocery List!');
     }
     
     function initializeSampleRecipes() {
@@ -1326,6 +1259,12 @@ let rewards = window.rewards || [];
         if (selectedListsPerson !== 'all') {
             filteredLists = lists.filter(list => String(list.assignedTo) === String(selectedListsPerson));
         }
+
+        // Dynamic column width: 1→100%, 2→50%, 3→33.33%, 4+→25% (min)
+        const count = filteredLists.length;
+        const colWidthPct = count === 0 ? 100 : Math.max(25, Math.floor(100 / count));
+        // Use flex-basis so columns fill evenly up to 4, then scroll horizontally at 25%
+        const colStyle = `flex: 0 0 calc(${colWidthPct}% - 20px);`;
         
         let html = '';
         
@@ -1338,7 +1277,7 @@ let rewards = window.rewards || [];
             // Convert hex color to rgba with 20% opacity for column background
             const columnBg = hexToRgba(memberColor, 0.2);
             
-            html += `<div class="chore-column" style="background: ${columnBg}">`;
+            html += `<div class="chore-column lists-col" style="background: ${columnBg}; ${colStyle}">`;
             
             // Show list card with title and assigned person avatar
             html += `
@@ -1440,15 +1379,16 @@ let rewards = window.rewards || [];
                 </div>
             </div>`;
         });
-        
-        // Add "New List" button as the last column
-        html += `
-            <div class="chore-column lists-add-column" style="background:rgba(0,0,0,0.03); border:2px dashed rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; min-height:120px; cursor:pointer;" onclick="openAddListPanel()">
-                <div style="text-align:center; color:rgba(0,0,0,0.35); pointer-events:none;">
-                    <div style="font-size:32px; line-height:1; margin-bottom:8px;">+</div>
-                    <div style="font-size:13px; font-weight:500;">New List</div>
-                </div>
+
+        // Empty state when no lists exist
+        if (count === 0) {
+            html = `<div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:#aaa;font-family:'Jost',sans-serif;">
+                <div style="font-size:48px;margin-bottom:16px;">📋</div>
+                <div style="font-size:20px;font-weight:600;margin-bottom:8px;color:#888;">No lists yet</div>
+                <div style="font-size:15px;color:#bbb;">Tap + to create your first list</div>
             </div>`;
+        }
+
         container.innerHTML = html;
     }
     
@@ -8878,7 +8818,7 @@ if (allChoresComplete || allRoutinesComplete) {
         if (currentSection === 'rewards') {
             openRewardModal();
         } else if (currentSection === 'lists') {
-            openAddListItemPanel();
+            openAddListPanel();
         } else if (currentSection === 'recipes') {
             openAddRecipePanel();
         } else {
