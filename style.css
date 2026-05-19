@@ -1522,6 +1522,9 @@
             display: flex;
             padding: 20px 0;
             overflow-x: auto;
+            overflow-y: hidden;
+            height: calc(100vh - 100px);
+            align-items: stretch;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
         }
@@ -1545,13 +1548,18 @@
             max-width: 350px;
             flex-shrink: 0;
             border-radius: 15px;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         .rewards-person-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 20px 20px 16px;
+            flex-shrink: 0;
+            background: inherit;
         }
         
         .rewards-person-avatar {
@@ -2685,6 +2693,9 @@
             display: flex;
             padding: 20px 0;
             overflow-x: auto;
+            overflow-y: hidden;
+            height: calc(100vh - 100px);
+            align-items: stretch;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
         }
@@ -2706,18 +2717,32 @@
         .rewards-person-column {
             min-width: 450px;
             max-width: 450px;
-            min-height: 500px;
             flex-shrink: 0;
             border-radius: 15px;
-            padding: 30px;
+            padding: 0;
             margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         .rewards-person-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 30px 30px 20px;
+            flex-shrink: 0;
+            background: inherit;
         }
+
+        .rewards-scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 30px 30px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.15) transparent;
+        }
+        .rewards-scroll-body::-webkit-scrollbar { width: 4px; }
+        .rewards-scroll-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
         
         
         .rewards-person-info {
@@ -3985,9 +4010,6 @@
             display: flex;
             padding: 20px 0;
             overflow-x: auto;
-            overflow-y: hidden;
-            height: calc(100vh - 100px);
-            align-items: stretch;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
         }
@@ -4020,46 +4042,19 @@
         
         .chore-person-card {
             border-radius: 15px;
-            padding: 0;
-            height: calc(100vh - 160px);
-            min-height: 400px;
+            padding: 30px;
+            min-height: 500px;
             min-width: 450px;
             max-width: 450px;
             flex-shrink: 0;
             margin-right: 20px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
         }
-
-        /* Sticky header inside the card — avatar, name, progress bar */
+        
         .chore-person-header {
             display: flex;
             align-items: center;
-            padding: 30px 30px 15px;
-            flex-shrink: 0;
-            background: inherit;
+            margin-bottom: 15px;
         }
-
-        /* Routine period indicators row — also stays pinned */
-        .routine-indicators {
-            display: flex;
-            justify-content: center;
-            padding: 0 30px 12px;
-            flex-shrink: 0;
-            background: inherit;
-        }
-
-        /* Scrollable tasks body */
-        .chore-tasks-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 30px 30px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,0,0,0.15) transparent;
-        }
-        .chore-tasks-scroll::-webkit-scrollbar { width: 4px; }
-        .chore-tasks-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
         
         .chore-person-avatar {
             width: 80px;
@@ -4341,6 +4336,12 @@
         }
         
         /* Routine Indicators */
+        .routine-indicators {
+            display: flex;
+            margin: 0 0 20px 0;
+            justify-content: center;
+        }
+        
         .routine-indicator {
             display: flex;
             flex-direction: column;
@@ -4788,8 +4789,13 @@
         /* Lists Styles */
         .chores-columns {
             display: flex;
-            padding: 20px 0;
+            padding: 20px;
+            gap: 20px;
             overflow-x: auto;
+            overflow-y: hidden;
+            height: calc(100vh - 100px);
+            align-items: stretch;
+            flex-wrap: nowrap;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
         }
@@ -4820,6 +4826,45 @@
             max-width: 450px;
             flex-shrink: 0;
             margin-right: 20px;
+        }
+
+        /* Lists columns: fixed height flex column, no padding (header/scroll handle it) */
+        .chore-column.lists-col {
+            min-width: 0;
+            max-width: none;
+            min-height: 0;
+            padding: 0;
+            margin-right: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Sticky list title header */
+        .list-col-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px 28px 16px;
+            flex-shrink: 0;
+            background: inherit;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* Scrollable items body */
+        .list-col-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 28px 28px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.15) transparent;
+        }
+        .list-col-scroll::-webkit-scrollbar { width: 4px; }
+        .list-col-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+
+        #listsColumnsContainer {
+            /* inherits chores-columns styles, padding/gap set above */
         }
         
         .column-header {
