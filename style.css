@@ -4637,220 +4637,18 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        /* ── Meal box selected outline ─────────────────────────────────────── */
-        .meal-box.selected {
-            outline: 3px solid #5B8DEF;
-            outline-offset: -2px;
-        }
-        .meal-box.empty-box.selected {
-            outline: 3px solid #5B8DEF;
-            outline-offset: -2px;
-            border-color: transparent !important;
-        }
-
-        /* ── Meal Selector Panel redesign ──────────────────────────────────── */
-        .meal-selector-panel {
-            display: flex;
-            flex-direction: column;
-        }
-        .meal-selector-header {
-            border-bottom: 1px solid #f0f0f0;
-            flex-shrink: 0;
-        }
-        .meal-selector-tabs {
-            display: flex;
-            padding: 12px 16px 0;
-            gap: 0;
-            flex-shrink: 0;
-            border-bottom: 1px solid #eee;
-        }
-        .meal-selector-tab {
-            flex: 1;
-            padding: 10px 12px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'Jost', sans-serif;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
+        .recipe-list-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
             cursor: pointer;
-            color: #999;
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .meal-selector-tab.active {
-            color: #1a1a1a;
-            border-bottom-color: #5B8DEF;
-        }
-        .meal-selector-category-row {
-            display: flex;
-            gap: 8px;
-            padding: 12px 16px;
-            flex-shrink: 0;
-            flex-wrap: wrap;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .meal-cat-pill {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: 'Jost', sans-serif;
-            border: 2px solid #ddd;
-            background: white;
-            color: #555;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s, border-color 0.15s;
-        }
-        .meal-cat-pill:hover { border-color: #aaa; }
-        .meal-selector-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-        .meal-selector-add-btn {
-            padding: 16px 20px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #5B8DEF;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            font-family: 'Jost', sans-serif;
-        }
-        .meal-selector-add-btn:hover { background: #f8f8f8; }
-        .meal-selector-recipe-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f5f5f5;
-            cursor: pointer;
-            transition: background 0.15s;
+            transition: background 0.2s;
         }
-        .meal-selector-recipe-row:hover { background: #f8f9ff; }
-        .meal-selector-recipe-name {
-            font-size: 17px;
-            font-weight: 500;
-            color: #1a1a1a;
-            font-family: 'Jost', sans-serif;
-        }
-        .meal-selector-recipe-dots {
-            font-size: 18px;
-            color: #ccc;
-            letter-spacing: 1px;
-        }
-        .meal-new-entry-form {
-            padding: 4px 0;
-        }
-
-        /* ── Grocery Confirm Popup ─────────────────────────────────────────── */
-        .grocery-confirm-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 1100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-        .grocery-confirm-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .grocery-confirm-popup {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -40%) scale(0.95);
-            z-index: 1101;
-            background: white;
-            border-radius: 20px;
-            padding: 28px 28px 20px;
-            width: 320px;
-            max-width: calc(100vw - 40px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-            text-align: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.22s, transform 0.22s;
-        }
-        .grocery-confirm-popup.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: translate(-50%, -50%) scale(1);
-        }
-        .grocery-confirm-icon {
-            font-size: 38px;
-            margin-bottom: 10px;
-        }
-        .grocery-confirm-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 8px;
-            font-family: 'Jost', sans-serif;
-        }
-        .grocery-confirm-body {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 22px;
-            line-height: 1.5;
-            font-family: 'Jost', sans-serif;
-        }
-        .grocery-confirm-btn-primary {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            background: #5B8DEF;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            font-family: 'Jost', sans-serif;
-            border: none;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: background 0.15s;
-        }
-        .grocery-confirm-btn-primary:hover { background: #4a7de0; }
-        .grocery-confirm-btn-secondary {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            background: none;
-            color: #888;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'Jost', sans-serif;
-            border: none;
-            cursor: pointer;
-            transition: color 0.15s;
-        }
-        .grocery-confirm-btn-secondary:hover { color: #444; }
-
-        /* ── Grocery Added Toast ───────────────────────────────────────────── */
-        .grocery-added-toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            z-index: 1200;
-            background: #1a1a2e;
-            color: white;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-family: 'Jost', sans-serif;
-            font-weight: 500;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        .grocery-added-toast.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        
+        .recipe-list-item:hover {
+            background: #f8f8f8;
         }
         
         .add-recipe-btn {
@@ -4998,6 +4796,22 @@
             max-width: 450px;
             flex-shrink: 0;
             margin-right: 20px;
+        }
+
+        /* Lists columns: width is controlled by JS flex-basis, no fixed min/max */
+        .chore-column.lists-col {
+            min-width: 0;
+            max-width: none;
+            box-sizing: border-box;
+            margin-right: 0;
+            /* gap handled by the container */
+        }
+
+        #listsColumnsContainer {
+            gap: 20px;
+            padding: 20px;
+            /* allow horizontal scroll only when 4+ lists push past 25% */
+            flex-wrap: nowrap;
         }
         
         .column-header {
