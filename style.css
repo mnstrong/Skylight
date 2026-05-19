@@ -3412,6 +3412,15 @@
 
         .sg-day-col:last-child { border-right: none; }
 
+        /* Sticky wrapper that keeps day header + allday strip pinned at top while events scroll beneath */
+        .sg-day-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: white;
+            flex-shrink: 0;
+        }
+
         .sg-day-header {
             height: 56px;
             padding: 8px 10px 4px;
@@ -3420,9 +3429,6 @@
             justify-content: space-between;
             flex-shrink: 0;
             background: white;
-            position: sticky;
-            top: 0;
-            z-index: 3;
             border-bottom: 1px solid #f0f0f0;
         }
 
