@@ -3985,6 +3985,9 @@
             display: flex;
             padding: 20px 0;
             overflow-x: auto;
+            overflow-y: hidden;
+            height: calc(100vh - 100px);
+            align-items: stretch;
             scrollbar-width: thin;
             scrollbar-color: #CBD5E0 #F7FAFC;
         }
@@ -4017,19 +4020,46 @@
         
         .chore-person-card {
             border-radius: 15px;
-            padding: 30px;
-            min-height: 500px;
+            padding: 0;
+            height: calc(100vh - 160px);
+            min-height: 400px;
             min-width: 450px;
             max-width: 450px;
             flex-shrink: 0;
             margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        
+
+        /* Sticky header inside the card — avatar, name, progress bar */
         .chore-person-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            padding: 30px 30px 15px;
+            flex-shrink: 0;
+            background: inherit;
         }
+
+        /* Routine period indicators row — also stays pinned */
+        .routine-indicators {
+            display: flex;
+            justify-content: center;
+            padding: 0 30px 12px;
+            flex-shrink: 0;
+            background: inherit;
+        }
+
+        /* Scrollable tasks body */
+        .chore-tasks-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 30px 30px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.15) transparent;
+        }
+        .chore-tasks-scroll::-webkit-scrollbar { width: 4px; }
+        .chore-tasks-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
         
         .chore-person-avatar {
             width: 80px;
@@ -4311,12 +4341,6 @@
         }
         
         /* Routine Indicators */
-        .routine-indicators {
-            display: flex;
-            margin: 0 0 20px 0;
-            justify-content: center;
-        }
-        
         .routine-indicator {
             display: flex;
             flex-direction: column;
@@ -4796,22 +4820,6 @@
             max-width: 450px;
             flex-shrink: 0;
             margin-right: 20px;
-        }
-
-        /* Lists columns: width is controlled by JS flex-basis, no fixed min/max */
-        .chore-column.lists-col {
-            min-width: 0;
-            max-width: none;
-            box-sizing: border-box;
-            margin-right: 0;
-            /* gap handled by the container */
-        }
-
-        #listsColumnsContainer {
-            gap: 20px;
-            padding: 20px;
-            /* allow horizontal scroll only when 4+ lists push past 25% */
-            flex-wrap: nowrap;
         }
         
         .column-header {
