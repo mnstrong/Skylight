@@ -1259,12 +1259,6 @@ let rewards = window.rewards || [];
         if (selectedListsPerson !== 'all') {
             filteredLists = lists.filter(list => String(list.assignedTo) === String(selectedListsPerson));
         }
-
-        // Dynamic column width: 1→100%, 2→50%, 3→33.33%, 4+→25% (min)
-        const count = filteredLists.length;
-        const colWidthPct = count === 0 ? 100 : Math.max(25, Math.floor(100 / count));
-        // Use flex-basis so columns fill evenly up to 4, then scroll horizontally at 25%
-        const colStyle = `flex: 0 0 calc(${colWidthPct}% - 20px);`;
         
         let html = '';
         
@@ -1277,7 +1271,7 @@ let rewards = window.rewards || [];
             // Convert hex color to rgba with 20% opacity for column background
             const columnBg = hexToRgba(memberColor, 0.2);
             
-            html += `<div class="chore-column lists-col" style="background: ${columnBg}; ${colStyle}">`;
+            html += `<div class="chore-column" style="background: ${columnBg}">`;
             
             // Show list card with title and assigned person avatar
             html += `
@@ -1379,16 +1373,15 @@ let rewards = window.rewards || [];
                 </div>
             </div>`;
         });
-
-        // Empty state when no lists exist
-        if (count === 0) {
-            html = `<div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;color:#aaa;font-family:'Jost',sans-serif;">
-                <div style="font-size:48px;margin-bottom:16px;">📋</div>
-                <div style="font-size:20px;font-weight:600;margin-bottom:8px;color:#888;">No lists yet</div>
-                <div style="font-size:15px;color:#bbb;">Tap + to create your first list</div>
+        
+        // Add "New List" button as the last column
+        html += `
+            <div class="chore-column lists-add-column" style="background:rgba(0,0,0,0.03); border:2px dashed rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; min-height:120px; cursor:pointer;" onclick="openAddListPanel()">
+                <div style="text-align:center; color:rgba(0,0,0,0.35); pointer-events:none;">
+                    <div style="font-size:32px; line-height:1; margin-bottom:8px;">+</div>
+                    <div style="font-size:13px; font-weight:500;">New List</div>
+                </div>
             </div>`;
-        }
-
         container.innerHTML = html;
     }
     
@@ -5561,6 +5554,9 @@ let rewards = window.rewards || [];
                 html += '</div>';
             }
             
+            // ── Scrollable tasks body — header stays pinned above ──────────
+            html += '<div class="chore-tasks-scroll">';
+
             // Show routines for current period and manually visible periods
             ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(function(period) {
                 var isCurrentPeriod = period === currentPeriod;
@@ -5658,7 +5654,8 @@ let rewards = window.rewards || [];
                 }
             });
             
-            html += '</div>';
+            html += '</div>'; // close chore-tasks-scroll
+            html += '</div>'; // close chore-person-card
         });
 
         // Up for Grabs card
@@ -5678,6 +5675,7 @@ let rewards = window.rewards || [];
             html += '</div>';
             html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
             html += '</div>';
+            html += '<div class="chore-tasks-scroll">';
             var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
             visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
             if (visibleUfg.length > 0) {
@@ -5701,7 +5699,8 @@ let rewards = window.rewards || [];
             } else {
                 html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
             }
-            html += '</div>';
+            html += '</div>'; // close chore-tasks-scroll
+            html += '</div>'; // close chore-person-card
         }
 
         // Restore hidden / add Up for Grabs manage panel
@@ -8818,7 +8817,7 @@ if (allChoresComplete || allRoutinesComplete) {
         if (currentSection === 'rewards') {
             openRewardModal();
         } else if (currentSection === 'lists') {
-            openAddListPanel();
+            openAddListItemPanel();
         } else if (currentSection === 'recipes') {
             openAddRecipePanel();
         } else {
