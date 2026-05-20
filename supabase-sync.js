@@ -675,7 +675,6 @@ async function syncCalendarEvent(event, operation) {
             start_time:       startTime,
             end_time:         endTime,
             all_day:          event.isAllDay ? true : false,
-            family_member_id: familyMemberId,
             google_event_id:  event.googleId || null,
             countdown:        event.countdown ? true : false
         };
