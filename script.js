@@ -3151,7 +3151,6 @@ let rewards = window.rewards || [];
         var bar = document.getElementById('countdownBar');
         if (!bar) return;
 
-        // Only show on the calendar section
         if (currentSection !== 'calendar') {
             bar.style.display = 'none';
             return;
@@ -3160,7 +3159,6 @@ let rewards = window.rewards || [];
         var today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Gather all countdown events from local + google events
         var allEvts = getAllEvents ? getAllEvents() : (window.events || []);
         var countdownEvts = allEvts.filter(function(e) { return e.countdown; });
 
@@ -3169,11 +3167,9 @@ let rewards = window.rewards || [];
             return;
         }
 
-        // For each, compute next occurrence (handle yearly repeats)
         var items = [];
         countdownEvts.forEach(function(ev) {
             var evDate = new Date(ev.date + 'T00:00:00');
-            // If event is in the past and repeats yearly, advance to next year's occurrence
             if (ev.repeat && ev.repeat.unit === 'year' || ev.repeatFrequency === 'yearly') {
                 while (evDate < today) {
                     evDate.setFullYear(evDate.getFullYear() + 1);
@@ -3185,7 +3181,6 @@ let rewards = window.rewards || [];
             }
         });
 
-        // Sort by soonest
         items.sort(function(a, b) { return a.diff - b.diff; });
 
         if (items.length === 0) {
@@ -3193,25 +3188,90 @@ let rewards = window.rewards || [];
             return;
         }
 
-        var html = '';
+        bar.innerHTML = '';
+        bar.style.display = 'flex';
+
         items.forEach(function(item) {
             var label = item.ev.title || 'Event';
-            var daysClass = item.diff === 0 ? 'today' : item.diff <= 7 ? 'soon' : '';
-            var daysText = item.diff === 0 ? 'Today!' : item.diff === 1 ? '1 day' : item.diff + ' days';
-            // Pick an emoji from the title or use a default
-            var emoji = (label.match(/[\u{1F300}-\u{1FFFF}]|[\u2600-\u27FF]/u) || ['🗓️'])[0];
-            html += '<div class="countdown-item">' +
-                '<span>' + emoji + ' ' + label + '</span>' +
-                '<span class="countdown-item-days ' + daysClass + '">' + daysText + '</span>' +
-                '</div>';
-        });
+            var isToday = item.diff === 0;
+            var emoji = (label.match(/[\u{1F300}-\u{1FFFF}]|[\u2600-\u27FF]/u) || ['🎉'])[0];
 
-        bar.innerHTML = html;
-        bar.style.display = 'flex';
+            var pill = document.createElement('div');
+            pill.className = 'countdown-item' + (isToday ? ' countdown-today' : '');
+
+            if (isToday) {
+                // Full celebratory label — no days badge
+                pill.innerHTML = '<span class="countdown-today-text">🎂 ' + label + ' is today!!</span>';
+                pill.title = 'Click for a surprise!';
+                pill.style.cursor = 'pointer';
+                pill.addEventListener('click', function() {
+                    birthdayEmojiRain();
+                });
+            } else {
+                var daysClass = item.diff <= 7 ? 'soon' : '';
+                var daysText = item.diff === 1 ? '1 day' : item.diff + ' days';
+                pill.innerHTML = '<span>' + emoji + ' ' + label + '</span>' +
+                    '<span class="countdown-item-days ' + daysClass + '">' + daysText + '</span>';
+            }
+
+            bar.appendChild(pill);
+        });
     }
 
     function renderCalendarAndCountdown() {
         renderCountdownBar();
+    }
+
+    // ── Birthday Emoji Rain ───────────────────────────────────────────────
+    function birthdayEmojiRain() {
+        var emojis = ['🎂','🥳','🎈','🎉','🎁','🎊'];
+        var container = document.createElement('div');
+        container.className = 'emoji-rain-container';
+        document.body.appendChild(container);
+
+        var count = 55;
+        for (var i = 0; i < count; i++) {
+            (function(index) {
+                setTimeout(function() {
+                    var piece = document.createElement('div');
+                    piece.className = 'emoji-rain-piece';
+                    piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+                    // Random size between 20px and 56px
+                    var size = Math.floor(Math.random() * 37) + 20;
+                    piece.style.fontSize = size + 'px';
+
+                    // Random horizontal start position
+                    piece.style.left = (Math.random() * 100) + '%';
+
+                    // Random fall duration: 3.5s – 7s (slow drift)
+                    var dur = (Math.random() * 3.5 + 3.5).toFixed(2);
+                    piece.style.animationDuration = dur + 's';
+
+                    // Random horizontal sway amount
+                    var swayPx = (Math.random() * 60 - 30).toFixed(1);
+                    piece.style.setProperty('--sway', swayPx + 'px');
+
+                    // Slight rotation range
+                    var rot = (Math.random() * 60 - 30).toFixed(1);
+                    piece.style.setProperty('--rot', rot + 'deg');
+
+                    piece.style.opacity = (Math.random() * 0.4 + 0.6).toFixed(2);
+
+                    container.appendChild(piece);
+
+                    // Remove piece when animation ends
+                    piece.addEventListener('animationend', function() {
+                        piece.remove();
+                    });
+                }, index * 80);
+            })(i);
+        }
+
+        // Remove container after all pieces are done (~10s)
+        setTimeout(function() {
+            if (container.parentNode) container.remove();
+        }, 10000);
     }
 
     function getAllEvents() {
@@ -8617,7 +8677,7 @@ if (allChoresComplete || allRoutinesComplete) {
             endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
             notes: document.getElementById('eventNotes').value,
             isAllDay: isAllDay,
-            countdown: document.getElementById('eventCountdownToggle').checked,
+            countdown: !!(document.getElementById('eventCountdownToggle') && document.getElementById('eventCountdownToggle').checked),
             member: selectedEventProfiles.length > 0 ? selectedEventProfiles[0] : (selectedEventProfile || ''),
             members: selectedEventProfiles.length > 0 ? [...selectedEventProfiles] : (selectedEventProfile ? [selectedEventProfile] : [])
         };
@@ -8661,7 +8721,8 @@ if (allChoresComplete || allRoutinesComplete) {
         document.getElementById('eventAllDayToggle').checked = true;
         document.getElementById('eventRepeatToggle').checked = false;
         document.getElementById('eventRepeatUntilToggle').checked = false;
-        document.getElementById('eventCountdownToggle').checked = false;
+        var cdToggle = document.getElementById('eventCountdownToggle');
+        if (cdToggle) cdToggle.checked = false;
         document.getElementById('repeatOptionsSection').style.display = 'none';
         document.getElementById('repeatUntilSection').style.display = 'none';
         selectedEventProfile = ''; selectedEventProfiles = [];
@@ -10446,7 +10507,8 @@ document.getElementById('eventEndDate').value = evEndDate;
 document.getElementById('eventNotes').value = evNotes;
 document.getElementById('eventAllDayToggle').checked = evIsAllDay;
 if (!evIsAllDay) { document.getElementById('eventTime').value = evTime; document.getElementById('eventEndTime').value = evEndTime; }
-document.getElementById('eventCountdownToggle').checked = !!ev.countdown;
+var cdToggleEdit = document.getElementById('eventCountdownToggle');
+if (cdToggleEdit) cdToggleEdit.checked = !!ev.countdown;
 if (typeof updateEventTimeVisibility === 'function') updateEventTimeVisibility();
 if (typeof selectedEventProfiles !== 'undefined') {
 selectedEventProfile = ev.member || '';
@@ -10482,7 +10544,7 @@ time: isAllDay ? '' : document.getElementById('eventTime').value,
 endTime: isAllDay ? '' : document.getElementById('eventEndTime').value,
 notes: document.getElementById('eventNotes').value,
 isAllDay: isAllDay,
-countdown: document.getElementById('eventCountdownToggle').checked,
+countdown: !!(document.getElementById('eventCountdownToggle') && document.getElementById('eventCountdownToggle').checked),
 member: member,
 members: membersArr
 };
