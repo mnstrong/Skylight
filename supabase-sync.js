@@ -256,6 +256,8 @@ async function loadAllDataFromSupabase() {
             });
             window.events = formattedEvents;
             console.log('✓ Loaded', formattedEvents.length, 'calendar events');
+            // Re-render countdown bar now that events (including countdown flags) are loaded
+            document.dispatchEvent(new CustomEvent('supabaseCalendarEventsLoaded'));
         }
 
         // Load rewards
