@@ -9327,6 +9327,18 @@ if (allChoresComplete || allRoutinesComplete) {
     });
 
     // Sync all Supabase-loaded data into closure variables
+    document.addEventListener('supabaseCalendarEventsLoaded', function() {
+        if (typeof renderCountdownBar === 'function') renderCountdownBar();
+        if (currentSection === 'calendar') {
+            try {
+                if (currentView === 'month') renderCalendar();
+                else if (currentView === 'week') renderWeekView();
+                else if (currentView === 'schedule') renderScheduleView();
+                else if (currentView === 'day') renderDayView();
+            } catch(e) {}
+        }
+    });
+
     document.addEventListener('supabaseDataLoaded', function(e) {
         const d = e.detail || {};
         if (d.chores !== undefined)            { chores = d.chores || []; window.chores = chores; }
