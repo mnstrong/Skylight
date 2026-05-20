@@ -247,8 +247,14 @@ async function loadAllDataFromSupabase() {
                     time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
                     endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                     isAllDay: e.all_day || false,
-                    countdown: e.countdown || false,
                     member: memberInfo ? memberInfo.name : '',
+                    members: memberInfo ? [memberInfo.name] : [],
+                    googleId: e.google_event_id || null,
+                    isGoogle: false
+                };
+            });
+            window.events = formattedEvents;
+            console.log('✓ Loaded', formattedEvents.length, 'calendar events');
         }
 
         // Load rewards
@@ -667,8 +673,7 @@ async function syncCalendarEvent(event, operation) {
             end_time:         endTime,
             all_day:          event.isAllDay ? true : false,
             family_member_id: familyMemberId,
-            google_event_id:  event.googleId || null,
-            countdown:        event.countdown ? true : false
+            google_event_id:  event.googleId || null
         };
 
         if (operation === 'add') {
@@ -1029,8 +1034,10 @@ function startPeriodicRefresh() {
                         time: e.all_day ? '' : (startDt ? pad(startDt.getHours()) + ':' + pad(startDt.getMinutes()) : ''),
                         endTime: e.all_day ? '' : (endDt ? pad(endDt.getHours()) + ':' + pad(endDt.getMinutes()) : ''),
                         isAllDay: e.all_day || false,
-                        countdown: e.countdown || false,
                         member: memberInfo ? memberInfo.name : '',
+                        members: memberInfo ? [memberInfo.name] : [],
+                        googleId: e.google_event_id || null,
+                        isGoogle: false
                     };
                 });
                 window.events = formattedEvents;
