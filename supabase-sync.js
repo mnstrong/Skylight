@@ -236,7 +236,7 @@ async function loadAllDataFromSupabase() {
                 var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
                 var localDate = function(dt) {
                     if (!dt) return '';
-                    return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+                    return dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth()+1) + '-' + pad(dt.getUTCDate());
                 };
                 return {
                     id: e.id,
@@ -646,6 +646,13 @@ async function syncCalendarEvent(event, operation) {
     operation = operation || 'update';
     if (!syncEnabled || !isSupabaseReady) return;
 
+    // Skip Google Calendar events — they live in Google, not Supabase
+    // Google event IDs are alphanumeric strings; local IDs are numeric timestamps or UUIDs
+    var uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    var numPattern = /^\d+$/;
+    if (event.isGoogle) return;
+    if (event.id && !uuidPattern.test(String(event.id)) && !numPattern.test(String(event.id))) return;
+
     try {
         // Resolve family_member_id from member name using loaded familyMembers
         var members = window.familyMembers || [];
@@ -659,7 +666,7 @@ async function syncCalendarEvent(event, operation) {
         // Build ISO datetime strings from date + time fields
         function buildDateTime(dateStr, timeStr) {
             if (!dateStr) return null;
-            if (!timeStr) return dateStr; // all-day: date only
+            if (!timeStr) return dateStr + 'T12:00:00'; // all-day: use noon local to avoid UTC date shift
             return dateStr + 'T' + timeStr + ':00';
         }
 
@@ -1026,7 +1033,7 @@ function startPeriodicRefresh() {
                     var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
                     var localDateStr = function(dt) {
                         if (!dt) return '';
-                        return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+                        return dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth()+1) + '-' + pad(dt.getUTCDate());
                     };
                     return {
                         id: e.id,
