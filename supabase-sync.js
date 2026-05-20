@@ -694,7 +694,7 @@ async function syncCalendarEvent(event, operation) {
             console.log('✓ Calendar event deleted from Supabase:', event.title);
         }
     } catch (error) {
-        console.error('Error syncing calendar event:', error);
+        console.error('Error syncing calendar event:', JSON.stringify(error), error.message, error.hint, error.details);
     }
 }
 
