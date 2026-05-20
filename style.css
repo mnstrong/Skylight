@@ -266,6 +266,30 @@
             cursor: default;
             white-space: nowrap;
         }
+        /* Today variant — celebratory */
+        .countdown-item.countdown-today {
+            background: linear-gradient(135deg, #fff3f8 0%, #fff8e1 100%);
+            border-color: #ffb3d1;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            animation: countdown-today-pulse 2s ease-in-out infinite;
+        }
+        .countdown-item.countdown-today:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 18px rgba(255, 100, 150, 0.25);
+        }
+        @keyframes countdown-today-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 120, 160, 0.3); }
+            50% { box-shadow: 0 0 0 7px rgba(255, 120, 160, 0); }
+        }
+        .countdown-today-text {
+            font-size: 15px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff6b9d, #ff9f43);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
         .countdown-item-days {
             background: #5B8DEF;
             color: white;
@@ -274,9 +298,6 @@
             font-size: 13px;
             font-weight: 700;
             margin-left: 2px;
-        }
-        .countdown-item-days.today {
-            background: #e67e22;
         }
         .countdown-item-days.soon {
             background: #e74c3c;
@@ -289,10 +310,47 @@
             margin-top: 6px;
             padding-left: 2px;
         }
-
-        /* Countdown slider accent color */
         .task-toggle input:checked + .countdown-slider {
             background: #5B8DEF;
+        }
+
+        /* ── Birthday Emoji Rain ───────────────────────────────────────────── */
+        .emoji-rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99998;
+            overflow: hidden;
+        }
+        .emoji-rain-piece {
+            position: absolute;
+            top: -80px;
+            pointer-events: none;
+            user-select: none;
+            animation: emoji-rain-fall linear forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes emoji-rain-fall {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            25% {
+                transform: translateY(25vh) translateX(var(--sway)) rotate(calc(var(--rot) * 0.5));
+            }
+            50% {
+                transform: translateY(50vh) translateX(0px) rotate(var(--rot));
+            }
+            75% {
+                transform: translateY(75vh) translateX(calc(var(--sway) * -0.7)) rotate(calc(var(--rot) * 1.5));
+            }
+            100% {
+                transform: translateY(115vh) translateX(var(--sway)) rotate(calc(var(--rot) * 2));
+                opacity: 0.2;
+            }
         }
 
         .header {
