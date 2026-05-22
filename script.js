@@ -1276,10 +1276,11 @@ let rewards = window.rewards || [];
             // Show list card with title and assigned person avatar
             html += `
                 <div class="list-card">
-                    <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
+                    <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer; background: ${columnBg};">
                         <div class="list-card-title">${list.name}</div>
                         <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
                     </div>
+                    <div class="list-card-body">
             `;
             
             // Group items by section
@@ -1371,6 +1372,7 @@ let rewards = window.rewards || [];
                         Add section
                     </div>
                 </div>
+                    </div>
             </div>`;
         });
         
@@ -5495,7 +5497,7 @@ let rewards = window.rewards || [];
                         </div>
                     </div>
                 </div>
-                
+                <div class="rewards-person-body">
                 <div class="rewards-list">`;
             
             if (memberRewards.length === 0) {
@@ -5537,7 +5539,7 @@ let rewards = window.rewards || [];
             }
             
             html += `</div>
-            </div>`;
+            </div></div>`;
         });
         
         container.innerHTML = html;
@@ -5623,6 +5625,7 @@ let rewards = window.rewards || [];
             html += '</div>';
             html += '<button class="chore-list-edit-btn" data-member="' + member.name + '" onclick="openChoreListEdit(\'' + member.name + '\', event)">✏️</button>';
             html += '</div>';
+            html += '<div class="chore-person-body">';
             
             // Show routine indicators if person has routines
             if (memberRoutines.length > 0) {
@@ -5784,7 +5787,8 @@ let rewards = window.rewards || [];
                 }
             });
             
-            html += '</div>';
+            html += '</div>'; // close chore-person-body
+            html += '</div>'; // close chore-person-card
         });
 
         // Up for Grabs card
@@ -5804,6 +5808,7 @@ let rewards = window.rewards || [];
             html += '</div>';
             html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
             html += '</div>';
+            html += '<div class="chore-person-body">';
             var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
             visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
             if (visibleUfg.length > 0) {
@@ -5827,7 +5832,8 @@ let rewards = window.rewards || [];
             } else {
                 html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
             }
-            html += '</div>';
+            html += '</div>'; // close chore-person-body
+            html += '</div>'; // close chore-person-card
         }
 
         // Restore hidden / add Up for Grabs manage panel
@@ -5888,7 +5894,8 @@ let rewards = window.rewards || [];
                             <span>${totalStarsEarned}</span>
                         </div>
                     </div>
-                </div>`;
+                </div>
+                <div class="rewards-person-body">`;
             
             // Render reward cards
             memberRewards.forEach(reward => {
@@ -5921,7 +5928,7 @@ let rewards = window.rewards || [];
                 </div>`;
             });
             
-            html += `</div>`;
+            html += `</div></div>`;
         });
         
         container.innerHTML = html;
