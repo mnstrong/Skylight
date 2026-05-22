@@ -5031,35 +5031,7 @@
         
         .list-card {
             background: transparent;
-            border-radius: 15px;
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            overflow: hidden;
         }
-        
-        .list-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            flex-shrink: 0;
-        }
-        
-        .list-card-body {
-            flex: 1;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,0,0,0.15) transparent;
-        }
-        
-        .list-card-body::-webkit-scrollbar { width: 4px; }
-        .list-card-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
         
         .list-card-title {
             font-family: "Noticia Text", serif;
