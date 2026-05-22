@@ -7688,6 +7688,11 @@ let rewards = window.rewards || [];
                 };
                 
                 routines.push(newRoutine);
+
+                // Sync new routine to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(Object.assign({}, newRoutine, { _isRoutine: true }), 'add');
+                }
             } else {
                 // CHORE CREATION
                 const hasDate = document.getElementById('taskChoreDate').checked;
@@ -7923,6 +7928,7 @@ let rewards = window.rewards || [];
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
             if (index > -1) {
+                var routineToDelete = routines[index];
                 if (option === 'all' || !routines[index].repeat) {
                     // Delete the entire routine
                     routines.splice(index, 1);
@@ -7930,7 +7936,10 @@ let rewards = window.rewards || [];
                     // Delete the routine (future instances won't be generated)
                     routines.splice(index, 1);
                 }
-                // [synced to Supabase]
+                // Sync routine delete to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(Object.assign({}, routineToDelete, { _isRoutine: true }), 'delete');
+                }
             }
         }
         
@@ -8116,7 +8125,10 @@ let rewards = window.rewards || [];
                     else routine.period = 'Morning';
                 }
                 
-                // [synced to Supabase]
+                // Sync routine edit to Supabase
+                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
+                    window.SupabaseSync.syncChore(Object.assign({}, routine, { _isRoutine: true }), 'update');
+                }
             }
         }
         
