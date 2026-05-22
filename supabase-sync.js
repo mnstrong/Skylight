@@ -99,19 +99,32 @@ async function loadAllDataFromSupabase() {
             }
         }
         
-        // Load tasks from Supabase and convert to chores format
+        // Load tasks from Supabase — split into chores and routines by category
         const allTasks = await SupabaseAPI.getTasks();
         if (allTasks && allTasks.length > 0) {
-            const choresFromSupabase = allTasks.map(t => {
+            const choresFromSupabase   = [];
+            const routinesFromSupabase = [];
+
+            allTasks.forEach(t => {
                 // null assigned_to = Up for Grabs
                 const member = formattedMembers.find(m => m.id === t.assigned_to);
                 const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
-                
-                return {
+                const isRoutine = t.category === 'routine';
+
+                // description field: routines → "Morning|☀️", chores → "☀️"
+                var period = 'Evening';
+                var icon   = t.description || '';
+                if (isRoutine && t.description && t.description.includes('|')) {
+                    var parts = t.description.split('|');
+                    period = parts[0] || 'Evening';
+                    icon   = parts.slice(1).join('|');
+                }
+
+                const item = {
                     id: t.id,
                     member: memberName,
                     title: t.title,
-                    icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
+                    icon: icon,
                     completed: t.completed || false,
                     stars: t.points || 0,
                     dueDate: t.due_date,
@@ -124,10 +137,18 @@ async function loadAllDataFromSupabase() {
                         until: null
                     } : null
                 };
+
+                if (isRoutine) {
+                    item.period = period;
+                    routinesFromSupabase.push(item);
+                } else {
+                    choresFromSupabase.push(item);
+                }
             });
-            
-            window.chores = choresFromSupabase;
-            console.log('✓ Loaded', allTasks.length, 'chores from Supabase');
+
+            window.chores   = choresFromSupabase;
+            window.routines = routinesFromSupabase;
+            console.log('✓ Loaded', choresFromSupabase.length, 'chores +', routinesFromSupabase.length, 'routines from Supabase');
         }
         
         // Load recipes
@@ -332,9 +353,18 @@ async function syncChore(chore, operation) {
                 if (members[mi].name === chore.member) { assignedTo = members[mi].id || null; break; }
             }
         }
+        // Routines are stored in the same tasks table with category:'routine'
+        // and description encodes "period|icon" so period survives the round-trip
+        var isRoutine = !!chore._isRoutine;
+        var category  = isRoutine ? 'routine' : 'chore';
+        // description field: routines → "Morning|☀️", chores → "☀️"
+        var descriptionField = isRoutine
+            ? (chore.period || 'Evening') + '|' + (chore.icon || '')
+            : (chore.icon || '');
+
         if (operation === 'add') {
             var dbChore = {
-                title: chore.title || '', description: chore.icon || '', category: 'chore',
+                title: chore.title || '', description: descriptionField, category: category,
                 assigned_to: assignedTo, due_date: chore.dueDate || null, due_time: chore.time || null,
                 completed: chore.completed || false, points: chore.stars || 0,
                 recurring_pattern: (chore.repeat && chore.repeat.unit) ? chore.repeat.unit : null,
@@ -343,33 +373,38 @@ async function syncChore(chore, operation) {
             var newRow = await SupabaseAPI.addTask(dbChore);
             if (newRow) {
                 chore.id = newRow.id;
-                var allChores = window.chores || [];
-                for (var ci = 0; ci < allChores.length; ci++) {
-                    if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
-                        allChores[ci].id = newRow.id; break;
-                    }
-                }
-                window.chores = allChores;
-                if (window.chores) {
-                    for (var wci = 0; wci < window.chores.length; wci++) {
-                        if (String(window.chores[wci].title) === String(chore.title) && String(window.chores[wci].member) === String(chore.member) && window.chores[wci].id !== newRow.id) {
-                            window.chores[wci].id = newRow.id; break;
+                if (isRoutine) {
+                    // Back-fill the Supabase UUID into window.routines
+                    var allRoutines = window.routines || [];
+                    for (var ri = 0; ri < allRoutines.length; ri++) {
+                        if (String(allRoutines[ri].title) === String(chore.title) && String(allRoutines[ri].member) === String(chore.member) && allRoutines[ri].id !== newRow.id) {
+                            allRoutines[ri].id = newRow.id; break;
                         }
                     }
+                    window.routines = allRoutines;
+                    console.log('✓ Routine synced to Supabase:', chore.title);
+                } else {
+                    var allChores = window.chores || [];
+                    for (var ci = 0; ci < allChores.length; ci++) {
+                        if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
+                            allChores[ci].id = newRow.id; break;
+                        }
+                    }
+                    window.chores = allChores;
+                    console.log('✓ Chore synced to Supabase:', chore.title);
                 }
-                console.log('✓ Chore synced to Supabase:', chore.title);
             }
         } else if (operation === 'update') {
             await SupabaseAPI.updateTask(chore.id, {
-                title: chore.title || '', description: chore.icon || '', assigned_to: assignedTo,
+                title: chore.title || '', description: descriptionField, assigned_to: assignedTo,
                 due_date: chore.dueDate || null, due_time: chore.time || null,
                 completed: chore.completed || false, completed_at: chore.completed ? new Date().toISOString() : null,
                 points: chore.stars || 0
             });
-            console.log('✓ Chore updated in Supabase:', chore.title);
+            console.log('✓', isRoutine ? 'Routine' : 'Chore', 'updated in Supabase:', chore.title);
         } else if (operation === 'delete') {
             await SupabaseAPI.deleteTask(chore.id);
-            console.log('✓ Chore deleted from Supabase:', chore.title);
+            console.log('✓', isRoutine ? 'Routine' : 'Chore', 'deleted from Supabase:', chore.title);
         }
     } catch (error) {
         console.error('Error syncing chore:', error);
@@ -890,18 +925,29 @@ async function loadAppSettingsFromSupabase() {
 async function loadTasksFromSupabase() {
     const allTasks = await SupabaseAPI.getTasks();
     if (allTasks && allTasks.length > 0) {
-        // Get family members for name lookup
         const familyMembers = window.familyMembers || [];
-        
-        const choresFromSupabase = allTasks.map(t => {
+        const choresFromSupabase   = [];
+        const routinesFromSupabase = [];
+
+        allTasks.forEach(t => {
             const member = familyMembers.find(m => m.id === t.assigned_to);
             const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
-            
-            return {
+            const isRoutine = t.category === 'routine';
+
+            // description field: routines → "Morning|☀️", chores → "☀️"
+            var period = 'Evening';
+            var icon   = t.description || '';
+            if (isRoutine && t.description && t.description.includes('|')) {
+                var parts = t.description.split('|');
+                period = parts[0] || 'Evening';
+                icon   = parts.slice(1).join('|');
+            }
+
+            const item = {
                 id: t.id,
                 member: memberName,
                 title: t.title,
-                icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
+                icon: icon,
                 completed: t.completed || false,
                 stars: t.points || 0,
                 dueDate: t.due_date,
@@ -914,11 +960,19 @@ async function loadTasksFromSupabase() {
                     until: null
                 } : null
             };
+
+            if (isRoutine) {
+                item.period = period;
+                routinesFromSupabase.push(item);
+            } else {
+                choresFromSupabase.push(item);
+            }
         });
-        
-        window.chores = choresFromSupabase;
-        
-        // Refresh UI if on tasks/chores section
+
+        window.chores   = choresFromSupabase;
+        window.routines = routinesFromSupabase;
+
+        // Refresh UI if on chores section
         if (typeof renderSection === 'function' && currentSection === 'chores') {
             renderSection('chores');
         }
