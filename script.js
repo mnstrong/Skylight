@@ -7605,6 +7605,11 @@ let rewards = window.rewards || [];
     let selectedRepeatUnit = 'week';
     let selectedTimeOfDay = 'evening';
     
+    function toggleRoutineRepeat() {
+        var checked = document.getElementById('taskRoutineRepeatToggle').checked;
+        document.getElementById('taskRoutineRepeatDetails').style.display = checked ? 'block' : 'none';
+    }
+
     function setRepeatUnit(unit) {
         selectedRepeatUnit = unit;
         document.getElementById('repeatDay').classList.toggle('active', unit === 'day');
@@ -7659,16 +7664,17 @@ let rewards = window.rewards || [];
         selectedProfiles.forEach(profileName => {
             if (currentTaskType === 'routine') {
                 // ROUTINE CREATION
+                const routineRepeatOn = document.getElementById('taskRoutineRepeatToggle').checked;
                 const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
                 const repeatUnit = selectedRepeatUnit;
                 const repeatDays = repeatUnit === 'week' ? [...selectedDays] : null;
                 
-                const repeatData = {
+                const repeatData = routineRepeatOn ? {
                     every: repeatEvery,
                     unit: repeatUnit,
                     days: repeatDays,
                     until: null
-                };
+                } : null;
                 
                 // Use the selected time of day
                 let period = 'Evening'; // Default
@@ -7769,6 +7775,9 @@ let rewards = window.rewards || [];
         document.getElementById('taskChoreRepeatDetails').style.display = 'none';
         document.getElementById('choreRepeatsUntil').checked = false;
         document.getElementById('choreRepeatsUntilDate').style.display = 'none';
+        // Reset routine repeat toggle
+        document.getElementById('taskRoutineRepeatToggle').checked = false;
+        document.getElementById('taskRoutineRepeatDetails').style.display = 'none';
         
         // Reset routine day buttons
         document.querySelectorAll('#taskRepeatDays .day-btn-new').forEach(btn => {
