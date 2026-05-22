@@ -331,30 +331,44 @@
                     <div class="edit-toggle-row" style="padding: 10px 0;">
                         <div class="edit-toggle-label">
                             <span class="edit-toggle-icon">🔄</span>
-                            <span>Every</span>
+                            <span>Repeats</span>
                         </div>
-                    </div>
-                    <div style="display: flex; margin-top: 10px;">
-                        <input type="number" class="routine-number-input" id="taskRepeatEvery" value="1" min="1">
-                        <button class="routine-choice-btn" id="repeatDay" onclick="setRepeatUnit('day')">Day</button>
-                        <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
+                        <label class="edit-toggle-switch">
+                            <input type="checkbox" id="taskRoutineRepeatToggle" onchange="toggleRoutineRepeat()">
+                            <span class="edit-toggle-slider"></span>
+                        </label>
                     </div>
                 </div>
-                <div class="edit-form-group" id="taskRepeatDays">
-                    <div class="edit-toggle-row" style="padding: 10px 0;">
-                        <div class="edit-toggle-label">
-                            <span class="edit-toggle-icon">📅</span>
-                            <span>On</span>
+                <div id="taskRoutineRepeatDetails" style="display: none;">
+                    <div class="edit-form-group">
+                        <div class="edit-toggle-row" style="padding: 10px 0;">
+                            <div class="edit-toggle-label">
+                                <span class="edit-toggle-icon">🔄</span>
+                                <span>Every</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; margin-top: 10px;">
+                            <input type="number" class="routine-number-input" id="taskRepeatEvery" value="1" min="1">
+                            <button class="routine-choice-btn" id="repeatDay" onclick="setRepeatUnit('day')">Day</button>
+                            <button class="routine-choice-btn active" id="repeatWeek" onclick="setRepeatUnit('week')">Week</button>
                         </div>
                     </div>
-                    <div class="days-selector-new" style="margin-top: 10px;">
-                        <button type="button" class="day-btn-new" data-day="0" onclick="toggleDayNew(0)">Su</button>
-                        <button type="button" class="day-btn-new" data-day="1" onclick="toggleDayNew(1)">Mo</button>
-                        <button type="button" class="day-btn-new" data-day="2" onclick="toggleDayNew(2)">Tu</button>
-                        <button type="button" class="day-btn-new" data-day="3" onclick="toggleDayNew(3)">We</button>
-                        <button type="button" class="day-btn-new active" data-day="4" onclick="toggleDayNew(4)">Th</button>
-                        <button type="button" class="day-btn-new" data-day="5" onclick="toggleDayNew(5)">Fr</button>
-                        <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
+                    <div class="edit-form-group" id="taskRepeatDays">
+                        <div class="edit-toggle-row" style="padding: 10px 0;">
+                            <div class="edit-toggle-label">
+                                <span class="edit-toggle-icon">📅</span>
+                                <span>On</span>
+                            </div>
+                        </div>
+                        <div class="days-selector-new" style="margin-top: 10px;">
+                            <button type="button" class="day-btn-new" data-day="0" onclick="toggleDayNew(0)">Su</button>
+                            <button type="button" class="day-btn-new" data-day="1" onclick="toggleDayNew(1)">Mo</button>
+                            <button type="button" class="day-btn-new" data-day="2" onclick="toggleDayNew(2)">Tu</button>
+                            <button type="button" class="day-btn-new" data-day="3" onclick="toggleDayNew(3)">We</button>
+                            <button type="button" class="day-btn-new active" data-day="4" onclick="toggleDayNew(4)">Th</button>
+                            <button type="button" class="day-btn-new" data-day="5" onclick="toggleDayNew(5)">Fr</button>
+                            <button type="button" class="day-btn-new" data-day="6" onclick="toggleDayNew(6)">Sa</button>
+                        </div>
                     </div>
                 </div>
                 <div class="edit-form-group">
