@@ -99,32 +99,19 @@ async function loadAllDataFromSupabase() {
             }
         }
         
-        // Load tasks from Supabase — split into chores and routines by category
+        // Load tasks from Supabase and convert to chores format
         const allTasks = await SupabaseAPI.getTasks();
         if (allTasks && allTasks.length > 0) {
-            const choresFromSupabase   = [];
-            const routinesFromSupabase = [];
-
-            allTasks.forEach(t => {
+            const choresFromSupabase = allTasks.map(t => {
                 // null assigned_to = Up for Grabs
                 const member = formattedMembers.find(m => m.id === t.assigned_to);
                 const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
-                const isRoutine = t.category === 'routine';
-
-                // description field: routines → "Morning|☀️", chores → "☀️"
-                var period = 'Evening';
-                var icon   = t.description || '';
-                if (isRoutine && t.description && t.description.includes('|')) {
-                    var parts = t.description.split('|');
-                    period = parts[0] || 'Evening';
-                    icon   = parts.slice(1).join('|');
-                }
-
-                const item = {
+                
+                return {
                     id: t.id,
                     member: memberName,
                     title: t.title,
-                    icon: icon,
+                    icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
                     completed: t.completed || false,
                     stars: t.points || 0,
                     dueDate: t.due_date,
@@ -137,18 +124,10 @@ async function loadAllDataFromSupabase() {
                         until: null
                     } : null
                 };
-
-                if (isRoutine) {
-                    item.period = period;
-                    routinesFromSupabase.push(item);
-                } else {
-                    choresFromSupabase.push(item);
-                }
             });
-
-            window.chores   = choresFromSupabase;
-            window.routines = routinesFromSupabase;
-            console.log('✓ Loaded', choresFromSupabase.length, 'chores +', routinesFromSupabase.length, 'routines from Supabase');
+            
+            window.chores = choresFromSupabase;
+            console.log('✓ Loaded', allTasks.length, 'chores from Supabase');
         }
         
         // Load recipes
@@ -353,18 +332,9 @@ async function syncChore(chore, operation) {
                 if (members[mi].name === chore.member) { assignedTo = members[mi].id || null; break; }
             }
         }
-        // Routines are stored in the same tasks table with category:'routine'
-        // and description encodes "period|icon" so period survives the round-trip
-        var isRoutine = !!chore._isRoutine;
-        var category  = isRoutine ? 'routine' : 'chore';
-        // description field: routines → "Morning|☀️", chores → "☀️"
-        var descriptionField = isRoutine
-            ? (chore.period || 'Evening') + '|' + (chore.icon || '')
-            : (chore.icon || '');
-
         if (operation === 'add') {
             var dbChore = {
-                title: chore.title || '', description: descriptionField, category: category,
+                title: chore.title || '', description: chore.icon || '', category: 'chore',
                 assigned_to: assignedTo, due_date: chore.dueDate || null, due_time: chore.time || null,
                 completed: chore.completed || false, points: chore.stars || 0,
                 recurring_pattern: (chore.repeat && chore.repeat.unit) ? chore.repeat.unit : null,
@@ -373,38 +343,33 @@ async function syncChore(chore, operation) {
             var newRow = await SupabaseAPI.addTask(dbChore);
             if (newRow) {
                 chore.id = newRow.id;
-                if (isRoutine) {
-                    // Back-fill the Supabase UUID into window.routines
-                    var allRoutines = window.routines || [];
-                    for (var ri = 0; ri < allRoutines.length; ri++) {
-                        if (String(allRoutines[ri].title) === String(chore.title) && String(allRoutines[ri].member) === String(chore.member) && allRoutines[ri].id !== newRow.id) {
-                            allRoutines[ri].id = newRow.id; break;
-                        }
+                var allChores = window.chores || [];
+                for (var ci = 0; ci < allChores.length; ci++) {
+                    if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
+                        allChores[ci].id = newRow.id; break;
                     }
-                    window.routines = allRoutines;
-                    console.log('✓ Routine synced to Supabase:', chore.title);
-                } else {
-                    var allChores = window.chores || [];
-                    for (var ci = 0; ci < allChores.length; ci++) {
-                        if (String(allChores[ci].title) === String(chore.title) && String(allChores[ci].member) === String(chore.member) && allChores[ci].id !== newRow.id) {
-                            allChores[ci].id = newRow.id; break;
-                        }
-                    }
-                    window.chores = allChores;
-                    console.log('✓ Chore synced to Supabase:', chore.title);
                 }
+                window.chores = allChores;
+                if (window.chores) {
+                    for (var wci = 0; wci < window.chores.length; wci++) {
+                        if (String(window.chores[wci].title) === String(chore.title) && String(window.chores[wci].member) === String(chore.member) && window.chores[wci].id !== newRow.id) {
+                            window.chores[wci].id = newRow.id; break;
+                        }
+                    }
+                }
+                console.log('✓ Chore synced to Supabase:', chore.title);
             }
         } else if (operation === 'update') {
             await SupabaseAPI.updateTask(chore.id, {
-                title: chore.title || '', description: descriptionField, assigned_to: assignedTo,
+                title: chore.title || '', description: chore.icon || '', assigned_to: assignedTo,
                 due_date: chore.dueDate || null, due_time: chore.time || null,
                 completed: chore.completed || false, completed_at: chore.completed ? new Date().toISOString() : null,
                 points: chore.stars || 0
             });
-            console.log('✓', isRoutine ? 'Routine' : 'Chore', 'updated in Supabase:', chore.title);
+            console.log('✓ Chore updated in Supabase:', chore.title);
         } else if (operation === 'delete') {
             await SupabaseAPI.deleteTask(chore.id);
-            console.log('✓', isRoutine ? 'Routine' : 'Chore', 'deleted from Supabase:', chore.title);
+            console.log('✓ Chore deleted from Supabase:', chore.title);
         }
     } catch (error) {
         console.error('Error syncing chore:', error);
@@ -621,12 +586,17 @@ async function syncList(list, operation = 'update') {
         if (operation === 'add') {
             const listData = {
                 name: list.name,
-                color: list.color,
-                icon: list.icon
+                color: list.color || null,
+                icon: list.icon || null,
+                assigned_to: list.assignedTo != null ? list.assignedTo : null
             };
             const newList = await SupabaseAPI.addList(listData);
             if (newList) {
                 list.id = newList.id;
+                // Back-fill the Supabase id into window.lists
+                const allLists = window.lists || [];
+                const match = allLists.find(l => l.name === list.name && l.id !== newList.id);
+                if (match) match.id = newList.id;
                 console.log('✓ List synced to Supabase:', list.name);
             }
         } else if (operation === 'update') {
@@ -660,8 +630,8 @@ async function syncListItem(listId, item, operation = 'update') {
         } else if (operation === 'update') {
             await SupabaseAPI.updateListItem(item.id, {
                 text: item.text,
-                checked: item.checked,
-                display_order: item.displayOrder
+                checked: item.completed,
+                display_order: item.displayOrder || null
             });
             console.log('✓ List item updated in Supabase');
         } else if (operation === 'delete') {
@@ -925,29 +895,18 @@ async function loadAppSettingsFromSupabase() {
 async function loadTasksFromSupabase() {
     const allTasks = await SupabaseAPI.getTasks();
     if (allTasks && allTasks.length > 0) {
+        // Get family members for name lookup
         const familyMembers = window.familyMembers || [];
-        const choresFromSupabase   = [];
-        const routinesFromSupabase = [];
-
-        allTasks.forEach(t => {
+        
+        const choresFromSupabase = allTasks.map(t => {
             const member = familyMembers.find(m => m.id === t.assigned_to);
             const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
-            const isRoutine = t.category === 'routine';
-
-            // description field: routines → "Morning|☀️", chores → "☀️"
-            var period = 'Evening';
-            var icon   = t.description || '';
-            if (isRoutine && t.description && t.description.includes('|')) {
-                var parts = t.description.split('|');
-                period = parts[0] || 'Evening';
-                icon   = parts.slice(1).join('|');
-            }
-
-            const item = {
+            
+            return {
                 id: t.id,
                 member: memberName,
                 title: t.title,
-                icon: icon,
+                icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
                 completed: t.completed || false,
                 stars: t.points || 0,
                 dueDate: t.due_date,
@@ -960,19 +919,11 @@ async function loadTasksFromSupabase() {
                     until: null
                 } : null
             };
-
-            if (isRoutine) {
-                item.period = period;
-                routinesFromSupabase.push(item);
-            } else {
-                choresFromSupabase.push(item);
-            }
         });
-
-        window.chores   = choresFromSupabase;
-        window.routines = routinesFromSupabase;
-
-        // Refresh UI if on chores section
+        
+        window.chores = choresFromSupabase;
+        
+        // Refresh UI if on tasks/chores section
         if (typeof renderSection === 'function' && currentSection === 'chores') {
             renderSection('chores');
         }
