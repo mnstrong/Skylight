@@ -1276,11 +1276,10 @@ let rewards = window.rewards || [];
             // Show list card with title and assigned person avatar
             html += `
                 <div class="list-card">
-                    <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer; background: ${columnBg};">
+                    <div class="list-card-header" onclick="openEditListPanel('${list.id}')" style="cursor: pointer;">
                         <div class="list-card-title">${list.name}</div>
                         <div class="list-card-initial" style="background: ${memberColor};">${memberInitial}</div>
                     </div>
-                    <div class="list-card-body">
             `;
             
             // Group items by section
@@ -1372,7 +1371,6 @@ let rewards = window.rewards || [];
                         Add section
                     </div>
                 </div>
-                    </div>
             </div>`;
         });
         
@@ -1401,7 +1399,10 @@ let rewards = window.rewards || [];
         };
         
         list.items.push(newItem);
-        // [synced to Supabase]
+        // Sync new item to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+            window.SupabaseSync.syncListItem(listId, newItem, 'add');
+        }
         inputElement.value = '';
         renderListsColumns();
     }
@@ -1470,7 +1471,7 @@ let rewards = window.rewards || [];
         };
         
         list.items.push(newItem);
-        // [synced to Supabase]
+        // Section placeholder — no need to sync empty item
         
         closeModal('addSectionModal');
         renderListsColumns();
@@ -1498,7 +1499,10 @@ let rewards = window.rewards || [];
             // Mark as completed instead of deleting
             item.completed = true;
             item.completedDate = new Date().toISOString().split('T')[0];
-            // [synced to Supabase]
+            // Sync item completion to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+                window.SupabaseSync.syncListItem(listId, item, 'update');
+            }
             renderListsColumns();
         }
     }
@@ -1901,7 +1905,10 @@ let rewards = window.rewards || [];
         };
         
         lists.push(newList);
-        // [synced to Supabase]
+        // Sync new list to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function') {
+            window.SupabaseSync.syncList(newList, 'add');
+        }
         
         // Reset
         selectedAddListProfile = null;
@@ -5497,7 +5504,7 @@ let rewards = window.rewards || [];
                         </div>
                     </div>
                 </div>
-                <div class="rewards-person-body">
+                
                 <div class="rewards-list">`;
             
             if (memberRewards.length === 0) {
@@ -5539,7 +5546,7 @@ let rewards = window.rewards || [];
             }
             
             html += `</div>
-            </div></div>`;
+            </div>`;
         });
         
         container.innerHTML = html;
@@ -5625,7 +5632,6 @@ let rewards = window.rewards || [];
             html += '</div>';
             html += '<button class="chore-list-edit-btn" data-member="' + member.name + '" onclick="openChoreListEdit(\'' + member.name + '\', event)">✏️</button>';
             html += '</div>';
-            html += '<div class="chore-person-body">';
             
             // Show routine indicators if person has routines
             if (memberRoutines.length > 0) {
@@ -5787,8 +5793,7 @@ let rewards = window.rewards || [];
                 }
             });
             
-            html += '</div>'; // close chore-person-body
-            html += '</div>'; // close chore-person-card
+            html += '</div>';
         });
 
         // Up for Grabs card
@@ -5808,7 +5813,6 @@ let rewards = window.rewards || [];
             html += '</div>';
             html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
             html += '</div>';
-            html += '<div class="chore-person-body">';
             var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
             visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
             if (visibleUfg.length > 0) {
@@ -5832,8 +5836,7 @@ let rewards = window.rewards || [];
             } else {
                 html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
             }
-            html += '</div>'; // close chore-person-body
-            html += '</div>'; // close chore-person-card
+            html += '</div>';
         }
 
         // Restore hidden / add Up for Grabs manage panel
@@ -5894,8 +5897,7 @@ let rewards = window.rewards || [];
                             <span>${totalStarsEarned}</span>
                         </div>
                     </div>
-                </div>
-                <div class="rewards-person-body">`;
+                </div>`;
             
             // Render reward cards
             memberRewards.forEach(reward => {
@@ -5928,7 +5930,7 @@ let rewards = window.rewards || [];
                 </div>`;
             });
             
-            html += `</div></div>`;
+            html += `</div>`;
         });
         
         container.innerHTML = html;
@@ -7612,11 +7614,6 @@ let rewards = window.rewards || [];
     let selectedRepeatUnit = 'week';
     let selectedTimeOfDay = 'evening';
     
-    function toggleRoutineRepeat() {
-        var checked = document.getElementById('taskRoutineRepeatToggle').checked;
-        document.getElementById('taskRoutineRepeatDetails').style.display = checked ? 'block' : 'none';
-    }
-
     function setRepeatUnit(unit) {
         selectedRepeatUnit = unit;
         document.getElementById('repeatDay').classList.toggle('active', unit === 'day');
@@ -7671,17 +7668,16 @@ let rewards = window.rewards || [];
         selectedProfiles.forEach(profileName => {
             if (currentTaskType === 'routine') {
                 // ROUTINE CREATION
-                const routineRepeatOn = document.getElementById('taskRoutineRepeatToggle').checked;
                 const repeatEvery = parseInt(document.getElementById('taskRepeatEvery').value) || 1;
                 const repeatUnit = selectedRepeatUnit;
                 const repeatDays = repeatUnit === 'week' ? [...selectedDays] : null;
                 
-                const repeatData = routineRepeatOn ? {
+                const repeatData = {
                     every: repeatEvery,
                     unit: repeatUnit,
                     days: repeatDays,
                     until: null
-                } : null;
+                };
                 
                 // Use the selected time of day
                 let period = 'Evening'; // Default
@@ -7701,11 +7697,6 @@ let rewards = window.rewards || [];
                 };
                 
                 routines.push(newRoutine);
-
-                // Sync new routine to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(Object.assign({}, newRoutine, { _isRoutine: true }), 'add');
-                }
             } else {
                 // CHORE CREATION
                 const hasDate = document.getElementById('taskChoreDate').checked;
@@ -7782,9 +7773,6 @@ let rewards = window.rewards || [];
         document.getElementById('taskChoreRepeatDetails').style.display = 'none';
         document.getElementById('choreRepeatsUntil').checked = false;
         document.getElementById('choreRepeatsUntilDate').style.display = 'none';
-        // Reset routine repeat toggle
-        document.getElementById('taskRoutineRepeatToggle').checked = false;
-        document.getElementById('taskRoutineRepeatDetails').style.display = 'none';
         
         // Reset routine day buttons
         document.querySelectorAll('#taskRepeatDays .day-btn-new').forEach(btn => {
@@ -7944,7 +7932,6 @@ let rewards = window.rewards || [];
         } else {
             const index = routines.findIndex(r => r.id === currentEditTaskId);
             if (index > -1) {
-                var routineToDelete = routines[index];
                 if (option === 'all' || !routines[index].repeat) {
                     // Delete the entire routine
                     routines.splice(index, 1);
@@ -7952,10 +7939,7 @@ let rewards = window.rewards || [];
                     // Delete the routine (future instances won't be generated)
                     routines.splice(index, 1);
                 }
-                // Sync routine delete to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(Object.assign({}, routineToDelete, { _isRoutine: true }), 'delete');
-                }
+                // [synced to Supabase]
             }
         }
         
@@ -8141,10 +8125,7 @@ let rewards = window.rewards || [];
                     else routine.period = 'Morning';
                 }
                 
-                // Sync routine edit to Supabase
-                if (window.SupabaseSync && typeof window.SupabaseSync.syncChore === 'function') {
-                    window.SupabaseSync.syncChore(Object.assign({}, routine, { _isRoutine: true }), 'update');
-                }
+                // [synced to Supabase]
             }
         }
         
