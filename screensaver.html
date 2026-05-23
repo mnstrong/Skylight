@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screensaver</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400&family=Nunito+Sans:wght@200;300&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  /* Background slides */
+  .slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+    transform: scale(1.03);
+    animation: subtleZoom 12s ease-in-out infinite alternate;
+  }
+  .slide.active { opacity: 1; }
+
+  @keyframes subtleZoom {
+    from { transform: scale(1.03); }
+    to   { transform: scale(1.08); }
+  }
+
+  /* Dark gradient overlay so text is always readable */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.08) 0%,
+      rgba(0,0,0,0.0) 30%,
+      rgba(0,0,0,0.25) 70%,
+      rgba(0,0,0,0.55) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Clock container — bottom-left, Skylight style */
+  .clock-wrap {
+    position: absolute;
+    bottom: 7vh;
+    left: 7vw;
+    z-index: 2;
+    color: #fff;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+  }
+
+  /* Big time */
+  .time {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 200;
+    font-size: clamp(72px, 14vw, 160px);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: #ffffff;
+  }
+
+  .time .ampm {
+    font-size: 0.32em;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    vertical-align: super;
+    margin-left: 0.15em;
+    opacity: 0.85;
+    text-transform: uppercase;
+  }
+
+  /* Date line */
+  .date {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 300;
+    font-size: clamp(18px, 2.8vw, 36px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.82;
+    margin-top: 0.3em;
+    color: #f0f0f0;
+  }
+
+  /* Thin separator bar */
+  .separator {
+    width: 48px;
+    height: 2px;
+    background: rgba(255,255,255,0.6);
+    margin: 0.5em 0;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="slide" id="slide0"></div>
+<div class="slide" id="slide1"></div>
+<div class="overlay"></div>
+
+<div class="clock-wrap">
+  <div class="time" id="time">12:00<span class="ampm" id="ampm">AM</span></div>
+  <div class="separator"></div>
+  <div class="date" id="date">Monday, January 1</div>
+</div>
+
+<script>
+  // ── Images ──────────────────────────────────────────────────────────────────
+  const BASE = 'https://raw.githubusercontent.com/mnstrong/Skylight/main/bg/';
+  const images = ['bg1.jpg', 'bg2.jpg'];
+  let current = 0;
+
+  const slides = [
+    document.getElementById('slide0'),
+    document.getElementById('slide1')
+  ];
+
+  // Preload then kick off
+  function preload(src) {
+    return new Promise(res => {
+      const img = new Image();
+      img.onload = img.onerror = res;
+      img.src = src;
+    });
+  }
+
+  async function init() {
+    await Promise.all(images.map(f => preload(BASE + f)));
+    slides[0].style.backgroundImage = `url(${BASE + images[0]})`;
+    slides[0].classList.add('active');
+    setTimeout(rotate, 8000);
+  }
+
+  function rotate() {
+    const next = (current + 1) % images.length;
+    const nextSlide = slides[next % 2];
+    const currSlide = slides[current % 2];
+
+    nextSlide.style.backgroundImage = `url(${BASE + images[next]})`;
+    nextSlide.classList.add('active');
+
+    setTimeout(() => currSlide.classList.remove('active'), 2000);
+    current = next;
+    setTimeout(rotate, 8000);
+  }
+
+  init();
+
+  // ── Clock ────────────────────────────────────────────────────────────────────
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+
+  function tick() {
+    const now = new Date();
+    let h = now.getHours();
+    const m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+
+    document.getElementById('time').innerHTML =
+      `${h}:${String(m).padStart(2,'0')}<span class="ampm">${ampm}</span>`;
+
+    document.getElementById('date').textContent =
+      `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
