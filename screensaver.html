@@ -24,15 +24,8 @@
     background-position: center;
     opacity: 0;
     transition: opacity 2s ease-in-out;
-    transform: scale(1.03);
-    animation: subtleZoom 12s ease-in-out infinite alternate;
   }
   .slide.active { opacity: 1; }
-
-  @keyframes subtleZoom {
-    from { transform: scale(1.03); }
-    to   { transform: scale(1.08); }
-  }
 
   /* Dark gradient overlay so text is always readable */
   .overlay {
@@ -136,7 +129,7 @@
     await Promise.all(images.map(f => preload(BASE + f)));
     slides[0].style.backgroundImage = `url(${BASE + images[0]})`;
     slides[0].classList.add('active');
-    setTimeout(rotate, 8000);
+    setTimeout(rotate, 300000);
   }
 
   function rotate() {
@@ -149,7 +142,7 @@
 
     setTimeout(() => currSlide.classList.remove('active'), 2000);
     current = next;
-    setTimeout(rotate, 8000);
+    setTimeout(rotate, 300000);
   }
 
   init();
