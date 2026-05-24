@@ -7156,9 +7156,9 @@ width: 80px;
 
 .hp-day-cell:last-child { border-right: none; }
 .hp-day-cell:hover { background: #F5F7FF; }
-.hp-day-cell.today { background: rgba(102,126,234,0.04); }
+.hp-day-cell.today { background: white; }
 .hp-day-cell.next-week-cell {
-    background: #F8F9FB;
+    background: white;
     cursor: default;
 }
 
@@ -7178,12 +7178,14 @@ width: 80px;
 }
 
 .hp-day-name {
+    font-family: "Noticia Text", serif;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.01em;
 }
 
 .hp-day-number {
+    font-family: "Noticia Text", serif;
     font-size: 20px;
     font-weight: 700;
     color: #222;
