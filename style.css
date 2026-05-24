@@ -7110,18 +7110,22 @@ width: 80px;
 
 .hp-panel-body {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
+
+.hp-panel-body::-webkit-scrollbar { width: 4px; }
+.hp-panel-body::-webkit-scrollbar-thumb { background: #E8EBF0; border-radius: 2px; }
 
 /* ── Week Calendar ── */
 .hp-week-cal {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
 }
 
 .hp-week-header {
@@ -7130,6 +7134,9 @@ width: 80px;
     border-bottom: 1px solid #E8EBF0;
     flex-shrink: 0;
     background: #FAFBFC;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .hp-week-header-cell {
@@ -7149,15 +7156,12 @@ width: 80px;
     display: flex;
     flex-direction: column;
     flex: 1;
-    overflow: hidden;
 }
 
 .hp-week-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
+    min-height: 280px;
 }
 
 .hp-week-row + .hp-week-row {
@@ -7170,7 +7174,6 @@ width: 80px;
     flex-direction: column;
     border-right: 1px solid #F0F2F5;
     padding: 10px 10px 8px;
-    overflow: hidden;
     cursor: pointer;
     transition: background 0.12s;
 }
@@ -7221,22 +7224,23 @@ width: 80px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 5px;
 }
 
 .hp-event-pill {
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 6px;
+    padding: 7px 9px;
+    border-radius: 8px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-shrink: 0;
-    line-height: 1.5;
+    line-height: 1.4;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    min-height: 34px;
 }
 
 .hp-event-pill-dot {
