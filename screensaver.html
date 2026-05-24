@@ -16,16 +16,15 @@
     font-family: 'Nunito', sans-serif;
   }
 
-  /* Each slide is a full-screen container */
   .slide {
     position: absolute;
     inset: 0;
     opacity: 0;
+    z-index: 0;
     transition: opacity 2s ease-in-out;
   }
   .slide.active { opacity: 1; }
 
-  /* img fills the slide, object-fit covers like background-size: cover */
   .slide img {
     width: 100%;
     height: 100%;
@@ -34,10 +33,10 @@
     display: block;
   }
 
-  /* Dark gradient overlay so text is always readable */
   .overlay {
     position: absolute;
     inset: 0;
+    z-index: 10;
     background: linear-gradient(
       to bottom,
       rgba(0,0,0,0.08) 0%,
@@ -45,15 +44,13 @@
       rgba(0,0,0,0.25) 70%,
       rgba(0,0,0,0.55) 100%
     );
-    z-index: 1;
   }
 
-  /* Clock container — bottom-left, Skylight style */
   .clock-wrap {
     position: absolute;
     bottom: 7vh;
     left: 7vw;
-    z-index: 2;
+    z-index: 11;
     color: #fff;
     text-shadow: 0 2px 24px rgba(0,0,0,0.35);
   }
@@ -99,7 +96,6 @@
 </head>
 <body>
 
-<!-- Slides using <img> tags instead of CSS background-image -->
 <div class="slide active" id="slide0"><img src="https://mnstrong.github.io/Skylight/bg/bg1.jpg" alt=""></div>
 <div class="slide" id="slide1"><img src="https://mnstrong.github.io/Skylight/bg/bg2.jpg" alt=""></div>
 <div class="slide" id="slide2"><img src="https://mnstrong.github.io/Skylight/bg/bg3.jpg" alt=""></div>
@@ -107,8 +103,6 @@
 <div class="slide" id="slide4"><img src="https://mnstrong.github.io/Skylight/bg/bg5.jpg" alt=""></div>
 <div class="slide" id="slide5"><img src="https://mnstrong.github.io/Skylight/bg/bg6.jpg" alt=""></div>
 <div class="slide" id="slide6"><img src="https://mnstrong.github.io/Skylight/bg/bg7.jpg" alt=""></div>
-<div class="slide" id="slide6"><img src="https://mnstrong.github.io/Skylight/bg/bg8.jpg" alt=""></div>
-
 
 <div class="overlay"></div>
 
@@ -124,15 +118,22 @@
 
   function rotate() {
     const next = (current + 1) % slides.length;
+    // Raise next slide above current so it fades in on top
+    slides[next].style.zIndex = 2;
+    slides[current].style.zIndex = 1;
     slides[next].classList.add('active');
-    setTimeout(() => slides[current].classList.remove('active'), 2000);
-    current = next;
-    setTimeout(rotate, 300000);
+    // After crossfade completes, hide old slide and reset z-index
+    setTimeout(function() {
+      slides[current].classList.remove('active');
+      slides[current].style.zIndex = 0;
+      current = next;
+      setTimeout(rotate, 300000);
+    }, 2000);
   }
 
   setTimeout(rotate, 300000);
 
-  // ── Clock ────────────────────────────────────────────────────────────────────
+  // Clock
   const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months = ['January','February','March','April','May','June',
                   'July','August','September','October','November','December'];
@@ -143,12 +144,10 @@
     const m = now.getMinutes();
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-
     document.getElementById('time').innerHTML =
-      `${h}:${String(m).padStart(2,'0')}<span class="ampm">${ampm}</span>`;
-
+      h + ':' + String(m).padStart(2,'0') + '<span class="ampm">' + ampm + '</span>';
     document.getElementById('date').textContent =
-      `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+      days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
   }
 
   tick();
