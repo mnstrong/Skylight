@@ -266,8 +266,23 @@ function getWeatherIcon() {
     var el = document.getElementById('weatherDisplay');
     if (!el) return '';
     var text = (el.textContent || el.innerText || '').trim();
-    // Grab just the first token which is typically the weather emoji
     return text.split(/\s+/)[0] || '';
+}
+
+function getMemberAvatar(memberName) {
+    if (typeof familyMembers === 'undefined') return null;
+    return familyMembers.find(function(fm){ return fm.name === memberName; }) || null;
+}
+
+function memberAvatarHTML(memberName, size) {
+    var m = getMemberAvatar(memberName);
+    if (!m) return '';
+    size = size || 16;
+    var initial = m.name.charAt(0).toUpperCase();
+    if (m.photo) {
+        return '<img src="' + esc(m.photo) + '" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover;flex-shrink:0;" />';
+    }
+    return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + (m.color||'#667eea') + ';display:flex;align-items:center;justify-content:center;color:white;font-size:' + Math.round(size*0.55) + 'px;font-weight:700;flex-shrink:0;">' + initial + '</div>';
 }
 
 function dayCell(d, today, evts, weatherIcon) {
