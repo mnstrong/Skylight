@@ -835,11 +835,32 @@ function init() {
         if (window.location.hash === '#/home') renderHomepage();
     });
 
-    // Initial load: if hash is home (or empty), render homepage
+    // Also re-render whenever supabase finishes loading data (catches the initial load race)
+    var _origFinish = window.onSupabaseDataLoaded;
+    window.onSupabaseDataLoaded = function() {
+        if (_origFinish) _origFinish.apply(this, arguments);
+        var hash = window.location.hash;
+        if (window.innerWidth > 768 && (hash === '#/home' || !hash || hash === '#/')) {
+            renderHomepage();
+        }
+    };
+
+    // Initial load: poll until events/familyMembers are available, then render
     var hash = window.location.hash;
     if (window.innerWidth > 768 && (hash === '#/home' || !hash || hash === '#/')) {
-        // Use a slightly longer delay to ensure supabase-init has run
-        setTimeout(renderHomepage, 150);
+        var attempts = 0;
+        function tryRender() {
+            attempts++;
+            // Consider data ready if familyMembers has been populated, or after 8s fallback
+            var hasFamilyData = typeof familyMembers !== 'undefined' && familyMembers.length > 0;
+            var hasEventData  = typeof getAllEvents === 'function' && getAllEvents().length > 0;
+            if (hasFamilyData || hasEventData || attempts > 40) {
+                renderHomepage();
+            } else {
+                setTimeout(tryRender, 200);
+            }
+        }
+        setTimeout(tryRender, 200);
     }
 }
 

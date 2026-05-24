@@ -7030,7 +7030,7 @@ width: 80px;
     gap: 0;
     height: 100%;
     overflow: hidden;
-    background: #F2F4F7;
+    background: white;
 }
 
 /* ── Left: Full-height Calendar panel ── */
@@ -7039,7 +7039,6 @@ width: 80px;
     flex-direction: column;
     overflow: hidden;
     height: 100%;
-    padding: 16px 12px 16px 16px;
 }
 
 .hp-calendar-inner {
@@ -7047,9 +7046,8 @@ width: 80px;
     flex-direction: column;
     height: 100%;
     background: white;
-    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-right: 1px solid #E8EBF0;
 }
 
 /* ── Panel header — reuses existing section-title spirit ── */
@@ -7318,8 +7316,6 @@ width: 80px;
     flex-direction: column;
     overflow: hidden;
     height: 100%;
-    padding: 16px 16px 16px 4px;
-    gap: 10px;
 }
 
 .hp-right-panel {
@@ -7328,9 +7324,11 @@ width: 80px;
     flex-direction: column;
     overflow: hidden;
     background: white;
-    border-radius: 20px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     min-height: 0;
+}
+
+.hp-right-panel + .hp-right-panel {
+    border-top: 1px solid #E8EBF0;
 }
 
 /* ── Cards viewport / scrollable area ── */
