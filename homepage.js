@@ -1,5 +1,5 @@
 /* ============================================================
-   SKYLIGHT HOMEPAGE — homepage.js  v3
+   SKYLIGHT HOMEPAGE — homepage.js  v4
    Add AFTER script.js in index.html:
      <script src="homepage.js"></script>
    ============================================================ */
@@ -10,7 +10,7 @@
 // ── State ────────────────────────────────────────────────────
 var hpTaskPage   = 0;
 var hpListPage   = 0;
-var hpWeekOffset = 0;  // 0 = this week, -1 = last, +1 = next
+var hpWeekOffset = 0;
 
 var HP_STORAGE_KEY = 'skylight_homepage_widgets';
 var hpWidgets = loadHpWidgets();
@@ -24,8 +24,6 @@ function saveHpWidgets() {
 }
 
 // ── patchHandleHashChange ─────────────────────────────────────
-// script.js's handleHashChange maps desktop #/home → calendar.
-// We replace it so #/home → renderHomepage() instead.
 function patchHandleHashChange() {
     var _orig = window.handleHashChange;
     window.handleHashChange = function() {
@@ -51,33 +49,27 @@ function addHomeNavItem() {
 
 // ── Main render ───────────────────────────────────────────────
 function renderHomepage() {
-    // Nav highlighting
     document.querySelectorAll('.nav-item').forEach(function(item) {
         item.classList.remove('active');
         if (item.getAttribute('href') === '#/home') item.classList.add('active');
     });
 
-    // Set hash without triggering hashchange loop
     if (window.location.hash !== '#/home') {
         window.history.replaceState(null, null, '#/home');
     }
 
-    // Hide header controls
     ['monthNav','todayNav','weekNav'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
     var vs = document.getElementById('mainViewSelector');
     if (vs) vs.style.display = 'none';
-    // Filter button: leave visible (it works for the homepage calendar too)
 
-    // Floating buttons off
     var f1 = document.getElementById('floatingAddBtn');
     var f2 = document.getElementById('floatingAddTaskBtn');
     if (f1) f1.classList.remove('active');
     if (f2) f2.classList.remove('active');
 
-    // Reset pagination
     hpTaskPage = 0;
     hpListPage = 0;
     hpWeekOffset = 0;
@@ -88,7 +80,6 @@ function renderHomepage() {
     ca.style.overflow = 'hidden';
     ca.style.height   = '100%';
 
-    // Also zero out the parent .main-content padding so homepage fills edge-to-edge
     var mc = document.querySelector('.main-content');
     if (mc) {
         mc.style.padding   = '0';
@@ -98,7 +89,6 @@ function renderHomepage() {
 
     ca.innerHTML = buildHTML();
 
-    // Wire calendar nav arrows
     document.getElementById('hpCalPrev').addEventListener('click', function() { hpWeekOffset--; renderHpWeekCal(); });
     document.getElementById('hpCalNext').addEventListener('click', function() { hpWeekOffset++; renderHpWeekCal(); });
 
@@ -112,21 +102,22 @@ function buildHTML() {
     return (
     '<div class="homepage-layout">' +
       '<div class="hp-calendar-panel">' +
-        '<div class="hp-panel-header">' +
-          '<div style="display:flex;align-items:center;gap:10px;">' +
-            '<div class="hp-panel-title"><span class="hp-panel-title-icon">📅</span>CALENDAR</div>' +
-            '<div class="hp-cal-nav">' +
-              '<button class="hp-arrow-btn" id="hpCalPrev">&#8249;</button>' +
-              '<span class="hp-cal-nav-label" id="hpCalLabel"></span>' +
-              '<button class="hp-arrow-btn" id="hpCalNext">&#8250;</button>' +
+        '<div class="hp-calendar-inner">' +
+          '<div class="hp-panel-header">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+              '<div class="hp-panel-title"><span class="hp-panel-title-icon">📅</span>CALENDAR</div>' +
+              '<div class="hp-cal-nav">' +
+                '<button class="hp-arrow-btn" id="hpCalPrev">&#8249;</button>' +
+                '<span class="hp-cal-nav-label" id="hpCalLabel"></span>' +
+                '<button class="hp-arrow-btn" id="hpCalNext">&#8250;</button>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
+              '<button class="hp-customize-btn" onclick="openHpCustomize()">⚙ Customize</button>' +
             '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<a class="hp-goto-link" onclick="switchSection(\'calendar\')">Open →</a>' +
-            '<button class="hp-customize-btn" onclick="openHpCustomize()">⚙ Customize</button>' +
-          '</div>' +
+          '<div class="hp-panel-body" id="hpCalBody"></div>' +
         '</div>' +
-        '<div class="hp-panel-body" id="hpCalBody"></div>' +
       '</div>' +
 
       '<div class="hp-right-col">' +
@@ -179,9 +170,7 @@ function buildHTML() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// WEEK CALENDAR — 2 rows: Sun–Wed (top) | Thu–Sat + Next Week (bottom)
-// This is entirely self-contained; does NOT call renderCalendar() or
-// write to any IDs that script.js owns (calendarGrid, monthYear, etc.)
+// WEEK CALENDAR
 // ─────────────────────────────────────────────────────────────
 function renderHpWeekCal() {
     var body = document.getElementById('hpCalBody');
@@ -189,12 +178,10 @@ function renderHpWeekCal() {
 
     var today = new Date(); today.setHours(0,0,0,0);
 
-    // Sunday of the week we're viewing
     var sunday = new Date(today);
     sunday.setDate(today.getDate() - today.getDay() + hpWeekOffset * 7);
     sunday.setHours(0,0,0,0);
 
-    // 7 days of this week: Sun(0) Mon(1) … Sat(6)
     var week = [];
     for (var i = 0; i < 7; i++) {
         var d = new Date(sunday);
@@ -202,11 +189,9 @@ function renderHpWeekCal() {
         week.push(d);
     }
 
-    // Next week start/end
     var nwStart = new Date(sunday); nwStart.setDate(sunday.getDate() + 7);
     var nwEnd   = new Date(sunday); nwEnd.setDate(sunday.getDate() + 13);
 
-    // Pull events
     var allEvts = getHpAllEvents();
 
     function evtsForDay(dt) {
@@ -229,7 +214,6 @@ function renderHpWeekCal() {
         return out;
     }
 
-    // Update nav label
     var label = document.getElementById('hpCalLabel');
     if (label) {
         var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -238,27 +222,25 @@ function renderHpWeekCal() {
             ', ' + sunday.getFullYear();
     }
 
-    // Split: row1 = Sun–Wed (4 days), row2 = Thu–Sat (3 days) + Next Week cell
-    var row1 = week.slice(0, 4);   // Sun Mon Tue Wed
-    var row2 = week.slice(4, 7);   // Thu Fri Sat
+    var row1 = week.slice(0, 4);
+    var row2 = week.slice(4, 7);
     var nwEvts = evtsForRange(nwStart, nwEnd);
 
-    // ── Build HTML ────────────────────────────────────────────
     var html = '<div class="hp-week-cal">';
 
-    // Row 1 header: Sun Mon Tue Wed
+    // Row 1 header
     html += '<div class="hp-week-header">';
     row1.forEach(function(d) {
         html += '<div class="hp-week-header-cell">' + dName(d) + ' <span style="font-weight:400;opacity:.6;">' + d.getDate() + '</span></div>';
     });
     html += '</div>';
 
-    // Row 1 day cells
+    // Row 1 cells
     html += '<div class="hp-week-rows"><div class="hp-week-row">';
     row1.forEach(function(d) { html += dayCell(d, today, evtsForDay(d)); });
     html += '</div>';
 
-    // Row 2 header: Thu Fri Sat | Next Week
+    // Row 2 header
     html += '<div class="hp-week-header" style="border-top:1px solid #E8EBF0;">';
     row2.forEach(function(d) {
         html += '<div class="hp-week-header-cell">' + dName(d) + ' <span style="font-weight:400;opacity:.6;">' + d.getDate() + '</span></div>';
@@ -266,14 +248,31 @@ function renderHpWeekCal() {
     html += '<div class="hp-week-header-cell" style="color:#667eea;">Next Week</div>';
     html += '</div>';
 
-    // Row 2 day cells + next week cell
+    // Row 2 cells
     html += '<div class="hp-week-row">';
     row2.forEach(function(d) { html += dayCell(d, today, evtsForDay(d)); });
     html += nextWeekCell(nwStart, nwEnd, nwEvts);
     html += '</div>';
 
-    html += '</div></div>'; // .hp-week-rows / .hp-week-cal
+    html += '</div></div>';
     body.innerHTML = html;
+}
+
+function getMemberAvatar(memberName) {
+    if (typeof familyMembers === 'undefined') return null;
+    var m = familyMembers.find(function(fm){ return fm.name === memberName; });
+    return m || null;
+}
+
+function memberAvatarHTML(memberName, size) {
+    var m = getMemberAvatar(memberName);
+    if (!m) return '';
+    size = size || 16;
+    var initial = m.name.charAt(0).toUpperCase();
+    if (m.photo) {
+        return '<img src="' + esc(m.photo) + '" style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover;flex-shrink:0;" />';
+    }
+    return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + (m.color||'#667eea') + ';display:flex;align-items:center;justify-content:center;color:white;font-size:' + Math.round(size*0.55) + 'px;font-weight:700;flex-shrink:0;">' + initial + '</div>';
 }
 
 function dayCell(d, today, evts) {
@@ -283,15 +282,19 @@ function dayCell(d, today, evts) {
 
     var evtHtml = shown.map(function(e) {
         var c  = hpEvtColor(e);
-        var bg = hexRgba(c, 0.15);
-        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + c + ';">' + esc(e.title||'') + '</div>';
+        var bg = hexRgba(c, 0.13);
+        var dot = '';
+        if (e.member) {
+            dot = '<div class="hp-event-pill-dot" style="background:' + hexRgba(c,0.25) + ';">' + memberAvatarHTML(e.member, 14) + '</div>';
+        }
+        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + c + ';">' + dot + '<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;">' + esc(e.title||'') + '</span></div>';
     }).join('');
     if (extra > 0) evtHtml += '<div class="hp-more-events">+' + extra + ' more</div>';
 
     return '<div class="hp-day-cell' + (isToday ? ' today' : '') + '">' +
         '<div class="hp-day-number-row">' +
           '<div class="hp-day-number' + (isToday ? ' today-num' : '') + '">' + d.getDate() + '</div>' +
-          (evts.length ? '<div class="hp-day-event-count">' + evts.length + '</div>' : '') +
+          (evts.length ? '<div class="hp-day-event-count">' + evts.length + ' event' + (evts.length!==1?'s':'') + '</div>' : '') +
         '</div>' +
         '<div class="hp-day-events">' + evtHtml + '</div>' +
         '</div>';
@@ -303,8 +306,8 @@ function nextWeekCell(s, e, evts) {
     var extra = evts.length - shown.length;
     var evtHtml = shown.map(function(ev) {
         var c  = hpEvtColor(ev);
-        var bg = hexRgba(c, 0.15);
-        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + c + ';">' + esc(ev.title||'') + '</div>';
+        var bg = hexRgba(c, 0.13);
+        return '<div class="hp-event-pill" style="background:' + bg + ';color:' + c + ';"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;">' + esc(ev.title||'') + '</span></div>';
     }).join('');
     if (extra > 0) evtHtml += '<div class="hp-more-events">+' + extra + ' more</div>';
 
@@ -342,8 +345,7 @@ function hpEvtColor(ev) {
 // TASKS PANEL
 // ─────────────────────────────────────────────────────────────
 
-// Track which period is selected per member (defaults to current time period)
-var hpSelectedPeriod = {}; // { 'MemberName': 'Morning' | 'Afternoon' | 'Evening' | 'Chores' }
+var hpSelectedPeriod = {};
 
 function getCurrentPeriod() {
     var h = new Date().getHours();
@@ -369,7 +371,7 @@ function buildPeriodIndicators(member, rItems, cItems, color) {
         total = items.length;
         done  = items.filter(function(i) { return i.completed; }).length;
 
-        if (total === 0) return; // skip periods with no tasks
+        if (total === 0) return;
 
         var pct     = total > 0 ? done / total : 0;
         var offset  = circ * (1 - pct);
@@ -429,46 +431,53 @@ function renderHpTasks() {
         var cItems = (typeof chores   !== 'undefined') ? chores.filter(function(c){   return c.member === member.name; }) : [];
         var allItems = rItems.concat(cItems);
         var done   = allItems.filter(function(i){ return i.completed; }).length;
+        var points = allItems.reduce(function(s,i){ return s + (i.completed ? (i.points||0) : 0); }, 0);
 
-        // Determine which period's tasks to show in the list
         var selPeriod = hpSelectedPeriod[member.name] || getCurrentPeriod();
         var listItems;
         if (selPeriod === 'Chores') {
             listItems = cItems;
         } else {
-            // Show selected period routines; fall back to all if that period is empty
             var periodItems = rItems.filter(function(r){ return r.period === selPeriod; });
             listItems = periodItems.length > 0 ? periodItems : rItems;
         }
 
-        html += '<div class="hp-task-card" style="background:' + hexRgba(member.color,.08) + ';border-color:' + hexRgba(member.color,.2) + ';">' +
+        // Build avatar — use photo if available
+        var avatarInner;
+        if (member.photo) {
+            avatarInner = '<img src="' + esc(member.photo) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />';
+        } else {
+            avatarInner = member.name.charAt(0).toUpperCase();
+        }
 
-            // Header: avatar + name + overall progress
+        html += '<div class="hp-task-card" style="background:' + hexRgba(member.color,.06) + ';border-color:' + hexRgba(member.color,.18) + ';">' +
+
             '<div class="hp-task-card-header">' +
-            '<div class="hp-task-avatar" style="background:' + member.color + ';">' + member.name.charAt(0) + '</div>' +
+            '<div class="hp-task-avatar" style="background:' + member.color + ';">' + avatarInner + '</div>' +
             '<div class="hp-task-member-info">' +
             '<div class="hp-task-member-name">' + esc(member.name) + '</div>' +
-            '<div class="hp-task-meta">✓ ' + done + '/' + allItems.length + '</div>' +
-            '</div></div>' +
+            '<div class="hp-task-meta">' +
+              '<span>✓ ' + done + '/' + allItems.length + '</span>' +
+              (points > 0 ? '<span class="hp-task-meta-star">⭐ ' + points + '</span>' : '') +
+            '</div>' +
+            '</div>' +
+            '</div>' +
 
-            // Period indicator buttons row
             buildPeriodIndicators(member.name, rItems, cItems, member.color) +
 
-            // Task list for selected period
             '<div class="hp-task-items">';
 
         if (listItems.length === 0) {
-            html += '<div style="font-size:12px;color:#BBBFC8;padding:4px 0;">No tasks for this period</div>';
+            html += '<div style="color:#BBBFC8;font-size:12px;text-align:center;padding:10px 0;">All done! 🎉</div>';
         } else {
-            listItems.slice(0, 10).forEach(function(item) {
-                var isRoutine = typeof item.period !== 'undefined';
-                var isDone    = !!item.completed;
-                var call      = 'hpToggleTask(\'' + (isRoutine ? 'routine' : 'chore') + '\',' + JSON.stringify(item.id) + ')';
+            listItems.slice(0, 12).forEach(function(item) {
+                var itemId = esc(item.id || '');
                 html += '<div class="hp-task-row">' +
-                    '<div class="hp-task-row-text' + (isDone ? ' completed' : '') + '">' +
-                    (item.icon ? item.icon + ' ' : '') + esc(item.title || '') +
-                    '</div>' +
-                    '<button class="hp-task-toggle' + (isDone ? ' on' : '') + '" onclick="' + call + '"></button>' +
+                    '<span class="hp-task-row-text' + (item.completed ? ' completed' : '') + '">' +
+                    (item.icon ? item.icon + ' ' : '') + esc(item.title||'') +
+                    '</span>' +
+                    '<button class="hp-task-toggle' + (item.completed ? ' on' : '') + '" ' +
+                    'onclick="hpToggleTask(\'' + itemId + '\',this)" aria-label="Toggle task"></button>' +
                     '</div>';
             });
         }
@@ -477,30 +486,39 @@ function renderHpTasks() {
     });
 
     track.innerHTML = html;
-    requestAnimationFrame(function() {
+
+    // size + scroll
+    setTimeout(function() {
         sizeCards(scroller, track, 'hp-task-card');
-        var pages = Math.ceil(members.length / 2);
-        updateDots('hpTaskDots', hpTaskPage, pages);
-        updateArrows('hpTaskPrev','hpTaskNext', hpTaskPage, pages);
-        addSwipeSupport('hpTasksScroller', window.hpScrollTasks);
-    });
+        goTaskPage(hpTaskPage);
+        addSwipe(scroller, hpScrollTasks);
+    }, 30);
 }
 
-window.hpToggleTask = function(type, id) {
-    var arr = type === 'routine' ? (typeof routines !== 'undefined' ? routines : [])
-                                 : (typeof chores   !== 'undefined' ? chores   : []);
-    var item = arr.find(function(x){ return String(x.id) === String(id); });
-    if (item) {
-        item.completed = !item.completed;
-        var sync = window.SupabaseSync;
-        if (sync) {
-            if (type === 'routine' && typeof sync.saveRoutine === 'function') sync.saveRoutine(item);
-            if (type === 'chore'   && typeof sync.saveChore   === 'function') sync.saveChore(item);
+window.hpToggleTask = function(id, btn) {
+    // Try to toggle in chores first, then routines
+    var toggled = false;
+    if (typeof chores !== 'undefined') {
+        var c = chores.find(function(x){ return x.id === id; });
+        if (c) {
+            c.completed = !c.completed;
+            if (typeof saveChores === 'function') saveChores();
+            toggled = true;
         }
     }
-    var pg = hpTaskPage;
-    renderHpTasks();
-    setTimeout(function(){ goTaskPage(pg); }, 20);
+    if (!toggled && typeof routines !== 'undefined') {
+        var r = routines.find(function(x){ return x.id === id; });
+        if (r) {
+            r.completed = !r.completed;
+            if (typeof saveRoutines === 'function') saveRoutines();
+            toggled = true;
+        }
+    }
+    if (btn) {
+        btn.classList.toggle('on');
+        var txt = btn.previousElementSibling;
+        if (txt) txt.classList.toggle('completed');
+    }
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -511,8 +529,9 @@ function renderHpLists() {
     var scroller = document.getElementById('hpListsScroller');
     if (!track || !scroller) return;
 
-    var listsData = (typeof lists !== 'undefined') ? lists : [];
-    if (listsData.length === 0) {
+    var ld = (typeof lists !== 'undefined') ? lists : [];
+
+    if (ld.length === 0) {
         track.innerHTML = '<div class="hp-empty-state"><div class="hp-empty-icon">📋</div><div>No lists yet</div></div>';
         updateDots('hpListDots', 0, 0);
         updateArrows('hpListPrev','hpListNext', 0, 0);
@@ -520,108 +539,102 @@ function renderHpLists() {
     }
 
     var html = '';
-    listsData.forEach(function(list) {
-        var member = null;
-        if (typeof familyMembers !== 'undefined' && list.assignedTo) {
-            member = familyMembers.find(function(m){
-                return String(m.id)===String(list.assignedTo) || m.name===list.assignedTo;
-            });
-        }
-        var color  = member ? member.color : '#667eea';
-        var active = (list.items||[]).filter(function(i){ return i.text && !i.completed; });
+    ld.forEach(function(list) {
+        var items   = list.items || [];
+        var pending = items.filter(function(i){ return !i.completed; });
+        var color   = list.color || '#667eea';
+        var listId  = esc(list.id || '');
 
-        html += '<div class="hp-list-card" style="background:' + hexRgba(color,.07) + ';border-color:' + hexRgba(color,.2) + ';" onclick="hpOpenList(\'' + list.id + '\')">' +
+        html += '<div class="hp-list-card" onclick="switchSection(\'lists\')">' +
             '<div class="hp-list-card-header">' +
-            '<div class="hp-list-name">' + esc(list.name) + '</div>' +
-            '<div class="hp-list-count-badge" style="background:' + color + ';">' + active.length + '</div>' +
-            '</div>' +
-            '<div class="hp-list-items">';
+            '<div class="hp-list-name">' + esc(list.name||'Untitled') + '</div>' +
+            (pending.length > 0 ? '<div class="hp-list-count-badge" style="background:' + color + ';">' + pending.length + '</div>' : '') +
+            '</div>';
 
-        if (active.length === 0) {
-            html += '<div style="font-size:12px;color:#BBBFC8;">No items</div>';
+        // Add item input
+        html += '<input class="hp-list-add-input" placeholder="Add item…" ' +
+            'onclick="event.stopPropagation()" ' +
+            'onkeydown="if(event.key===\'Enter\')hpAddListItem(\'' + listId + '\',this)" />';
+
+        // List items with checkboxes
+        if (items.length === 0) {
+            html += '<div style="color:#BBBFC8;font-size:12px;padding:6px 0;">Empty list</div>';
         } else {
-            active.slice(0,8).forEach(function(item) {
+            html += '<div class="hp-list-items">';
+            items.slice(0, 10).forEach(function(item) {
+                var iid = esc(item.id || '');
                 html += '<div class="hp-list-item-row">' +
-                    '<div class="hp-list-item-dot" style="background:' + color + ';"></div>' +
-                    '<div class="hp-list-item-text">' + esc(item.text) + '</div>' +
+                    '<div class="hp-list-checkbox' + (item.completed ? ' checked' : '') + '" ' +
+                    'onclick="event.stopPropagation();hpToggleListItem(\'' + listId + '\',\'' + iid + '\',this)">' +
+                    (item.completed ? '✓' : '') +
+                    '</div>' +
+                    '<span class="hp-list-item-text' + (item.completed ? ' completed' : '') + '">' + esc(item.text||item.name||'') + '</span>' +
                     '</div>';
             });
+            if (items.length > 10) {
+                html += '<div style="font-size:11px;color:#999;padding:2px 0;">+' + (items.length-10) + ' more items</div>';
+            }
+            html += '</div>';
         }
 
-        html += '</div>' +
-            '<input class="hp-list-add-input" placeholder="Add item..." onclick="event.stopPropagation()" ' +
-            'onkeypress="if(event.key===\'Enter\') hpAddListItem(\'' + list.id + '\',this)">' +
-            '</div>';
+        html += '</div>';
     });
 
     track.innerHTML = html;
-    requestAnimationFrame(function() {
+
+    setTimeout(function() {
         sizeCards(scroller, track, 'hp-list-card');
-        var pages = Math.ceil(listsData.length / 2);
-        updateDots('hpListDots', hpListPage, pages);
-        updateArrows('hpListPrev','hpListNext', hpListPage, pages);
-        addSwipeSupport('hpListsScroller', window.hpScrollLists);
-    });
+        goListPage(hpListPage);
+        addSwipe(scroller, hpScrollLists);
+    }, 30);
 }
 
-window.hpOpenList = function(listId) {
-    switchSection('lists');
-    setTimeout(function(){ if (typeof openEditListPanel==='function') openEditListPanel(listId); }, 150);
-};
-
-window.hpAddListItem = function(listId, inp) {
-    var text = inp.value.trim();
+window.hpAddListItem = function(listId, input) {
+    var text = (input.value || '').trim();
     if (!text) return;
-    var list = (typeof lists!=='undefined') ? lists.find(function(l){ return String(l.id)===String(listId); }) : null;
+    if (typeof lists === 'undefined') return;
+    var list = lists.find(function(l){ return l.id === listId; });
     if (!list) return;
-    var sec = (list.items && list.items.length) ? (list.items[0].section||'Items') : 'Items';
-    list.items = list.items||[];
-    list.items.push({ id: Date.now(), text: text, completed: false, section: sec });
-    if (window.SupabaseSync && typeof window.SupabaseSync.saveList==='function') window.SupabaseSync.saveList(list);
-    inp.value = '';
-    var pg = hpListPage;
+    if (!list.items) list.items = [];
+    list.items.push({ id: Date.now().toString(), text: text, completed: false });
+    if (typeof saveLists === 'function') saveLists();
+    input.value = '';
     renderHpLists();
-    setTimeout(function(){ goListPage(pg); }, 20);
+    setTimeout(function() { goListPage(hpListPage); }, 20);
+};
+
+window.hpToggleListItem = function(listId, itemId, el) {
+    if (typeof lists === 'undefined') return;
+    var list = lists.find(function(l){ return l.id === listId; });
+    if (!list || !list.items) return;
+    var item = list.items.find(function(i){ return i.id === itemId; });
+    if (!item) return;
+    item.completed = !item.completed;
+    if (typeof saveLists === 'function') saveLists();
+    // Update UI immediately
+    el.classList.toggle('checked', item.completed);
+    el.textContent = item.completed ? '✓' : '';
+    var txt = el.nextElementSibling;
+    if (txt) txt.classList.toggle('completed', item.completed);
+    // Refresh count badge
+    renderHpLists();
+    setTimeout(function() { goListPage(hpListPage); }, 20);
 };
 
 // ─────────────────────────────────────────────────────────────
-// SWIPE SUPPORT — touch events on the scroller
+// SWIPE
 // ─────────────────────────────────────────────────────────────
-function addSwipeSupport(scrollerId, scrollFn) {
-    var el = document.getElementById(scrollerId);
-    if (!el) return;
-
-    var startX = null, startY = null, isDragging = false;
-
-    el.addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        isDragging = false;
-    }, { passive: true });
-
-    el.addEventListener('touchmove', function(e) {
-        if (startX === null) return;
-        var dx = e.touches[0].clientX - startX;
-        var dy = e.touches[0].clientY - startY;
-        // Only lock in as horizontal swipe once direction is clear
-        if (!isDragging && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
-            isDragging = true;
-        }
-        if (isDragging) e.preventDefault();
-    }, { passive: false });
-
+function addSwipe(el, scrollFn) {
+    if (!el || el._swipeAdded) return;
+    el._swipeAdded = true;
+    var startX = null;
+    el.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
     el.addEventListener('touchend', function(e) {
         if (startX === null) return;
         var dx = e.changedTouches[0].clientX - startX;
-        var dy = e.changedTouches[0].clientY - startY;
-        startX = null; startY = null;
-        // Require a clear horizontal swipe (dx > 40px, more horizontal than vertical)
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-            scrollFn(dx < 0 ? 1 : -1);
-        }
+        startX = null;
+        if (Math.abs(dx) > 40) scrollFn(dx < 0 ? 1 : -1);
     }, { passive: true });
-
-    // Also support mouse drag for desktop testing
     var mouseStartX = null;
     el.addEventListener('mousedown', function(e) { mouseStartX = e.clientX; });
     el.addEventListener('mouseup', function(e) {
@@ -634,12 +647,12 @@ function addSwipeSupport(scrollerId, scrollFn) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SCROLL PAGINATION — uses scrollLeft
+// SCROLL PAGINATION
 // ─────────────────────────────────────────────────────────────
 function sizeCards(scroller, track, cls) {
     if (!scroller || !track) return;
     var w   = scroller.clientWidth;
-    var pad = 13; // matches CSS padding 11px 13px
+    var pad = 14;
     var gap = 10;
     var cw  = Math.floor((w - pad*2 - gap) / 2);
     track.querySelectorAll('.' + cls).forEach(function(c) {
@@ -760,26 +773,20 @@ function init() {
     addHomeNavItem();
     patchHandleHashChange();
 
-    // Default calendar to schedule view if no preference saved yet
     if (!window.lastCalendarView) window.lastCalendarView = 'schedule';
     if (!window.lastCalendarViewFromServer) window.lastCalendarViewFromServer = 'schedule';
 
-    // Re-wrap switchSection AFTER all script.js wrappers have run,
-    // so we are always the outermost layer and 'home' is always caught.
     var _inner = window.switchSection;
     window.switchSection = function(section) {
         if (section === 'home') { renderHomepage(); return; }
-        // Restore everything the homepage overrode
         var fb = document.getElementById('calendarFilterBtn');
         if (fb) fb.style.display = '';
-        // Reset contentArea inline styles so other sections render normally
         var ca = document.getElementById('contentArea');
         if (ca) {
             ca.style.padding  = '';
             ca.style.overflow = '';
             ca.style.height   = '';
         }
-        // Reset main-content — critically restores overflow-y:auto so chore indicators aren't clipped
         var mc = document.querySelector('.main-content');
         if (mc) {
             mc.style.padding    = '';
@@ -790,22 +797,18 @@ function init() {
         if (_inner) _inner.call(this, section);
     };
 
-    // Hashchange listener (catches nav-item clicks)
     window.addEventListener('hashchange', function() {
         if (window.location.hash === '#/home') renderHomepage();
     });
 
-    // Initial load: if hash is home (or empty), render homepage
     var hash = window.location.hash;
     if (window.innerWidth > 768 && (hash === '#/home' || !hash || hash === '#/')) {
-        // Use a slightly longer delay to ensure supabase-init has run
         setTimeout(renderHomepage, 150);
     }
 }
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-        // Run after ALL other DOMContentLoaded handlers (script.js, supabase-init, etc.)
         setTimeout(init, 0);
     });
 } else {

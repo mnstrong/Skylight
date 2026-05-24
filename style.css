@@ -7009,3 +7009,870 @@ width: 80px;
     color: white !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important;
 }
+
+/* ============================================================
+   SKYLIGHT HOMEPAGE — merged from homepage.css
+   Desktop Only (hidden on mobile)
+   ============================================================ */
+
+/* ── Hidden on mobile ── */
+@media screen and (max-width: 768px) {
+    .homepage-layout,
+    .hp-customize-modal {
+        display: none !important;
+    }
+}
+
+/* ── Homepage Layout: 60% calendar / 40% right panels ── */
+.homepage-layout {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #F2F4F7;
+}
+
+/* ── Left: Full-height Calendar panel ── */
+.hp-calendar-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    padding: 16px 12px 16px 16px;
+}
+
+.hp-calendar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* ── Panel header — reuses existing section-title spirit ── */
+.hp-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid #E8EBF0;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+}
+
+.hp-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #5C6370;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.hp-panel-title-icon {
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+.hp-panel-arrows {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Arrow buttons — same look as existing .month-nav-btn ── */
+.hp-arrow-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: #E8EBF0;
+    color: #5C6370;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, opacity 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.hp-arrow-btn:hover { background: #D5D9E0; }
+.hp-arrow-btn:active { transform: scale(0.92); }
+
+.hp-panel-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Week Calendar ── */
+.hp-week-cal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.hp-week-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid #E8EBF0;
+    flex-shrink: 0;
+    background: #FAFBFC;
+}
+
+.hp-week-header-cell {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8A8F9A;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-right: 1px solid #F0F2F5;
+    text-align: left;
+}
+
+.hp-week-header-cell:last-child { border-right: none; }
+
+.hp-week-rows {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.hp-week-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.hp-week-row + .hp-week-row {
+    border-top: 1px solid #E8EBF0;
+}
+
+/* Individual day cell */
+.hp-day-cell {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #F0F2F5;
+    padding: 10px 10px 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.hp-day-cell:last-child { border-right: none; }
+.hp-day-cell:hover { background: #F5F7FF; }
+.hp-day-cell.today { background: rgba(102,126,234,0.04); }
+.hp-day-cell.next-week-cell {
+    background: #F8F9FB;
+    cursor: default;
+}
+
+.hp-day-number-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-bottom: 6px;
+}
+
+.hp-day-number {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.hp-day-number.today-num {
+    background: #667eea;
+    color: white;
+}
+
+.hp-day-event-count {
+    font-size: 11px;
+    color: #B0B5C0;
+    font-weight: 500;
+}
+
+.hp-day-events {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.hp-event-pill {
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hp-event-pill-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 9px;
+}
+
+.hp-event-pill-dot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.hp-more-events {
+    font-size: 10.5px;
+    color: #999;
+    padding: 1px 4px;
+    flex-shrink: 0;
+}
+
+/* Next-week summary cell */
+.hp-next-week-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+    flex-shrink: 0;
+}
+
+.hp-next-week-dates {
+    font-size: 10px;
+    color: #B0B5C0;
+    flex-shrink: 0;
+    margin-bottom: 5px;
+}
+
+.hp-next-week-events {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Calendar nav label */
+.hp-cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hp-cal-nav-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    min-width: 130px;
+    text-align: center;
+    padding: 0 2px;
+}
+
+/* ── Right column ── */
+.hp-right-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    padding: 16px 16px 16px 4px;
+    gap: 10px;
+}
+
+.hp-right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    min-height: 0;
+}
+
+/* ── Cards viewport / scrollable area ── */
+.hp-cards-viewport {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+}
+
+.hp-cards-scroller {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hp-cards-track {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 14px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Task & List cards — width set dynamically by JS */
+.hp-task-card,
+.hp-list-card {
+    flex: 0 0 auto;
+    border-radius: 14px;
+    padding: 13px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+    border: 1px solid #EDF0F5;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.hp-task-card { background: #F7F9FC; }
+.hp-list-card {
+    background: #F7F9FC;
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+.hp-list-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+/* ── Task card internals ── */
+.hp-task-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Reuses .person-avatar sizing / shape */
+.hp-task-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.hp-task-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.hp-task-member-info { flex: 1; min-width: 0; }
+
+.hp-task-member-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hp-task-meta {
+    font-size: 11px;
+    color: #8A8F9A;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hp-task-meta-star {
+    font-size: 11px;
+}
+
+.hp-task-items {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 0;
+}
+
+.hp-task-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    flex-shrink: 0;
+    padding: 2px 0;
+}
+
+.hp-task-row-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hp-task-row-text.completed {
+    text-decoration: line-through;
+    color: #AAB0BC;
+}
+
+/* ── Toggle switches — same logic as existing task-toggle ── */
+.hp-task-toggle {
+    width: 38px;
+    height: 22px;
+    border-radius: 11px;
+    background: #E2E7EF;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    padding: 0;
+}
+
+.hp-task-toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+}
+
+.hp-task-toggle.on { background: #5CB85C; }
+.hp-task-toggle.on::after { left: 19px; }
+
+/* ── List card internals ── */
+.hp-list-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+}
+
+.hp-list-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Reuses badge pattern from existing code */
+.hp-list-count-badge {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    margin-left: 6px;
+}
+
+.hp-list-items {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 0;
+}
+
+.hp-list-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #444;
+    flex-shrink: 0;
+}
+
+/* Checkbox style for list items */
+.hp-list-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid #D0D5DE;
+    background: white;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 10px;
+    color: white;
+}
+
+.hp-list-checkbox.checked {
+    background: #5CB85C;
+    border-color: #5CB85C;
+}
+
+.hp-list-item-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hp-list-item-text.completed {
+    text-decoration: line-through;
+    color: #AAB0BC;
+}
+
+.hp-list-add-input {
+    border: none;
+    background: rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: #555;
+    width: 100%;
+    flex-shrink: 0;
+    outline: none;
+    transition: background 0.15s;
+}
+
+.hp-list-add-input:focus { background: rgba(0,0,0,0.07); }
+.hp-list-add-input::placeholder { color: #C0C5CE; }
+
+/* ── Dot pagination indicators ── */
+.hp-scroll-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.hp-scroll-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #D5D9E0;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.hp-scroll-dot.active {
+    background: #667eea;
+    transform: scale(1.3);
+}
+
+/* ── Customize button — reuses existing btn style ── */
+.hp-customize-btn {
+    background: none;
+    border: 1px solid #D5D9E0;
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #5C6370;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.hp-customize-btn:hover { background: #F0F2F5; }
+
+/* ── "Open →" link ── */
+.hp-goto-link {
+    font-size: 11px;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hp-goto-link:hover { background: rgba(102,126,234,0.1); }
+
+/* ── Empty states ── */
+.hp-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #BBBFC8;
+    font-size: 12px;
+    gap: 8px;
+    padding: 20px;
+    width: 100%;
+}
+
+.hp-empty-icon {
+    font-size: 26px;
+    opacity: 0.5;
+}
+
+/* ── Customize Modal ── */
+.hp-customize-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.hp-customize-modal.active { display: flex; }
+
+.hp-customize-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+}
+
+.hp-customize-panel {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: 18px;
+    padding: 26px 26px 22px;
+    width: 350px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.hp-customize-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 5px;
+}
+
+.hp-customize-subtitle {
+    font-size: 12px;
+    color: #8A8F9A;
+    margin-bottom: 18px;
+}
+
+.hp-customize-items {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 20px;
+}
+
+.hp-customize-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 13px;
+    border-radius: 12px;
+    background: #F7F9FC;
+    border: 1px solid #EDF0F5;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.hp-customize-item:hover { background: #EEF1F7; }
+
+.hp-customize-item-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.hp-customize-item-icon {
+    font-size: 18px;
+    width: 32px;
+    text-align: center;
+}
+
+.hp-customize-item-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.hp-customize-item-sublabel {
+    font-size: 11px;
+    color: #9A9FA8;
+    margin-top: 1px;
+}
+
+/* ── Toggle switch — same pattern as existing .task-toggle ── */
+.hp-toggle-switch {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #D5D9E0;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.hp-toggle-switch.on { background: #667eea; }
+
+.hp-toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.hp-toggle-switch.on::after { left: 21px; }
+
+.hp-customize-close-btn {
+    width: 100%;
+    padding: 11px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+
+.hp-customize-close-btn:hover { background: #5568d9; }
+
+/* ── Scrollbar hiding ── */
+.hp-task-items::-webkit-scrollbar,
+.hp-list-items::-webkit-scrollbar,
+.hp-cards-scroller::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ── Period indicator buttons ── */
+.hp-period-indicators {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 2px 0 4px;
+}
+
+.hp-period-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 3px 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s;
+    position: relative;
+    min-width: 0;
+}
+
+.hp-period-btn:hover { filter: brightness(0.93); }
+.hp-period-btn:active { transform: scale(0.95); }
+
+.hp-period-btn-inner {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hp-period-ring {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+}
+
+.hp-period-icon {
+    font-size: 14px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.hp-period-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.hp-period-btn.active .hp-period-label { opacity: 1; }
