@@ -97,6 +97,11 @@
 
 <div class="slide" id="slide0"></div>
 <div class="slide" id="slide1"></div>
+<div class="slide" id="slide2"></div>
+<div class="slide" id="slide3"></div>
+<div class="slide" id="slide4"></div>
+<div class="slide" id="slide5"></div>
+<div class="slide" id="slide6"></div>
 <div class="overlay"></div>
 
 <div class="clock-wrap">
@@ -108,12 +113,17 @@
 <script>
   // ── Images ──────────────────────────────────────────────────────────────────
   const BASE = 'https://raw.githubusercontent.com/mnstrong/Skylight/main/bg/';
-  const images = ['bg1.jpg', 'bg2.jpg'];
+  const images = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg', 'bg5.jpg', 'bg6.jpg', 'bg7.jpg'];
   let current = 0;
 
   const slides = [
     document.getElementById('slide0'),
-    document.getElementById('slide1')
+    document.getElementById('slide1'),
+    document.getElementById('slide2'),
+    document.getElementById('slide3'),
+    document.getElementById('slide4'),
+    document.getElementById('slide5'),
+    document.getElementById('slide6')
   ];
 
   // Preload then kick off
@@ -134,8 +144,8 @@
 
   function rotate() {
     const next = (current + 1) % images.length;
-    const nextSlide = slides[next % 2];
-    const currSlide = slides[current % 2];
+    const nextSlide = slides[next];
+    const currSlide = slides[current];
 
     nextSlide.style.backgroundImage = `url(${BASE + images[next]})`;
     nextSlide.classList.add('active');
