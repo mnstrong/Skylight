@@ -1154,6 +1154,28 @@ window.SupabaseSync = {
         } catch(e) { console.error('Error syncing allowance:', e); }
     },
 
+    // Allowance — update an existing transaction by its Supabase id
+    async updateAllowanceTransaction(transaction, memberName) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        if (!transaction.id) {
+            console.warn('updateAllowanceTransaction: no id on transaction', transaction);
+            return;
+        }
+        const fm = window.familyMembers || [];
+        const memberObj = fm.find(m => m.name === memberName);
+        try {
+            await SupabaseAPI.updateAllowanceTransaction(transaction.id, {
+                member_id: memberObj ? memberObj.id : null,
+                amount: transaction.amount,
+                transaction_type: transaction.type,
+                description: transaction.description,
+                // Preserve the original created_at; update the date field if your table has one
+                ...(transaction.date ? { created_at: transaction.date } : {})
+            });
+            console.log('✓ Allowance transaction updated in Supabase');
+        } catch(e) { console.error('Error updating allowance transaction:', e); }
+    },
+
     isReady: function() { return isSupabaseReady; },
     isEnabled: function() { return syncEnabled; }
 };

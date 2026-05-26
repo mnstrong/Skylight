@@ -450,6 +450,18 @@ function addAllowanceTransaction(transaction) {
         });
 }
 
+function updateAllowanceTransaction(id, fields) {
+    return _sbRequest('PATCH', 'allowance_transactions', {
+        filters: [{ col: 'id', op: 'eq', val: id }],
+        body: fields,
+        single: true
+    }).then(function(r) {
+        if (r.error) { console.error('Error updating allowance transaction:', r.error); return null; }
+        console.log('✓ Allowance transaction updated');
+        return r.data;
+    });
+}
+
 // ============================================
 // HABITS
 // ============================================
@@ -637,6 +649,7 @@ window.SupabaseAPI = {
     getAllowanceBalance:        getAllowanceBalance,
     getAllowanceTransactions:   getAllowanceTransactions,
     addAllowanceTransaction:   addAllowanceTransaction,
+    updateAllowanceTransaction: updateAllowanceTransaction,
 
     getHabits:                 getHabits,
     addHabit:                  addHabit,
