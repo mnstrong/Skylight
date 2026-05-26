@@ -608,8 +608,46 @@ let rewards = window.rewards || [];
         // Always read latest from window.allowances (Supabase may have refreshed it)
         if (window.allowances && window.allowances !== allowances) allowances = window.allowances;
         const grid = document.getElementById('allowanceGrid');
+        if (!grid) return; // not in DOM yet
+
+        // If family members haven't loaded yet, show a loader and retry
         const allowanceMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'allowance'));
-        
+        if (allowanceMembers.length === 0 && familyMembers.length === 0) {
+            grid.innerHTML = '<div style="text-align:center;padding:40px;color:#999;font-size:14px;">Loading...</div>';
+            setTimeout(renderAllowanceGrid, 500);
+            return;
+        }
+
+        // Calculate grand totals across all members for the balance bar
+        let grandSaving = 0, grandSpending = 0;
+        allowanceMembers.forEach(member => {
+            const ma = allowances.find(a => a.member === member.name) || { transactions: [] };
+            (ma.transactions || []).forEach(t => {
+                if (t.type === 'save') grandSaving += t.amount;
+                else if (t.type === 'spend') grandSpending += Math.abs(t.amount);
+            });
+        });
+        const grandBalance = grandSaving - grandSpending;
+
+        // Build balance header (shown on desktop above the cards)
+        const balanceHtml = `
+            <div class="allowance-balance-bar">
+                <div class="allowance-balance-item">
+                    <div class="allowance-balance-label">Total Saving</div>
+                    <div class="allowance-balance-amount positive">+$${grandSaving.toFixed(2)}</div>
+                </div>
+                <div class="allowance-balance-divider"></div>
+                <div class="allowance-balance-item">
+                    <div class="allowance-balance-label">Total Spending</div>
+                    <div class="allowance-balance-amount negative">-$${grandSpending.toFixed(2)}</div>
+                </div>
+                <div class="allowance-balance-divider"></div>
+                <div class="allowance-balance-item">
+                    <div class="allowance-balance-label">Net Balance</div>
+                    <div class="allowance-balance-amount ${grandBalance >= 0 ? 'positive' : 'negative'}">${grandBalance >= 0 ? '+' : ''}$${grandBalance.toFixed(2)}</div>
+                </div>
+            </div>`;
+
         let html = '';
         allowanceMembers.forEach(member => {
             const memberAllowance = allowances.find(a => a.member === member.name) || {
@@ -682,8 +720,9 @@ let rewards = window.rewards || [];
                 </div>
             `;
         });
-        
-        grid.innerHTML = html;
+
+        // Inject balance bar above the cards
+        grid.innerHTML = balanceHtml + '<div class="allowance-cards-grid">' + html + '</div>';
     }
     
     let currentAllowanceMember = '';
@@ -5124,6 +5163,13 @@ let rewards = window.rewards || [];
                 </div>
             `;
             renderAllowanceGrid();
+            // If Supabase hasn't loaded yet, re-render once it does
+            if (familyMembers.length === 0) {
+                document.addEventListener('supabaseDataLoaded', function onAllow() {
+                    document.removeEventListener('supabaseDataLoaded', onAllow);
+                    if (document.getElementById('allowanceGrid')) renderAllowanceGrid();
+                });
+            }
         } else if (section === 'recipes') {
             document.getElementById('monthNav').style.display = 'none';
             document.getElementById('todayNav').style.display = 'none';
@@ -10500,7 +10546,7 @@ var homeEl = document.getElementById('mobileHome');
 if (homeEl) homeEl.style.display = 'none';
 document.getElementById('mobileBackBtn').style.display = 'block';
 document.getElementById('mobileHomeIndicator').style.display = 'none';
-var titles = { 'calendar': getWeekRangeTitle(), 'chores': 'Thu, Feb 5', 'rewards': 'Rewards', 'meals': 'Meals', 'recipes': 'Recipes', 'habits': 'Habits' };
+var titles = { 'calendar': getWeekRangeTitle(), 'chores': 'Chores', 'rewards': 'Rewards', 'allowance': 'Allowance', 'meals': 'Meals', 'recipes': 'Recipes', 'habits': 'Habits' };
 document.getElementById('mobileHeaderTitle').textContent = titles[sectionName] || sectionName;
 if (typeof switchSection === 'function') switchSection(sectionName);
 }
