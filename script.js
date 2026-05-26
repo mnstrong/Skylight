@@ -605,8 +605,9 @@ let rewards = window.rewards || [];
     
     // Allowance Functions
     function renderAllowanceGrid() {
+        // Always read latest from window.allowances (Supabase may have refreshed it)
+        if (window.allowances && window.allowances !== allowances) allowances = window.allowances;
         const grid = document.getElementById('allowanceGrid');
-        // Only show Levi and Elsie
         const allowanceMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'allowance'));
         
         let html = '';
