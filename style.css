@@ -5398,6 +5398,12 @@ width: 80px;
             font-weight: 700;
             color: #000;
         }
+
+        .allowance-balance-inline {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 3px;
+        }
         
         .allowance-sections {
             display: grid;
