@@ -26,6 +26,7 @@
             document.dispatchEvent(new CustomEvent('supabaseChoresLoaded'));
             document.dispatchEvent(new CustomEvent('supabaseDataLoaded', {
                 detail: {
+                    familyMembers: window.familyMembers,
                     chores: window.chores,
                     routines: window.routines,
                     tasks: window.tasks,

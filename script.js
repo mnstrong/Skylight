@@ -614,8 +614,7 @@ let rewards = window.rewards || [];
         const allowanceMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'allowance'));
         if (allowanceMembers.length === 0 && familyMembers.length === 0) {
             grid.innerHTML = '<div style="text-align:center;padding:40px;color:#999;font-size:14px;">Loading...</div>';
-            setTimeout(renderAllowanceGrid, 500);
-            return;
+            return; // supabaseDataLoaded event will re-trigger this once data arrives
         }
 
         // Calculate grand totals across all members for the balance bar
@@ -5163,13 +5162,6 @@ let rewards = window.rewards || [];
                 </div>
             `;
             renderAllowanceGrid();
-            // If Supabase hasn't loaded yet, re-render once it does
-            if (familyMembers.length === 0) {
-                document.addEventListener('supabaseDataLoaded', function onAllow() {
-                    document.removeEventListener('supabaseDataLoaded', onAllow);
-                    if (document.getElementById('allowanceGrid')) renderAllowanceGrid();
-                });
-            }
         } else if (section === 'recipes') {
             document.getElementById('monthNav').style.display = 'none';
             document.getElementById('todayNav').style.display = 'none';
@@ -9509,6 +9501,10 @@ if (allChoresComplete || allRoutinesComplete) {
 
     document.addEventListener('supabaseDataLoaded', function(e) {
         const d = e.detail || {};
+        if (d.familyMembers !== undefined && d.familyMembers.length > 0) {
+            familyMembers = d.familyMembers;
+            window.familyMembers = familyMembers;
+        }
         if (d.chores !== undefined)            { chores = d.chores || []; window.chores = chores; }
         if (d.routines !== undefined)          { routines = d.routines || []; window.routines = routines; }
         if (d.tasks !== undefined)             { tasks = d.tasks || []; }
