@@ -617,36 +617,6 @@ let rewards = window.rewards || [];
             return; // supabaseDataLoaded event will re-trigger this once data arrives
         }
 
-        // Calculate grand totals across all members for the balance bar
-        let grandSaving = 0, grandSpending = 0;
-        allowanceMembers.forEach(member => {
-            const ma = allowances.find(a => a.member === member.name) || { transactions: [] };
-            (ma.transactions || []).forEach(t => {
-                if (t.type === 'save') grandSaving += t.amount;
-                else if (t.type === 'spend') grandSpending += Math.abs(t.amount);
-            });
-        });
-        const grandBalance = grandSaving - grandSpending;
-
-        // Build balance header (shown on desktop above the cards)
-        const balanceHtml = `
-            <div class="allowance-balance-bar">
-                <div class="allowance-balance-item">
-                    <div class="allowance-balance-label">Total Saving</div>
-                    <div class="allowance-balance-amount positive">+$${grandSaving.toFixed(2)}</div>
-                </div>
-                <div class="allowance-balance-divider"></div>
-                <div class="allowance-balance-item">
-                    <div class="allowance-balance-label">Total Spending</div>
-                    <div class="allowance-balance-amount negative">-$${grandSpending.toFixed(2)}</div>
-                </div>
-                <div class="allowance-balance-divider"></div>
-                <div class="allowance-balance-item">
-                    <div class="allowance-balance-label">Net Balance</div>
-                    <div class="allowance-balance-amount ${grandBalance >= 0 ? 'positive' : 'negative'}">${grandBalance >= 0 ? '+' : ''}$${grandBalance.toFixed(2)}</div>
-                </div>
-            </div>`;
-
         let html = '';
         allowanceMembers.forEach(member => {
             const memberAllowance = allowances.find(a => a.member === member.name) || {
@@ -655,25 +625,18 @@ let rewards = window.rewards || [];
                 saving: 0,
                 transactions: []
             };
-            
-            // Calculate spending and saving from transactions
-            let spending = 0;
-            let saving = 0;
+
+            let spending = 0, saving = 0;
             (memberAllowance.transactions || []).forEach(t => {
-                if (t.type === 'spend') {
-                    spending += Math.abs(t.amount);
-                } else if (t.type === 'save') {
-                    saving += t.amount;
-                }
+                if (t.type === 'spend') spending += Math.abs(t.amount);
+                else if (t.type === 'save') saving += t.amount;
             });
-            
+            const balance = saving - spending;
+
             const initial = member.name.charAt(0).toUpperCase();
-            // Show ALL transactions in reverse chronological order (newest first)
             const allTransactions = (memberAllowance.transactions || []).slice().reverse();
-            
-            // Create gradient background like chores
             const columnBg = hexToRgba(member.color, 0.2);
-            
+
             html += `
                 <div class="allowance-card" style="background: ${columnBg};">
                     <div class="allowance-header">
@@ -682,9 +645,12 @@ let rewards = window.rewards || [];
                         </div>
                         <div class="allowance-info">
                             <div class="allowance-name">${member.name}</div>
+                            <div class="allowance-balance-inline" style="color:${balance >= 0 ? '#4CAF50' : '#FF6B6B'}">
+                                ${balance >= 0 ? '+' : ''}$${balance.toFixed(2)} balance
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="allowance-sections">
                         <div class="allowance-section">
                             <div class="allowance-section-label">Spending</div>
@@ -720,8 +686,7 @@ let rewards = window.rewards || [];
             `;
         });
 
-        // Inject balance bar above the cards
-        grid.innerHTML = balanceHtml + '<div class="allowance-cards-grid">' + html + '</div>';
+        grid.innerHTML = '<div class="allowance-cards-grid">' + html + '</div>';
     }
     
     let currentAllowanceMember = '';
