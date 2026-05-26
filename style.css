@@ -1969,8 +1969,7 @@
             cursor: pointer;
             transition: background 0.15s;
             border-radius: 8px;
-            margin: 0 -8px;
-            padding: 12px 8px;
+            padding: 12px 0;
         }
 
         .allowance-transaction:hover {
@@ -5302,21 +5301,19 @@ display: flex;
         }
         
         .allowance-grid {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .allowance-grid> :first-child {
-            margin-right: 20px;
-        }
-        
         .allowance-card {
-min-width: 450px;
-    max-width: 450px;
-    min-height: 500px;
-    flex-shrink: 0;
-    border-radius: 15px;
-    padding: 30px;
-    margin-right: 20px;
+            min-height: 500px;
+            border-radius: 15px;
+            padding: 30px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .allowance-header {
@@ -5433,10 +5430,6 @@ width: 80px;
             font-weight: 600;
             color: #666;
             margin-bottom: 10px;
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 5px 0;
         }
         
         .allowance-transaction {
