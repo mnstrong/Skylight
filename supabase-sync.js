@@ -804,9 +804,10 @@ async function loadAllowanceFromSupabase() {
         window.allowances = formatted;
         console.log('✓ Loaded allowance transactions for', formatted.length, 'members from Supabase');
         // Refresh mobile allowance view if open (body only — tabs don't change on allowance load)
-        if (typeof renderMalBody === 'function' && document.getElementById('mobileAllowancePage') &&
+        if (document.getElementById('mobileAllowancePage') &&
             document.getElementById('mobileAllowancePage').style.display !== 'none') {
-            renderMalBody();
+            if (typeof renderMalTabs === 'function') renderMalTabs();
+            if (typeof renderMalBody === 'function') renderMalBody();
         }
         if (typeof renderAllowanceGrid === 'function' && typeof currentSection !== 'undefined' && currentSection === 'allowance') {
             renderAllowanceGrid();
@@ -1137,70 +1138,21 @@ window.SupabaseSync = {
         } catch(e) { console.error('Error syncing reward:', e); }
     },
 
-    // Allowance — insert a new transaction, then reload from Supabase to get the real UUID
+    // Allowance — individual transaction sync (write path, called from script.js)
     async syncAllowanceTransaction(transaction, memberName) {
         if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
         const fm = window.familyMembers || [];
         const memberObj = fm.find(m => m.name === memberName);
-        if (!memberObj) {
-            console.warn('syncAllowanceTransaction: member not found:', memberName);
-            return;
-        }
         try {
-            const result = await SupabaseAPI.addAllowanceTransaction({
-                member_id: memberObj.id,
+            await SupabaseAPI.addAllowanceTransaction({
+                member_id: memberObj ? memberObj.id : null,
                 amount: transaction.amount,
                 transaction_type: transaction.type,
                 description: transaction.description
-                // created_at is set automatically by Supabase to NOW()
+                // created_at is set automatically by Supabase
             });
-            if (!result) {
-                console.error('✗ Allowance transaction insert returned null — check RLS policies');
-                return;
-            }
-            console.log('✓ Allowance transaction saved to Supabase, id:', result.id);
-
-            // Reload from Supabase so the local temp id is replaced with the real UUID.
-            // This ensures edits/deletes work correctly.
-            await loadAllowanceFromSupabase();
-            if (typeof renderAllowanceGrid === 'function') renderAllowanceGrid();
-        } catch(e) { console.error('Error syncing allowance transaction:', e); }
-    },
-
-    // Allowance — update an existing transaction by its Supabase UUID
-    async updateAllowanceTransaction(transaction, memberName) {
-        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
-        if (!transaction.id) {
-            console.warn('updateAllowanceTransaction: missing id');
-            return;
-        }
-        const fm = window.familyMembers || [];
-        const memberObj = fm.find(m => m.name === memberName);
-        try {
-            await SupabaseAPI.updateAllowanceTransaction(transaction.id, {
-                member_id: memberObj ? memberObj.id : undefined,
-                amount: transaction.amount,
-                transaction_type: transaction.type,
-                description: transaction.description
-            });
-            console.log('✓ Allowance transaction updated in Supabase');
-            await loadAllowanceFromSupabase();
-            if (typeof renderAllowanceGrid === 'function') renderAllowanceGrid();
-        } catch(e) { console.error('Error updating allowance transaction:', e); }
-    },
-
-    // Allowance — delete a transaction by its Supabase UUID
-    async deleteAllowanceTransaction(transaction) {
-        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
-        if (!transaction.id) { console.warn('deleteAllowanceTransaction: missing id'); return; }
-        try {
-            await _sbRequest('DELETE', 'allowance_transactions', {
-                filters: [{ col: 'id', op: 'eq', val: transaction.id }]
-            });
-            console.log('✓ Allowance transaction deleted from Supabase');
-            await loadAllowanceFromSupabase();
-            if (typeof renderAllowanceGrid === 'function') renderAllowanceGrid();
-        } catch(e) { console.error('Error deleting allowance transaction:', e); }
+            console.log('✓ Allowance transaction synced');
+        } catch(e) { console.error('Error syncing allowance:', e); }
     },
 
     isReady: function() { return isSupabaseReady; },
