@@ -5293,27 +5293,82 @@
         
         /* Allowance Section */
         .allowance-container {
-display: flex;
-    padding: 20px 0;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #CBD5E0 #F7FAFC;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100%;
+            box-sizing: border-box;
+            gap: 16px;
         }
-        
-        .allowance-grid {
+
+        /* Balance summary bar — desktop only */
+        .allowance-balance-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            background: white;
+            border-radius: 16px;
+            padding: 20px 32px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+            flex-shrink: 0;
+        }
+
+        .allowance-balance-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .allowance-balance-divider {
+            width: 1px;
+            height: 40px;
+            background: #E8EBF0;
+            flex-shrink: 0;
+            margin: 0 20px;
+        }
+
+        .allowance-balance-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .allowance-balance-amount {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .allowance-balance-amount.positive { color: #4CAF50; }
+        .allowance-balance-amount.negative { color: #FF6B6B; }
+
+        /* Cards wrapper — fills remaining space, scrollable */
+        .allowance-cards-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             width: 100%;
             box-sizing: border-box;
+            flex: 1;
+        }
+
+        /* Keep .allowance-grid as alias in case referenced elsewhere */
+        .allowance-grid {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .allowance-card {
-            min-height: 500px;
             border-radius: 15px;
             padding: 30px;
             box-sizing: border-box;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;
         }
         
         .allowance-header {
@@ -5421,8 +5476,9 @@ width: 80px;
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #e0e0e0;
-            max-height: 400px;
             overflow-y: auto;
+            flex: 1;
+            padding-bottom: 8px;
         }
         
         .allowance-history-title {
