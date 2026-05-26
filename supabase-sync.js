@@ -1176,6 +1176,18 @@ window.SupabaseSync = {
         } catch(e) { console.error('Error updating allowance transaction:', e); }
     },
 
+    // Allowance — delete a transaction by its Supabase id
+    async deleteAllowanceTransaction(transaction) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        if (!transaction.id) return;
+        try {
+            await _sbRequest('DELETE', 'allowance_transactions', {
+                filters: [{ col: 'id', op: 'eq', val: transaction.id }]
+            });
+            console.log('✓ Allowance transaction deleted from Supabase');
+        } catch(e) { console.error('Error deleting allowance transaction:', e); }
+    },
+
     isReady: function() { return isSupabaseReady; },
     isEnabled: function() { return syncEnabled; }
 };

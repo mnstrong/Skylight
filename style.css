@@ -1945,6 +1945,38 @@
             transform: translateY(-2px);
         }
         
+        /* Transaction Detail Modal extras */
+        .tx-detail-amount {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .tx-detail-amount.positive { color: #4CAF50; }
+        .tx-detail-amount.negative { color: #FF6B6B; }
+
+        .tx-detail-description {
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        /* Make allowance transaction rows look clickable */
+        .allowance-transaction {
+            cursor: pointer;
+            transition: background 0.15s;
+            border-radius: 8px;
+            margin: 0 -8px;
+            padding: 12px 8px;
+        }
+
+        .allowance-transaction:hover {
+            background: rgba(0,0,0,0.04);
+        }
+
         /* Delete Options Modal */
         .delete-options-overlay {
             position: fixed;
@@ -5457,21 +5489,20 @@ width: 80px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 14px;
-            opacity: 0;
-            padding: 2px 4px;
-            border-radius: 4px;
+            font-size: 13px;
+            opacity: 0.45;
+            padding: 4px 7px;
+            border-radius: 6px;
             transition: opacity 0.15s, background 0.15s;
             line-height: 1;
             flex-shrink: 0;
+            color: #555;
         }
 
-        .allowance-transaction:hover .allowance-edit-btn {
+        .allowance-edit-btn:hover,
+        .allowance-edit-btn:active {
             opacity: 1;
-        }
-
-        .allowance-edit-btn:hover {
-            background: rgba(0,0,0,0.07);
+            background: rgba(0,0,0,0.08);
         }
 
         .allowance-transaction-amount {

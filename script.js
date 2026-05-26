@@ -666,17 +666,14 @@ let rewards = window.rewards || [];
                         <div class="allowance-history">
                             <div class="allowance-history-title">Transaction History</div>
                             ${allTransactions.map(t => `
-                                <div class="allowance-transaction">
+                                <div class="allowance-transaction" onclick="openTransactionDetail('${member.name}', '${t.id}')">
                                     <div class="allowance-transaction-info">
                                         <div class="allowance-transaction-date">${new Date(t.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
                                         <div class="allowance-transaction-description">${t.description || 'No description'}</div>
                                     </div>
-                                    <div class="allowance-transaction-right">
-                                        <span class="allowance-transaction-amount ${t.type === 'save' ? 'positive' : 'negative'}">
-                                            ${t.type === 'save' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
-                                        </span>
-                                        <button class="allowance-edit-btn" onclick="openEditTransaction('${member.name}', '${`${t.id}`}')" title="Edit transaction">✏️</button>
-                                    </div>
+                                    <span class="allowance-transaction-amount ${t.type === 'save' ? 'positive' : 'negative'}">
+                                        ${t.type === 'save' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
+                                    </span>
                                 </div>
                             `).join('')}
                         </div>
@@ -691,11 +688,78 @@ let rewards = window.rewards || [];
     let currentAllowanceMember = '';
     let currentAllowanceType = 'save'; // Default to save
     let currentEditTransactionId = null; // null = adding new, string = editing existing
+    let currentTransactionMember = ''; // for detail modal
     
+    function openTransactionDetail(memberName, transactionId) {
+        const memberAllowance = allowances.find(a => a.member === memberName);
+        if (!memberAllowance) return;
+        const t = memberAllowance.transactions.find(tx => tx.id === transactionId);
+        if (!t) return;
+
+        currentTransactionMember = memberName;
+        currentEditTransactionId = transactionId;
+
+        const member = familyMembers.find(m => m.name === memberName);
+        const color = member ? member.color : '#667eea';
+        const initial = memberName.charAt(0).toUpperCase();
+        const isPositive = t.type === 'save';
+        const amountStr = (isPositive ? '+' : '-') + '$' + Math.abs(t.amount).toFixed(2);
+        const dateStr = new Date(t.date).toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
+        const typeLabel = t.type === 'save' ? '💰 Saving' : '💸 Spending';
+
+        // Populate modal
+        document.getElementById('txDetailAmount').textContent = amountStr;
+        document.getElementById('txDetailAmount').className = 'tx-detail-amount ' + (isPositive ? 'positive' : 'negative');
+        document.getElementById('txDetailDescription').textContent = t.description || 'No description';
+        document.getElementById('txDetailDate').textContent = dateStr;
+        document.getElementById('txDetailType').textContent = typeLabel;
+        document.getElementById('txDetailAvatar').style.background = color;
+        document.getElementById('txDetailAvatar').textContent = initial;
+        document.getElementById('txDetailMemberName').textContent = memberName;
+
+        document.getElementById('txDetailModal').classList.add('active');
+    }
+
+    function closeTransactionDetail() {
+        document.getElementById('txDetailModal').classList.remove('active');
+        currentTransactionMember = '';
+    }
+
+    function openEditFromDetail() {
+        closeTransactionDetail();
+        // openEditTransaction already exists and uses currentEditTransactionId
+        openEditTransaction(currentTransactionMember || currentAllowanceMember, currentEditTransactionId);
+    }
+
+    function deleteTransactionFromDetail() {
+        if (!currentEditTransactionId) return;
+        const memberName = currentTransactionMember;
+        const memberAllowance = allowances.find(a => a.member === memberName);
+        if (!memberAllowance) return;
+        const idx = memberAllowance.transactions.findIndex(tx => tx.id === currentEditTransactionId);
+        if (idx === -1) return;
+
+        if (!confirm('Delete this transaction?')) return;
+
+        const deleted = memberAllowance.transactions.splice(idx, 1)[0];
+
+        // Sync delete to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.deleteAllowanceTransaction === 'function') {
+            window.SupabaseSync.deleteAllowanceTransaction(deleted);
+        }
+
+        closeTransactionDetail();
+        renderAllowanceGrid();
+    }
+
+    window.openTransactionDetail = openTransactionDetail;
+    window.closeTransactionDetail = closeTransactionDetail;
+    window.openEditFromDetail = openEditFromDetail;
+    window.deleteTransactionFromDetail = deleteTransactionFromDetail;
+
     function openAllowanceTransaction(memberName) {
         currentAllowanceMember = memberName;
         currentAllowanceType = 'save';
-        currentEditTransactionId = null;
         
         // Reset toggle buttons
         document.getElementById('saveTypeBtn').classList.add('active');
@@ -704,47 +768,12 @@ let rewards = window.rewards || [];
         // Clear form
         document.getElementById('allowanceAmount').value = '';
         document.getElementById('allowanceDescription').value = '';
-        document.getElementById('allowanceDate').value = new Date().toISOString().split('T')[0];
-        
-        // Modal title
-        document.getElementById('allowanceModalTitle').textContent = 'Add Transaction';
-        document.getElementById('allowanceSaveBtn').textContent = 'Save';
         
         // Open modal
         document.getElementById('allowancePanelOverlay').classList.add('active');
         document.getElementById('allowanceModal').classList.add('active');
         
         // Focus on amount field
-        setTimeout(() => document.getElementById('allowanceAmount').focus(), 100);
-    }
-
-    function openEditTransaction(memberName, transactionId) {
-        const memberAllowance = allowances.find(a => a.member === memberName);
-        if (!memberAllowance) return;
-        const t = memberAllowance.transactions.find(tx => tx.id === transactionId);
-        if (!t) return;
-
-        currentAllowanceMember = memberName;
-        currentAllowanceType = t.type;
-        currentEditTransactionId = transactionId;
-
-        // Pre-fill form
-        document.getElementById('saveTypeBtn').classList.toggle('active', t.type === 'save');
-        document.getElementById('spendTypeBtn').classList.toggle('active', t.type === 'spend');
-        document.getElementById('allowanceAmount').value = Math.abs(t.amount);
-        document.getElementById('allowanceDescription').value = t.description || '';
-        // Date: use stored date or today
-        const dateVal = t.date ? t.date.split('T')[0] : new Date().toISOString().split('T')[0];
-        document.getElementById('allowanceDate').value = dateVal;
-
-        // Modal title
-        document.getElementById('allowanceModalTitle').textContent = 'Edit Transaction';
-        document.getElementById('allowanceSaveBtn').textContent = 'Update';
-
-        // Open modal
-        document.getElementById('allowancePanelOverlay').classList.add('active');
-        document.getElementById('allowanceModal').classList.add('active');
-
         setTimeout(() => document.getElementById('allowanceAmount').focus(), 100);
     }
     
@@ -759,66 +788,63 @@ let rewards = window.rewards || [];
         document.getElementById('allowanceModal').classList.remove('active');
         currentAllowanceMember = '';
         currentAllowanceType = 'save';
-        currentEditTransactionId = null;
     }
     
     function saveAllowanceTransaction() {
         const amountStr = document.getElementById('allowanceAmount').value;
         const description = document.getElementById('allowanceDescription').value.trim();
-        const dateVal = document.getElementById('allowanceDate').value;
         
-        if (!amountStr) { alert('Please enter an amount'); return; }
+        if (!amountStr) {
+            alert('Please enter an amount');
+            return;
+        }
+        
         const amount = parseFloat(amountStr);
-        if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount'); return; }
-        if (!description) { alert('Please enter a description'); return; }
-
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+        
+        if (!description) {
+            alert('Please enter a description');
+            return;
+        }
+        
         // Find or create allowance for member
         let memberAllowance = allowances.find(a => a.member === currentAllowanceMember);
         if (!memberAllowance) {
-            memberAllowance = { member: currentAllowanceMember, spending: 0, saving: 0, transactions: [] };
+            memberAllowance = {
+                member: currentAllowanceMember,
+                spending: 0,
+                saving: 0,
+                transactions: []
+            };
             allowances.push(memberAllowance);
         }
+        
+        // Add transaction
         memberAllowance.transactions = memberAllowance.transactions || [];
-
-        if (currentEditTransactionId) {
-            // ── EDIT existing transaction ──
-            const idx = memberAllowance.transactions.findIndex(tx => tx.id === currentEditTransactionId);
-            if (idx === -1) { alert('Transaction not found'); return; }
-
-            const updated = {
-                ...memberAllowance.transactions[idx],
-                amount: amount,
-                type: currentAllowanceType,
-                description: description,
-                date: dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : memberAllowance.transactions[idx].date,
-            };
-            memberAllowance.transactions[idx] = updated;
-
-            // Sync update to Supabase
-            if (window.SupabaseSync && typeof window.SupabaseSync.updateAllowanceTransaction === 'function') {
-                window.SupabaseSync.updateAllowanceTransaction(updated, currentAllowanceMember);
-            } else if (window.SupabaseSync && typeof window.SupabaseSync.syncAllowanceTransaction === 'function') {
-                // Fallback: upsert via the same sync function (works if it uses upsert/onConflict)
-                window.SupabaseSync.syncAllowanceTransaction(updated, currentAllowanceMember);
-            }
-        } else {
-            // ── ADD new transaction ──
-            const newTransaction = {
-                id: Date.now() + '-' + Math.random().toString(36).slice(2),
-                date: dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString(),
-                amount: amount,
-                type: currentAllowanceType,
-                description: description
-            };
-            memberAllowance.transactions.push(newTransaction);
-
-            // Sync to Supabase
-            if (window.SupabaseSync && typeof window.SupabaseSync.syncAllowanceTransaction === 'function') {
-                window.SupabaseSync.syncAllowanceTransaction(newTransaction, currentAllowanceMember);
-            }
+        const newTransaction = {
+            id: Date.now() + '-' + Math.random().toString(36).slice(2),
+            date: new Date().toISOString(),
+            amount: amount,
+            type: currentAllowanceType,
+            description: description
+        };
+        memberAllowance.transactions.push(newTransaction);
+        
+        // Save locally
+        // [synced to Supabase]
+        
+        // Sync to Supabase
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncAllowanceTransaction === 'function') {
+            window.SupabaseSync.syncAllowanceTransaction(newTransaction, currentAllowanceMember);
         }
-
+        
+        // Close modal
         closeAllowanceModal();
+        
+        // Re-render
         renderAllowanceGrid();
     }
     
