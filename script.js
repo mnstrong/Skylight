@@ -9499,6 +9499,10 @@ if (allChoresComplete || allRoutinesComplete) {
             else if (currentSection === 'meals') renderMeals();
             else if (currentSection === 'recipes') renderRecipes();
             else if (currentSection === 'habits' && typeof renderHabitsView === 'function') renderHabitsView();
+            else if (currentSection === 'lists') {
+                if (window.innerWidth <= 768 && typeof listsLoadLists === 'function') listsLoadLists();
+                else if (typeof renderListsColumns === 'function') renderListsColumns();
+            }
             else if (currentSection === 'calendar') {
                 if (currentView === 'month') renderCalendar();
                 else if (currentView === 'week') renderWeekView();
