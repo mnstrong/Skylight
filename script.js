@@ -10260,18 +10260,23 @@ var text = input.value.trim();
 if (!text) return;
 var list = listsMemo.find(function(l){ return l.id===listsCurrentListId; });
 if (!list) return;
-var btn = document.getElementById('listsSheetAddBtn');
-btn.disabled = true;
+// Clear input immediately so a second Enter press doesn't double-add
+input.value = '';
 var newItem = { id: Date.now(), text: text, completed: false, section: 'Items' };
 list.items.push(newItem);
 listsSaveLocal();
-input.value = '';
+if (keepOpen) {
+// Render behind the sheet, then refocus — use setTimeout so the
+// Enter keydown fully resolves before we manipulate the DOM
+setTimeout(function() {
 listsRenderDetailItems();
 listsRenderLists();
-if (keepOpen) {
-// Stay in the sheet so the user can type another item
-input.focus();
+var inp = document.getElementById('listsSheetItemInput');
+if (inp) inp.focus();
+}, 50);
 } else {
+listsRenderDetailItems();
+listsRenderLists();
 listsCloseAddItemSheet();
 }
 // Sync to Supabase via syncListItem (updates newItem.id with UUID on success)
@@ -10285,7 +10290,6 @@ var row = await window.SupabaseAPI.addListItem(listsCurrentListId, text);
 if (row) { newItem.id = row.id; listsSaveLocal(); }
 } catch(err) { console.error('[ADD ITEM] error:', err); }
 }
-btn.disabled = false;
 }
 
 function listsOpenAddItemSheet() {
