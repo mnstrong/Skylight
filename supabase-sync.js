@@ -195,6 +195,7 @@ async function loadAllDataFromSupabase() {
             }));
             window.lists = formattedLists;
             console.log('✓ Loaded', allLists.length, 'lists');
+            document.dispatchEvent(new CustomEvent('supabaseListsLoaded'));
         }
         
         // Load meal categories
@@ -1008,6 +1009,7 @@ async function loadListsFromSupabase() {
                 : []
         }));
         window.lists = formattedLists;
+        document.dispatchEvent(new CustomEvent('supabaseListsLoaded'));
         
         // Refresh UI if on lists section
         if (typeof renderSection === 'function' && currentSection === 'lists') {

@@ -9900,8 +9900,6 @@ async function listsLoadLists() {
 document.getElementById('listCardsContainer').innerHTML =
 '<div style="text-align:center;padding:48px 24px;color:#8E8E93"><div class="lists-spinner"></div>Loading…</div>';
 if (!listsHasAPI()) {
-// window.lists is populated asynchronously by supabase-sync.
-// If it isn't ready yet, poll up to ~3s so the screen doesn't open blank.
 function _listsApplyLocal() {
 try {
 var s = window.lists ? JSON.stringify(window.lists) : null;
@@ -9910,7 +9908,6 @@ listsMemo.forEach(function(l){
 if(typeof l.color==='string') l.color=listsColorFromStr(l.color);
 if(!l.items) l.items=[];
 if(!('assignedTo' in l)) l.assignedTo = null;
-// normalize: supabase-sync writes 'checked', mobile uses 'completed'
 l.items.forEach(function(it){
 if('done' in it && !('completed' in it)) { it.completed = it.done; delete it.done; }
 if('checked' in it && !('completed' in it)) { it.completed = it.checked; }
@@ -9922,20 +9919,24 @@ l.items.sort(function(a,b){ return a.displayOrder - b.displayOrder; });
 } catch(e){ listsMemo=[]; }
 listsRenderLists();
 }
-if (window.lists && window.lists.length) {
+// If data is already available, use it immediately
+if (window.lists) {
 _listsApplyLocal(); return;
 }
-// Data not ready yet — poll for up to 3 seconds
-var _listsWaitCount = 0, _listsMaxWait = 30;
-var _listsPoller = setInterval(function() {
-_listsWaitCount++;
-if ((window.lists && window.lists.length) || _listsWaitCount >= _listsMaxWait) {
-clearInterval(_listsPoller);
+// Otherwise wait for supabaseListsLoaded event (fired by supabase-sync.js)
+// and also set a 4s fallback timer so we never hang blank
+var _listsHandled = false;
+function _listsOnReady() {
+if (_listsHandled) return;
+_listsHandled = true;
+document.removeEventListener('supabaseListsLoaded', _listsOnReady);
 _listsApplyLocal();
 }
-}, 100);
+document.addEventListener('supabaseListsLoaded', _listsOnReady);
+setTimeout(_listsOnReady, 4000);
 return;
 }
+
 try {
 var data = await window.SupabaseAPI.getLists() || [];
 listsMemo = data.map(function(row){
