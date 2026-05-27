@@ -2275,37 +2275,14 @@ function showMobileAllowance() {
     currentMobileSection = 'allowance';
     var homeEl = document.getElementById('mobileHome');
     if (homeEl) homeEl.style.display = 'none';
+    // mobileBackBtn hidden via CSS :not(.viewing-section)
     document.getElementById('mobileHomeIndicator').style.display = 'none';
     document.getElementById('mobileHeaderTitle').textContent = '';
 
-    function malRender() {
-        var fm = window.familyMembers || [];
-        var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
-        // Auto-select first member if none is selected or selection is no longer valid
-        if (!malCurrentMember || !members.find(function(m) { return m.name === malCurrentMember; })) {
-            malCurrentMember = members.length > 0 ? members[0].name : null;
-        }
-        renderMalTabs();
-        renderMalBody();
-    }
-
     var fm = window.familyMembers || [];
     var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
-
-    if (members.length === 0) {
-        // Supabase hasn't loaded yet — show spinner and wait
-        document.getElementById('malTabs').innerHTML = '';
-        document.getElementById('malBody').innerHTML = '<div style="padding:40px;text-align:center;color:#999;font-size:15px;">Loading…</div>';
-        var onLoad = function() {
-            document.removeEventListener('supabaseDataLoaded', onLoad);
-            document.removeEventListener('supabaseFamilyMembersLoaded', onLoad);
-            malRender();
-        };
-        document.addEventListener('supabaseDataLoaded', onLoad);
-        document.addEventListener('supabaseFamilyMembersLoaded', onLoad);
-    } else {
-        malRender();
-    }
+    renderMalTabs();
+    renderMalBody();
 }
 
 function hideMobileAllowance() {
@@ -2315,9 +2292,9 @@ function hideMobileAllowance() {
 function renderMalTabs() {
     var container = document.getElementById('malTabs');
     if (!container) return;
+    // Always read from localStorage so sections are preserved across Supabase reloads
     var fm = window.familyMembers || [];
     var members = fm.filter(function(m) { return !m.isGoogleCalendar && (typeof memberHasSection === 'function' ? memberHasSection(m, 'allowance') : true); });
-    if (!malCurrentMember && members.length > 0) malCurrentMember = members[0].name;
     var html = '';
     members.forEach(function(m) {
         var active = malCurrentMember === m.name;
@@ -2596,8 +2573,26 @@ window.openProfileSettings = function() {
 // Initialize on load
 document.addEventListener('DOMContentLoaded', function() {
     if (window.innerWidth <= 768) {
-        // Handle hash on load
         handleHashChange();
+
+        // Re-render today card when Supabase data arrives
+        document.addEventListener('supabaseDataLoaded', function() {
+            if (typeof updateMobileTodayCard === 'function') updateMobileTodayCard();
+        });
+
+        // Poll for Google Calendar events — they arrive async after page load
+        var prevEventCount = 0;
+        var gcalPollCount = 0;
+        var gcalPoller = setInterval(function() {
+            gcalPollCount++;
+            var count = (typeof getAllEvents === 'function') ? getAllEvents().length : 0;
+            if (count !== prevEventCount) {
+                prevEventCount = count;
+                if (typeof updateMobileTodayCard === 'function') updateMobileTodayCard();
+            }
+            // Stop polling after 15 seconds
+            if (gcalPollCount > 75) clearInterval(gcalPoller);
+        }, 200);
     }
 });
 </script>
