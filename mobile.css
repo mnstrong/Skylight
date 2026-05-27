@@ -1487,25 +1487,6 @@
     .mobile-icon-profiles { background: #EEEEEE; }
     .mobile-icon-sidekick { background: #F3E5F5; }
     
-    /* Plus badge */
-    .mobile-icon-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        width: 26px;
-        height: 26px;
-        background: #FFA726;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 18px;
-        font-weight: 700;
-        border: 3px solid white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
     .mobile-icon-label {
         font-size: 15px;
         font-weight: 500;
