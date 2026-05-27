@@ -273,8 +273,21 @@ async function loadAllDataFromSupabase() {
         // Load app settings
         await loadAppSettingsFromSupabase();
 
-        console.log('✅ All data loaded from Supabase');
-        
+        console.log('\u2705 All data loaded from Supabase');
+
+        // Notify script.js that all data is ready so it can re-render the active section
+        document.dispatchEvent(new CustomEvent('supabaseDataLoaded', { detail: {
+            familyMembers: window.familyMembers || [],
+            chores:        window.chores || [],
+            routines:      window.routines || [],
+            lists:         window.lists || [],
+            recipes:       window.recipes || [],
+            mealPlan:      window.mealPlan || [],
+            rewards:       window.rewards || [],
+            allowances:    window.allowances || [],
+            mealCategories: window.mealCategories || []
+        }}));
+
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
         throw error;
