@@ -10295,7 +10295,15 @@ if (row) { newItem.id = row.id; listsSaveLocal(); }
 function listsOpenAddItemSheet() {
 document.getElementById('listsSheetOverlay').classList.add('active');
 document.getElementById('listsAddItemSheet').classList.add('active');
-setTimeout(function(){ document.getElementById('listsSheetItemInput').focus(); }, 300);
+var inp = document.getElementById('listsSheetItemInput');
+// Attach keydown each time sheet opens (avoids DOMContentLoaded timing issues)
+if (inp && !inp._listsKeydownAttached) {
+inp._listsKeydownAttached = true;
+inp.addEventListener('keydown', function(e) {
+if (e.key === 'Enter') { e.preventDefault(); listsAddItemToList(true); }
+});
+}
+setTimeout(function(){ if (inp) inp.focus(); }, 300);
 }
 function listsCloseAddItemSheet() {
 document.getElementById('listsSheetOverlay').classList.remove('active');
@@ -10472,8 +10480,6 @@ listsShowToast('List deleted');
 listsCurrentListId = null;
 }
 document.addEventListener('DOMContentLoaded', function() {
-var si = document.getElementById('listsSheetItemInput');
-if (si) si.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddItemToList(true); } });
 var ti = document.getElementById('newListTitle');
 if (ti) ti.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); listsAddNewList(); } });
 });
