@@ -9496,6 +9496,10 @@ if (allChoresComplete || allRoutinesComplete) {
             if (currentSection === 'chores') renderChoresView();
             else if (currentSection === 'rewards') renderRewardsView();
             else if (currentSection === 'allowance') renderAllowanceGrid();
+            else if (currentSection === 'lists') {
+                if (window.innerWidth <= 768 && typeof listsLoadLists === 'function') listsLoadLists();
+                else renderListsColumns();
+            }
             else if (currentSection === 'meals') renderMeals();
             else if (currentSection === 'recipes') renderRecipes();
             else if (currentSection === 'habits' && typeof renderHabitsView === 'function') renderHabitsView();
