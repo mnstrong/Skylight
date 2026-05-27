@@ -36,12 +36,6 @@
     /* Show container when viewing sections on mobile */
     body.viewing-section .container {
         display: block !important;
-        grid-template-columns: 1fr !important;
-        grid-template-rows: 1fr !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100vw !important;
-        overflow: hidden !important;
     }
     
     /* Hide desktop navigation sidebar */

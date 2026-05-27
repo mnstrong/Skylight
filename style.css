@@ -2286,19 +2286,20 @@
         .edit-category-modal {
             position: fixed;
             top: 0;
-            right: -600px;
+            right: -110%;
             width: 500px;
             height: 100vh;
             background: white;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            box-shadow: none;
             z-index: 3003;
-            transition: right 0.3s ease;
+            transition: right 0.3s ease, box-shadow 0.3s ease;
             overflow-y: auto;
             border-radius: 30px 0 0 30px;
         }
         
         .edit-category-modal.active {
             right: 0;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
         }
         
         .edit-category-header {
@@ -2562,13 +2563,13 @@
         .edit-side-panel {
             position: fixed;
             top: 0;
-            right: -600px;
+            right: -110%;
             width: 500px;
             height: 100vh;
             background: white;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            box-shadow: none;
             z-index: 2001;
-            transition: right 0.3s ease;
+            transition: right 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
             border-radius: 30px 0 0 30px;
             display: flex;
@@ -2577,6 +2578,7 @@
         
         .edit-side-panel.active {
             right: 0;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
         }
         
         .edit-panel-overlay {
