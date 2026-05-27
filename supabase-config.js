@@ -337,18 +337,33 @@ function deleteList(id) {
 // ============================================
 // LIST ITEMS
 // ============================================
-function addListItem(listId, text) {
-    return _sbRequest('POST', 'list_items', {
-        body: { list_id: listId, text: text }, single: true
-    }).then(function(r) {
-        if (r.error) { console.error('Error adding list item:', r.error); return null; }
-        return r.data;
-    });
+function addListItem(listId, item) {
+    // Accept either a plain text string (legacy) or a full item object
+    var body;
+    if (typeof item === 'string') {
+        body = { list_id: listId, text: item };
+    } else {
+        body = {
+            list_id: listId,
+            text: item.text || '',
+            section: item.section || 'Items',
+            checked: item.completed || false,
+            display_order: item.displayOrder != null ? item.displayOrder : 9999
+        };
+    }
+    return _sbRequest('POST', 'list_items', { body: body, single: true })
+        .then(function(r) {
+            if (r.error) { console.error('Error adding list item:', r.error); return null; }
+            return r.data;
+        });
 }
 
 function updateListItem(id, updates) {
+    // Ensure section is always included if present
     return _sbRequest('PATCH', 'list_items', {
-        filters: [{ col: 'id', op: 'eq', val: id }], body: updates, single: true
+        filters: [{ col: 'id', op: 'eq', val: id }],
+        body: updates,
+        single: true
     }).then(function(r) {
         if (r.error) { console.error('Error updating list item:', r.error); return null; }
         return r.data;
@@ -448,18 +463,6 @@ function addAllowanceTransaction(transaction) {
             if (r.error) { console.error('Error adding transaction:', r.error); return null; }
             return r.data;
         });
-}
-
-function updateAllowanceTransaction(id, fields) {
-    return _sbRequest('PATCH', 'allowance_transactions', {
-        filters: [{ col: 'id', op: 'eq', val: id }],
-        body: fields,
-        single: true
-    }).then(function(r) {
-        if (r.error) { console.error('Error updating allowance transaction:', r.error); return null; }
-        console.log('✓ Allowance transaction updated');
-        return r.data;
-    });
 }
 
 // ============================================
@@ -649,7 +652,6 @@ window.SupabaseAPI = {
     getAllowanceBalance:        getAllowanceBalance,
     getAllowanceTransactions:   getAllowanceTransactions,
     addAllowanceTransaction:   addAllowanceTransaction,
-    updateAllowanceTransaction: updateAllowanceTransaction,
 
     getHabits:                 getHabits,
     addHabit:                  addHabit,

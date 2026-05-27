@@ -592,12 +592,21 @@ async function syncList(list, operation = 'update') {
             };
             const newList = await SupabaseAPI.addList(listData);
             if (newList) {
+                const tempId = list.id;
                 list.id = newList.id;
-                // Back-fill the Supabase id into window.lists
+                // Back-fill the Supabase UUID into window.lists
                 const allLists = window.lists || [];
-                const match = allLists.find(l => l.name === list.name && l.id !== newList.id);
+                const match = allLists.find(l => l.name === list.name && String(l.id) === String(tempId));
                 if (match) match.id = newList.id;
-                console.log('✓ List synced to Supabase:', list.name);
+                console.log('✓ List synced to Supabase:', list.name, '→ id:', newList.id);
+                // Sync any pre-existing items (e.g. sections added before save)
+                const itemsToSync = (list.items || []).filter(i => i.text);
+                for (const item of itemsToSync) {
+                    try {
+                        const newItem = await SupabaseAPI.addListItem(newList.id, item);
+                        if (newItem) item.id = newItem.id;
+                    } catch(e) { console.error('Error syncing list item:', e); }
+                }
             }
         } else if (operation === 'update') {
             await SupabaseAPI.updateList(list.id, {
@@ -622,16 +631,24 @@ async function syncListItem(listId, item, operation = 'update') {
     
     try {
         if (operation === 'add') {
-            const newItem = await SupabaseAPI.addListItem(listId, item.text);
+            // Pass full item so section, checked, displayOrder are included
+            const newItem = await SupabaseAPI.addListItem(listId, item);
             if (newItem) {
                 item.id = newItem.id;
-                console.log('✓ List item synced to Supabase');
+                // Back-fill UUID into window.lists
+                const wList = (window.lists || []).find(l => String(l.id) === String(listId));
+                if (wList) {
+                    const match = (wList.items || []).find(i => i.text === item.text && i.section === item.section && i.id !== newItem.id);
+                    if (match) match.id = newItem.id;
+                }
+                console.log('✓ List item synced to Supabase, section:', item.section);
             }
         } else if (operation === 'update') {
             await SupabaseAPI.updateListItem(item.id, {
                 text: item.text,
-                checked: item.completed,
-                display_order: item.displayOrder || null
+                checked: item.completed || false,
+                section: item.section || 'Items',
+                display_order: item.displayOrder != null ? item.displayOrder : 9999
             });
             console.log('✓ List item updated in Supabase');
         } else if (operation === 'delete') {
@@ -804,10 +821,9 @@ async function loadAllowanceFromSupabase() {
         window.allowances = formatted;
         console.log('✓ Loaded allowance transactions for', formatted.length, 'members from Supabase');
         // Refresh mobile allowance view if open (body only — tabs don't change on allowance load)
-        if (document.getElementById('mobileAllowancePage') &&
+        if (typeof renderMalBody === 'function' && document.getElementById('mobileAllowancePage') &&
             document.getElementById('mobileAllowancePage').style.display !== 'none') {
-            if (typeof renderMalTabs === 'function') renderMalTabs();
-            if (typeof renderMalBody === 'function') renderMalBody();
+            renderMalBody();
         }
         if (typeof renderAllowanceGrid === 'function' && typeof currentSection !== 'undefined' && currentSection === 'allowance') {
             renderAllowanceGrid();
@@ -981,12 +997,16 @@ async function loadListsFromSupabase() {
               }
               return null;
             })(),
-            items: list.list_items ? list.list_items.map(item => ({
-                id: item.id,
-                text: item.text,
-                checked: item.checked,
-                displayOrder: item.display_order
-            })) : []
+            items: list.list_items ? list.list_items
+                .map(item => ({
+                    id: item.id,
+                    text: item.text,
+                    completed: item.checked || false,
+                    section: item.section || 'Items',
+                    displayOrder: item.display_order != null ? item.display_order : 9999
+                }))
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                : []
         }));
         window.lists = formattedLists;
         

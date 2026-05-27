@@ -1578,17 +1578,22 @@ let rewards = window.rewards || [];
             return;
         }
         
-        // Create an empty item to establish the section
+        // Create a section-header placeholder item
         const newItem = {
             id: Date.now(),
             text: '',
             completed: false,
-            section: sectionName
+            section: sectionName,
+            isSectionHeader: true
         };
-        
+
         list.items.push(newItem);
-        // Section placeholder — no need to sync empty item
-        
+
+        // Sync section placeholder to Supabase so section name is persisted
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+            window.SupabaseSync.syncListItem(list.id, newItem, 'add');
+        }
+
         closeModal('addSectionModal');
         renderListsColumns();
     }
@@ -2530,8 +2535,9 @@ let rewards = window.rewards || [];
             try {
                 await window.SupabaseAPI.updateListItem(item.id, {
                     text: item.text,
-                    checked: item.checked,
-                    display_order: item.displayOrder
+                    checked: item.completed || false,
+                    section: item.section || 'Items',
+                    display_order: item.displayOrder != null ? item.displayOrder : 9999
                 });
             } catch(err) {
                 console.error('[EDIT LIST ITEM] SupabaseAPI.updateListItem error:', err);
