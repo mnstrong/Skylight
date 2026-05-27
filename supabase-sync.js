@@ -584,11 +584,11 @@ async function syncList(list, operation = 'update') {
     
     try {
         if (operation === 'add') {
+            // assigned_to column does not exist — member assignment is encoded via color
             const listData = {
                 name: list.name,
                 color: list.color || null,
-                icon: list.icon || null,
-                assigned_to: list.assignedTo != null ? list.assignedTo : null
+                icon: list.icon || null
             };
             const newList = await SupabaseAPI.addList(listData);
             if (newList) {
@@ -612,8 +612,7 @@ async function syncList(list, operation = 'update') {
             await SupabaseAPI.updateList(list.id, {
                 name: list.name,
                 color: list.color,
-                icon: list.icon,
-                assigned_to: list.assignedTo != null ? list.assignedTo : null
+                icon: list.icon
             });
             console.log('✓ List updated in Supabase:', list.name);
         } else if (operation === 'delete') {

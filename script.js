@@ -2398,7 +2398,11 @@ let rewards = window.rewards || [];
         
         list.name = newName;
         list.assignedTo = newAssignedTo;
-        // [synced to Supabase]
+        // Keep color in sync with member so assignment survives reload
+        const assignedMember = familyMembers.find(m =>
+            (m.id != null && String(m.id) === String(newAssignedTo)) || m.name === newAssignedTo
+        );
+        if (assignedMember) list.color = assignedMember.color;
 
         // Sync update to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncList === 'function') {
@@ -2412,8 +2416,7 @@ let rewards = window.rewards || [];
                 await window.SupabaseAPI.updateList(list.id, {
                     name: list.name,
                     color: list.color,
-                    icon: list.icon,
-                    assigned_to: list.assignedTo
+                    icon: list.icon
                 });
             } catch(err) {
                 console.error('[EDIT LIST] SupabaseAPI.updateList error:', err);
