@@ -1959,6 +1959,16 @@ let rewards = window.rewards || [];
     window.handleListItemDragOver = handleListItemDragOver;
     window.handleListItemDrop = handleListItemDrop;
     window.handleListItemDragEnd = handleListItemDragEnd;
+
+    // Expose list functions called from inline HTML event handlers
+    window.addListItemToSection = addListItemToSection;
+    window.addNewSection        = addNewSection;
+    window.saveNewSection       = saveNewSection;
+    window.toggleListItem       = toggleListItem;
+    window.toggleSection        = toggleSection;
+    window.openListItemDetail   = openListItemDetail;
+    window.openEditListPanel    = openEditListPanel;
+    window.renderListsColumns   = renderListsColumns;
     
     // Handle dropping on a section (when section is empty or dropping at end)
     function handleSectionDragOver(event) {
