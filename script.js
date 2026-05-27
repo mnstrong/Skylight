@@ -1476,7 +1476,7 @@ let rewards = window.rewards || [];
                 });
                 
                 html += `
-                            <input type="text" class="add-item-input" placeholder="Add an item..." onkeypress="if(event.key==='Enter') addListItemToSection(${list.id}, '${sectionName}', this)">
+                            <input type="text" class="add-item-input" placeholder="Add an item..." onkeydown="if(event.key==='Enter'){event.preventDefault();addListItemToSection(${list.id}, '${sectionName}', this);}">
                         </div>
                     </div>
                 `;
@@ -1526,23 +1526,59 @@ let rewards = window.rewards || [];
     async function addListItemToSection(listId, sectionName, inputElement) {
         const text = inputElement.value.trim();
         if (!text) return;
-        
+
         const list = lists.find(l => String(l.id) === String(listId));
         if (!list) return;
-        
+
+        const member = listsFindMember(list);
+        const memberColor = member ? member.color : '#8E8E93';
+        const itemBg = hexToRgba(memberColor, 0.4);
+
         const newItem = {
             id: Date.now(),
             text: text,
             completed: false,
             section: sectionName
         };
-        
+
         list.items.push(newItem);
         inputElement.value = '';
-        // [synced to Supabase]
-        renderListsColumns();
 
-        // Sync to Supabase via syncListItem
+        // Inject the new item directly into the DOM before the input — no full re-render
+        const sectionId = sectionName.replace(/\s+/g, '-').toLowerCase();
+        const sectionEl = document.getElementById(`section-${listId}-${sectionId}`);
+        if (sectionEl) {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.draggable = true;
+            div.dataset.itemId = newItem.id;
+            div.dataset.listId = listId;
+            div.dataset.section = sectionName;
+            div.style.cssText = `background: ${itemBg}; cursor: move; transition: transform 0.3s ease;`;
+            div.setAttribute('ondragstart', 'handleListItemDragStart(event)');
+            div.setAttribute('ondragover', 'handleListItemDragOver(event)');
+            div.setAttribute('ondrop', 'handleListItemDrop(event)');
+            div.setAttribute('ondragend', 'handleListItemDragEnd(event)');
+            div.innerHTML = `<div class="list-item-text" onclick="openListItemDetail('${listId}', '${newItem.id}')">${text}</div>` +
+                `<div class="list-item-checkbox" onclick="event.stopPropagation(); toggleListItem('${listId}', '${newItem.id}')"></div>`;
+            // Insert before the input element
+            sectionEl.insertBefore(div, inputElement);
+            // Update section count badge
+            const header = sectionEl.previousElementSibling;
+            if (header) {
+                const countEl = header.querySelector('.list-section-count');
+                const sectionItems = list.items.filter(i => (i.section || 'Items') === sectionName && i.text);
+                if (countEl) countEl.textContent = sectionItems.length;
+            }
+        } else {
+            // Fallback: full re-render if section element not found
+            renderListsColumns();
+        }
+
+        // Keep focus on the input for rapid entry
+        inputElement.focus();
+
+        // Sync to Supabase
         if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
             await window.SupabaseSync.syncListItem(listId, newItem, 'add');
         }
@@ -1561,7 +1597,7 @@ let rewards = window.rewards || [];
     
     function saveNewSection() {
         const sectionName = document.getElementById('sectionNameInput').value.trim();
-        const listId = Number(document.getElementById('sectionListId').value);
+        const listId = document.getElementById('sectionListId').value; // keep as string — may be UUID
         
         if (!sectionName) {
             alert('Please enter a section name');
