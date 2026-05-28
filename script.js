@@ -6070,7 +6070,7 @@ let rewards = window.rewards || [];
                         // Filter out completed chores unless showCompletedChores is true
                         var visibleChores = showCompletedChores ? memberChores : memberChores.filter(function(c) { return !c.completed; });
                         
-                        if (visibleChores.length > 0) {
+                        {
                             // Sort chores: incomplete first, then completed
                             var sortedChores = visibleChores.slice().sort(function(a, b) {
                                 if (a.completed !== b.completed) {
@@ -6081,33 +6081,36 @@ let rewards = window.rewards || [];
                             
                             html += '<div class="routine-section">';
                             html += '<div class="routine-section-title">' + period + '</div>';
-                            html += '<div class="chore-items chore-column-dropzone" data-member="' + member.name + '" ondragover="handleChoreColumnDragOver(event)" ondragleave="handleChoreColumnDragLeave(event)" ondrop="handleChoreColumnDrop(event)">' + '';
+                            html += '<div class="chore-items chore-column-dropzone" data-member="' + member.name + '" ondragover="handleChoreColumnDragOver(event)" ondragleave="handleChoreColumnDragLeave(event)" ondrop="handleChoreColumnDrop(event)">';
                             
-                            sortedChores.forEach(function(chore) {
-                                var isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
-                                var daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
-                                var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
-                                
-                                var bgOpacity = chore.completed ? 0.5 : 0.19;
-                                var choreBg = hexToRgba(member.color, bgOpacity);
-                                
-                                html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="' + member.name + '" style="background: ' + choreBg + '; cursor: move;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';                                    if (chore.icon) {
-                                    html += '<div class="chore-item-icon">' + chore.icon + '</div>';
-                                }
-                                html += '<div class="chore-item-content">';
-                                html += '<div class="chore-item-title">' + chore.title + '</div>';
-                                if (chore.frequency || isLate) {
-                                    html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
-                                }
-                                html += '</div>';
-                                if (chore.stars) {
-                                    html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
-                                }
-                                html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">';
-                                html += chore.completed ? '✓' : '';
-                                html += '</div>';
-                                html += '</div>';
-                            });
+                            if (sortedChores.length > 0) {
+                                sortedChores.forEach(function(chore) {
+                                    var isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
+                                    var daysLate = isLate ? Math.floor((today - new Date(chore.dueDate)) / (1000 * 60 * 60 * 24)) : 0;
+                                    var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
+                                    
+                                    var bgOpacity = chore.completed ? 0.5 : 0.19;
+                                    var choreBg = hexToRgba(member.color, bgOpacity);
+                                    
+                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="' + member.name + '" style="background: ' + choreBg + '; cursor: move;" onclick="openTaskDetail(\\'' + chore.id + '\\', \\'chore\\', event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';
+                                    if (chore.icon) {
+                                        html += '<div class="chore-item-icon">' + chore.icon + '</div>';
+                                    }
+                                    html += '<div class="chore-item-content">';
+                                    html += '<div class="chore-item-title">' + chore.title + '</div>';
+                                    if (chore.frequency || isLate) {
+                                        html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
+                                    }
+                                    html += '</div>';
+                                    if (chore.stars) {
+                                        html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
+                                    }
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\\'' + chore.id + '\\')">' + (chore.completed ? '✓' : '') + '</div>';
+                                    html += '</div>';
+                                });
+                            } else {
+                                html += '<div class="chore-column-empty-hint" style="color:rgba(0,0,0,0.35);font-size:14px;text-align:center;padding:24px 0 16px;">No tasks yet<br><span style="font-size:11px;opacity:0.7;">Drag tasks here</span></div>';
+                            }
                             
                             html += '</div></div>';
                         }
