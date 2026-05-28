@@ -315,9 +315,10 @@ async function syncFamilyMemberColor(member) {
         return;
     }
     try {
-        const updates = { name: member.name, color: member.color };
-        if (member.sections !== undefined) updates.sections = member.sections;
-        await SupabaseAPI.updateFamilyMember(member.id, updates);
+        await SupabaseAPI.updateFamilyMember(member.id, { name: member.name, color: member.color });
+        if (member.sections !== undefined && SupabaseAPI.updateFamilyMemberSections) {
+            await SupabaseAPI.updateFamilyMemberSections(member.id, member.sections).catch(() => {});
+        }
         console.log('✓ Member synced to Supabase:', member.name);
     } catch(e) {
         console.error('✗ Failed to sync member:', member.name, e);
@@ -330,15 +331,51 @@ async function syncFamilyMemberDelete(memberId) {
     try {
         if (typeof SupabaseAPI !== 'undefined' && typeof SupabaseAPI.deleteFamilyMember === 'function') {
             await SupabaseAPI.deleteFamilyMember(memberId);
-            console.log('✓ Member deleted from Supabase:', memberId);
-            return;
+        } else {
+            const client = window.supabase || window._supabase || window.supabaseClient;
+            if (client) {
+                const { error } = await client.from('family_members').delete().eq('id', memberId);
+                if (error) throw error;
+            }
         }
-        const client = window.supabase || window._supabase || window.supabaseClient;
-        if (client) {
-            const { error } = await client.from('family_members').delete().eq('id', memberId);
-            if (error) throw error;
-            console.log('✓ Member deleted from Supabase:', memberId);
+        console.log('✓ Member deleted from Supabase:', memberId);
+
+        // Remove from window.familyMembers immediately so it doesn't get
+        // re-bootstrapped into the closure on the next render cycle
+        if (Array.isArray(window.familyMembers)) {
+            window.familyMembers = window.familyMembers.filter(function(m) {
+                return String(m.id) !== String(memberId);
+            });
         }
+
+        // Scrub from any localStorage keys that cache family member data.
+        // supabase-config.js typically stores members under keys like
+        // 'familyMembers', 'family_members', or 'skylight_familyMembers'.
+        // We scan for any key whose value is a JSON array containing this id.
+        try {
+            const keysToCheck = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                keysToCheck.push(localStorage.key(i));
+            }
+            keysToCheck.forEach(function(key) {
+                try {
+                    var raw = localStorage.getItem(key);
+                    if (!raw || raw[0] !== '[') return; // only arrays
+                    var arr = JSON.parse(raw);
+                    if (!Array.isArray(arr)) return;
+                    var filtered = arr.filter(function(item) {
+                        return !item || String(item.id) !== String(memberId);
+                    });
+                    if (filtered.length !== arr.length) {
+                        localStorage.setItem(key, JSON.stringify(filtered));
+                        console.log('✓ Removed deleted member from localStorage key:', key);
+                    }
+                } catch(e) { /* skip unparseable keys */ }
+            });
+        } catch(e) {
+            console.warn('Could not scrub localStorage:', e);
+        }
+
     } catch(e) {
         console.error('✗ Failed to delete member from Supabase:', memberId, e);
     }
@@ -348,15 +385,27 @@ async function syncFamilyMemberDelete(memberId) {
 async function syncFamilyMemberAdd(member) {
     if (!syncEnabled || !isSupabaseReady) return null;
     try {
-        // Try SupabaseAPI.addFamilyMember if it exists (defined in supabase-config.js)
+        // First check if a member with this name already exists (unique constraint)
+        const existing = await SupabaseAPI.getFamilyMembers();
+        const match = existing && existing.find(function(m) { return m.name === member.name; });
+        if (match) {
+            // Already exists — just update and back-fill the id
+            member.id = match.id;
+            await SupabaseAPI.updateFamilyMember(match.id, { name: member.name, color: member.color });
+            if (member.sections && SupabaseAPI.updateFamilyMemberSections) {
+                await SupabaseAPI.updateFamilyMemberSections(match.id, member.sections).catch(() => {});
+            }
+            console.log('✓ Member already exists, updated:', member.name, '→ id:', match.id);
+            return match;
+        }
+        // New member — insert
         if (typeof SupabaseAPI !== 'undefined' && typeof SupabaseAPI.addFamilyMember === 'function') {
-            const row = await SupabaseAPI.addFamilyMember({
-                name: member.name,
-                color: member.color,
-                sections: member.sections || null
-            });
-            if (row) {
+            const row = await SupabaseAPI.addFamilyMember(member.name, member.color, null);
+            if (row && row.id) {
                 member.id = row.id;
+                if (member.sections && SupabaseAPI.updateFamilyMemberSections) {
+                    await SupabaseAPI.updateFamilyMemberSections(row.id, member.sections).catch(() => {});
+                }
                 console.log('✓ New member saved to Supabase:', member.name, '→ id:', row.id);
             }
             return row;

@@ -402,28 +402,27 @@
     }
     
     async function syncFamilyMembers(members) {
+        // NOTE: Auto-sync-wrapper no longer inserts family members.
+        // Inserts are handled exclusively by syncFamilyMemberAdd() in supabase-sync.js
+        // when the user explicitly adds a new member via the UI.
+        // This function only updates existing members (name/color) to avoid
+        // creating duplicates on every page load.
         if (!Array.isArray(members)) return;
-        
+
         for (const member of members) {
+            // Skip members without a real Supabase UUID — they haven't been
+            // saved yet and will be handled by syncFamilyMemberAdd
+            if (!member.id || typeof member.id !== 'string' || !member.id.includes('-')) continue;
             if (syncedMembers.has(member.id)) continue;
-            if (typeof member.id === 'string' && member.id.includes('-')) {
-                syncedMembers.add(member.id);
-                continue;
-            }
-            
+            syncedMembers.add(member.id);
+
             try {
-                const newMember = await window.SupabaseAPI.addFamilyMember(
-                    member.name,
-                    member.color,
-                    member.avatar_url || member.avatarUrl
-                );
-                if (newMember) {
-                    member.id = newMember.id; // Update local with Supabase ID
-                    syncedMembers.add(newMember.id);
-                    console.log('✓ Synced family member:', member.name);
-                }
+                await window.SupabaseAPI.updateFamilyMember(member.id, {
+                    name: member.name,
+                    color: member.color
+                });
             } catch (error) {
-                console.error('Error syncing family member:', error);
+                console.error('Error updating family member:', member.name, error);
             }
         }
     }
