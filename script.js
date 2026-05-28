@@ -2019,7 +2019,6 @@ let rewards = window.rewards || [];
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         const target = event.currentTarget;
-        if (target.dataset.member !== _choreDragMember) return;
         const rect = target.getBoundingClientRect();
         if (event.clientY < rect.top + rect.height / 2) {
             target.style.borderTop = '3px solid #4A90E2';
@@ -2029,11 +2028,37 @@ let rewards = window.rewards || [];
             target.style.borderTop = '';
         }
     }
+    function handleChoreColumnDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        event.currentTarget.classList.add('drag-over');
+    }
+    function handleChoreColumnDragLeave(event) {
+        // Only remove if we're leaving the container itself, not a child
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+            event.currentTarget.classList.remove('drag-over');
+        }
+    }
+    function handleChoreColumnDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.currentTarget;
+        target.classList.remove('drag-over');
+        const targetMember = target.dataset.member;
+        if (!_choreDragId || !targetMember || targetMember === _choreDragMember) return;
+        reassignChoreToMember(_choreDragId, _choreDragMember, targetMember, null);
+    }
+    window.handleChoreColumnDragOver = handleChoreColumnDragOver;
+    window.handleChoreColumnDragLeave = handleChoreColumnDragLeave;
+    window.handleChoreColumnDrop = handleChoreColumnDrop;
     function handleChoreDragEnd(event) {
         event.currentTarget.style.opacity = '1';
         document.querySelectorAll('.chore-item').forEach(function(el) {
             el.style.borderTop = '';
             el.style.borderBottom = '';
+        });
+        document.querySelectorAll('.chore-column-dropzone').forEach(function(el) {
+            el.classList.remove('drag-over');
         });
         _choreDragId = null;
         _choreDragMember = null;
@@ -2044,8 +2069,13 @@ let rewards = window.rewards || [];
         const target = event.currentTarget;
         const targetId = target.dataset.choreId;
         const targetMember = target.dataset.member;
-        if (!_choreDragId || String(_choreDragId) === String(targetId)) return;
-        if (targetMember !== _choreDragMember) return;
+        if (!_choreDragId) return;
+        // Cross-member: reassign to different list
+        if (targetMember !== _choreDragMember) {
+            reassignChoreToMember(_choreDragId, _choreDragMember, targetMember, targetId);
+            return false;
+        }
+        if (String(_choreDragId) === String(targetId)) return;
         // Reorder within the same member's chores
         const memberChores = chores.filter(function(c) { return c.member === _choreDragMember; });
         const dragIdx = memberChores.findIndex(function(c) { return String(c.id) === String(_choreDragId); });
@@ -2074,6 +2104,38 @@ let rewards = window.rewards || [];
         renderChoresView();
         return false;
     }
+
+    // Reassign a chore to a different member (cross-list drag) and sync
+    function reassignChoreToMember(choreId, fromMember, toMember, insertBeforeId) {
+        const chore = chores.find(function(c) { return String(c.id) === String(choreId); });
+        if (!chore) return;
+        // Update the member assignment
+        chore.member = toMember;
+        // Get new member's chores and place at end (or before insertBeforeId)
+        const toMemberChores = chores.filter(function(c) { return c.member === toMember; });
+        // Re-number display order for destination list
+        toMemberChores.forEach(function(c, idx) { c.displayOrder = idx; });
+        // Also re-number source list
+        const fromMemberChores = chores.filter(function(c) { return c.member === fromMember; });
+        fromMemberChores.forEach(function(c, idx) { c.displayOrder = idx; });
+        // Sync the moved chore (member + order changed)
+        if (window.SupabaseSync && window.SupabaseSync.syncChore) {
+            window.SupabaseSync.syncChore(chore, 'update').catch(function(e) {
+                console.error('Error syncing reassigned chore:', e);
+            });
+        }
+        // Sync order updates for destination list members (excluding the moved one, already synced)
+        toMemberChores.forEach(function(c) {
+            if (String(c.id) === String(choreId)) return; // already synced above
+            if (window.SupabaseSync && window.SupabaseSync.syncChore) {
+                window.SupabaseSync.syncChore(c, 'update').catch(function(e) {
+                    console.error('Error saving chore order:', e);
+                });
+            }
+        });
+        renderChoresView();
+    }
+    window.reassignChoreToMember = reassignChoreToMember;
     window.handleChoreDragStart = handleChoreDragStart;
     window.handleChoreDragOver = handleChoreDragOver;
     window.handleChoreDragEnd = handleChoreDragEnd;
@@ -6019,7 +6081,7 @@ let rewards = window.rewards || [];
                             
                             html += '<div class="routine-section">';
                             html += '<div class="routine-section-title">' + period + '</div>';
-                            html += '<div class="chore-items">';
+                            html += '<div class="chore-items chore-column-dropzone" data-member="' + member.name + '" ondragover="handleChoreColumnDragOver(event)" ondragleave="handleChoreColumnDragLeave(event)" ondrop="handleChoreColumnDrop(event)">' + '';
                             
                             sortedChores.forEach(function(chore) {
                                 var isLate = chore.dueDate && new Date(chore.dueDate) < today && !chore.completed;
@@ -6114,16 +6176,19 @@ let rewards = window.rewards || [];
             html += '<button class="chore-list-edit-btn" onclick="openChoreListEdit(\'Up for Grabs\', event)">✏️</button>';
             html += '</div>';
             var visibleUfg = showCompletedChores ? ufgChores : ufgChores.filter(function(c) { return !c.completed; });
-            visibleUfg = visibleUfg.slice().sort(function(a, b) { return a.completed === b.completed ? 0 : a.completed ? 1 : -1; });
+            visibleUfg = visibleUfg.slice().sort(function(a, b) {
+                if (a.displayOrder != null && b.displayOrder != null) return a.displayOrder - b.displayOrder;
+                return a.completed === b.completed ? 0 : a.completed ? 1 : -1;
+            });
+            html += '<div class="chore-items chore-column-dropzone" data-member="Up for Grabs" ondragover="handleChoreColumnDragOver(event)" ondragleave="handleChoreColumnDragLeave(event)" ondrop="handleChoreColumnDrop(event)">';
             if (visibleUfg.length > 0) {
-                html += '<div class="chore-items">';
                 visibleUfg.forEach(function(chore) {
                     var today2 = new Date(); today2.setHours(0,0,0,0);
                     var isLate = chore.dueDate && new Date(chore.dueDate) < today2 && !chore.completed;
                     var daysLate = isLate ? Math.floor((today2 - new Date(chore.dueDate)) / (1000*60*60*24)) : 0;
                     var lateText = isLate ? (daysLate === 0 ? 'Due today' : daysLate + ' day' + (daysLate > 1 ? 's' : '') + ' late') : '';
                     var choreBg = hexToRgba(ufgColor, chore.completed ? 0.5 : 0.19);
-                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background:' + choreBg + ';cursor:pointer;" onclick="openTaskDetail(\'' + chore.id + '\',\'chore\',event)">';
+                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="Up for Grabs" style="background:' + choreBg + ';cursor:move;" onclick="openTaskDetail(\'' + chore.id + '\',\'chore\',event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';
                     if (chore.icon) html += '<div class="chore-item-icon">' + chore.icon + '</div>';
                     html += '<div class="chore-item-content"><div class="chore-item-title">' + chore.title + '</div>';
                     if (chore.frequency || isLate) html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
@@ -6132,13 +6197,13 @@ let rewards = window.rewards || [];
                     html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background:' + ufgColor + ';border-color:' + ufgColor + ';' : '') + '" onclick="event.stopPropagation();toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
                     html += '</div>';
                 });
-                html += '</div>';
             } else {
-                html += '<div style="color:rgba(0,0,0,0.4);font-size:20px;text-align:center;padding:30px 0;">No tasks yet</div>';
+                html += '<div class="chore-column-empty-hint" style="color:rgba(0,0,0,0.35);font-size:14px;text-align:center;padding:24px 0 16px;">No tasks yet<br><span style="font-size:11px;opacity:0.7;">Drag tasks here to unassign</span></div>';
             }
             html += '</div>';
-        }
 
+            html += '</div>';
+        }
         // Restore hidden / add Up for Grabs manage panel
         if (hiddenChoreMembers.length > 0 || !showUpForGrabs) {
             html += '<div class="chore-manage-card">';
