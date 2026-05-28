@@ -4452,14 +4452,25 @@
             justify-content: left;
             width: 100%;
         }
+
+        .chore-item-footer {
+            display: flex;
+            align-items: center;
+            width: calc(100% + 52px);
+            margin: 12px -26px -26px -26px;
+            padding: 14px 20px 16px 20px;
+            background: rgba(0, 0, 0, 0.07);
+            border-radius: 0 0 40px 40px;
+            gap: 8px;
+        }
         
         .chore-item-title {
             font-size: 24px;
             font-weight: 500;
             color: #000;
-            margin: 0 0 5px 0;
-            display: flex;
-            justify-content: left;
+            margin: 0;
+            flex: 1;
+            text-align: left;
         }
         
         .chore-item-subtitle {

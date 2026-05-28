@@ -6096,6 +6096,7 @@ let rewards = window.rewards || [];
                                     if (chore.icon) {
                                         html += '<div class="chore-item-icon">' + chore.icon + '</div>';
                                     }
+                                    html += '<div class="chore-item-footer">';
                                     html += '<div class="chore-item-content">';
                                     html += '<div class="chore-item-title">' + chore.title + '</div>';
                                     if (chore.frequency || isLate) {
@@ -6105,7 +6106,8 @@ let rewards = window.rewards || [];
                                     if (chore.stars) {
                                         html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                                     }
-                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\\'' + chore.id + '\\')">' + (chore.completed ? '✓' : '') + '</div>';
+                                    html += '</div>';
                                     html += '</div>';
                                 });
                             } else {
@@ -6193,11 +6195,13 @@ let rewards = window.rewards || [];
                     var choreBg = hexToRgba(ufgColor, chore.completed ? 0.5 : 0.19);
                     html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="Up for Grabs" style="background:' + choreBg + ';cursor:move;" onclick="openTaskDetail(\'' + chore.id + '\',\'chore\',event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';
                     if (chore.icon) html += '<div class="chore-item-icon">' + chore.icon + '</div>';
+                    html += '<div class="chore-item-footer">';
                     html += '<div class="chore-item-content"><div class="chore-item-title">' + chore.title + '</div>';
                     if (chore.frequency || isLate) html += '<div class="chore-item-subtitle' + (isLate ? ' late' : '') + '">' + (isLate ? lateText : chore.frequency) + '</div>';
                     html += '</div>';
                     if (chore.stars) html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                     html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background:' + ufgColor + ';border-color:' + ufgColor + ';' : '') + '" onclick="event.stopPropagation();toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
+                    html += '</div>';
                     html += '</div>';
                 });
             } else {
