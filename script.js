@@ -2883,10 +2883,14 @@ let rewards = window.rewards || [];
 
         // Remove from familyMembers
         const idx = familyMembers.findIndex(m => m.name === name);
-        const deleted = familyMembers[idx];
         if (idx === -1) return;
+        const deleted = familyMembers[idx];
+        // Resolve UUID from window.familyMembers before splicing (local closure may have integer id)
+        if (!deleted.id || !String(deleted.id).includes('-')) {
+            const wm = (window.familyMembers || []).find(m => m.name === name);
+            if (wm && wm.id && String(wm.id).includes('-')) deleted.id = wm.id;
+        }
         familyMembers.splice(idx, 1);
-        // [synced to Supabase]
         window.familyMembers = familyMembers;
 
         // Remove from calendarFilterActive
