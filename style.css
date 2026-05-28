@@ -4396,6 +4396,22 @@
             display: flex;
             flex-direction: column;
         }
+
+        .chore-column-dropzone {
+            min-height: 60px;
+            border-radius: 12px;
+            transition: outline 0.15s ease, background 0.15s ease;
+        }
+
+        .chore-column-dropzone.drag-over {
+            outline: 2px dashed #4A90E2;
+            outline-offset: -4px;
+            background: rgba(74, 144, 226, 0.06) !important;
+        }
+
+        .chore-column-empty-hint {
+            pointer-events: none;
+        }
         
         .chore-item {
             border-radius: 40px;
