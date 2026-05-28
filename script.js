@@ -6106,7 +6106,7 @@ let rewards = window.rewards || [];
                                     if (chore.stars) {
                                         html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                                     }
-                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\\'' + chore.id + '\\')">' + (chore.completed ? '✓' : '') + '</div>';
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
                                     html += '</div>';
                                     html += '</div>';
                                 });
