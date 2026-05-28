@@ -2920,8 +2920,12 @@ let rewards = window.rewards || [];
         // [synced to Supabase]
 
         // Sync delete to Supabase
-        if (deleted && deleted.id && window.SupabaseAPI && typeof window.SupabaseAPI.deleteFamilyMember === 'function') {
-            window.SupabaseAPI.deleteFamilyMember(deleted.id).catch(e => console.error('Supabase delete member error:', e));
+        if (deleted && deleted.id) {
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberDelete === 'function') {
+                window.SupabaseSync.syncFamilyMemberDelete(deleted.id);
+            } else if (window.SupabaseAPI && typeof window.SupabaseAPI.deleteFamilyMember === 'function') {
+                window.SupabaseAPI.deleteFamilyMember(deleted.id).catch(e => console.error('Supabase delete member error:', e));
+            }
         }
 
         closeEditProfileModal();
@@ -3117,22 +3121,18 @@ let rewards = window.rewards || [];
         });
         member.sections = checkedSections;
         
-        // Sync to Supabase — name/color and sections
+        // Sync to Supabase — name, color, and sections
         window.familyMembers = familyMembers;
         if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberColor === 'function') {
-            // Ensure member has a real Supabase UUID — if it's a local integer, try to find UUID from window.familyMembers
+            // Ensure member has a real Supabase UUID
+            if (!member.id || !String(member.id).includes('-')) {
+                const wm = (window.familyMembers || []).find(function(m) { return m.name === member.name; });
+                if (wm && wm.id && String(wm.id).includes('-')) member.id = wm.id;
+            }
             if (member.id && String(member.id).includes('-')) {
-                // Has UUID — good to go
                 window.SupabaseSync.syncFamilyMemberColor(member);
             } else {
-                // Look up UUID from window.familyMembers (set by Supabase)
-                const wm = (window.familyMembers || []).find(function(m) { return m.name === member.name; });
-                if (wm && wm.id && String(wm.id).includes('-')) {
-                    member.id = wm.id;
-                    window.SupabaseSync.syncFamilyMemberColor(member);
-                } else {
-                    console.warn('Could not find Supabase UUID for member:', member.name);
-                }
+                console.warn('Could not find Supabase UUID for member:', member.name);
             }
         }
         
@@ -3750,8 +3750,15 @@ let rewards = window.rewards || [];
         if (name) {
             const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA'];
             const color = colors[familyMembers.length % colors.length];
-            familyMembers.push({ name, color });
-            // [synced to Supabase] window.familyMembers = familyMembers;
+            const newMember = { name, color };
+            familyMembers.push(newMember);
+            window.familyMembers = familyMembers;
+            // Sync new member to Supabase
+            if (window.SupabaseSync && typeof window.SupabaseSync.syncFamilyMemberAdd === 'function') {
+                window.SupabaseSync.syncFamilyMemberAdd(newMember).catch(function(e) {
+                    console.error('Failed to save new member:', e);
+                });
+            }
             // Add new member to calendar filter
             calendarFilterActive.push(name);
             // Re-render pills everywhere

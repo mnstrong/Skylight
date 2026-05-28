@@ -307,21 +307,80 @@ async function syncFamilyMembers(members) {
     }
 }
 
-// Sync a single family member's color/name change to Supabase
+// Sync a single family member's color/name/sections change to Supabase
 async function syncFamilyMemberColor(member) {
-    // familyMembers synced via window.familyMembers
-    
     if (!syncEnabled || !isSupabaseReady) return;
     if (!member || !member.id) {
         console.warn('syncFamilyMemberColor: member has no Supabase id, skipping');
         return;
     }
-    
     try {
-        await SupabaseAPI.updateFamilyMember(member.id, { name: member.name, color: member.color });
-        console.log('✓ Member color synced to Supabase:', member.name, member.color);
+        const updates = { name: member.name, color: member.color };
+        if (member.sections !== undefined) updates.sections = member.sections;
+        await SupabaseAPI.updateFamilyMember(member.id, updates);
+        console.log('✓ Member synced to Supabase:', member.name);
     } catch(e) {
-        console.error('✗ Failed to sync member color:', member.name, e);
+        console.error('✗ Failed to sync member:', member.name, e);
+    }
+}
+
+// Delete a family member from Supabase
+async function syncFamilyMemberDelete(memberId) {
+    if (!syncEnabled || !isSupabaseReady) return;
+    try {
+        if (typeof SupabaseAPI !== 'undefined' && typeof SupabaseAPI.deleteFamilyMember === 'function') {
+            await SupabaseAPI.deleteFamilyMember(memberId);
+            console.log('✓ Member deleted from Supabase:', memberId);
+            return;
+        }
+        const client = window.supabase || window._supabase || window.supabaseClient;
+        if (client) {
+            const { error } = await client.from('family_members').delete().eq('id', memberId);
+            if (error) throw error;
+            console.log('✓ Member deleted from Supabase:', memberId);
+        }
+    } catch(e) {
+        console.error('✗ Failed to delete member from Supabase:', memberId, e);
+    }
+}
+
+// Add a new family member to Supabase
+async function syncFamilyMemberAdd(member) {
+    if (!syncEnabled || !isSupabaseReady) return null;
+    try {
+        // Try SupabaseAPI.addFamilyMember if it exists (defined in supabase-config.js)
+        if (typeof SupabaseAPI !== 'undefined' && typeof SupabaseAPI.addFamilyMember === 'function') {
+            const row = await SupabaseAPI.addFamilyMember({
+                name: member.name,
+                color: member.color,
+                sections: member.sections || null
+            });
+            if (row) {
+                member.id = row.id;
+                console.log('✓ New member saved to Supabase:', member.name, '→ id:', row.id);
+            }
+            return row;
+        }
+        // Fallback: use the Supabase JS client directly (window.supabase or window._supabase)
+        const client = window.supabase || window._supabase || window.supabaseClient;
+        if (client) {
+            const { data, error } = await client
+                .from('family_members')
+                .insert([{ name: member.name, color: member.color, sections: member.sections || null }])
+                .select()
+                .single();
+            if (error) throw error;
+            if (data) {
+                member.id = data.id;
+                console.log('✓ New member saved to Supabase:', member.name, '→ id:', data.id);
+            }
+            return data;
+        }
+        console.warn('syncFamilyMemberAdd: no Supabase client available');
+        return null;
+    } catch(e) {
+        console.error('✗ Failed to add member to Supabase:', member.name, e);
+        return null;
     }
 }
 
@@ -1137,6 +1196,8 @@ window.SupabaseSync = {
     syncCalendarEvent,
     syncFamilyMembers,
     syncFamilyMemberColor,
+    syncFamilyMemberAdd,
+    syncFamilyMemberDelete,
 
     // Rewards
     async syncReward(reward, operation) {
