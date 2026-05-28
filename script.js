@@ -1743,15 +1743,15 @@ let rewards = window.rewards || [];
                 if (String(targetListId) === String(listId) && String(targetItemId) !== String(itemId)) {
                     const list = lists.find(l => String(l.id) === String(listId));
                     if (list) {
-                        const draggedIndex = list.items.findIndex(i => i.id === itemId);
-                        const targetIndex = list.items.findIndex(i => i.id === targetItemId);
+                        const draggedIndex = list.items.findIndex(i => String(i.id) === String(itemId));
+                        const targetIndex = list.items.findIndex(i => String(i.id) === String(targetItemId));
                         
                         if (draggedIndex !== -1 && targetIndex !== -1) {
                             // Reorder
                             const [movedItem] = list.items.splice(draggedIndex, 1);
                             list.items.splice(targetIndex, 0, movedItem);
                             
-                            // [synced to Supabase]
+                            syncListItemOrder(list);
                         }
                     }
                 }
@@ -1821,11 +1821,11 @@ let rewards = window.rewards || [];
         event.dataTransfer.dropEffect = 'move';
         
         const target = event.currentTarget;
-        const targetList = parseInt(target.dataset.listId);
+        const targetList = target.dataset.listId;
         const targetSection = target.dataset.section;
         
         // Allow moving within same list (even to different sections)
-        if (targetList === draggedFromList) {
+        if (String(targetList) === String(draggedFromList)) {
             const rect = target.getBoundingClientRect();
             const midpoint = rect.top + rect.height / 2;
             
@@ -1847,18 +1847,18 @@ let rewards = window.rewards || [];
         }
         
         const target = event.currentTarget;
-        const targetList = parseInt(target.dataset.listId);
+        const targetList = target.dataset.listId;
         const targetSection = target.dataset.section;
         
         // Allow moving within same list (even to different sections)
-        if (draggedListItem && targetList === draggedFromList) {
-            const draggedId = parseFloat(draggedListItem.dataset.itemId);
-            const targetId = parseFloat(target.dataset.itemId);
+        if (draggedListItem && String(targetList) === String(draggedFromList)) {
+            const draggedId = draggedListItem.dataset.itemId;
+            const targetId = target.dataset.itemId;
             
-            const list = lists.find(l => l.id === targetList);
+            const list = lists.find(l => String(l.id) === String(targetList));
             if (list) {
                 // Find the dragged item
-                const draggedItem = list.items.find(i => i.id === draggedId);
+                const draggedItem = list.items.find(i => String(i.id) === String(draggedId));
                 
                 if (draggedItem) {
                     // If moving to a different section, update the item's section
@@ -1867,13 +1867,13 @@ let rewards = window.rewards || [];
                     }
                     
                     // If dropping on a different item (reordering)
-                    if (draggedId !== targetId) {
+                    if (String(draggedId) !== String(targetId)) {
                         // Get all items for the target section
                         const targetSectionItems = list.items.filter(i => (i.section || 'Items') === targetSection);
                         
                         // Find indices
-                        const draggedIndex = targetSectionItems.findIndex(i => i.id === draggedId);
-                        const targetIndex = targetSectionItems.findIndex(i => i.id === targetId);
+                        const draggedIndex = targetSectionItems.findIndex(i => String(i.id) === String(draggedId));
+                        const targetIndex = targetSectionItems.findIndex(i => String(i.id) === String(targetId));
                         
                         // If dragged item is already in target section, reorder
                         if (draggedIndex !== -1 && targetIndex !== -1) {
@@ -1885,11 +1885,11 @@ let rewards = window.rewards || [];
                         }
                         
                         // Rebuild the list.items array
-                        const otherItems = list.items.filter(i => (i.section || 'Items') !== targetSection && i.id !== draggedId);
+                        const otherItems = list.items.filter(i => (i.section || 'Items') !== targetSection && String(i.id) !== String(draggedId));
                         list.items = [...otherItems, ...targetSectionItems];
                     }
                     
-                    // [synced to Supabase]
+                    syncListItemOrder(list);
                     renderListsColumns();
                 }
             }
@@ -1932,10 +1932,10 @@ let rewards = window.rewards || [];
         event.dataTransfer.dropEffect = 'move';
         
         const target = event.currentTarget;
-        const targetList = parseInt(target.dataset.listId);
+        const targetList = target.dataset.listId;
         
         // Allow moving within same list
-        if (targetList === draggedFromList) {
+        if (String(targetList) === String(draggedFromList)) {
             target.style.background = 'rgba(74, 144, 226, 0.1)';
             target.style.border = '2px dashed #4A90E2';
         }
@@ -1949,31 +1949,31 @@ let rewards = window.rewards || [];
         }
         
         const target = event.currentTarget;
-        const targetList = parseInt(target.dataset.listId);
+        const targetList = target.dataset.listId;
         const targetSection = target.dataset.section;
         
         // Allow moving within same list
-        if (draggedListItem && targetList === draggedFromList) {
-            const draggedId = parseFloat(draggedListItem.dataset.itemId);
+        if (draggedListItem && String(targetList) === String(draggedFromList)) {
+            const draggedId = draggedListItem.dataset.itemId;
             
-            const list = lists.find(l => l.id === targetList);
+            const list = lists.find(l => String(l.id) === String(targetList));
             if (list) {
                 // Find the dragged item
-                const draggedItem = list.items.find(i => i.id === draggedId);
+                const draggedItem = list.items.find(i => String(i.id) === String(draggedId));
                 
                 if (draggedItem) {
                     // Update the item's section
                     draggedItem.section = targetSection;
                     
                     // Remove from old position and add to end of target section
-                    const otherItems = list.items.filter(i => i.id !== draggedId);
+                    const otherItems = list.items.filter(i => String(i.id) !== String(draggedId));
                     const targetSectionItems = otherItems.filter(i => (i.section || 'Items') === targetSection);
                     const nonTargetItems = otherItems.filter(i => (i.section || 'Items') !== targetSection);
                     
                     // Rebuild array with dragged item at end of target section
                     list.items = [...nonTargetItems, ...targetSectionItems, draggedItem];
                     
-                    // [synced to Supabase]
+                    syncListItemOrder(list);
                     renderListsColumns();
                 }
             }
@@ -1982,7 +1982,171 @@ let rewards = window.rewards || [];
         return false;
     }
     
-    function addListItem() {
+    // ── Sync list item display order to Supabase ──────────────────────────────
+    function syncListItemOrder(list) {
+        if (!list || !list.items) return;
+        // Assign sequential displayOrder values
+        list.items.forEach(function(item, idx) { item.displayOrder = idx; });
+        // Fire-and-forget update for each item
+        if (window.SupabaseSync && typeof window.SupabaseSync.syncListItem === 'function') {
+            list.items.forEach(function(item) {
+                window.SupabaseSync.syncListItem(list.id, item, 'update').catch(function(e) {
+                    console.error('Error saving list item order:', e);
+                });
+            });
+        } else if (window.SupabaseAPI && typeof window.SupabaseAPI.updateListItem === 'function') {
+            list.items.forEach(function(item) {
+                window.SupabaseAPI.updateListItem(item.id, { display_order: item.displayOrder }).catch(function(e) {
+                    console.error('Error saving list item order:', e);
+                });
+            });
+        }
+    }
+
+    // ── Chore drag-and-drop ────────────────────────────────────────────────────
+    let _choreDragId = null;
+    let _choreDragMember = null;
+    let _choreDragEl = null;
+
+    function handleChoreDragStart(event) {
+        _choreDragId = event.currentTarget.dataset.choreId;
+        _choreDragMember = event.currentTarget.dataset.member;
+        _choreDragEl = event.currentTarget;
+        event.currentTarget.style.opacity = '0.4';
+        event.dataTransfer.effectAllowed = 'move';
+    }
+    function handleChoreDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        const target = event.currentTarget;
+        if (target.dataset.member !== _choreDragMember) return;
+        const rect = target.getBoundingClientRect();
+        if (event.clientY < rect.top + rect.height / 2) {
+            target.style.borderTop = '3px solid #4A90E2';
+            target.style.borderBottom = '';
+        } else {
+            target.style.borderBottom = '3px solid #4A90E2';
+            target.style.borderTop = '';
+        }
+    }
+    function handleChoreDragEnd(event) {
+        event.currentTarget.style.opacity = '1';
+        document.querySelectorAll('.chore-item').forEach(function(el) {
+            el.style.borderTop = '';
+            el.style.borderBottom = '';
+        });
+        _choreDragId = null;
+        _choreDragMember = null;
+        _choreDragEl = null;
+    }
+    function handleChoreDrop(event) {
+        event.stopPropagation();
+        const target = event.currentTarget;
+        const targetId = target.dataset.choreId;
+        const targetMember = target.dataset.member;
+        if (!_choreDragId || String(_choreDragId) === String(targetId)) return;
+        if (targetMember !== _choreDragMember) return;
+        // Reorder within the same member's chores
+        const memberChores = chores.filter(function(c) { return c.member === _choreDragMember; });
+        const dragIdx = memberChores.findIndex(function(c) { return String(c.id) === String(_choreDragId); });
+        const dropIdx = memberChores.findIndex(function(c) { return String(c.id) === String(targetId); });
+        if (dragIdx === -1 || dropIdx === -1) return;
+        const [moved] = memberChores.splice(dragIdx, 1);
+        memberChores.splice(dropIdx, 0, moved);
+        // Rebuild global chores array with new order for this member
+        const others = chores.filter(function(c) { return c.member !== _choreDragMember; });
+        chores.length = 0;
+        others.forEach(function(c) { chores.push(c); });
+        memberChores.forEach(function(c) { chores.push(c); });
+        // Sync new order to Supabase
+        memberChores.forEach(function(c, idx) {
+            c.displayOrder = idx;
+            if (window.SupabaseSync && window.SupabaseSync.syncChore) {
+                window.SupabaseSync.syncChore(c, 'update').catch(function(e) {
+                    console.error('Error saving chore order:', e);
+                });
+            } else if (window.SupabaseAPI && window.SupabaseAPI.updateTask) {
+                window.SupabaseAPI.updateTask(c.id, { display_order: idx }).catch(function(e) {
+                    console.error('Error saving chore order:', e);
+                });
+            }
+        });
+        renderChoresView();
+        return false;
+    }
+    window.handleChoreDragStart = handleChoreDragStart;
+    window.handleChoreDragOver = handleChoreDragOver;
+    window.handleChoreDragEnd = handleChoreDragEnd;
+    window.handleChoreDrop = handleChoreDrop;
+
+    // ── Reward drag-and-drop ───────────────────────────────────────────────────
+    let _rewardDragId = null;
+    let _rewardDragMember = null;
+
+    function handleRewardDragStart(event) {
+        _rewardDragId = event.currentTarget.dataset.rewardId;
+        _rewardDragMember = event.currentTarget.dataset.member;
+        event.currentTarget.style.opacity = '0.4';
+        event.dataTransfer.effectAllowed = 'move';
+    }
+    function handleRewardDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        const target = event.currentTarget;
+        if (target.dataset.member !== _rewardDragMember) return;
+        const rect = target.getBoundingClientRect();
+        if (event.clientY < rect.top + rect.height / 2) {
+            target.style.borderTop = '3px solid #4A90E2';
+            target.style.borderBottom = '';
+        } else {
+            target.style.borderBottom = '3px solid #4A90E2';
+            target.style.borderTop = '';
+        }
+    }
+    function handleRewardDragEnd(event) {
+        event.currentTarget.style.opacity = '1';
+        document.querySelectorAll('.reward-card').forEach(function(el) {
+            el.style.borderTop = '';
+            el.style.borderBottom = '';
+        });
+        _rewardDragId = null;
+        _rewardDragMember = null;
+    }
+    function handleRewardDrop(event) {
+        event.stopPropagation();
+        const target = event.currentTarget;
+        const targetId = target.dataset.rewardId;
+        const targetMember = target.dataset.member;
+        if (!_rewardDragId || String(_rewardDragId) === String(targetId)) return;
+        if (targetMember !== _rewardDragMember) return;
+        const memberRewards = rewards.filter(function(r) { return r.member === _rewardDragMember; });
+        const dragIdx = memberRewards.findIndex(function(r) { return String(r.id) === String(_rewardDragId); });
+        const dropIdx = memberRewards.findIndex(function(r) { return String(r.id) === String(targetId); });
+        if (dragIdx === -1 || dropIdx === -1) return;
+        const [moved] = memberRewards.splice(dragIdx, 1);
+        memberRewards.splice(dropIdx, 0, moved);
+        // Sync new order to Supabase
+        memberRewards.forEach(function(r, idx) {
+            r.displayOrder = idx;
+            if (window.SupabaseSync && window.SupabaseSync.syncReward) {
+                window.SupabaseSync.syncReward(r, 'update').catch(function(e) {
+                    console.error('Error saving reward order:', e);
+                });
+            } else if (window.SupabaseAPI && window.SupabaseAPI.updateReward) {
+                window.SupabaseAPI.updateReward(r.id, { display_order: idx }).catch(function(e) {
+                    console.error('Error saving reward order:', e);
+                });
+            }
+        });
+        renderRewardsView();
+        return false;
+    }
+    window.handleRewardDragStart = handleRewardDragStart;
+    window.handleRewardDragOver = handleRewardDragOver;
+    window.handleRewardDragEnd = handleRewardDragEnd;
+    window.handleRewardDrop = handleRewardDrop;
+
+        function addListItem() {
         // Legacy function - now replaced by addListItemToList
     }
     
@@ -5640,7 +5804,7 @@ let rewards = window.rewards || [];
                     const progressPercent = Math.min(100, (totalStarsEarned / starsRequired) * 100);
                     const canRedeem = totalStarsEarned >= starsRequired && !reward.redeemed;
                     
-                    html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
+                    html += `<div class="reward-card" draggable="true" data-reward-id="${reward.id}" data-member="${member.name}" onclick="openRewardDetail('${reward.id}')" style="cursor: move;" ondragstart="handleRewardDragStart(event)" ondragover="handleRewardDragOver(event)" ondrop="handleRewardDrop(event)" ondragend="handleRewardDragEnd(event)">
                         <div class="reward-icon">${reward.emoji || reward.icon || '🎁'}</div>
                         <div class="reward-title">${reward.title}</div>
                         <div class="reward-progress-container">
@@ -5854,7 +6018,7 @@ let rewards = window.rewards || [];
                                 var bgOpacity = chore.completed ? 0.5 : 0.19;
                                 var choreBg = hexToRgba(member.color, bgOpacity);
                                 
-                                html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" style="background: ' + choreBg + '; cursor: pointer;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)">';                                    if (chore.icon) {
+                                html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="' + member.name + '" style="background: ' + choreBg + '; cursor: move;" onclick="openTaskDetail(\'' + chore.id + '\', \'chore\', event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';                                    if (chore.icon) {
                                     html += '<div class="chore-item-icon">' + chore.icon + '</div>';
                                 }
                                 html += '<div class="chore-item-content">';

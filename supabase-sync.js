@@ -126,7 +126,11 @@ async function loadAllDataFromSupabase() {
                 };
             });
             
-            window.chores = choresFromSupabase;
+            // Sort by display_order so drag-reordered positions are preserved
+        choresFromSupabase.sort(function(a, b) {
+            return (a.displayOrder != null ? a.displayOrder : 9999) - (b.displayOrder != null ? b.displayOrder : 9999);
+        });
+        window.chores = choresFromSupabase;
             console.log('✓ Loaded', allTasks.length, 'chores from Supabase');
         }
         
@@ -273,21 +277,8 @@ async function loadAllDataFromSupabase() {
         // Load app settings
         await loadAppSettingsFromSupabase();
 
-        console.log('\u2705 All data loaded from Supabase');
-
-        // Notify script.js that all data is ready so it can re-render the active section
-        document.dispatchEvent(new CustomEvent('supabaseDataLoaded', { detail: {
-            familyMembers: window.familyMembers || [],
-            chores:        window.chores || [],
-            routines:      window.routines || [],
-            lists:         window.lists || [],
-            recipes:       window.recipes || [],
-            mealPlan:      window.mealPlan || [],
-            rewards:       window.rewards || [],
-            allowances:    window.allowances || [],
-            mealCategories: window.mealCategories || []
-        }}));
-
+        console.log('✅ All data loaded from Supabase');
+        
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
         throw error;
@@ -378,7 +369,8 @@ async function syncChore(chore, operation) {
                 title: chore.title || '', description: chore.icon || '', assigned_to: assignedTo,
                 due_date: chore.dueDate || null, due_time: chore.time || null,
                 completed: chore.completed || false, completed_at: chore.completed ? new Date().toISOString() : null,
-                points: chore.stars || 0
+                points: chore.stars || 0,
+                display_order: chore.displayOrder != null ? chore.displayOrder : 9999
             });
             console.log('✓ Chore updated in Supabase:', chore.title);
         } else if (operation === 'delete') {
@@ -799,9 +791,13 @@ async function loadRewardsFromSupabase() {
             })(),
             starsNeeded: r.points_cost || r.stars_needed || r.star_cost || r.starsNeeded || 25,
             stars: r.points_cost || r.stars_needed || r.star_cost || r.stars || 25,
+            displayOrder: r.display_order != null ? r.display_order : 9999,
             redeemed: r.redeemed || false,
             redeemedDate: r.redeemed_date || null
         }));
+        formatted.sort(function(a, b) {
+            return (a.displayOrder != null ? a.displayOrder : 9999) - (b.displayOrder != null ? b.displayOrder : 9999);
+        });
         window.rewards = formatted;
         console.log('✓ Loaded', formatted.length, 'rewards from Supabase');
         if (typeof currentSection !== 'undefined' && currentSection === 'rewards' && typeof renderRewardsView === 'function') {
@@ -939,6 +935,7 @@ async function loadTasksFromSupabase() {
                 icon: t.category === 'chore' ? (t.description || '') : '',  // description holds icon only for chores
                 completed: t.completed || false,
                 stars: t.points || 0,
+                displayOrder: t.display_order != null ? t.display_order : 9999,
                 dueDate: t.due_date,
                 time: t.due_time,
                 frequency: t.recurring_pattern ? `Every ${t.recurring_pattern}` : 'Once',
@@ -1163,7 +1160,8 @@ window.SupabaseSync = {
                     icon: reward.emoji || reward.icon || '🎁',
                     points_cost: reward.starsNeeded || reward.stars || 25,
                     redeemed: reward.redeemed || false,
-                    redeemed_date: reward.redeemedDate || null
+                    redeemed_date: reward.redeemedDate || null,
+                    display_order: reward.displayOrder != null ? reward.displayOrder : 9999
                 });
             } else if (operation === 'delete') {
                 await SupabaseAPI.deleteReward(reward.id);
