@@ -6092,7 +6092,7 @@ let rewards = window.rewards || [];
                                     var bgOpacity = chore.completed ? 0.5 : 0.19;
                                     var choreBg = hexToRgba(member.color, bgOpacity);
                                     
-                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="' + member.name + '" style="background: ' + choreBg + '; cursor: move;" onclick="openTaskDetail(\\'' + chore.id + '\\', \\'chore\\', event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';
+                                    html += '<div class="chore-item' + (chore.completed ? ' completed' : '') + '" draggable="true" data-chore-id="' + chore.id + '" data-member="' + member.name + '" style="background: ' + choreBg + '; cursor: move;" onclick="openTaskDetail(\'' + chore.id + '\',\'chore\',event)" ondragstart="handleChoreDragStart(event)" ondragover="handleChoreDragOver(event)" ondrop="handleChoreDrop(event)" ondragend="handleChoreDragEnd(event)">';
                                     if (chore.icon) {
                                         html += '<div class="chore-item-icon">' + chore.icon + '</div>';
                                     }
@@ -6105,7 +6105,7 @@ let rewards = window.rewards || [];
                                     if (chore.stars) {
                                         html += '<div class="chore-item-stars">⭐ ' + chore.stars + '</div>';
                                     }
-                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\\'' + chore.id + '\\')">' + (chore.completed ? '✓' : '') + '</div>';
+                                    html += '<div class="chore-item-checkbox' + (chore.completed ? ' checked' : '') + '" style="' + (chore.completed ? 'background: ' + member.color + '; border-color: ' + member.color + ';' : '') + '" onclick="event.stopPropagation(); toggleChore(\'' + chore.id + '\')">' + (chore.completed ? '✓' : '') + '</div>';
                                     html += '</div>';
                                 });
                             } else {
