@@ -1476,7 +1476,7 @@ let rewards = window.rewards || [];
                 });
                 
                 html += `
-                            <input type="text" class="add-item-input" placeholder="Add an item..." onkeypress="if(event.key==='Enter') addListItemToSection(${list.id}, '${sectionName}', this)">
+                            <input type="text" class="add-item-input" placeholder="Add an item..." onkeydown="if(event.key==='Enter'){ event.preventDefault(); addListItemToSection('${list.id}', '${sectionName}', this); }">
                         </div>
                     </div>
                 `;
