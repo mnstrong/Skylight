@@ -6263,6 +6263,18 @@ let rewards = window.rewards || [];
         const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'rewards'));
         
         let html = '';
+
+        // Give / Remove Stars toolbar
+        html += `<div class="star-toolbar">
+            <button class="star-toolbar-btn" onclick="openStarModal('give')">
+                <span class="star-toolbar-icon">☆</span>
+                <span>Give Stars</span>
+            </button>
+            <button class="star-toolbar-btn" onclick="openStarModal('remove')">
+                <span class="star-toolbar-icon">☆</span>
+                <span>Remove Stars</span>
+            </button>
+        </div>`;
         
         choreMembers.forEach(member => {
             // Calculate total stars earned from completed chores and routines
@@ -6295,30 +6307,26 @@ let rewards = window.rewards || [];
             // Render reward cards
             memberRewards.forEach(reward => {
                 const currentStars = Math.min(totalStarsEarned, reward.starsNeeded);
-                const progressPercent = (currentStars / reward.starsNeeded) * 100;
+                const progressPercent = Math.min(100, (totalStarsEarned / reward.starsNeeded) * 100);
                 const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
-                
-                html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')" style="cursor: pointer;">
-                    <div class="reward-emoji">${reward.emoji}</div>
-                    <div class="reward-title">${reward.title}</div>
-                    <div class="reward-progress-container">
-                        <div class="reward-progress-bar">
-                            <div class="reward-progress-fill" style="width: ${progressPercent}%; background: ${member.color}80;"></div>
-                            <div class="reward-progress-text">
-                                <span>⭐</span>
-                                <span>${currentStars}/${reward.starsNeeded}</span>
-                            </div>
-                        </div>
+                const barColor = canRedeem ? member.color : member.color + 'aa';
+                const redeemedDate = reward.redeemedDate ? new Date(reward.redeemedDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '\u2014';
+
+                html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')">
+                    <div class="reward-card-row">
+                        <div class="reward-card-emoji">${reward.emoji || reward.icon || '\uD83C\uDF81'}</div>
+                        <div class="reward-card-title${reward.redeemed ? ' reward-card-redeemed' : ''}">${reward.title}</div>
                     </div>
-                    ${canRedeem ? 
-                        `<button class="reward-redeem-btn" style="background: ${member.color};" onclick="event.stopPropagation(); redeemReward('${reward.id}')">
-                            Redeem ⭐ ${reward.starsNeeded}
-                        </button>` :
-                        reward.redeemed ?
-                        `<button class="reward-redeem-btn" style="background: #999;" disabled>
-                            Redeemed ✓
-                        </button>` :
-                        ''
+                    ${reward.redeemed
+                        ? `<div class="reward-card-redeemed-label">Redeemed on ${redeemedDate}</div>`
+                        : canRedeem
+                        ? `<button class="reward-redeem-btn" style="background:${member.color};" onclick="event.stopPropagation(); redeemReward('${reward.id}')">Redeem \u2B50 ${reward.starsNeeded}</button>`
+                        : `<div class="reward-card-bar-wrap">
+                               <div class="reward-card-bar" style="background:${hexToRgba(member.color,0.18)};">
+                                   <div class="reward-card-bar-fill" style="width:${progressPercent}%;background:${barColor};"></div>
+                                   <div class="reward-card-bar-label">\u2606 ${currentStars}/${reward.starsNeeded}</div>
+                               </div>
+                           </div>`
                     }
                 </div>`;
             });
@@ -6329,7 +6337,86 @@ let rewards = window.rewards || [];
         container.innerHTML = html;
     }
     
-    let currentRedeemedRewardId = null;
+    // ── Star Adjustment Sheet ─────────────────────────────────────────────────
+    // ── Give / Remove Stars Modal (Skylight-style) ────────────────────────────
+    let _starModalMode   = 'give';   // 'give' | 'remove'
+    let _starModalMember = null;
+
+    function openStarModal(mode, defaultMember) {
+        _starModalMode = mode;
+        _starModalMember = defaultMember || null;
+        document.getElementById('starModalTitle').textContent = mode === 'give' ? 'Give Stars' : 'Remove Stars';
+        document.getElementById('starModalInput').value = '';
+        document.getElementById('starModalConfirmBtn').textContent = mode === 'give' ? 'Give Stars' : 'Remove Stars';
+        _renderStarModalProfiles();
+        _updateStarModalSummary();
+        document.getElementById('starModal').classList.add('active');
+        setTimeout(function() { document.getElementById('starModalInput').focus(); }, 300);
+    }
+
+    function closeStarModal() {
+        document.getElementById('starModal').classList.remove('active');
+        _starModalMember = null;
+    }
+
+    function _getStarTotal(memberName) {
+        var mc = chores.filter(function(c) { return c.member === memberName && c.completed && c.stars; });
+        var mr = routines.filter(function(r) { return r.member === memberName && r.completed && r.stars; });
+        return mc.reduce(function(s,c){return s+c.stars;},0) + mr.reduce(function(s,r){return s+r.stars;},0) + (bonusStars[memberName] || 0);
+    }
+
+    function _renderStarModalProfiles() {
+        var members = familyMembers.filter(function(m) { return !m.isGoogleCalendar && memberHasSection(m, 'rewards'); });
+        var grid = document.getElementById('starModalProfileGrid');
+        grid.innerHTML = members.map(function(m) {
+            var sel = m.name === _starModalMember;
+            return '<div class="star-modal-profile' + (sel ? ' selected' : '') + '" onclick="selectStarModalMember(\'' + m.name + '\')">' +
+                '<div class="star-modal-avatar" style="background:' + m.color + ';' + (sel ? 'box-shadow:0 0 0 3px white,0 0 0 5px ' + m.color + ';' : '') + '">' + m.name.charAt(0).toUpperCase() + '</div>' +
+                '<div class="star-modal-pname">' + m.name + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function selectStarModalMember(name) {
+        _starModalMember = name;
+        _renderStarModalProfiles();
+        _updateStarModalSummary();
+    }
+
+    function _updateStarModalSummary() {
+        var sumEl = document.getElementById('starModalSummary');
+        if (!_starModalMember) { sumEl.style.display = 'none'; return; }
+        var before = _getStarTotal(_starModalMember);
+        var amt    = parseInt(document.getElementById('starModalInput').value) || 0;
+        var after  = _starModalMode === 'give' ? before + amt : Math.max(0, before - amt);
+        document.getElementById('starModalSummaryProfile').textContent = _starModalMember;
+        document.getElementById('starModalSummaryBefore').textContent  = before;
+        document.getElementById('starModalSummaryAfter').textContent   = after;
+        sumEl.style.display = '';
+    }
+
+    function confirmStarModal() {
+        var amt = parseInt(document.getElementById('starModalInput').value);
+        if (!amt || amt <= 0 || !_starModalMember) return;
+        var mc = chores.filter(function(c){ return c.member === _starModalMember && c.completed && c.stars; });
+        var mr = routines.filter(function(r){ return r.member === _starModalMember && r.completed && r.stars; });
+        var fromTasks = mc.reduce(function(s,c){return s+c.stars;},0) + mr.reduce(function(s,r){return s+r.stars;},0);
+        var delta = _starModalMode === 'give' ? amt : -amt;
+        var current = bonusStars[_starModalMember] || 0;
+        bonusStars[_starModalMember] = Math.max(-fromTasks, current + delta);
+        window.bonusStars = bonusStars;
+        if (window.SupabaseAPI) SupabaseAPI.setAppSetting('bonusStars', bonusStars).catch(console.error);
+        closeStarModal();
+        if (typeof renderRewardsView === 'function') renderRewardsView();
+    }
+
+    window.openStarModal         = openStarModal;
+    window.closeStarModal        = closeStarModal;
+    window.selectStarModalMember = selectStarModalMember;
+    window.confirmStarModal      = confirmStarModal;
+    window._updateStarModalSummary = _updateStarModalSummary;
+    window.openStarAdjustSheet   = function(name) { openStarModal('give', name); };
+
     
     function redeemReward(rewardId) {
         const reward = rewards.find(r => r.id === rewardId);
@@ -6340,7 +6427,8 @@ let rewards = window.rewards || [];
         const memberRoutines = routines.filter(r => r.member === reward.member && r.completed && r.stars);
         const totalStarsEarned = 
             memberChores.reduce((sum, c) => sum + c.stars, 0) +
-            memberRoutines.reduce((sum, r) => sum + r.stars, 0);
+            memberRoutines.reduce((sum, r) => sum + r.stars, 0) +
+            (bonusStars[reward.member] || 0);
         
         if (totalStarsEarned >= reward.starsNeeded && !reward.redeemed) {
             reward.redeemed = true;
