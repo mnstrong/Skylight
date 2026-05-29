@@ -117,6 +117,7 @@ window.familyMembers = familyMembers;
     window.routines = routines;
     var hiddenChoreMembers = window.hiddenChoreMembers || [];
     var showUpForGrabs = window.showUpForGrabs || false;
+    var bonusStars = window.bonusStars || {}; // { memberName: starCount }
 
 let visiblePeriods = {};
 // Populate visiblePeriods dynamically for all family members
@@ -5864,7 +5865,8 @@ let rewards = window.rewards || [];
             const memberRoutines = routines.filter(r => r.member === member.name && r.completed && r.stars);
             const totalStarsEarned = 
                 memberChores.reduce((sum, c) => sum + c.stars, 0) +
-                memberRoutines.reduce((sum, r) => sum + r.stars, 0);
+                memberRoutines.reduce((sum, r) => sum + r.stars, 0) +
+                (bonusStars[member.name] || 0);
             
             const columnBg = hexToRgba(member.color, 0.2);
             
@@ -5938,7 +5940,8 @@ let rewards = window.rewards || [];
         const memberRoutines = routines.filter(r => r.member === memberName && r.completed && r.stars);
         const totalStarsEarned = 
             memberChores.reduce((sum, c) => sum + c.stars, 0) +
-            memberRoutines.reduce((sum, r) => sum + r.stars, 0);
+            memberRoutines.reduce((sum, r) => sum + r.stars, 0) +
+            (bonusStars[memberName] || 0);
         
         if (totalStarsEarned >= reward.stars) {
             reward.redeemed = true;
@@ -6265,7 +6268,8 @@ let rewards = window.rewards || [];
             const memberRoutines = routines.filter(r => r.member === member.name && r.completed && r.stars);
             const totalStarsEarned = 
                 memberChores.reduce((sum, c) => sum + c.stars, 0) +
-                memberRoutines.reduce((sum, r) => sum + r.stars, 0);
+                memberRoutines.reduce((sum, r) => sum + r.stars, 0) +
+                (bonusStars[member.name] || 0);
             
             // Get rewards for this member
             const memberRewards = rewards.filter(r => r.member === member.name);
@@ -6401,27 +6405,28 @@ let rewards = window.rewards || [];
     
     // Reward Edit Functions
     let currentEditRewardId = null;
+    let currentEditRewardMember = null;
     
     function openRewardDetail(rewardId) {
         currentEditRewardId = rewardId;
         const reward = rewards.find(r => r.id === rewardId);
         
-        if (!reward) {
-            return;
-        }
+        if (!reward) return;
+        currentEditRewardMember = reward.member;
         
         // Populate edit form
         const titleInput = document.getElementById('editRewardTitle');
         const emojiInput = document.getElementById('editRewardEmoji');
         const starsInput = document.getElementById('editRewardStars');
         
-        if (!titleInput || !emojiInput || !starsInput) {
-            return;
-        }
+        if (!titleInput || !emojiInput || !starsInput) return;
         
         titleInput.value = reward.title || '';
         emojiInput.value = reward.emoji || reward.icon || '🎁';
         starsInput.value = reward.starsNeeded || reward.stars || 25;
+        
+        // Populate award stars section
+        updateAwardStarsDisplay(reward.member);
         
         // Initialize emoji picker
         initializeEditRewardEmojiPicker();
@@ -6430,18 +6435,62 @@ let rewards = window.rewards || [];
         const overlay = document.getElementById('editRewardPanelOverlay');
         const panel = document.getElementById('editRewardPanel');
         
-        if (!overlay || !panel) {
-            return;
-        }
+        if (!overlay || !panel) return;
         
         overlay.classList.add('active');
         panel.classList.add('active');
     }
+
+    function updateAwardStarsDisplay(memberName) {
+        const member = familyMembers.find(m => m.name === memberName);
+        const memberChores = chores.filter(c => c.member === memberName && c.completed && c.stars);
+        const memberRoutines = routines.filter(r => r.member === memberName && r.completed && r.stars);
+        const earnedFromTasks =
+            memberChores.reduce((sum, c) => sum + c.stars, 0) +
+            memberRoutines.reduce((sum, r) => sum + r.stars, 0);
+        const bonus = bonusStars[memberName] || 0;
+        const total = earnedFromTasks + bonus;
+
+        const totalEl = document.getElementById('awardStarsTotal');
+        const breakdownEl = document.getElementById('awardStarsBreakdown');
+        const section = document.getElementById('awardStarsSection');
+
+        if (totalEl) totalEl.textContent = total;
+        if (section && member) {
+            section.style.borderColor = member.color + '66';
+            section.style.background = member.color + '12';
+        }
+        if (breakdownEl) {
+            let parts = [];
+            if (earnedFromTasks > 0) parts.push(`${earnedFromTasks} from tasks`);
+            if (bonus > 0) parts.push(`${bonus} bonus`);
+            if (bonus < 0) parts.push(`${bonus} bonus`);
+            breakdownEl.textContent = parts.length ? parts.join(' · ') : 'No stars earned yet';
+        }
+    }
+
+    function adjustBonusStars(amount) {
+        if (!currentEditRewardMember) return;
+        const current = bonusStars[currentEditRewardMember] || 0;
+        bonusStars[currentEditRewardMember] = Math.max(0, current + amount);
+        window.bonusStars = bonusStars;
+        // Persist to Supabase
+        if (window.SupabaseAPI) {
+            SupabaseAPI.setAppSetting('bonusStars', bonusStars).catch(console.error);
+        }
+        updateAwardStarsDisplay(currentEditRewardMember);
+        // Refresh rewards view in background so progress bars update live
+        if (currentSection === 'rewards' && typeof renderRewardsView === 'function') {
+            renderRewardsView();
+        }
+    }
+    window.adjustBonusStars = adjustBonusStars;
     
     function closeEditRewardPanel() {
         document.getElementById('editRewardPanel').classList.remove('active');
         document.getElementById('editRewardPanelOverlay').classList.remove('active');
         currentEditRewardId = null;
+        currentEditRewardMember = null;
     }
     
     function saveEditedReward() {
@@ -9752,6 +9801,7 @@ if (allChoresComplete || allRoutinesComplete) {
         if (d.mealCategories !== undefined)    { mealCategories = d.mealCategories || mealCategories; }
         if (d.hiddenChoreMembers !== undefined){ hiddenChoreMembers = d.hiddenChoreMembers || []; window.hiddenChoreMembers = hiddenChoreMembers; }
         if (d.showUpForGrabs !== undefined)    { showUpForGrabs = !!d.showUpForGrabs; window.showUpForGrabs = showUpForGrabs; }
+        if (d.bonusStars !== undefined)        { bonusStars = d.bonusStars || {}; window.bonusStars = bonusStars; }
 
         // Re-render the active section with fresh data
         try {

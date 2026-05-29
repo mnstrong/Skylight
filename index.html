@@ -1023,9 +1023,26 @@
             <div class="edit-panel-title">Edit Reward</div>
         </div>
         <div class="edit-panel-body">
+            <!-- Award Stars section -->
+            <div class="edit-form-group award-stars-section" id="awardStarsSection">
+                <label class="edit-form-label">⭐ Stars Balance</label>
+                <div class="award-stars-display">
+                    <div class="award-stars-total" id="awardStarsTotal">0</div>
+                    <div class="award-stars-label">total stars</div>
+                </div>
+                <div class="award-stars-controls">
+                    <button class="award-stars-btn award-stars-minus" onclick="adjustBonusStars(-1)">−1</button>
+                    <button class="award-stars-btn award-stars-minus" onclick="adjustBonusStars(-5)">−5</button>
+                    <button class="award-stars-btn award-stars-plus" onclick="adjustBonusStars(5)">+5</button>
+                    <button class="award-stars-btn award-stars-plus" onclick="adjustBonusStars(10)">+10</button>
+                    <button class="award-stars-btn award-stars-plus" onclick="adjustBonusStars(25)">+25</button>
+                </div>
+                <div class="award-stars-breakdown" id="awardStarsBreakdown"></div>
+            </div>
             <div class="edit-form-group">
                 <label class="edit-form-label">Title</label>
                 <input type="text" class="edit-form-input" id="editRewardTitle" placeholder="Reward title">
+            </div>
             </div>
             <div class="edit-form-group">
                 <label class="edit-form-label">Emoji (Optional)</label>

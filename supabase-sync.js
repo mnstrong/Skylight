@@ -1003,6 +1003,11 @@ async function loadAppSettingsFromSupabase() {
             window.hiddenChoreMembers = settings.hiddenChoreMembers;
         }
 
+        // bonusStars
+        if (settings.bonusStars !== undefined) {
+            window.bonusStars = settings.bonusStars || {};
+        }
+
         // profileKeywords
         if (settings.profileKeywords !== undefined) {
             window.profileKeywords = settings.profileKeywords;

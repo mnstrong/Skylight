@@ -8371,3 +8371,75 @@ width: 80px;
     margin: 0 auto 12px;
 }
 @keyframes listsSpin { to { transform: rotate(360deg); } }
+
+/* ── Award Stars Panel ──────────────────────────────────────────────────── */
+.award-stars-section {
+    background: rgba(255, 200, 0, 0.08);
+    border: 1.5px solid rgba(255, 200, 0, 0.3);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.award-stars-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 10px 0 14px;
+}
+
+.award-stars-total {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: #1a1a1a;
+}
+
+.award-stars-label {
+    font-size: 16px;
+    color: #888;
+    font-weight: 400;
+}
+
+.award-stars-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.award-stars-btn {
+    flex: 1;
+    min-width: 52px;
+    padding: 10px 4px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.award-stars-plus {
+    background: rgba(52, 199, 89, 0.15);
+    color: #1a7a35;
+}
+
+.award-stars-plus:hover {
+    background: rgba(52, 199, 89, 0.28);
+}
+
+.award-stars-minus {
+    background: rgba(255, 59, 48, 0.12);
+    color: #c0392b;
+}
+
+.award-stars-minus:hover {
+    background: rgba(255, 59, 48, 0.22);
+}
+
+.award-stars-breakdown {
+    font-size: 13px;
+    color: #999;
+    line-height: 1.6;
+}

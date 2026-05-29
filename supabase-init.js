@@ -37,7 +37,8 @@
                     allowances: window.allowances,
                     mealCategories: window.mealCategories,
                     hiddenChoreMembers: window.hiddenChoreMembers,
-                    showUpForGrabs: window.showUpForGrabs
+                    showUpForGrabs: window.showUpForGrabs,
+                    bonusStars: window.bonusStars
                 }
             }));
             
