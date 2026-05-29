@@ -1734,7 +1734,7 @@
             background: white;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 15px;
+            margin: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
@@ -4656,7 +4656,7 @@
     justify-content: center;
     text-align: center;
     padding: 26px;
-    width: 100%;
+    margin: 16px;
 }
 
 .routine-indicator, .chore-item-icon {
