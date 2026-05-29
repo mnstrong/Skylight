@@ -6489,6 +6489,9 @@ let rewards = window.rewards || [];
     function closeEditRewardPanel() {
         document.getElementById('editRewardPanel').classList.remove('active');
         document.getElementById('editRewardPanelOverlay').classList.remove('active');
+        // Reset emoji grid so it reinitializes from the full source next open
+        const grid = document.getElementById('editRewardEmojiPickerGrid');
+        if (grid) grid.innerHTML = '';
         currentEditRewardId = null;
         currentEditRewardMember = null;
     }
@@ -6539,10 +6542,20 @@ let rewards = window.rewards || [];
     
     function initializeEditRewardEmojiPicker() {
         const grid = document.getElementById('editRewardEmojiPickerGrid');
+        if (!grid) return;
         if (grid.innerHTML) return; // Already initialized
         
-        const emojiData = document.getElementById('emojiPickerGrid').innerHTML;
-        grid.innerHTML = emojiData.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
+        const sourceGrid = document.getElementById('emojiPickerGrid');
+        if (!sourceGrid) {
+            // emojiPickerGrid not in DOM yet — populate with a basic emoji set
+            const basicEmojis = ['🎁','🏆','⭐','🎉','🍕','🍦','🎮','🎬','🛍️','🎯','🚀','💎','🌟','🎪','🎨'];
+            grid.innerHTML = basicEmojis.map(e =>
+                `<div class="emoji-picker-item" onclick="selectEditRewardEmoji('${e}')">${e}</div>`
+            ).join('');
+            return;
+        }
+        
+        grid.innerHTML = sourceGrid.innerHTML.replace(/onclick="selectEmoji/g, 'onclick="selectEditRewardEmoji');
         
         // Parse emojis with Twemoji after populating
         if (typeof twemoji !== 'undefined') {
