@@ -1734,7 +1734,7 @@
             background: white;
             border-radius: 12px;
             padding: 20px;
-            margin: 16px;
+            margin: 16 30px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
@@ -4628,6 +4628,7 @@
             font-weight: 200;
             color: #000;
             margin-bottom: 15px;
+            padding: 0 0 0 30px;
         }
         
         .routine-tasks {
@@ -4656,7 +4657,7 @@
     justify-content: center;
     text-align: center;
     padding: 26px;
-    margin: 16px;
+    margin: 16px 30px;
 }
 
 .routine-indicator, .chore-item-icon {
