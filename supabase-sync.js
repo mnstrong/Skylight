@@ -102,7 +102,7 @@ async function loadAllDataFromSupabase() {
         // Load tasks from Supabase and convert to chores format
         const allTasks = await SupabaseAPI.getTasks();
         if (allTasks && allTasks.length > 0) {
-            const choresFromSupabase = allTasks.map(t => {
+            const choresFromSupabase = allTasks.filter(t => t.category !== 'reward').map(t => {
                 // null assigned_to = Up for Grabs
                 const member = formattedMembers.find(m => m.id === t.assigned_to);
                 const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
@@ -1037,7 +1037,7 @@ async function loadTasksFromSupabase() {
         // Get family members for name lookup
         const familyMembers = window.familyMembers || [];
         
-        const choresFromSupabase = allTasks.map(t => {
+        const choresFromSupabase = allTasks.filter(t => t.category !== 'reward').map(t => {
             const member = familyMembers.find(m => m.id === t.assigned_to);
             const memberName = t.assigned_to === null ? 'Up for Grabs' : (member ? member.name : 'Unknown');
             
