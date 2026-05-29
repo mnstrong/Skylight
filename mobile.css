@@ -3032,30 +3032,36 @@
    REWARDS & STAR MANAGEMENT — mobile-specific styles
    ============================================================ */
 
-.rewards-person-column {
-    min-width: 450px;
-    max-width: 450px;
-    flex-shrink: 0;
-    border-radius: 15px;
-    padding: 0;
-    margin-right: 20px;
-    height: calc(100vh - 160px);
-    min-height: 400px;
+.rewards-scroll-mobile {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 24px;
+    gap: 16px;
+}
+
+.rewards-person-column {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    flex-shrink: 0;
+    border-radius: 18px;
+    padding: 0;
+    margin-right: 0;
+    height: auto;
+    min-height: unset;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
 }
 
 .rewards-person-header {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    padding: 30px 30px 15px 30px;
+    padding: 20px 20px 12px 20px;
     flex-shrink: 0;
-    border-radius: 15px 15px 0 0;
+    border-radius: 18px 18px 0 0;
 }
 
 
@@ -3069,14 +3075,13 @@
     color: #666;
     display: flex;
     align-items: center;
+    gap: 4px;
 }
 
 .rewards-list {
     display: flex;
     flex-direction: column;
-    padding: 0 16px 24px;
-    overflow-y: auto;
-    flex: 1;
+    padding: 0 14px 18px;
 }
 
 .reward-card {

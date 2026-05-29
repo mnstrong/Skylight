@@ -6261,11 +6261,10 @@ let rewards = window.rewards || [];
     function renderRewardsView() {
         const container = document.getElementById('rewardsContainer');
         const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'rewards'));
-        
-        let html = '';
+        const isMobile = window.innerWidth <= 768;
 
-        // Give / Remove Stars toolbar
-        html += `<div class="star-toolbar">
+        // Give / Remove Stars toolbar — mobile only
+        let toolbar = isMobile ? `<div class="star-toolbar">
             <button class="star-toolbar-btn" onclick="openStarModal('give')">
                 <span class="star-toolbar-icon">☆</span>
                 <span>Give Stars</span>
@@ -6274,7 +6273,9 @@ let rewards = window.rewards || [];
                 <span class="star-toolbar-icon">☆</span>
                 <span>Remove Stars</span>
             </button>
-        </div>`;
+        </div>` : '';
+
+        let html = '';
         
         choreMembers.forEach(member => {
             // Calculate total stars earned from completed chores and routines
@@ -6334,7 +6335,11 @@ let rewards = window.rewards || [];
             html += `</div>`;
         });
         
-        container.innerHTML = html;
+        if (isMobile) {
+            container.innerHTML = toolbar + `<div class="rewards-scroll-mobile">${html}</div>`;
+        } else {
+            container.innerHTML = `<div class="rewards-scroll">${html}</div>`;
+        }
     }
     
     // ── Star Adjustment Sheet ─────────────────────────────────────────────────
@@ -6387,7 +6392,7 @@ let rewards = window.rewards || [];
         var sumEl = document.getElementById('starModalSummary');
         if (!_starModalMember) { sumEl.style.display = 'none'; return; }
         var before = _getStarTotal(_starModalMember);
-        var amt    = parseInt(document.getElementById('starModalInput').value) || 0;
+        var amt    = parseFloat(document.getElementById('starModalInput').value) || 0;
         var after  = _starModalMode === 'give' ? before + amt : Math.max(0, before - amt);
         document.getElementById('starModalSummaryProfile').textContent = _starModalMember;
         document.getElementById('starModalSummaryBefore').textContent  = before;
@@ -6396,7 +6401,7 @@ let rewards = window.rewards || [];
     }
 
     function confirmStarModal() {
-        var amt = parseInt(document.getElementById('starModalInput').value);
+        var amt = parseFloat(document.getElementById('starModalInput').value);
         if (!amt || amt <= 0 || !_starModalMember) return;
         var mc = chores.filter(function(c){ return c.member === _starModalMember && c.completed && c.stars; });
         var mr = routines.filter(function(r){ return r.member === _starModalMember && r.completed && r.stars; });
