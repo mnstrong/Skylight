@@ -4279,10 +4279,25 @@ let rewards = window.rewards || [];
         return m;
     })();
 
+    // Local keyword → local image path (takes priority over CDN flair)
+    var LOCAL_FLAIR_MAP = [
+        { keywords: ['hangout', 'hang out', 'hangouts'], url: 'graphics/hangout.jpg' }
+    ];
+
     function getFlairUrl(title, notes) {
         if (notes) {
             var tagMatch = notes.match(/#flair:([a-z0-9]+)/i) || notes.match(/\[flair:([a-z0-9]+)\]/i);
             if (tagMatch) return FLAIR_BASE + tagMatch[1].toLowerCase() + FLAIR_EXT;
+        }
+        var combined = ((title || '') + ' ' + (notes || '')).toLowerCase();
+        // Check local overrides first
+        for (var li = 0; li < LOCAL_FLAIR_MAP.length; li++) {
+            var entry = LOCAL_FLAIR_MAP[li];
+            for (var lk = 0; lk < entry.keywords.length; lk++) {
+                if (combined.indexOf(entry.keywords[lk]) !== -1) {
+                    return entry.url;
+                }
+            }
         }
         var keys = Object.keys(FLAIR_MAP).sort(function(a,b){ return b.length - a.length; });
         var sources = [title, notes].filter(Boolean).map(function(s){ return s.toLowerCase(); });
@@ -4295,7 +4310,7 @@ let rewards = window.rewards || [];
         }
         // Check profile keyword map for custom bgImage (e.g. ignite.png)
         var kws = getProfileKeywords();
-        var combined = ((title || '') + ' ' + (notes || '')).toLowerCase();
+        combined = ((title || '') + ' ' + (notes || '')).toLowerCase();
         for (var k = 0; k < kws.length; k++) {
             if (kws[k].bgImage && combined.indexOf(kws[k].keyword.toLowerCase()) !== -1) {
                 return kws[k].bgImage;
