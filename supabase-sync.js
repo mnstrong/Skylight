@@ -1261,7 +1261,7 @@ window.SupabaseSync = {
         try {
             if (operation === 'add') {
                 await SupabaseAPI.addReward({
-                    name: reward.title,
+                    title: reward.title,
                     icon: reward.emoji || reward.icon || '🎁',
                     points_cost: reward.starsNeeded || reward.stars || 25,
                     member_id: memberObj ? memberObj.id : null,
@@ -1271,7 +1271,7 @@ window.SupabaseSync = {
                 });
             } else if (operation === 'update') {
                 await SupabaseAPI.updateReward(reward.id, {
-                    name: reward.title,
+                    title: reward.title,
                     icon: reward.emoji || reward.icon || '🎁',
                     points_cost: reward.starsNeeded || reward.stars || 25,
                     redeemed: reward.redeemed || false,
