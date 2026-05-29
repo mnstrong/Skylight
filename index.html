@@ -1125,6 +1125,42 @@
             <div class="reward-redemption-unredeem" onclick="unredeemCurrentReward()">Unredeem</div>
         </div>
     </div>
+
+    <!-- Star Give/Remove Modal -->
+    <div class="star-modal" id="starModal" onclick="if(event.target===this) closeStarModal()">
+        <div class="star-modal-content">
+            <div class="star-modal-header">
+                <button class="star-modal-back" onclick="closeStarModal()">←</button>
+                <div class="star-modal-title" id="starModalTitle">Give Stars</div>
+            </div>
+            <div class="star-modal-body">
+                <div class="star-modal-input-row">
+                    <span class="star-modal-input-icon">☆</span>
+                    <input type="number" id="starModalInput" class="star-modal-input" placeholder="Stars" min="1" oninput="_updateStarModalSummary()">
+                </div>
+                <div class="star-modal-section">
+                    <div class="star-modal-section-label">
+                        <span class="star-modal-section-icon">👥</span>
+                        <span>Select Profile</span>
+                    </div>
+                    <div class="star-modal-profile-grid" id="starModalProfileGrid"></div>
+                </div>
+                <div class="star-modal-summary" id="starModalSummary" style="display:none">
+                    <div class="star-modal-summary-row star-modal-summary-head">
+                        <span>Profile</span><span>Before</span><span>After</span>
+                    </div>
+                    <div class="star-modal-summary-row">
+                        <span id="starModalSummaryProfile"></span>
+                        <span id="starModalSummaryBefore"></span>
+                        <span id="starModalSummaryAfter"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="star-modal-footer">
+                <button class="star-modal-confirm" id="starModalConfirmBtn" onclick="confirmStarModal()">Give Stars</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Clock Picker Modal -->
     <div class="clock-picker-modal" id="clockPickerModal" onclick="if(event.target === this) closeClockPicker()">
