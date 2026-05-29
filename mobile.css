@@ -3473,3 +3473,58 @@
 }
 
 .star-modal-confirm:active { opacity: 0.85; }
+
+/* ── Rewards Profile Picker Row ─────────────────────────────────────────── */
+.rewards-profile-row {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.rewards-profile-row::-webkit-scrollbar { display: none; }
+
+.rewards-profile-pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s;
+}
+
+.rewards-profile-pick.active {
+    transform: scale(1.05);
+}
+
+.rewards-profile-pick-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.rewards-profile-pick.active .rewards-profile-pick-avatar {
+    box-shadow: 0 0 0 3px white, 0 0 0 5px currentColor;
+    opacity: 1;
+}
+
+.rewards-profile-pick-stars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    transition: all 0.2s;
+}

@@ -6190,7 +6190,7 @@ let rewards = window.rewards || [];
             var ufgColor = '#8b8b8b';
             html += '<div class="chore-person-card" style="background:rgba(139,139,139,0.15);">';
             html += '<div class="chore-person-header">';
-            html += '<div class="chore-person-avatar" style="background:' + ufgColor + ';font-size:32px;">🎲</div>';
+            html += '<div class="chore-person-avatar" style="background:' + ufgColor + ';display:flex;align-items:center;justify-content:center;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 -960 960 960\" fill=\"#FFFFFF\"><path d=\"M220.81-322.43q-33.62 0-57.02-23.95t-23.4-58.07 23.47-57.94q23.47-23.83 56.93-23.83 34.28 0 58.55 24.04t24.27 58.16-24.18 57.85q-24.18 23.74-58.62 23.74m517.38 0q-34.44 0-58.62-23.95t-24.18-58.07 24.18-57.94q24.18-23.83 58.62-23.83 33.62 0 57.3 24.04 23.69 24.04 23.69 58.16t-23.69 57.85q-23.68 23.74-57.3 23.74m-257.91-43.13q-42.24 0-72.06-29.27-29.83-29.26-29.83-71.5 0-42.8 29.83-72.63 29.82-29.82 72.06-29.82t71.79 29.82q29.54 29.83 29.54 72.63 0 42.24-29.54 71.5-29.55 29.27-71.79 29.27M277.83-89.91q7-34.7 25.34-65.18 18.35-30.47 45.48-52.89 27.13-22.41 60.66-34.48 33.53-12.06 70.74-12.06t70.97 12.06q33.76 12.07 60.89 34.77 26.57 22.13 44.92 52.6 18.34 30.48 25.91 65.18zm-163.35 0q-21.52 0-35.07-13.6-13.54-13.6-13.54-30.88 0-43.13 48.15-81.63t105.91-38.5q24.99 0 48.35 6.56 23.37 6.57 43.5 19.6-29.26 27.16-48.39 62.68-19.13 35.51-26.25 75.77zm608.94 0q-7.68-40.26-26.49-75.81-18.81-35.54-48.15-62.54 20.13-12.13 42.55-19.2 22.41-7.06 47.86-7.06 58.2 0 107.42 38.78t49.22 81.35q0 18.26-14.51 31.37-14.52 13.11-35.8 13.11zM47.07-534.52Q36.43-547.07 39-563.06q2.56-15.98 15.39-26.25l377.74-288q21.19-15.95 47.92-15.95t47.82 15.95l124.61 94.57v-35.96q0-23.04 16.38-38.71 16.37-15.68 44.05-15.68 25.13 0 42.96 17.56t17.83 43.05v121.01l132.47 101.6q12.85 10.2 15.12 26.47 2.28 16.27-7.99 28.81-10.26 13.11-25.71 15.18-15.46 2.06-28.85-8.2L480-813.61l-378.74 286q-13.39 10.26-29.01 8.51-15.63-1.75-25.18-15.42\"></path></svg></div>';
             html += '<div class="chore-person-info">';
             html += '<div class="chore-person-name">Up for Grabs</div>';
             html += '<div class="chore-person-stats">';
@@ -6234,7 +6234,7 @@ let rewards = window.rewards || [];
         // Restore hidden / add Up for Grabs manage panel
         if (hiddenChoreMembers.length > 0 || !showUpForGrabs) {
             html += '<div class="chore-manage-card">';
-            if (!showUpForGrabs) html += '<button class="chore-manage-btn" onclick="toggleUpForGrabs()">🎲 Add Up for Grabs list</button>';
+            if (!showUpForGrabs) html += '<button class="chore-manage-btn" onclick="toggleUpForGrabs()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M220.81-322.43q-33.62 0-57.02-23.95t-23.4-58.07 23.47-57.94q23.47-23.83 56.93-23.83 34.28 0 58.55 24.04t24.27 58.16-24.18 57.85q-24.18 23.74-58.62 23.74m517.38 0q-34.44 0-58.62-23.95t-24.18-58.07 24.18-57.94q24.18-23.83 58.62-23.83 33.62 0 57.3 24.04 23.69 24.04 23.69 58.16t-23.69 57.85q-23.68 23.74-57.3 23.74m-257.91-43.13q-42.24 0-72.06-29.27-29.83-29.26-29.83-71.5 0-42.8 29.83-72.63 29.82-29.82 72.06-29.82t71.79 29.82q29.54 29.83 29.54 72.63 0 42.24-29.54 71.5-29.55 29.27-71.79 29.27M277.83-89.91q7-34.7 25.34-65.18 18.35-30.47 45.48-52.89 27.13-22.41 60.66-34.48 33.53-12.06 70.74-12.06t70.97 12.06q33.76 12.07 60.89 34.77 26.57 22.13 44.92 52.6 18.34 30.48 25.91 65.18zm-163.35 0q-21.52 0-35.07-13.6-13.54-13.6-13.54-30.88 0-43.13 48.15-81.63t105.91-38.5q24.99 0 48.35 6.56 23.37 6.57 43.5 19.6-29.26 27.16-48.39 62.68-19.13 35.51-26.25 75.77zm608.94 0q-7.68-40.26-26.49-75.81-18.81-35.54-48.15-62.54 20.13-12.13 42.55-19.2 22.41-7.06 47.86-7.06 58.2 0 107.42 38.78t49.22 81.35q0 18.26-14.51 31.37-14.52 13.11-35.8 13.11zM47.07-534.52Q36.43-547.07 39-563.06q2.56-15.98 15.39-26.25l377.74-288q21.19-15.95 47.92-15.95t47.82 15.95l124.61 94.57v-35.96q0-23.04 16.38-38.71 16.37-15.68 44.05-15.68 25.13 0 42.96 17.56t17.83 43.05v121.01l132.47 101.6q12.85 10.2 15.12 26.47 2.28 16.27-7.99 28.81-10.26 13.11-25.71 15.18-15.46 2.06-28.85-8.2L480-813.61l-378.74 286q-13.39 10.26-29.01 8.51-15.63-1.75-25.18-15.42"></path></svg> Add Up for Grabs list</button>';
             hiddenChoreMembers.forEach(function(name) {
                 html += '<button class="chore-manage-btn" onclick="restoreChoreList(\'' + name + '\')">↩ Restore ' + name + '\'s list</button>';
             });
@@ -6263,84 +6263,109 @@ let rewards = window.rewards || [];
         const choreMembers = familyMembers.filter(m => !m.isGoogleCalendar && memberHasSection(m, 'rewards'));
         const isMobile = window.innerWidth <= 768;
 
-        // Give / Remove Stars toolbar — mobile only
-        let toolbar = isMobile ? `<div class="star-toolbar">
-            <button class="star-toolbar-btn" onclick="openStarModal('give')">
-                <span class="star-toolbar-icon">☆</span>
-                <span>Give Stars</span>
-            </button>
-            <button class="star-toolbar-btn" onclick="openStarModal('remove')">
-                <span class="star-toolbar-icon">☆</span>
-                <span>Remove Stars</span>
-            </button>
-        </div>` : '';
-
-        let html = '';
-        
+        // Pre-compute star totals
+        const memberTotals = {};
         choreMembers.forEach(member => {
-            // Calculate total stars earned from completed chores and routines
-            const memberChores = chores.filter(c => c.member === member.name && c.completed && c.stars);
-            const memberRoutines = routines.filter(r => r.member === member.name && r.completed && r.stars);
-            const totalStarsEarned = 
-                memberChores.reduce((sum, c) => sum + c.stars, 0) +
-                memberRoutines.reduce((sum, r) => sum + r.stars, 0) +
-                (bonusStars[member.name] || 0);
-            
-            // Get rewards for this member
-            const memberRewards = rewards.filter(r => r.member === member.name);
-            
-            const columnBg = hexToRgba(member.color, 0.2);
-            
-            html += `<div class="rewards-person-column" style="background: ${columnBg};">
-                <div class="rewards-person-header">
-                    <div class="rewards-person-avatar" style="background: ${member.color}">
-                        ${member.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="rewards-person-info">
-                        <div class="rewards-person-name">${member.name}</div>
-                        <div class="rewards-person-total-stars">
-                            <span>⭐</span>
-                            <span>${totalStarsEarned}</span>
-                        </div>
+            const mc = chores.filter(c => c.member === member.name && c.completed && c.stars);
+            const mr = routines.filter(r => r.member === member.name && r.completed && r.stars);
+            memberTotals[member.name] = mc.reduce((s,c)=>s+c.stars,0) + mr.reduce((s,r)=>s+r.stars,0) + (bonusStars[member.name]||0);
+        });
+
+        function buildRewardCardHtml(reward, member, totalStarsEarned) {
+            const currentStars = Math.min(totalStarsEarned, reward.starsNeeded);
+            const progressPercent = Math.min(100, (totalStarsEarned / reward.starsNeeded) * 100);
+            const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
+            const barColor = canRedeem ? member.color : member.color + 'aa';
+            const redeemedDate = reward.redeemedDate ? new Date(reward.redeemedDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '\u2014';
+            return `<div class="reward-card" onclick="openRewardDetail('${reward.id}')">
+                <div class="reward-card-row">
+                    <div class="reward-card-emoji">${reward.emoji || reward.icon || '\uD83C\uDF81'}</div>
+                    <div class="reward-card-title${reward.redeemed ? ' reward-card-redeemed' : ''}">${reward.title}</div>
+                </div>
+                ${reward.redeemed
+                    ? `<div class="reward-card-redeemed-label">Redeemed on ${redeemedDate}</div>`
+                    : canRedeem
+                    ? `<button class="reward-redeem-btn" style="background:${member.color};" onclick="event.stopPropagation(); redeemReward('${reward.id}')">Redeem \u2B50 ${reward.starsNeeded}</button>`
+                    : `<div class="reward-card-bar-wrap"><div class="reward-card-bar" style="background:${hexToRgba(member.color,0.18)};"><div class="reward-card-bar-fill" style="width:${progressPercent}%;background:${barColor};"></div><div class="reward-card-bar-label">\u2606 ${currentStars}/${reward.starsNeeded}</div></div></div>`
+                }
+            </div>`;
+        }
+
+        if (isMobile) {
+            if (!window._rewardSelectedMember || !choreMembers.find(m => m.name === window._rewardSelectedMember)) {
+                window._rewardSelectedMember = choreMembers.length ? choreMembers[0].name : null;
+            }
+            const sel = window._rewardSelectedMember;
+
+            let html = `<div class="star-toolbar">
+                <button class="star-toolbar-btn" onclick="openStarModal('give')"><span class="star-toolbar-icon">\u2606</span><span>Give Stars</span></button>
+                <button class="star-toolbar-btn" onclick="openStarModal('remove')"><span class="star-toolbar-icon">\u2606</span><span>Remove Stars</span></button>
+            </div>`;
+
+            html += `<div class="rewards-profile-row">`;
+            choreMembers.forEach(member => {
+                const isSelected = member.name === sel;
+                const total = memberTotals[member.name];
+                html += `<div class="rewards-profile-pick${isSelected ? ' active' : ''}" onclick="selectRewardsMember('${member.name}')">
+                    <div class="rewards-profile-pick-avatar" style="background:${member.color};${isSelected ? '' : 'opacity:0.3;'}">${member.name.charAt(0).toUpperCase()}</div>
+                    <div class="rewards-profile-pick-stars" style="background:${isSelected ? member.color+'28' : 'rgba(0,0,0,0.06)'};color:${isSelected ? '#333' : '#aaa'};">
+                        <span style="color:${isSelected ? '#f5a623' : '#ccc'};">\u2605</span> ${total}
                     </div>
                 </div>`;
-            
-            // Render reward cards
-            memberRewards.forEach(reward => {
-                const currentStars = Math.min(totalStarsEarned, reward.starsNeeded);
-                const progressPercent = Math.min(100, (totalStarsEarned / reward.starsNeeded) * 100);
-                const canRedeem = totalStarsEarned >= reward.starsNeeded && !reward.redeemed;
-                const barColor = canRedeem ? member.color : member.color + 'aa';
-                const redeemedDate = reward.redeemedDate ? new Date(reward.redeemedDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '\u2014';
+            });
+            html += `</div>`;
 
-                html += `<div class="reward-card" onclick="openRewardDetail('${reward.id}')">
-                    <div class="reward-card-row">
-                        <div class="reward-card-emoji">${reward.emoji || reward.icon || '\uD83C\uDF81'}</div>
-                        <div class="reward-card-title${reward.redeemed ? ' reward-card-redeemed' : ''}">${reward.title}</div>
+            const member = choreMembers.find(m => m.name === sel);
+            if (member) {
+                const totalStarsEarned = memberTotals[member.name];
+                const memberRewards = rewards.filter(r => r.member === member.name);
+                html += `<div class="rewards-person-column" style="background:${hexToRgba(member.color,0.15)};">
+                    <div class="rewards-person-header">
+                        <div class="rewards-person-avatar" style="background:${member.color}">${member.name.charAt(0).toUpperCase()}</div>
+                        <div class="rewards-person-info">
+                            <div class="rewards-person-name">${member.name}</div>
+                            <div class="rewards-person-total-stars"><span style="color:#f5a623;">\u2605</span><span>${totalStarsEarned}</span></div>
+                        </div>
                     </div>
-                    ${reward.redeemed
-                        ? `<div class="reward-card-redeemed-label">Redeemed on ${redeemedDate}</div>`
-                        : canRedeem
-                        ? `<button class="reward-redeem-btn" style="background:${member.color};" onclick="event.stopPropagation(); redeemReward('${reward.id}')">Redeem \u2B50 ${reward.starsNeeded}</button>`
-                        : `<div class="reward-card-bar-wrap">
-                               <div class="reward-card-bar" style="background:${hexToRgba(member.color,0.18)};">
-                                   <div class="reward-card-bar-fill" style="width:${progressPercent}%;background:${barColor};"></div>
-                                   <div class="reward-card-bar-label">\u2606 ${currentStars}/${reward.starsNeeded}</div>
-                               </div>
-                           </div>`
+                    <div class="rewards-list">
+                        ${memberRewards.length === 0
+                            ? '<p style="color:#aaa;text-align:center;padding:20px;">No rewards yet. Tap + to add!</p>'
+                            : memberRewards.map(r => buildRewardCardHtml(r, member, totalStarsEarned)).join('')
+                        }
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html;
+
+        } else {
+            let html = '';
+            choreMembers.forEach(member => {
+                const totalStarsEarned = memberTotals[member.name];
+                const memberRewards = rewards.filter(r => r.member === member.name);
+                html += `<div class="rewards-person-column" style="background:${hexToRgba(member.color,0.2)};">
+                    <div class="rewards-person-header">
+                        <div class="rewards-person-avatar" style="background:${member.color}">${member.name.charAt(0).toUpperCase()}</div>
+                        <div class="rewards-person-info">
+                            <div class="rewards-person-name">${member.name}</div>
+                            <div class="rewards-person-total-stars"><span>\u2B50</span><span>${totalStarsEarned}</span></div>
+                        </div>
+                    </div>
+                    ${memberRewards.length === 0
+                        ? '<p style="color:#999;text-align:center;padding:20px;">No rewards yet.</p>'
+                        : memberRewards.map(r => buildRewardCardHtml(r, member, totalStarsEarned)).join('')
                     }
                 </div>`;
             });
-            
-            html += `</div>`;
-        });
-        
-        if (isMobile) {
-            container.innerHTML = toolbar + `<div class="rewards-scroll-mobile">${html}</div>`;
-        } else {
             container.innerHTML = `<div class="rewards-scroll">${html}</div>`;
         }
     }
+
+    function selectRewardsMember(name) {
+        window._rewardSelectedMember = name;
+        if (typeof renderRewardsView === 'function') renderRewardsView();
+    }
+    window.selectRewardsMember = selectRewardsMember;
+
     
     // ── Star Adjustment Sheet ─────────────────────────────────────────────────
     // ── Give / Remove Stars Modal (Skylight-style) ────────────────────────────
@@ -8017,7 +8042,7 @@ let rewards = window.rewards || [];
         // Up for Grabs option
         var ufgSelected = selectedProfiles.includes('Up for Grabs');
         html += '<div class="edit-profile-item" onclick="toggleProfile(\'Up for Grabs\')">';
-        html += '<div class="edit-profile-avatar' + (ufgSelected ? ' selected' : '') + '" style="background:#8b8b8b;box-shadow:0 0 0 5px #8b8b8b80;font-size:24px;" data-member="Up for Grabs">🎲</div>';
+        html += '<div class="edit-profile-avatar' + (ufgSelected ? ' selected' : '') + '" style="background:#8b8b8b;box-shadow:0 0 0 5px #8b8b8b80;display:flex;align-items:center;justify-content:center;" data-member="Up for Grabs"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 -960 960 960" fill="#FFFFFF"><path d="M220.81-322.43q-33.62 0-57.02-23.95t-23.4-58.07 23.47-57.94q23.47-23.83 56.93-23.83 34.28 0 58.55 24.04t24.27 58.16-24.18 57.85q-24.18 23.74-58.62 23.74m517.38 0q-34.44 0-58.62-23.95t-24.18-58.07 24.18-57.94q24.18-23.83 58.62-23.83 33.62 0 57.3 24.04 23.69 24.04 23.69 58.16t-23.69 57.85q-23.68 23.74-57.3 23.74m-257.91-43.13q-42.24 0-72.06-29.27-29.83-29.26-29.83-71.5 0-42.8 29.83-72.63 29.82-29.82 72.06-29.82t71.79 29.82q29.54 29.83 29.54 72.63 0 42.24-29.54 71.5-29.55 29.27-71.79 29.27M277.83-89.91q7-34.7 25.34-65.18 18.35-30.47 45.48-52.89 27.13-22.41 60.66-34.48 33.53-12.06 70.74-12.06t70.97 12.06q33.76 12.07 60.89 34.77 26.57 22.13 44.92 52.6 18.34 30.48 25.91 65.18zm-163.35 0q-21.52 0-35.07-13.6-13.54-13.6-13.54-30.88 0-43.13 48.15-81.63t105.91-38.5q24.99 0 48.35 6.56 23.37 6.57 43.5 19.6-29.26 27.16-48.39 62.68-19.13 35.51-26.25 75.77zm608.94 0q-7.68-40.26-26.49-75.81-18.81-35.54-48.15-62.54 20.13-12.13 42.55-19.2 22.41-7.06 47.86-7.06 58.2 0 107.42 38.78t49.22 81.35q0 18.26-14.51 31.37-14.52 13.11-35.8 13.11zM47.07-534.52Q36.43-547.07 39-563.06q2.56-15.98 15.39-26.25l377.74-288q21.19-15.95 47.92-15.95t47.82 15.95l124.61 94.57v-35.96q0-23.04 16.38-38.71 16.37-15.68 44.05-15.68 25.13 0 42.96 17.56t17.83 43.05v121.01l132.47 101.6q12.85 10.2 15.12 26.47 2.28 16.27-7.99 28.81-10.26 13.11-25.71 15.18-15.46 2.06-28.85-8.2L480-813.61l-378.74 286q-13.39 10.26-29.01 8.51-15.63-1.75-25.18-15.42"></path></svg></div>';
         html += '<div class="edit-profile-name">Up for Grabs</div></div>';
         
         html += `<div class="edit-profile-item">
