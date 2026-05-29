@@ -6013,8 +6013,8 @@ let rewards = window.rewards || [];
             html += '<button class="chore-list-edit-btn" data-member="' + member.name + '" onclick="openChoreListEdit(\'' + member.name + '\', event)">✏️</button>';
             html += '</div>';
             
-            // Show routine indicators if person has routines
-            if (memberRoutines.length > 0) {
+            // Show routine indicators if person has routines or chores
+            if (memberRoutines.length > 0 || memberChores.length > 0) {
                 html += '<div class="routine-indicators">';
                 
                 ['Morning', 'Afternoon', 'Evening', 'Chores'].forEach(function(period) {
