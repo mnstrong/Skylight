@@ -6307,7 +6307,7 @@ let rewards = window.rewards || [];
                 const isSelected = member.name === sel;
                 const total = memberTotals[member.name];
                 html += `<div class="rewards-profile-pick${isSelected ? ' active' : ''}" onclick="selectRewardsMember('${member.name}')">
-                    <div class="rewards-profile-pick-avatar" style="background:${member.color};${isSelected ? '' : 'opacity:0.3;'}">${member.name.charAt(0).toUpperCase()}</div>
+                    <div class="edit-profile-avatar${isSelected ? ' selected' : ''}" style="background:${member.color};${isSelected ? '' : 'opacity:0.3;'}">${member.name.charAt(0).toUpperCase()}</div>
                     <div class="rewards-profile-pick-stars" style="background:${isSelected ? member.color+'28' : 'rgba(0,0,0,0.06)'};color:${isSelected ? '#333' : '#aaa'};">
                         <span style="color:${isSelected ? '#f5a623' : '#ccc'};">\u2605</span> ${total}
                     </div>
