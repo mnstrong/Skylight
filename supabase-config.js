@@ -159,6 +159,7 @@ function getTasks(filters) {
     if (filters.completed !== undefined) qFilters.push({ col: 'completed',   op: 'eq', val: filters.completed });
     if (filters.assignedTo)              qFilters.push({ col: 'assigned_to', op: 'eq', val: filters.assignedTo });
     if (filters.dueDate)                 qFilters.push({ col: 'due_date',    op: 'eq', val: filters.dueDate });
+    if (filters.category)                qFilters.push({ col: 'category',    op: 'eq', val: filters.category });
     return _sbRequest('GET', 'tasks', {
         select: '*,family_members(name,color)',
         filters: qFilters,

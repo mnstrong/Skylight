@@ -882,26 +882,26 @@ function handleListChange(payload) {
 async function loadRewardsFromSupabase() {
     if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
     try {
-        const data = await SupabaseAPI.getRewards();
+        const data = await SupabaseAPI.getTasks({ category: 'reward' });
         if (!data || !data.length) return;
         const fm = window.familyMembers || [];
         const formatted = data.map(r => ({
             id: r.id,
-            title: r.name || r.title || '',
-            emoji: r.icon || '🎁',
-            icon: r.icon || '🎁',
+            title: r.title || '',
+            emoji: r.description || '🎁',
+            icon:  r.description || '🎁',
             member: (function() {
-                if (r.member_id) {
-                    const m = fm.find(function(m) { return m.id === r.member_id; });
+                if (r.assigned_to) {
+                    const m = fm.find(function(m) { return m.id === r.assigned_to; });
                     return m ? m.name : '';
                 }
-                return r.member || '';
+                return '';
             })(),
-            starsNeeded: r.points_cost || r.stars_needed || r.star_cost || r.starsNeeded || 25,
-            stars: r.points_cost || r.stars_needed || r.star_cost || r.stars || 25,
+            starsNeeded: r.points || 25,
+            stars:       r.points || 25,
             displayOrder: r.display_order != null ? r.display_order : 9999,
-            redeemed: r.redeemed || false,
-            redeemedDate: r.redeemed_date || null
+            redeemed:    r.completed || false,
+            redeemedDate: r.completed_at || null
         }));
         formatted.sort(function(a, b) {
             return (a.displayOrder != null ? a.displayOrder : 9999) - (b.displayOrder != null ? b.displayOrder : 9999);
@@ -1254,61 +1254,38 @@ window.SupabaseSync = {
     syncFamilyMemberDelete,
 
     // Rewards
-    // Cache the actual stars column name after first successful probe
-    _rewardStarsCol: null,
-
-    async _getRewardStarsCol() {
-        if (this._rewardStarsCol) return this._rewardStarsCol;
-        try {
-            const data = await SupabaseAPI.getRewards();
-            if (data && data.length) {
-                const r = data[0];
-                if (r.points_cost != null) { this._rewardStarsCol = 'points_cost'; }
-                else if (r.stars_needed != null) { this._rewardStarsCol = 'stars_needed'; }
-                else if (r.star_cost != null) { this._rewardStarsCol = 'star_cost'; }
-                else if (r.stars != null) { this._rewardStarsCol = 'stars'; }
-                else { this._rewardStarsCol = 'stars_needed'; } // safe default
-            } else {
-                // No existing rewards — try inserting with each name until one works
-                this._rewardStarsCol = 'stars_needed';
-            }
-        } catch(e) {
-            this._rewardStarsCol = 'stars_needed';
-        }
-        return this._rewardStarsCol;
-    },
-
+    // Rewards (stored in tasks table with category='reward')
     async syncReward(reward, operation) {
         if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
         const fm = window.familyMembers || [];
         const memberObj = fm.find(m => m.name === reward.member);
-        const starsCol = await this._getRewardStarsCol();
-        const starsVal = reward.starsNeeded || reward.stars || 25;
+        const assignedTo = memberObj ? memberObj.id : null;
         try {
             if (operation === 'add') {
                 const row = {
-                    title: reward.title,
-                    icon: reward.emoji || reward.icon || '🎁',
-                    member_id: memberObj ? memberObj.id : null,
-                    redeemed: reward.redeemed || false,
-                    redeemed_date: reward.redeemedDate || null,
-                    available: true
-                };
-                row[starsCol] = starsVal;
-                const result = await SupabaseAPI.addReward(row);
-                if (result && result.id) reward.id = result.id;
-            } else if (operation === 'update') {
-                const updates = {
-                    title: reward.title,
-                    icon: reward.emoji || reward.icon || '🎁',
-                    redeemed: reward.redeemed || false,
-                    redeemed_date: reward.redeemedDate || null,
+                    title:    reward.title || '',
+                    description: reward.emoji || reward.icon || '🎁',
+                    category: 'reward',
+                    assigned_to: assignedTo,
+                    points:   reward.starsNeeded || reward.stars || 25,
+                    completed: reward.redeemed || false,
+                    completed_at: reward.redeemedDate || null,
                     display_order: reward.displayOrder != null ? reward.displayOrder : 9999
                 };
-                updates[starsCol] = starsVal;
-                await SupabaseAPI.updateReward(reward.id, updates);
+                const result = await SupabaseAPI.addTask(row);
+                if (result && result.id) reward.id = result.id;
+            } else if (operation === 'update') {
+                await SupabaseAPI.updateTask(reward.id, {
+                    title:    reward.title || '',
+                    description: reward.emoji || reward.icon || '🎁',
+                    assigned_to: assignedTo,
+                    points:   reward.starsNeeded || reward.stars || 25,
+                    completed: reward.redeemed || false,
+                    completed_at: reward.redeemedDate || null,
+                    display_order: reward.displayOrder != null ? reward.displayOrder : 9999
+                });
             } else if (operation === 'delete') {
-                await SupabaseAPI.deleteReward(reward.id);
+                await SupabaseAPI.deleteTask(reward.id);
             }
             console.log('✓ Reward synced:', operation, reward.title);
         } catch(e) { console.error('Error syncing reward:', e); }
