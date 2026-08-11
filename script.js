@@ -646,39 +646,45 @@ let rewards = window.rewards || [];
                         </div>
                         <div class="allowance-info">
                             <div class="allowance-name">${member.name}</div>
-                            <div class="allowance-balance-inline" style="color:${balance >= 0 ? '#4CAF50' : '#FF6B6B'}">
-                                ${balance >= 0 ? '+' : ''}$${balance.toFixed(2)} balance
+                        </div>
+                        <div class="allowance-current-balance">
+                            <div class="allowance-current-balance-label">Current Balance</div>
+                            <div class="allowance-current-balance-amount" style="color:${balance >= 0 ? '#4CAF50' : '#FF6B6B'}">
+                                ${balance >= 0 ? '+' : ''}$${balance.toFixed(2)}
                             </div>
                         </div>
                     </div>
 
-                    <div class="allowance-sections">
-                        <div class="allowance-section">
-                            <div class="allowance-section-label">Spending</div>
-                            <div class="allowance-section-amount">$${spending.toFixed(2)}</div>
-                        </div>
-                        <div class="allowance-section">
-                            <div class="allowance-section-label">Saving</div>
-                            <div class="allowance-section-amount">$${saving.toFixed(2)}</div>
-                        </div>
+                    <div class="allowance-add-btn-row">
+                        <button class="allowance-transaction-btn" onclick="openAllowanceTransaction('${member.name}')">
+                            + Add Transaction
+                        </button>
                     </div>
-                    
-                    <button class="allowance-transaction-btn" onclick="openAllowanceTransaction('${member.name}')">
-                        Add Transaction
-                    </button>
                     
                     ${allTransactions.length > 0 ? `
                         <div class="allowance-history">
                             <div class="allowance-history-title">Transaction History</div>
                             ${allTransactions.map(t => `
-                                <div class="allowance-transaction" onclick="openTransactionDetail('${member.name}', '${t.id}')">
-                                    <div class="allowance-transaction-info">
-                                        <div class="allowance-transaction-date">${new Date(t.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
-                                        <div class="allowance-transaction-description">${t.description || 'No description'}</div>
+                                <div class="allowance-swipe-row" data-member="${member.name}" data-tx-id="${t.id}">
+                                    <div class="allowance-swipe-actions">
+                                        <button class="allowance-swipe-btn allowance-swipe-edit" onclick="swipeEditTransaction('${member.name}', '${t.id}')" aria-label="Edit transaction">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                            <span>Edit</span>
+                                        </button>
+                                        <button class="allowance-swipe-btn allowance-swipe-delete" onclick="swipeDeleteTransaction('${member.name}', '${t.id}')" aria-label="Delete transaction">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                            <span>Delete</span>
+                                        </button>
                                     </div>
-                                    <span class="allowance-transaction-amount ${t.type === 'save' ? 'positive' : 'negative'}">
-                                        ${t.type === 'save' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
-                                    </span>
+                                    <div class="allowance-transaction">
+                                        <div class="allowance-transaction-info">
+                                            <div class="allowance-transaction-date">${new Date(t.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+                                            <div class="allowance-transaction-description">${t.description || 'No description'}</div>
+                                        </div>
+                                        <span class="allowance-transaction-amount ${t.type === 'save' ? 'positive' : 'negative'}">
+                                            ${t.type === 'save' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
+                                        </span>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -688,7 +694,136 @@ let rewards = window.rewards || [];
         });
 
         grid.innerHTML = '<div class="allowance-cards-grid">' + html + '</div>';
+        initAllowanceSwipeRows();
     }
+
+    // ── Swipeable transaction rows (slide left to reveal Edit / Delete) ──
+    const ALLOWANCE_SWIPE_OPEN_X = -136; // px revealed for the action buttons
+    let allowanceSwipeOpenRow = null;
+
+    function closeAllowanceSwipeRows(exceptRow) {
+        document.querySelectorAll('.allowance-swipe-row.swiped').forEach(row => {
+            if (row !== exceptRow) {
+                row.classList.remove('swiped');
+                const tx = row.querySelector('.allowance-transaction');
+                if (tx) tx.style.transform = 'translateX(0px)';
+            }
+        });
+        if (!exceptRow) allowanceSwipeOpenRow = null;
+    }
+
+    // Delegated drag state (single set of listeners bound once — survives re-renders
+    // since renderAllowanceGrid() replaces the row elements on every save/delete).
+    let _aSwipeActiveRow = null, _aSwipeActiveTx = null;
+    let _aSwipeStartX = 0, _aSwipeStartY = 0, _aSwipeCurrentX = 0;
+    let _aSwipeDragging = false, _aSwipeDecided = false, _aSwipeHorizontal = false;
+
+    function _aSwipeDown(e) {
+        const row = e.target.closest && e.target.closest('.allowance-swipe-row');
+        if (!row) return;
+        const tx = row.querySelector('.allowance-transaction');
+        if (!tx) return;
+        const point = e.touches ? e.touches[0] : e;
+        _aSwipeActiveRow = row;
+        _aSwipeActiveTx = tx;
+        _aSwipeStartX = point.clientX;
+        _aSwipeStartY = point.clientY;
+        _aSwipeCurrentX = row.classList.contains('swiped') ? ALLOWANCE_SWIPE_OPEN_X : 0;
+        _aSwipeDragging = true;
+        _aSwipeDecided = false;
+        _aSwipeHorizontal = false;
+        tx.style.transition = 'none';
+    }
+
+    function _aSwipeMove(e) {
+        if (!_aSwipeDragging || !_aSwipeActiveTx) return;
+        const point = e.touches ? e.touches[0] : e;
+        const dx = point.clientX - _aSwipeStartX;
+        const dy = point.clientY - _aSwipeStartY;
+
+        if (!_aSwipeDecided) {
+            if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+            _aSwipeDecided = true;
+            _aSwipeHorizontal = Math.abs(dx) > Math.abs(dy);
+            if (_aSwipeHorizontal) closeAllowanceSwipeRows(_aSwipeActiveRow);
+        }
+        if (!_aSwipeHorizontal) return;
+        if (e.cancelable) e.preventDefault();
+
+        let next = _aSwipeCurrentX + dx;
+        next = Math.max(ALLOWANCE_SWIPE_OPEN_X, Math.min(0, next));
+        _aSwipeActiveTx.style.transform = `translateX(${next}px)`;
+    }
+
+    function _aSwipeUp(e) {
+        if (!_aSwipeDragging || !_aSwipeActiveTx) return;
+        const row = _aSwipeActiveRow, tx = _aSwipeActiveTx;
+        _aSwipeDragging = false;
+        tx.style.transition = '';
+        if (!_aSwipeHorizontal) { _aSwipeActiveRow = null; _aSwipeActiveTx = null; return; }
+
+        const point = e.changedTouches ? e.changedTouches[0] : e;
+        const dx = (point.clientX - _aSwipeStartX);
+        const finalX = Math.max(ALLOWANCE_SWIPE_OPEN_X, Math.min(0, _aSwipeCurrentX + dx));
+        const shouldOpen = finalX < ALLOWANCE_SWIPE_OPEN_X / 2;
+
+        if (shouldOpen) {
+            tx.style.transform = `translateX(${ALLOWANCE_SWIPE_OPEN_X}px)`;
+            row.classList.add('swiped');
+            allowanceSwipeOpenRow = row;
+        } else {
+            tx.style.transform = 'translateX(0px)';
+            row.classList.remove('swiped');
+            if (allowanceSwipeOpenRow === row) allowanceSwipeOpenRow = null;
+        }
+        _aSwipeActiveRow = null;
+        _aSwipeActiveTx = null;
+    }
+
+    function initAllowanceSwipeRows() {
+        // Listeners are bound once, delegated from the grid container — no rebinding needed on re-render.
+        if (document._allowanceSwipeBound) return;
+        document._allowanceSwipeBound = true;
+
+        document.addEventListener('touchstart', _aSwipeDown, { passive: true });
+        document.addEventListener('touchmove', _aSwipeMove, { passive: false });
+        document.addEventListener('touchend', _aSwipeUp);
+        document.addEventListener('mousedown', _aSwipeDown);
+        document.addEventListener('mousemove', _aSwipeMove);
+        document.addEventListener('mouseup', _aSwipeUp);
+
+        // Tapping anywhere outside a swiped row closes it
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.allowance-swipe-row')) closeAllowanceSwipeRows(null);
+        });
+    }
+
+    function swipeEditTransaction(memberName, transactionId) {
+        closeAllowanceSwipeRows(null);
+        openEditTransaction(memberName, transactionId);
+    }
+
+    function swipeDeleteTransaction(memberName, transactionId) {
+        if (window.allowances && window.allowances !== allowances) allowances = window.allowances;
+        const memberAllowance = allowances.find(a => a.member === memberName);
+        if (!memberAllowance) return;
+        const idx = memberAllowance.transactions.findIndex(tx => tx.id === transactionId);
+        if (idx === -1) return;
+
+        if (!confirm('Delete this transaction?')) return;
+
+        const deleted = memberAllowance.transactions.splice(idx, 1)[0];
+
+        if (window.SupabaseSync && typeof window.SupabaseSync.deleteAllowanceTransaction === 'function') {
+            window.SupabaseSync.deleteAllowanceTransaction(deleted);
+        }
+
+        closeAllowanceSwipeRows(null);
+        renderAllowanceGrid();
+    }
+
+    window.swipeEditTransaction = swipeEditTransaction;
+    window.swipeDeleteTransaction = swipeDeleteTransaction;
     
     let currentAllowanceMember = '';
     let currentAllowanceType = 'save'; // Default to save

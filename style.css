@@ -1961,16 +1961,14 @@
             margin-bottom: 4px;
         }
 
-        /* Make allowance transaction rows look clickable */
+        /* Swipeable allowance transaction rows (slide left to reveal Edit/Delete) */
         .allowance-transaction {
-            cursor: pointer;
-            transition: background 0.15s;
+            cursor: grab;
             border-radius: 8px;
-            padding: 12px 0;
         }
 
-        .allowance-transaction:hover {
-            background: rgba(0,0,0,0.04);
+        .allowance-transaction:active {
+            cursor: grabbing;
         }
 
         /* Delete Options Modal */
@@ -5278,6 +5276,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            gap: 14px;
         }
         
         .allowance-avatar {
@@ -5307,51 +5306,49 @@ width: 80px;
             font-weight: 600;
             margin-top: 3px;
         }
-        
-        .allowance-sections {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            margin: 20px 0;
-        }
-        
-        .allowance-section {
+
+        /* Current balance — replaces the old Spending/Saving split */
+        .allowance-current-balance {
+            margin-left: auto;
             background: white;
-            padding: 15px;
+            padding: 10px 18px;
             border-radius: 12px;
             text-align: center;
+            flex-shrink: 0;
         }
 
-        .allowance-sections > :first-child {
-            margin-right: 20px;
-        }
-        
-        .allowance-section-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #666;
+        .allowance-current-balance-label {
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            color: #999;
+            margin-bottom: 2px;
         }
-        
-        .allowance-section-amount {
-            font-size: 28px;
+
+        .allowance-current-balance-amount {
+            font-size: 22px;
             font-weight: 700;
-            color: #000;
+            white-space: nowrap;
         }
-        
+
+        .allowance-add-btn-row {
+            display: flex;
+            justify-content: flex-end;
+            margin: 4px 0 20px;
+        }
+
         .allowance-transaction-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
+            width: auto;
+            padding: 9px 18px;
+            border-radius: 10px;
             border: none;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             background: #4A90E2;
             color: white;
             transition: transform 0.2s;
-            margin-bottom: 20px;
         }
         
         .allowance-transaction-btn:hover {
@@ -5397,17 +5394,59 @@ width: 80px;
             margin-bottom: 10px;
         }
         
+        /* Swipeable row wrapper — actions sit behind, transaction slides over them */
+        .allowance-swipe-row {
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .allowance-swipe-row:last-child {
+            border-bottom: none;
+        }
+
+        .allowance-swipe-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .allowance-swipe-btn {
+            width: 68px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .allowance-swipe-edit {
+            background: #4A90E2;
+        }
+
+        .allowance-swipe-delete {
+            background: #FF6B6B;
+        }
+
         .allowance-transaction {
+            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 12px 0;
+            padding: 12px 10px;
             font-size: 14px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .allowance-transaction:last-child {
-            border-bottom: none;
+            background: #fff;
+            touch-action: pan-y;
+            cursor: grab;
+            will-change: transform;
         }
         
         .allowance-transaction-info {
@@ -5433,34 +5472,6 @@ width: 80px;
         
         .allowance-transaction-amount.negative {
             color: #FF6B6B;
-        }
-
-        .allowance-transaction-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            margin-left: 12px;
-        }
-
-        .allowance-edit-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 13px;
-            opacity: 0.45;
-            padding: 4px 7px;
-            border-radius: 6px;
-            transition: opacity 0.15s, background 0.15s;
-            line-height: 1;
-            flex-shrink: 0;
-            color: #555;
-        }
-
-        .allowance-edit-btn:hover,
-        .allowance-edit-btn:active {
-            opacity: 1;
-            background: rgba(0,0,0,0.08);
         }
 
         .allowance-transaction-amount {
