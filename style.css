@@ -5311,8 +5311,8 @@ width: 80px;
         .allowance-current-balance {
             margin-left: auto;
             background: white;
-            padding: 10px 18px;
-            border-radius: 12px;
+            padding: 12px 22px;
+            border-radius: 14px;
             text-align: center;
             flex-shrink: 0;
         }
@@ -5327,8 +5327,8 @@ width: 80px;
         }
 
         .allowance-current-balance-amount {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 30px;
+            font-weight: 800;
             white-space: nowrap;
         }
 

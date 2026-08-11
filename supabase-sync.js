@@ -1297,15 +1297,40 @@ window.SupabaseSync = {
         const fm = window.familyMembers || [];
         const memberObj = fm.find(m => m.name === memberName);
         try {
-            await SupabaseAPI.addAllowanceTransaction({
+            const saved = await SupabaseAPI.addAllowanceTransaction({
                 member_id: memberObj ? memberObj.id : null,
                 amount: transaction.amount,
                 transaction_type: transaction.type,
                 description: transaction.description
                 // created_at is set automatically by Supabase
             });
+            // Swap the local placeholder id for the real Supabase row id so a
+            // subsequent edit/delete (before the next reload) targets the right row.
+            if (saved && saved.id) transaction.id = saved.id;
             console.log('✓ Allowance transaction synced');
         } catch(e) { console.error('Error syncing allowance:', e); }
+    },
+
+    // Allowance — update an existing transaction's amount/type/description
+    async updateAllowanceTransaction(transaction, memberName) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        try {
+            await SupabaseAPI.updateAllowanceTransaction(transaction.id, {
+                amount: transaction.amount,
+                transaction_type: transaction.type,
+                description: transaction.description
+            });
+            console.log('✓ Allowance transaction updated');
+        } catch(e) { console.error('Error updating allowance transaction:', e); }
+    },
+
+    // Allowance — delete a transaction
+    async deleteAllowanceTransaction(transaction) {
+        if (!syncEnabled || typeof SupabaseAPI === 'undefined') return;
+        try {
+            await SupabaseAPI.deleteAllowanceTransaction(transaction.id);
+            console.log('✓ Allowance transaction deleted');
+        } catch(e) { console.error('Error deleting allowance transaction:', e); }
     },
 
     isReady: function() { return isSupabaseReady; },

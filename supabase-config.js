@@ -466,6 +466,24 @@ function addAllowanceTransaction(transaction) {
         });
 }
 
+function updateAllowanceTransaction(id, updates) {
+    return _sbRequest('PATCH', 'allowance_transactions', {
+        filters: [{ col: 'id', op: 'eq', val: id }], body: updates, single: true
+    }).then(function(r) {
+        if (r.error) { console.error('Error updating allowance transaction:', r.error); return null; }
+        return r.data;
+    });
+}
+
+function deleteAllowanceTransaction(id) {
+    return _sbRequest('DELETE', 'allowance_transactions', {
+        filters: [{ col: 'id', op: 'eq', val: id }]
+    }).then(function(r) {
+        if (r.error) { console.error('Error deleting allowance transaction:', r.error); return false; }
+        return true;
+    });
+}
+
 // ============================================
 // HABITS
 // ============================================
@@ -653,6 +671,8 @@ window.SupabaseAPI = {
     getAllowanceBalance:        getAllowanceBalance,
     getAllowanceTransactions:   getAllowanceTransactions,
     addAllowanceTransaction:   addAllowanceTransaction,
+    updateAllowanceTransaction: updateAllowanceTransaction,
+    deleteAllowanceTransaction: deleteAllowanceTransaction,
 
     getHabits:                 getHabits,
     addHabit:                  addHabit,
