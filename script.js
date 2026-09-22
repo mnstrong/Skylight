@@ -9184,33 +9184,34 @@ if (allChoresComplete || allRoutinesComplete) {
     }
     window.matchProfileKeyword = matchProfileKeyword;
 
-    function autoAssignEventMember(title) {
-        const lowerTitle = (title || '').toLowerCase();
+function autoAssignEventMember(title) {
+    const lowerTitle = (title || '').toLowerCase();
 
-        // 1. Check persistent keyword map first
-        var kwMatch = matchProfileKeyword(title);
-        if (kwMatch) return kwMatch.memberName;
+    // 1. Check persistent keyword map first
+    var kwMatch = matchProfileKeyword(title);
+    if (kwMatch) return kwMatch.memberName;
 
-        // 2. Legacy hardcoded keywords
-        const hardcoded = {
-            'Bret': ['josh', 'danny', 'mens', "men's"]
-        };
-        for (let memberName in hardcoded) {
-            for (let keyword of hardcoded[memberName]) {
-                if (lowerTitle.includes(keyword)) return memberName;
-            }
+    // 2. Legacy hardcoded keywords
+    const hardcoded = {
+        'Bret': ['josh', 'danny', 'mens', "men's"]
+    };
+    for (let memberName in hardcoded) {
+        for (let keyword of hardcoded[memberName]) {
+            if (lowerTitle.includes(keyword)) return memberName;
         }
-
-        // 3. Family member name match
-        for (let member of familyMembers) {
-            const lowerName = member.name.toLowerCase();
-            const nameRegex = new RegExp(`\\b${lowerName}\\b`, 'i');
-            if (nameRegex.test(title)) return member.name;
-            if (lowerTitle.includes(lowerName + "'s") || lowerTitle.includes(lowerName + 's')) return member.name;
-        }
-
-        return '';
     }
+
+    // 3. Family member name match
+    for (let member of familyMembers) {
+        const lowerName = member.name.toLowerCase();
+        const escapedName = lowerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // <-- add this
+        const nameRegex = new RegExp(`\\b${escapedName}\\b`, 'i');
+        if (nameRegex.test(title)) return member.name;
+        if (lowerTitle.includes(lowerName + "'s") || lowerTitle.includes(lowerName + 's')) return member.name;
+    }
+
+    return '';
+}
 
     // ── Keyword-aware background resolver ────────────────────────────
     // Returns a bg image URL if the event title/notes matches a keyword with bgImage set
